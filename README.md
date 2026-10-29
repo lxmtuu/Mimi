@@ -19,8 +19,12 @@ A Windows desktop music-player foundation built with C# / WPF / .NET 8 and NAudi
   and format), metadata filters for artist/album/genre/format/playback
   state, and Extended multi-select for batch favorites, playlist additions,
   playlist removal, and library removal
-- Play / pause, next / previous, volume and seek; next / previous and
-  auto-advance follow the visible filtered list and skip unplayable files
+- Play / pause, queue-aware next / previous and auto-advance, ±10-second
+  seek, volume percentage, and mute. Starting a song captures the visible
+  filtered/sorted list as its playback context; Shuffle uses a no-repeat
+  shuffle bag, Repeat supports Off / All / One, Previous follows the songs
+  actually played, and unplayable candidates are skipped without committing
+  queue state
 - Vietnamese diacritic-insensitive search over track metadata. When SQLite
   is available, the search box uses debounced FTS5 prefix queries and
   relevance ordering in Library/Favorites, while preserving playlist and
@@ -29,12 +33,16 @@ A Windows desktop music-player foundation built with C# / WPF / .NET 8 and NAudi
 - Playlist management in the sidebar: create, rename, delete, play, add the
   selected song(s) from the track list's **Add to playlist** menu, remove
   songs, and reorder them by dragging or with the Up/Down actions
+- An **Up Next** playback queue with drag reordering, Up/Down buttons,
+  Play-next / Add-to-queue actions for selected songs, double-click to play
+  a queued song immediately, item removal, and Clear upcoming
 - Direct favorite toggles, a Recently played view backed by playback
   history, and track removal (right-click or Delete key)
 - A Settings screen for playback/session, startup/library, Stage Engine,
   and data/diagnostic options. Mimi remembers its window placement,
-  visualizer mode, library view/search/filters/sorting, and reopens the
-  previous song at its saved position **paused, never auto-playing**
+  visualizer mode, library view/search/filters/sorting, playback modes,
+  and reopens the previous song, position, and queue **paused, never
+  auto-playing**
 - Optional watched folders: new or changed songs in selected folders are
   scanned after a short debounce, while externally deleted files remain in
   the library and are marked missing instead of being silently removed
@@ -45,9 +53,10 @@ A Windows desktop music-player foundation built with C# / WPF / .NET 8 and NAudi
   change the user's Windows default music app
 - Library tracks, favorites, playback errors, and play history are restored
   from the SQLite catalog at `%LocalAppData%\Mimi\library.db` (schema v1,
-  WAL + transactions); version 2 `settings.json` atomically stores volume,
-  preferences, the library-view/window state, and the paused session. On
-  first use, an
+  WAL + transactions); version 3 `settings.json` atomically stores volume,
+  mute, shuffle, repeat, preferences, the library-view/window state, and
+  the paused session including its queue. Older settings versions migrate
+  with defaults for the new playback options. On first use, an
   existing legacy `library.json` / `favorites.json` pair is imported only
   when the catalog is empty, then archived as `.bak` files. If SQLite cannot
   be opened, Mimi falls back to the legacy JSON library instead of failing
@@ -61,9 +70,11 @@ A Windows desktop music-player foundation built with C# / WPF / .NET 8 and NAudi
   and fading out while paused or stopped
 - Modular MVVM architecture with dependency injection and automated tests;
   Windows Release builds and unit tests are verified by GitHub Actions.
-  This remains Phase 3 in development (`v0.4.0`), not the complete Phase 3
-  exit: measured 10,000-track performance and real-Windows upgrade checks
-  remain open items in `ROADMAP.md`
+  This is now Phase 4 in development (`v0.5.0`): the queue, shuffle,
+  repeat, mute, and fast-seek slice is implemented, while Windows media
+  keys/SMTC, taskbar controls, the Settings shortcut table, output-device
+  handling, and the real-Windows acceptance gates in `ROADMAP.md` remain
+  open
 
 ## Requirements
 - Windows 10/11 with Windows Terminal or PowerShell
@@ -122,8 +133,8 @@ git clone --branch arena/cdda374d-mimi https://github.com/lxmtuu/Mimi.git
 Set-Location .\Mimi
 ```
 
-`arena/cdda374d-mimi` hiện là working branch chứa nền tảng Phase 3
-(`v0.4.0` đang phát triển). Khi branch này đã được merge, bạn có thể bỏ tùy
+`arena/cdda374d-mimi` hiện là working branch chứa Phase 4
+(`v0.5.0` đang phát triển). Khi branch này đã được merge, bạn có thể bỏ tùy
 chọn `--branch ...` để dùng branch mặc định.
 
 Nếu bạn đã clone repo từ trước:
@@ -201,6 +212,14 @@ tạm dừng. Trong **Windows integration**, bật **Show Mimi in Windows' Open
 with menu**, chuột phải vào một file nhạc trong Explorer và chọn
 **Open with → Mimi**; nếu Mimi đang mở, bài phải được chuyển sang chính
 cửa sổ đó thay vì tạo thêm một cửa sổ Mimi thứ hai.
+Hãy phát một bài để panel **Up Next** nhận hàng đợi từ danh sách đang lọc,
+rồi thử kéo sắp xếp một bài, dùng **Play next/Add to queue** với (các) bài
+đang chọn, bật **Shuffle**, bấm nút Repeat đủ ba trạng thái
+**Off → All → One**, dùng **−10s/+10s**, bật **Mute** và kiểm tra slider vẫn
+giữ phần trăm âm lượng đã đặt khi bỏ mute. Bấm **Previous** sau khi bài đã
+phát hơn 3 giây để kiểm tra bài quay về đầu; bấm lại gần đầu bài để quay về
+bài vừa nghe thật sự trước đó. Đóng và mở lại Mimi để kiểm tra bài, vị trí,
+Up Next cùng trạng thái mute/shuffle/repeat.
 Cuối cùng, bấm `F11` để mở Stage toàn màn hình (`Esc` để thoát Stage).
 
 #### 5. Mở thư mục dữ liệu và log
@@ -215,8 +234,9 @@ explorer "$env:LOCALAPPDATA\Mimi\logs"
 
 Các file chính gồm `library.db` (SQLite catalog; có thể kèm
 `library.db-wal`/`library.db-shm` khi ứng dụng đang ghi dữ liệu),
-`settings.json` (tuỳ chọn schema v2, danh sách thư mục theo dõi, vị trí cửa
-sổ/chế độ xem và phiên nghe đang tạm dừng), ảnh bìa đã trích xuất trong
+`settings.json` (tuỳ chọn schema v3 gồm mute/shuffle/repeat, danh sách thư
+mục theo dõi, vị trí cửa sổ/chế độ xem và phiên nghe cùng hàng đợi đang
+tạm dừng), ảnh bìa đã trích xuất trong
 `cache\covers\` (thường là
 cặp `{hash}-512.jpg` và `{hash}-96.jpg`; cache byte gốc của bản cũ được app
 tự nâng cấp ở nền khi mở thư viện), và log xoay theo ngày theo mẫu
@@ -256,16 +276,18 @@ dotnet run --project .\src\Mimi.App\Mimi.App.csproj
 ## Source layout
 - `src/Mimi.App` — WPF views, view models, dependency-injection composition,
   logging, dialogs, and the `Mimi.exe` entry point
-- `src/Mimi.Core` — shared models, service contracts, playback-order logic,
-  shuffle-bag primitives, and Vietnamese search normalization
+- `src/Mimi.Core` — shared models, service contracts, the `PlaybackQueue`
+  state machine and shuffle-bag primitive, and Vietnamese search
+  normalization
 - `src/Mimi.Audio` — NAudio playback implementation behind `IAudioPlayer`
 - `src/Mimi.Library` — asynchronous audio-file discovery, TagLib-Sharp
   metadata/cover extraction, the SQLite library catalog, and JSON
   settings/legacy-library migration fallback
 - `src/Mimi.Visualizer` — ring-buffer capture and testable FFT/AGC analysis
 - `tests/Mimi.Tests` — xUnit tests for scanning, metadata, SQLite catalog
-  search/playlists/history, user-data migration/archive, playback order,
-  shuffle-bag, Vietnamese search normalization, and spectrum analysis
+  search/playlists/history, user-data migration/archive, playback queue
+  and shuffle-bag behavior, Vietnamese search normalization, and spectrum
+  analysis
 
 ## Notes
 This is a first working foundation, not a finished commercial product. Online streaming is intentionally not implemented yet. Each streaming provider requires an official API/SDK, authorization, and compliance with that provider's playback and licensing rules. Do not scrape protected services or attempt to bypass DRM.
