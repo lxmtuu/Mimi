@@ -12,7 +12,9 @@ A Windows desktop music-player foundation built with C# / WPF / .NET 8 and NAudi
 - Embedded metadata and cover art read with TagLib-Sharp (title, artist,
   album, genre, year, duration, bitrate, and sample rate), with a filename
   fallback for missing or damaged tags; title, artist, album, genre, year,
-  time, and file format are shown in the library
+  time, and file format are shown in the library. Cover art is cached as
+  512px JPEGs for Now Playing and 96px JPEG thumbnails for the track list,
+  with the original embedded bytes kept only as a decode/write fallback
 - Sortable library columns (title, artist, album, genre, year, duration,
   and format), metadata filters for artist/album/genre/format/playback
   state, and Extended multi-select for batch favorites, playlist additions,
@@ -46,9 +48,9 @@ A Windows desktop music-player foundation built with C# / WPF / .NET 8 and NAudi
 - Modular MVVM architecture with dependency injection and automated tests;
   Windows Release builds and unit tests are verified by GitHub Actions.
   This remains Phase 3 in development (`v0.4.0`), not the complete Phase 3
-  exit: resized cover-art variants, folder watching, file associations,
-  richer settings/session restore, and measured 10,000-track performance
-  remain open items in `ROADMAP.md`
+  exit: folder watching, file associations, richer settings/session
+  restore, and measured 10,000-track performance remain open items in
+  `ROADMAP.md`
 
 ## Requirements
 - Windows 10/11 with Windows Terminal or PowerShell
@@ -193,8 +195,10 @@ explorer "$env:LOCALAPPDATA\Mimi\logs"
 
 Các file chính gồm `library.db` (SQLite catalog; có thể kèm
 `library.db-wal`/`library.db-shm` khi ứng dụng đang ghi dữ liệu),
-`settings.json`, ảnh bìa đã trích xuất trong `cache\covers\`, và log xoay
-theo ngày theo mẫu `logs\mimi-YYYYMMDD.log`. `library.json` và
+`settings.json`, ảnh bìa đã trích xuất trong `cache\covers\` (thường là
+cặp `{hash}-512.jpg` và `{hash}-96.jpg`; cache byte gốc của bản cũ được app
+tự nâng cấp ở nền khi mở thư viện), và log xoay theo ngày theo mẫu
+`logs\mimi-YYYYMMDD.log`. `library.json` và
 `favorites.json` chỉ còn là nguồn migration/fallback của các bản cũ; sau khi
 nhập thành công vào SQLite, chúng được đổi tên thành file `.bak` để làm bản
 sao lưu.
