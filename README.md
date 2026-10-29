@@ -15,18 +15,24 @@ A Windows desktop music-player foundation built with C# / WPF / .NET 8 and NAudi
   format are shown in the library
 - Play / pause, next / previous, volume and seek; next / previous and
   auto-advance follow the visible filtered list and skip unplayable files
-- Vietnamese diacritic-insensitive search over track metadata, direct
-  favorite toggles, a Recently played view backed by playback history, and
-  track removal (right-click or Delete key)
+- Vietnamese diacritic-insensitive search over track metadata. When SQLite
+  is available, the search box uses debounced FTS5 prefix queries and
+  relevance ordering in Library/Favorites, while preserving playlist and
+  Recently played ordering; an immediate in-memory filter remains the
+  fallback while typing or if the catalog search is unavailable
+- Playlist management in the sidebar: create, rename, delete, play, add the
+  selected song from the track list's **Add to playlist** menu, remove songs,
+  and reorder them by dragging or with the Up/Down actions
+- Direct favorite toggles, a Recently played view backed by playback
+  history, and track removal (right-click or Delete key)
 - Library tracks, favorites, playback errors, and play history are restored
   from the SQLite catalog at `%LocalAppData%\Mimi\library.db` (schema v1,
   WAL + transactions); volume remains in `settings.json`. On first use, an
   existing legacy `library.json` / `favorites.json` pair is imported only
   when the catalog is empty, then archived as `.bak` files. If SQLite cannot
   be opened, Mimi falls back to the legacy JSON library instead of failing
-  startup. The catalog exposes FTS5 accent-insensitive search and playlist
-  storage APIs; the current main-window search still filters the loaded
-  in-memory list, and a playlist-management UI is not included yet
+  startup. The same catalog stores ordered playlists and supplies the FTS5
+  index used by the main-window search box
 - Rolling diagnostic logs in `%LocalAppData%\Mimi\logs`, with global exception
   logging so unexpected failures are traceable
 - Stage Engine visualizer (beta): worker-thread 32-band FFT with dB/AGC
@@ -35,10 +41,11 @@ A Windows desktop music-player foundation built with C# / WPF / .NET 8 and NAudi
   and fading out while paused or stopped
 - Modular MVVM architecture with dependency injection and automated tests;
   Windows Release builds and unit tests are verified by GitHub Actions.
-  This is the Phase 3 foundation (`v0.4.0` in development), not the complete
-  Phase 3 exit: playlist UI, folder watching, file associations, richer
-  settings/session restore, and measured 10,000-track performance remain
-  open items in `ROADMAP.md`
+  This remains Phase 3 in development (`v0.4.0`), not the complete Phase 3
+  exit: column sorting/advanced filters/multi-select, resized cover-art
+  variants, folder watching, file associations, richer settings/session
+  restore, and measured 10,000-track performance remain open items in
+  `ROADMAP.md`
 
 ## Requirements
 - Windows 10/11 with Windows Terminal or PowerShell
@@ -163,8 +170,11 @@ Khi cửa sổ Mimi mở, bạn có thể chọn **Add music files**, **Scan a f
 hoặc kéo-thả file/thư mục nhạc từ Explorer vào cửa sổ. Trong lúc quét, thanh
 tiến độ và nút **Cancel** xuất hiện ở khu vực tiêu đề thư viện. Sau đó hãy
 double-click một bài để phát, thử tìm bài tiếng Việt bằng từ khóa không dấu,
-mở **Recently played** để xem lịch sử nghe, và bấm `F11` để mở Stage toàn
-màn hình (`Esc` để thoát Stage).
+mở **Recently played** để xem lịch sử nghe, dùng nút **+** ở mục
+**PLAYLISTS** để tạo playlist, chuột phải vào bài đang chọn và dùng **Add to
+playlist**, rồi kéo-thả bài trong playlist (hoặc dùng nút **↑ Up/↓ Down**)
+để đổi thứ tự. Cuối cùng, bấm `F11` để mở Stage toàn màn hình (`Esc` để
+thoát Stage).
 
 #### 5. Mở thư mục dữ liệu và log
 
