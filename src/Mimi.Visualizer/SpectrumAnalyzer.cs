@@ -89,8 +89,12 @@ public sealed class SpectrumAnalyzer
                 energy += real * real + imaginary * imaginary;
             }
 
+            // NAudio's forward FFT already applies 1/N scaling. The factor
+            // of two folds the negative-frequency half into this one-sided
+            // spectrum; dividing by FftSize again would bury quiet material
+            // far below the AGC floor.
             var magnitude = Math.Sqrt(
-                energy / (highBin - lowBin)) * 2.0 / FftSize;
+                energy / (highBin - lowBin)) * 2.0;
             var centerFrequency = Math.Sqrt(lowFrequency * highFrequency);
             magnitude *= Math.Clamp(
                 Math.Sqrt(centerFrequency / 1000.0),
