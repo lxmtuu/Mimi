@@ -89,6 +89,11 @@ bản được đem đi nghiệm thu build/test được.
 
 - Ít nhất ba bài phát tốt liên tiếp trong cùng một danh sách/playlist.
 - Ít nhất hai bài có metadata và ảnh bìa khác nhau cho SMTC.
+- Nếu dùng bộ fixture tổng hợp có manifest/hash phát hành, hãy tính lại
+  SHA-256 và kích thước của từng file thực tế trước khi nhập vào app. Hash
+  không khớp là `Observation` về provenance: kết quả chức năng vẫn gắn với
+  đúng bộ byte đã nhập, nhưng trước khi chốt hồ sơ phải đóng băng đầy đủ
+  SHA-256/kích thước và tóm tắt tag của bộ thực tế trong báo cáo ngoài repo.
 - Một đoạn nhạc có tín hiệu liên tục, tránh intro im lặng khi đo loopback.
 - Nếu có sẵn: file mono, các sample rate khác nhau và các định dạng trong S4.
 - Ghi giờ hệ thống ngay trước từng kịch bản quan trọng để đối chiếu log tại
@@ -111,9 +116,23 @@ dưới **VOLUME**/trong mục **Audio output** của Settings.
 
 ### P4-A — SMTC và Windows media flyout
 
-Mở bề mặt media mà phiên bản Windows cung cấp, ví dụ flyout âm lượng hoặc
-Quick Settings. Nếu một điều khiển không được Windows hiển thị, ghi tên điều
-khiển đó là `BLOCKED/N/A` kèm Windows build thay vì tự coi là đạt.
+Mở bề mặt media mà phiên bản Windows cung cấp. Trên Windows 11, hãy mở
+**Quick Settings** bằng `Win+A` hoặc click trực tiếp cụm biểu tượng
+Network/Volume/Battery ở taskbar rồi tìm thẻ media nằm phía trên/bên trong
+Quick Settings. `Win+N` mở Notification Center, không phải bề mặt cần kiểm
+tra. Màn hình khóa (`Win+L`) có thể dùng như bề mặt SMTC dự phòng cho các
+điều khiển nó thực sự hiển thị, nhưng Quick Settings vẫn là đường chính của
+P4-A.
+
+Với fixture dài 30 giây, hãy phát lại bài đầu rồi mở Quick Settings ngay
+trong lúc trạng thái còn Playing. Không kết luận thẻ media vắng mặt chỉ vì
+UI Automation không đọc được cửa sổ shell; người kiểm thử phải nhìn và thao
+tác trực tiếp, đồng thời ghi lại ảnh chụp đã che thông tin riêng tư nếu cần.
+Nếu Mimi đang Playing mà vẫn không có thẻ, hãy ghi giờ hệ thống, kiểm tra log
+SMTC và chạy một app media tham chiếu trong cùng phiên Windows để phân biệt
+lỗi shell/môi trường với lỗi tích hợp của Mimi. Nếu một điều khiển không được
+Windows hiển thị, ghi tên điều khiển đó là `BLOCKED/N/A` kèm Windows build
+thay vì tự coi là đạt.
 
 - [ ] **A1 Metadata:** title đúng bài hiện tại; artist/album đúng ở những vị
   trí Windows có hiển thị.

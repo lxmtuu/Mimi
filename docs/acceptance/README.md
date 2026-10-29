@@ -94,6 +94,17 @@ dài hạn hay latency âm học đầu-cuối.
   được tiếng qua Speakers (Realtek(R) Audio) ở WASAPI Shared và trạng thái
   cuối là Shuffle/Repeat `Off`. Đây là tiền điều kiện của S1, chưa phải
   bằng chứng flyout.
+- Đối chiếu tiếp tại `2a8b879` ghi môi trường Windows 11 Home Single
+  Language, version 26H2, OS Build 26300.9711. Cả ba MP3 thực tế trên máy
+  có SHA-256 khác bộ fixture đã xuất; các quan sát chức năng ở trên vẫn gắn
+  với đúng những file đã được nhập/phát, nhưng provenance của fixture còn
+  là `Observation` mở cho tới khi báo cáo ngoài repo đóng băng đầy đủ
+  SHA-256/kích thước/tag của bộ thực tế.
+- Người kiểm thử đã khôi phục đúng playlist, xác nhận Cyan đang là bài đầu,
+  Up Next có Magenta/Amber và Shuffle/Repeat `Off`, rồi thử mở bề mặt media
+  bằng `Win+N` cùng đường UI Automation nhưng chưa tiếp cận được Quick
+  Settings để thao tác. Lượt thử này không tạo bằng chứng `PASS` hay `FAIL`
+  cho flyout.
 - P4-A: `PARTIAL` (A1/A3 một phần; A2/A5 không còn `BLOCKED` vì fixture
   nhưng vẫn `NOT RUN`, cùng A4 và A6–A12, cho tới khi thao tác trực tiếp
   trên flyout).
