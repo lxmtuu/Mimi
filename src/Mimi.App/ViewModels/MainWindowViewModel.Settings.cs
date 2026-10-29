@@ -70,6 +70,11 @@ public sealed partial class MainWindowViewModel
         RestoreLibraryView = settings.RestoreLibraryView;
         RestoreWindowPlacement = settings.RestoreWindowPlacement;
         AutoUpgradeLegacyCoverArt = settings.AutoUpgradeLegacyCoverArt;
+        WatchLibraryFolders = settings.WatchLibraryFolders;
+        WatchedFolders.Clear();
+        foreach (var folder in settings.WatchedFolders)
+            WatchedFolders.Add(folder);
+        SelectedWatchedFolder = WatchedFolders.FirstOrDefault();
         WindowPlacement = settings.WindowPlacement;
     }
 
@@ -164,6 +169,7 @@ public sealed partial class MainWindowViewModel
             isRestoringSettings = false;
         }
 
+        ConfigureLibraryFolderWatcher();
         SaveSettings(force: true);
         dialogService.ShowInformation(
             "Settings were reset. Restart Mimi if you also want the window " +
@@ -225,6 +231,8 @@ public sealed partial class MainWindowViewModel
         settings.RestoreLibraryView = RestoreLibraryView;
         settings.RestoreWindowPlacement = RestoreWindowPlacement;
         settings.AutoUpgradeLegacyCoverArt = AutoUpgradeLegacyCoverArt;
+        settings.WatchLibraryFolders = WatchLibraryFolders;
+        settings.WatchedFolders = [.. WatchedFolders];
         settings.WindowPlacement = RestoreWindowPlacement
             ? WindowPlacement
             : new WindowPlacementSettings();
@@ -278,6 +286,7 @@ public sealed partial class MainWindowViewModel
 
         RestorePlaybackSessionState();
         CapturePersistedState();
+        QueuePendingLibraryFolderChanges();
     }
 
     private void RestoreLibraryViewState()

@@ -661,6 +661,51 @@
                                           AutomationProperties.Name="Optimize older cover-art cache files"/>
                                 <TextBlock Text="Creates 96px and 512px variants in the background for covers cached by older builds."
                                            Foreground="#9FB2C8" FontSize="11" TextWrapping="Wrap" Margin="24,0,0,2"/>
+                                <Border Height="1" Background="#24344A" Margin="0,12,0,4"/>
+                                <TextBlock Text="WATCHED FOLDERS" Foreground="{StaticResource AccentBrush}"
+                                           FontSize="10" FontWeight="Bold" Margin="0,4,0,0"/>
+                                <CheckBox IsChecked="{Binding WatchLibraryFolders, Mode=TwoWay}"
+                                          Content="Watch folders for music changes"
+                                          AutomationProperties.Name="Watch folders for music changes"/>
+                                <TextBlock Text="New or changed songs are scanned in the background. Songs deleted outside Mimi stay in the library and are marked missing."
+                                           Foreground="#9FB2C8" FontSize="11" TextWrapping="Wrap" Margin="24,0,0,8"/>
+                                <ListBox ItemsSource="{Binding WatchedFolders}"
+                                         SelectedItem="{Binding SelectedWatchedFolder, Mode=TwoWay}"
+                                         Height="88" Background="#101A29" BorderBrush="#2B405A"
+                                         Foreground="#EAF2FC"
+                                         ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                         AutomationProperties.Name="Watched music folders">
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding}" ToolTip="{Binding}"
+                                                       TextTrimming="CharacterEllipsis"/>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                    <ListBox.ItemContainerStyle>
+                                        <Style TargetType="{x:Type ListBoxItem}">
+                                            <Setter Property="Padding" Value="6,4"/>
+                                            <Setter Property="Background" Value="Transparent"/>
+                                            <Setter Property="Foreground" Value="#EAF2FC"/>
+                                            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                            <Setter Property="FocusVisualStyle" Value="{StaticResource MimiFocusVisualStyle}"/>
+                                            <Style.Triggers>
+                                                <Trigger Property="IsSelected" Value="True">
+                                                    <Setter Property="Background" Value="#203A48"/>
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </ListBox.ItemContainerStyle>
+                                </ListBox>
+                                <WrapPanel Margin="0,8,0,0">
+                                    <Button Content="Add watched folder…"
+                                            Command="{Binding AddWatchedFolderCommand}"
+                                            Padding="10,7" FontSize="11"
+                                            AutomationProperties.Name="Add a watched music folder"/>
+                                    <Button Content="Remove selected"
+                                            Command="{Binding RemoveWatchedFolderCommand}"
+                                            Padding="10,7" FontSize="11"
+                                            AutomationProperties.Name="Remove the selected watched folder"/>
+                                </WrapPanel>
                             </StackPanel>
                         </Border>
 

@@ -52,6 +52,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     private readonly IUserDataService userDataService;
     private readonly IDialogService dialogService;
     private readonly ICoverArtOptimizer? coverArtOptimizer;
+    private readonly ILibraryFolderWatcher? libraryFolderWatcher;
     private readonly Dispatcher uiDispatcher = Dispatcher.CurrentDispatcher;
     private readonly DispatcherTimer positionTimer = new()
     {
@@ -190,7 +191,8 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         ILibraryCatalog libraryCatalog,
         IUserDataService userDataService,
         IDialogService dialogService,
-        ICoverArtOptimizer? coverArtOptimizer = null)
+        ICoverArtOptimizer? coverArtOptimizer = null,
+        ILibraryFolderWatcher? libraryFolderWatcher = null)
     {
         this.audioPlayer = audioPlayer;
         this.libraryService = libraryService;
@@ -198,15 +200,24 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         this.userDataService = userDataService;
         this.dialogService = dialogService;
         this.coverArtOptimizer = coverArtOptimizer;
+        this.libraryFolderWatcher = libraryFolderWatcher;
 
         TracksView = CollectionViewSource.GetDefaultView(Tracks);
         TracksView.Filter = FilterTrack;
         SelectedTracks.CollectionChanged += SelectedTracks_CollectionChanged;
+        WatchedFolders.CollectionChanged += WatchedFolders_CollectionChanged;
 
         userDataService.MigrateLegacyDataIfNeeded();
         settings = userDataService.LoadSettings();
         ApplyLoadedSettings();
         settingsLoaded = true;
+
+        if (libraryFolderWatcher is not null)
+        {
+            libraryFolderWatcher.ChangesDetected +=
+                LibraryFolderWatcher_ChangesDetected;
+            ConfigureLibraryFolderWatcher();
+        }
 
         audioPlayer.PlaybackChanged += AudioPlayer_PlaybackChanged;
         audioPlayer.PlaybackEnded += AudioPlayer_PlaybackEnded;
@@ -1314,6 +1325,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
 
         IsScanning = false;
         cancellation.Dispose();
+        QueuePendingLibraryFolderChanges();
     }
 
     private Progress<LibraryScanProgress> CreateScanProgress() =>
@@ -2515,6 +2527,14 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         scanCancellation?.Cancel();
         searchCancellation?.Cancel();
         SelectedTracks.CollectionChanged -= SelectedTracks_CollectionChanged;
+        WatchedFolders.CollectionChanged -= WatchedFolders_CollectionChanged;
+        if (libraryFolderWatcher is not null)
+        {
+            libraryFolderWatcher.ChangesDetected -=
+                LibraryFolderWatcher_ChangesDetected;
+            libraryFolderWatcher.Configure([], isEnabled: false);
+        }
+
         positionTimer.Stop();
         positionTimer.Tick -= PositionTimer_Tick;
         audioPlayer.PlaybackChanged -= AudioPlayer_PlaybackChanged;

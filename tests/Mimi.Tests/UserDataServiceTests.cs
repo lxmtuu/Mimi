@@ -107,6 +107,8 @@ public sealed class UserDataServiceTests : IDisposable
             RestoreLibraryView = false,
             RestoreWindowPlacement = false,
             AutoUpgradeLegacyCoverArt = false,
+            WatchLibraryFolders = false,
+            WatchedFolders = [@"C:\Music", @"D:\Songs"],
             LibraryView = new LibraryViewSettings
             {
                 ActiveView = "Playlist",
@@ -146,6 +148,8 @@ public sealed class UserDataServiceTests : IDisposable
         Assert.False(loaded.RestoreLibraryView);
         Assert.False(loaded.RestoreWindowPlacement);
         Assert.False(loaded.AutoUpgradeLegacyCoverArt);
+        Assert.False(loaded.WatchLibraryFolders);
+        Assert.Equal([@"C:\Music", @"D:\Songs"], loaded.WatchedFolders);
         Assert.Equal("Playlist", loaded.LibraryView.ActiveView);
         Assert.Equal(42, loaded.LibraryView.SelectedPlaylistId);
         Assert.Equal(
@@ -177,6 +181,8 @@ public sealed class UserDataServiceTests : IDisposable
         Assert.True(loaded.RestoreLibraryView);
         Assert.True(loaded.RestoreWindowPlacement);
         Assert.True(loaded.AutoUpgradeLegacyCoverArt);
+        Assert.True(loaded.WatchLibraryFolders);
+        Assert.Empty(loaded.WatchedFolders);
         Assert.Equal("Library", loaded.LibraryView.ActiveView);
         Assert.False(loaded.WindowPlacement.HasBounds);
         Assert.Null(loaded.PlaybackSession);
@@ -192,6 +198,7 @@ public sealed class UserDataServiceTests : IDisposable
               "Version": 99,
               "Volume": -4,
               "VisualizerMode": " ",
+              "WatchedFolders": [" C:\\\\Music ", "c:\\\\music", "", null],
               "LibraryView": {
                 "ActiveView": null,
                 "SelectedPlaylistId": -9,
@@ -223,6 +230,7 @@ public sealed class UserDataServiceTests : IDisposable
         Assert.Equal(AppSettings.CurrentVersion, loaded.Version);
         Assert.Equal(0, loaded.Volume);
         Assert.Equal("NeonSpectrum", loaded.VisualizerMode);
+        Assert.Equal([@"C:\Music"], loaded.WatchedFolders);
         Assert.Equal("Library", loaded.LibraryView.ActiveView);
         Assert.Null(loaded.LibraryView.SelectedPlaylistId);
         Assert.Null(loaded.LibraryView.SelectedTrackPath);

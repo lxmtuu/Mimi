@@ -6,7 +6,8 @@ namespace Mimi.Models;
 /// User preferences and the last paused playback session persisted to
 /// settings.json. Version 1 contained only the volume; version 2 adds the
 /// visualizer mode, startup-restore preferences, library-view state, window
-/// placement, and the paused session. Unknown string values are tolerated
+/// placement, watched library folders, and the paused session. Unknown
+/// string values are tolerated
 /// here and interpreted defensively by the app layer.
 /// </summary>
 public sealed class AppSettings
@@ -27,6 +28,10 @@ public sealed class AppSettings
 
     public bool AutoUpgradeLegacyCoverArt { get; set; } = true;
 
+    public bool WatchLibraryFolders { get; set; } = true;
+
+    public List<string> WatchedFolders { get; set; } = [];
+
     public LibraryViewSettings LibraryView { get; set; } = new();
 
     public WindowPlacementSettings WindowPlacement { get; set; } = new();
@@ -44,6 +49,12 @@ public sealed class AppSettings
             ? Math.Clamp(Volume, 0, 1)
             : 0.7;
         VisualizerMode = Clean(VisualizerMode, "NeonSpectrum", 64);
+        WatchedFolders = (WatchedFolders ?? [])
+            .Select(CleanNullablePath)
+            .OfType<string>()
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Take(128)
+            .ToList();
 
         LibraryView ??= new LibraryViewSettings();
         LibraryView.Normalize();

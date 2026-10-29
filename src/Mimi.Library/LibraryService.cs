@@ -15,6 +15,9 @@ public sealed class LibraryService : ILibraryService
 
     private readonly ITrackMetadataReader metadataReader;
 
+    internal static bool IsSupportedAudioFile(string filePath) =>
+        Supported.Contains(Path.GetExtension(filePath));
+
     public LibraryService()
         : this(new TagLibTrackMetadataReader())
     {

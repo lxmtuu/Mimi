@@ -68,6 +68,7 @@ public partial class App : Application
         services.AddSingleton<ILibraryService, LibraryService>();
         services.AddSingleton<ILibraryCatalog, SqliteLibraryCatalog>();
         services.AddSingleton<ICoverArtOptimizer, CoverArtOptimizer>();
+        services.AddSingleton<ILibraryFolderWatcher, FileSystemLibraryFolderWatcher>();
         services.AddSingleton<IDialogService, WpfDialogService>();
         services.AddSingleton<MainWindowViewModel>();
         services.AddSingleton<MainWindow>();
