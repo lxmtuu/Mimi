@@ -22,8 +22,9 @@ A Windows desktop music-player foundation built with C# / WPF / .NET 8 and NAudi
   Windows Release builds and unit tests are verified by GitHub Actions
 
 ## Requirements
-- Windows 10/11
-- .NET 8 SDK
+- Windows 10/11 with Windows Terminal or PowerShell
+- Git
+- .NET 8 SDK (not only the .NET Runtime)
 - Internet connection on first build to restore NuGet packages
 
 ## Build, test, and run
@@ -37,6 +38,151 @@ dotnet build Mimi.sln --configuration Release
 dotnet test tests\Mimi.Tests\Mimi.Tests.csproj --configuration Release
 dotnet run --project src\Mimi.App\Mimi.App.csproj
 ```
+
+### Detailed Windows Terminal setup — Hướng dẫn setup chi tiết
+
+Mimi là ứng dụng WPF, vì vậy hãy chạy các lệnh dưới đây trong **Windows
+Terminal** hoặc **PowerShell** trên Windows 10/11. Visual Studio không bắt
+buộc nếu bạn chỉ muốn build và chạy từ Terminal.
+
+#### 1. Kiểm tra hoặc cài Git và .NET 8 SDK
+
+Kiểm tra các công cụ đã có:
+
+```powershell
+git --version
+dotnet --list-sdks
+```
+
+Bạn cần thấy phiên bản Git và ít nhất một .NET SDK bắt đầu bằng `8.`. Nếu
+chưa có, cài bằng `winget`:
+
+```powershell
+winget install -e --id Git.Git --source winget
+winget install -e --id Microsoft.DotNet.SDK.8 --source winget
+```
+
+Sau khi cài, đóng Terminal và mở lại để Windows nhận biến môi trường mới,
+rồi chạy lại hai lệnh kiểm tra ở trên. Lưu ý phải cài **.NET 8 SDK**; chỉ có
+.NET Runtime thì chạy được ứng dụng đã build nhưng không build được source.
+
+#### 2. Clone repo và chọn đúng branch Phase 2
+
+Nếu bạn chưa clone Mimi:
+
+```powershell
+New-Item -ItemType Directory -Force "$HOME\source" | Out-Null
+Set-Location "$HOME\source"
+
+git clone --branch arena/cdda374d-mimi https://github.com/lxmtuu/Mimi.git
+Set-Location .\Mimi
+```
+
+`arena/cdda374d-mimi` hiện là branch chứa bản Phase 2 mới nhất. Khi branch
+này đã được merge, bạn có thể bỏ tùy chọn `--branch ...` để dùng branch mặc
+định.
+
+Nếu bạn đã clone repo từ trước:
+
+```powershell
+Set-Location "C:\duong-dan\toi\thu-muc\Mimi"
+
+git fetch --all --prune
+git switch arena/cdda374d-mimi
+git pull --ff-only
+```
+
+Kiểm tra branch và trạng thái thư mục làm việc:
+
+```powershell
+git branch --show-current
+git status
+git log -1 --oneline
+```
+
+Lệnh đầu tiên phải in ra `arena/cdda374d-mimi`. Nếu `git status` cho thấy bạn
+có thay đổi local chưa commit, hãy kiểm tra kỹ trước khi chuyển branch; đừng
+dùng `git reset --hard` nếu chưa chắc chắn vì lệnh đó có thể làm mất thay
+đổi chưa lưu.
+
+#### 3. Restore package, build và chạy unit test
+
+Đứng tại thư mục gốc của repo (nơi có file `Mimi.sln`), chạy lần lượt:
+
+```powershell
+dotnet restore .\Mimi.sln
+dotnet build .\Mimi.sln --configuration Release --no-restore
+dotnet test .\tests\Mimi.Tests\Mimi.Tests.csproj --configuration Release --no-build
+```
+
+Lần restore đầu tiên cần Internet để tải NAudio, CommunityToolkit.Mvvm,
+Microsoft.Extensions.DependencyInjection, Serilog, xUnit và các package phụ
+thuộc. Build/test đạt khi Terminal báo tương tự:
+
+```text
+Build succeeded.
+Passed!  - Failed:     0
+```
+
+#### 4. Chạy ứng dụng
+
+Chạy trực tiếp từ source:
+
+```powershell
+dotnet run --project .\src\Mimi.App\Mimi.App.csproj
+```
+
+Lệnh trên build cấu hình Debug nếu cần rồi mở Mimi. Nếu bạn muốn chạy bản
+Release vừa build ở bước 3, dùng:
+
+```powershell
+.\src\Mimi.App\bin\Release\net8.0-windows\Mimi.exe
+```
+
+Khi cửa sổ Mimi mở, bạn có thể chọn **Add music files** hoặc **Scan a
+folder**, double-click một bài để phát, thử tìm bài tiếng Việt bằng từ khóa
+không dấu, và bấm `F11` để mở Stage toàn màn hình (`Esc` để thoát Stage).
+
+#### 5. Mở thư mục dữ liệu và log
+
+Mimi lưu thư viện, favorites và settings trong `%LocalAppData%\Mimi`. Mở các
+thư mục này từ PowerShell bằng:
+
+```powershell
+explorer "$env:LOCALAPPDATA\Mimi"
+explorer "$env:LOCALAPPDATA\Mimi\logs"
+```
+
+Các file chính gồm `library.json`, `favorites.json`, `settings.json` và log
+xoay theo ngày theo mẫu `logs\mimi-YYYYMMDD.log`.
+
+#### 6. Cập nhật source ở những lần sau
+
+Khi branch có commit mới:
+
+```powershell
+git status
+git pull --ff-only
+dotnet restore .\Mimi.sln
+dotnet build .\Mimi.sln --configuration Release --no-restore
+dotnet test .\tests\Mimi.Tests\Mimi.Tests.csproj --configuration Release --no-build
+dotnet run --project .\src\Mimi.App\Mimi.App.csproj
+```
+
+#### Xử lý lỗi thường gặp
+
+- **`dotnet` is not recognized:** đóng/mở lại Terminal sau khi cài SDK, rồi
+  chạy `where.exe dotnet` và `dotnet --list-sdks`. Nếu danh sách SDK trống,
+  cài lại package `Microsoft.DotNet.SDK.8` ở bước 1.
+- **Không tìm thấy branch:** chạy `git fetch --all --prune`, kiểm tra bằng
+  `git branch -r`, rồi thử lại `git switch arena/cdda374d-mimi`.
+- **Restore lỗi `NU1301`:** kiểm tra Internet/proxy/firewall và khả năng truy
+  cập NuGet, sau đó chạy lại `dotnet restore .\Mimi.sln`.
+- **Build báo file đang bị khóa:** đóng cửa sổ `Mimi.exe` đang chạy rồi build
+  lại. Tiến trình ứng dụng đang mở có thể khóa file trong thư mục `bin`.
+- **Build hoặc test thất bại:** lưu toàn bộ output để dễ chẩn đoán, ví dụ
+  `dotnet build .\Mimi.sln --configuration Release 2>&1 | Tee-Object .\build.log`,
+  rồi dùng nội dung `build.log` khi báo lỗi.
 
 ## Source layout
 - `src/Mimi.App` — WPF views, view models, dependency-injection composition,
