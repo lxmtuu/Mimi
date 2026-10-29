@@ -5,14 +5,14 @@
 |---|---|
 | Tên sản phẩm | **Mimi** — Music Universe |
 | Loại tài liệu | Product Design & Development Roadmap (Thiết kế sản phẩm + Lộ trình phát triển) |
-| Phiên bản tài liệu | 1.0 — 29/10/2026 |
+| Phiên bản tài liệu | 1.1 — 29/10/2026 |
 | Trạng thái | Baseline để triển khai (thay thế `BUILD-NEXT.md`) |
 | Nền tảng | Windows 10/11 Desktop |
-| Công nghệ hiện tại | C# 12 · WPF · .NET 8 · NAudio 2.2.1 · JSON persistence |
+| Công nghệ hiện tại | C# 12 · WPF · .NET 8 · NAudio 2.2.1 · CommunityToolkit.Mvvm · Microsoft.Extensions.DependencyInjection · Serilog · xUnit · JSON persistence |
 | Mô hình phát hành | **Mã nguồn mở, miễn phí cho cộng đồng** (GitHub: `lxmtuu/Mimi`) |
 | Ưu tiên tính năng số 1 | **Visualizer (sân khấu sóng nhạc)** |
 | Ngôn ngữ giao diện mục tiêu | **Song ngữ Tiếng Việt / English** (chuyển đổi tại runtime) |
-| Đầu ra build | `Mimi.csproj` → `Mimi.exe` · Namespace `Mimi.*` · Dữ liệu `%LocalAppData%\Mimi` |
+| Đầu ra build | `Mimi.sln` → `src/Mimi.App` → `Mimi.exe` · Namespace `Mimi.*` · Dữ liệu `%LocalAppData%\Mimi` |
 
 > **Định vị một câu:** *Mimi là một "sân khấu nghe nhạc anime" trên desktop — nơi thư viện nhạc local của bạn được trình diễn cùng visualizer neon teal/hồng lấy cảm hứng từ văn hoá Vocaloid, chạy hoàn toàn offline, tôn trọng bản quyền và thuộc về cộng đồng.*
 
@@ -220,6 +220,8 @@ Shell (Sidebar + Nội dung + Now Playing)
 
 Tại thời điểm rà soát ban đầu, dự án là 1 project WPF với `MainWindow.xaml.cs` 435 dòng ôm toàn bộ logic — phù hợp prototype nhưng **không kiểm thử được và khó nhận đóng góp** (file còn phình thêm sau các vá Phase 0, càng củng cố nhu cầu refactor theo Phase 2). Kiến trúc đích (đạt ở Phase 2, chuyển đổi dần, không "viết lại từ đầu"):
 
+**Hiện trạng code sau Phase 2 (29/10/2026):** repo đã có `Mimi.sln` gồm `Mimi.App`, `Mimi.Core`, `Mimi.Audio`, `Mimi.Library`, `Mimi.Visualizer` và `Mimi.Tests`. `MainWindow.xaml.cs` còn 145 dòng glue-code; nghiệp vụ nằm ở `MainWindowViewModel`/`TrackItemViewModel` và các contract `IAudioPlayer`, `ILibraryService`, `IUserDataService`. FFT/AGC đã tách thành `SpectrumAnalyzer` để test độc lập. Các phần SQLite, async scanner, theme/lyrics trong sơ đồ vẫn là đích của các Phase sau, chưa được tính là đã triển khai.
+
 ```mermaid
 flowchart TB
     subgraph Presentation["Presentation — Mimi.App (WPF)"]
@@ -371,11 +373,13 @@ AudioFileReader (unity gain)
 
 ### Phase 2 — Kiến trúc bền vững cho cộng đồng (`v0.3.0`) · Cỡ: **L**
 **Mục tiêu:** codebase để người khác đóng góp được: MVVM, test, CI.
-- [ ] Tạo `Mimi.sln` + tách project theo mục 7; chuyển logic khỏi `MainWindow.xaml.cs` theo từng màn hình (không big-bang)
-- [ ] DI + Logging (Serilog) + xử lý crash toàn cục có log
-- [ ] Unit test xUnit: LibraryService (lọc/trùng/quét lỗi), chuẩn hoá tìm kiếm bỏ dấu, thuật toán dải FFT, shuffle-bag, migration dữ liệu rename
-- [ ] Mở rộng GitHub Actions sẵn có (Windows Release build đã được thêm từ Phase 0): chạy test trên `windows-latest` mỗi PR; cảnh báo biên dịch = lỗi (warnings as errors cho code mới)
-- [ ] Layout thích ứng (bỏ `MinWidth` cứng), icon vector thay icon-chữ, focus-visible + nhãn accessibility; nâng tương phản `text.faint`
+
+**Trạng thái 29/10/2026:** phần code đã triển khai trên branch `arena/cdda374d-mimi` (chuỗi commit `7ba4e58`…`64011ca`), app/manifest đã nâng lên `0.3.0` và [Windows CI build + unit test đã đạt](https://github.com/lxmtuu/Mimi/actions/runs/40825705081). Phase **chưa đóng/tag** cho tới khi nghiệm thu trên Windows thật: khởi động qua DI, toàn bộ thao tác MVVM, log/crash handler, layout/DPI/focus, có PR mẫu qua CI và contributor mới build thử theo README. Bộ test FFT mới cũng phát hiện và sửa lỗi thang magnitude bị chia thừa một lần theo `FftSize`; mức sóng vì thế cần nghiệm thu lại cùng checklist Phase 1.
+- [x] Tạo `Mimi.sln` + tách project theo mục 7; chuyển logic khỏi `MainWindow.xaml.cs` sang `MainWindowViewModel`, `TrackItemViewModel` và service contract
+- [x] DI + Logging (Serilog) + xử lý crash toàn cục có log
+- [x] Unit test xUnit: LibraryService (lọc/trùng/quét đệ quy), chuẩn hoá tìm kiếm bỏ dấu, thuật toán dải FFT/AGC/decay, playback navigation, shuffle-bag, migration dữ liệu rename
+- [x] Mở rộng GitHub Actions sẵn có: restore/build/test `Mimi.sln` trên `windows-latest`, tải TRX + artifact build, annotation khi test lỗi; cảnh báo biên dịch = lỗi qua `Directory.Build.props`
+- [x] Layout co giãn hơn (`MinWidth` 1050 → 960, cột có `MinWidth`, panel Now Playing cuộn khi cửa sổ thấp), icon vector thay icon-chữ, focus-visible + nhãn accessibility; nâng tương phản chữ phụ/mờ — biến thể mini-player/icon-rail dưới 900px vẫn thuộc thiết kế tương lai
 - **Exit:** `MainWindow.xaml.cs` < 150 dòng (chỉ còn glue-code); CI xanh trên PR mẫu; contributor mới build được theo README trong < 15 phút.
 
 ### Phase 3 — Thư viện chuyên nghiệp (`v0.4.0`) · Cỡ: **XL**
