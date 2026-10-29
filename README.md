@@ -95,7 +95,10 @@ A Windows desktop music-player foundation built with C# / WPF / .NET 8 and NAudi
   `a056377` (0 warnings/errors and 83 passed / 0 failed / 0 skipped), and
   short forced/auto backend runs produced measurable loopback audio on
   the same Realtek endpoint. Those roughly 22-second runs are
-  preliminary: direct flyout/taskbar/media-key acceptance is still
+  preliminary: a later Windows 11 checkpoint at `6ca298c` verified three
+  synthetic 30-second fixtures (metadata, distinct covers, playlist order,
+  and audible WASAPI playback), which clears the S1 fixture blockers but is
+  not flyout evidence. Direct flyout/taskbar/media-key acceptance is still
   partial or not run, and physical device-loss/recovery plus longer
   WASAPI↔WaveOut stability gates in `ROADMAP.md` remain open. Their
   repeatable manual procedures, result template, and loopback CSV

@@ -88,8 +88,15 @@ dài hạn hay latency âm học đầu-cuối.
   `elapsed_ms,bytes,rms,peak,callback_gap_ms`; script đã nhận diện đúng,
   tạo được Markdown/JSON và cho thấy mỗi file có 353–354 dòng, khoảng 22
   giây, không có chuỗi im lặng sau tín hiệu đầu tiên.
-- P4-A: `PARTIAL` (A1/A3 một phần; A2/A5 đang `BLOCKED` vì fixture; phần
-  lớn thao tác flyout còn `NOT RUN`).
+- Checkpoint fixture trên Windows 11 tại checkout `6ca298c`: ba MP3 tổng
+  hợp 30 giây hiển thị đúng metadata chính và ba cover khác nhau trong thư
+  viện; playlist `Acceptance S1` có đúng thứ tự 1→2→3; người kiểm thử nghe
+  được tiếng qua Speakers (Realtek(R) Audio) ở WASAPI Shared và trạng thái
+  cuối là Shuffle/Repeat `Off`. Đây là tiền điều kiện của S1, chưa phải
+  bằng chứng flyout.
+- P4-A: `PARTIAL` (A1/A3 một phần; A2/A5 không còn `BLOCKED` vì fixture
+  nhưng vẫn `NOT RUN`, cùng A4 và A6–A12, cho tới khi thao tác trực tiếp
+  trên flyout).
 - P4-B: `NOT RUN` cho B1–B6.
 - P4-C: `PARTIAL` (C5/C7 mới có bằng chứng mô phỏng/một phần focus; media
   keys vật lý chưa chạy).
