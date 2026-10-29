@@ -11,8 +11,12 @@ A Windows desktop music-player foundation built with C# / WPF / .NET 8 and NAudi
   on file size + modified time
 - Embedded metadata and cover art read with TagLib-Sharp (title, artist,
   album, genre, year, duration, bitrate, and sample rate), with a filename
-  fallback for missing or damaged tags; title, artist, album, time, and file
-  format are shown in the library
+  fallback for missing or damaged tags; title, artist, album, genre, year,
+  time, and file format are shown in the library
+- Sortable library columns (title, artist, album, genre, year, duration,
+  and format), metadata filters for artist/album/genre/format/playback
+  state, and Extended multi-select for batch favorites, playlist additions,
+  playlist removal, and library removal
 - Play / pause, next / previous, volume and seek; next / previous and
   auto-advance follow the visible filtered list and skip unplayable files
 - Vietnamese diacritic-insensitive search over track metadata. When SQLite
@@ -21,8 +25,8 @@ A Windows desktop music-player foundation built with C# / WPF / .NET 8 and NAudi
   Recently played ordering; an immediate in-memory filter remains the
   fallback while typing or if the catalog search is unavailable
 - Playlist management in the sidebar: create, rename, delete, play, add the
-  selected song from the track list's **Add to playlist** menu, remove songs,
-  and reorder them by dragging or with the Up/Down actions
+  selected song(s) from the track list's **Add to playlist** menu, remove
+  songs, and reorder them by dragging or with the Up/Down actions
 - Direct favorite toggles, a Recently played view backed by playback
   history, and track removal (right-click or Delete key)
 - Library tracks, favorites, playback errors, and play history are restored
@@ -42,10 +46,9 @@ A Windows desktop music-player foundation built with C# / WPF / .NET 8 and NAudi
 - Modular MVVM architecture with dependency injection and automated tests;
   Windows Release builds and unit tests are verified by GitHub Actions.
   This remains Phase 3 in development (`v0.4.0`), not the complete Phase 3
-  exit: column sorting/advanced filters/multi-select, resized cover-art
-  variants, folder watching, file associations, richer settings/session
-  restore, and measured 10,000-track performance remain open items in
-  `ROADMAP.md`
+  exit: resized cover-art variants, folder watching, file associations,
+  richer settings/session restore, and measured 10,000-track performance
+  remain open items in `ROADMAP.md`
 
 ## Requirements
 - Windows 10/11 with Windows Terminal or PowerShell
@@ -170,11 +173,13 @@ Khi cửa sổ Mimi mở, bạn có thể chọn **Add music files**, **Scan a f
 hoặc kéo-thả file/thư mục nhạc từ Explorer vào cửa sổ. Trong lúc quét, thanh
 tiến độ và nút **Cancel** xuất hiện ở khu vực tiêu đề thư viện. Sau đó hãy
 double-click một bài để phát, thử tìm bài tiếng Việt bằng từ khóa không dấu,
-mở **Recently played** để xem lịch sử nghe, dùng nút **+** ở mục
-**PLAYLISTS** để tạo playlist, chuột phải vào bài đang chọn và dùng **Add to
-playlist**, rồi kéo-thả bài trong playlist (hoặc dùng nút **↑ Up/↓ Down**)
-để đổi thứ tự. Cuối cùng, bấm `F11` để mở Stage toàn màn hình (`Esc` để
-thoát Stage).
+bấm tiêu đề cột để sắp xếp, dùng hàng **Filters** để lọc theo
+nghệ sĩ/album/thể loại/định dạng/trạng thái phát, giữ `Ctrl`/`Shift` để chọn
+nhiều bài cho các thao tác favorites/xóa/thêm vào playlist, mở **Recently
+played** để xem lịch sử nghe, dùng nút **+** ở mục **PLAYLISTS** để tạo
+playlist, chuột phải vào (các) bài đang chọn và dùng **Add to playlist**, rồi
+kéo-thả bài trong playlist (hoặc dùng nút **↑ Up/↓ Down**) để đổi thứ tự.
+Cuối cùng, bấm `F11` để mở Stage toàn màn hình (`Esc` để thoát Stage).
 
 #### 5. Mở thư mục dữ liệu và log
 
