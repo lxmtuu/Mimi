@@ -134,6 +134,12 @@ lỗi shell/môi trường với lỗi tích hợp của Mimi. Nếu một đi�
 Windows hiển thị, ghi tên điều khiển đó là `BLOCKED/N/A` kèm Windows build
 thay vì tự coi là đạt.
 
+Riêng với A7/A8, thẻ Quick Settings gốc của Windows 11 có thể không vẽ seek
+bar hay mốc thời gian dù app đã xuất bản timeline lên SMTC. Việc không nhìn
+thấy thanh tiến trình trên thẻ vì vậy **chưa đủ** để kết luận Mimi không gửi
+timeline. Trước khi quyết định sửa code, hãy chạy chẩn đoán GSMTC chỉ-đọc ở
+mục ngay sau A12 để kiểm tra dữ liệu Windows thực sự nhận được.
+
 - [ ] **A1 Metadata:** title đúng bài hiện tại; artist/album đúng ở những vị
   trí Windows có hiển thị.
 - [ ] **A2 Ảnh bìa:** đúng bài, không còn ảnh của bài trước sau khi chuyển
@@ -162,6 +168,35 @@ thay vì tự coi là đạt.
 
 `PASS` yêu cầu mọi điều khiển Windows thực sự hiển thị đều hoạt động và đồng
 bộ; không cần coi nút Stop là tiêu chí vì Mimi cố ý không bật Stop trong SMTC.
+
+#### Chẩn đoán A7/A8 bằng GSMTC (chỉ-đọc, không thay thế thao tác trên thẻ)
+
+Chuẩn bị lệnh trong **Windows PowerShell 5.1** tại thư mục gốc repo, phát lại
+bài 30 giây từ gần đầu bài, rồi chạy ngay khi Mimi còn `Playing`:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass `
+  -File .\tools\Inspect-SmtcSession.ps1 `
+  -SourceFilter Mimi `
+  -Samples 12 `
+  -IntervalMilliseconds 1000 `
+  -JsonPath .\artifacts\acceptance\smtc-a7.json
+```
+
+Ghi thêm mốc thời gian/duration nhìn thấy trong Mimi ở đầu và cuối lượt lấy
+mẫu, cùng các dòng `Windows media controls`/SMTC warning đầu tiên trong log
+của phiên app. Script không gửi lệnh Play/Pause/Next/Previous/seek nào.
+
+Diễn giải tối thiểu:
+
+| Dữ liệu probe | Phân loại tiếp theo |
+|---|---|
+| `DurationSeconds` khoảng 30; `Position` và `LastUpdatedTime` cùng tăng; tuổi của `LastUpdatedTime` nhỏ | Mimi đã xuất bản timeline. Nếu thẻ Quick Settings vẫn không có bar/time, ghi A7 bề mặt hiển thị là `BLOCKED/N/A`, chưa coi là lỗi timeline của app |
+| Start/End/Position/MinSeek/MaxSeek đều 0 và `LastUpdatedTime` là năm 1601 | Windows chưa nhận timeline; điều tra `UpdateTimelineProperties`, duration và SMTC exception đầu tiên trong log |
+| `LastUpdatedTime` tăng nhưng `Position` đứng yên trong lúc app vẫn tự tăng vị trí | Điều tra nguồn `CurrentTime` dùng cho SMTC |
+| `Position` tăng nhưng `EndTime`/`MaxSeekTime` bằng 0 | Điều tra nguồn duration; không kết luận chỉ từ giao diện thẻ |
+| `IsPlaybackPositionEnabled = True` | Windows ghi nhận phiên hỗ trợ đổi vị trí, nhưng **không** biến A8 kéo-trên-thẻ thành `PASS` nếu thẻ không cho kéo |
+| `IsFastForwardEnabled`/`IsRewindEnabled = True` | Chỉ chứng minh khả năng đã được quảng bá; A9 ±10 giây vẫn cần một thao tác vận hành thật từ bề mặt/thiết bị hỗ trợ |
 
 ### P4-B — Taskbar thumbnail và progress
 

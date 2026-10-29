@@ -17,6 +17,7 @@ Phase 5 hoặc nghĩ tới phát hành cộng đồng.
 | [`WINDOWS-ACCEPTANCE-CHECKLIST.md`](WINDOWS-ACCEPTANCE-CHECKLIST.md) | Checklist từng phiên kiểm tra, thao tác, kết quả kỳ vọng và tiêu chí Pass/Fail |
 | [`RESULT-TEMPLATE.md`](RESULT-TEMPLATE.md) | Mẫu báo cáo ngắn để sao chép cho mỗi đợt kiểm tra |
 | [`../../tools/Analyze-LoopbackCsv.ps1`](../../tools/Analyze-LoopbackCsv.ps1) | Phân tích CSV loopback: phân bố khoảng callback, tín hiệu, chuỗi im lặng và các khoảng lớn nhất |
+| [`../../tools/Inspect-SmtcSession.ps1`](../../tools/Inspect-SmtcSession.ps1) | Chẩn đoán GSMTC chỉ-đọc cho A7/A8/A9: lấy mẫu metadata, trạng thái, cờ điều khiển và timeline Windows nhận được mà không gửi lệnh phát/seek |
 
 ## Thứ tự phiên khuyến nghị
 
@@ -105,15 +106,32 @@ dài hạn hay latency âm học đầu-cuối.
   bằng `Win+N` cùng đường UI Automation nhưng chưa tiếp cận được Quick
   Settings để thao tác. Lượt thử này không tạo bằng chứng `PASS` hay `FAIL`
   cho flyout.
-- P4-A: `PARTIAL` (A1/A3 một phần; A2/A5 không còn `BLOCKED` vì fixture
-  nhưng vẫn `NOT RUN`, cùng A4 và A6–A12, cho tới khi thao tác trực tiếp
-  trên flyout).
+- Lượt thao tác trực tiếp Quick Settings ngày 29/10/2026 sau đó đã xác nhận
+  **A1 metadata, A2 cover, A3 đồng bộ trạng thái, A4 Play/Pause, A5 Next và
+  A6 Previous đều `PASS`**; A6 quay lại Cyan với metadata/cover trên thẻ và
+  UI Mimi đồng bộ. A7 vẫn chưa phân loại được vì thẻ không hiện progress
+  bar/thời gian để so với app; A8 bị chặn ở bề mặt nhìn thấy do không có
+  timeline để kéo; A9 mới đối chiếu được ở source, chưa chạy vận hành ±10
+  giây; A10–A12 vẫn `NOT RUN`.
+- P4-A: `PARTIAL` (A1–A6 `PASS`; A7 chưa kết luận; A8 `BLOCKED` ở bề mặt
+  Quick Settings hiện tại; A9 chưa chạy vận hành; A10–A12 `NOT RUN`).
 - P4-B: `NOT RUN` cho B1–B6.
 - P4-C: `PARTIAL` (C5/C7 mới có bằng chứng mô phỏng/một phần focus; media
   keys vật lý chưa chạy).
 - P4-D, P4-E, P4-F và P4-H: chưa đóng.
 - P4-G: `PARTIAL`; D-03 vẫn tạm thời: WASAPI Shared mặc định, WaveOut
   fallback.
+
+## Chẩn đoán nhanh timeline SMTC cho A7
+
+Khi Quick Settings không hiện progress bar/thời gian, chạy script GSMTC
+chỉ-đọc trong lúc Mimi đang `Playing` theo mục chẩn đoán A7/A8 của
+[`WINDOWS-ACCEPTANCE-CHECKLIST.md`](WINDOWS-ACCEPTANCE-CHECKLIST.md). Nếu
+Windows nhận được duration khoảng 30 giây và `Position`/`LastUpdatedTime`
+cùng tiến, vấn đề nằm ở khả năng hiển thị của bề mặt shell thay vì bằng chứng
+app thiếu timeline. Nếu timeline toàn 0 với `LastUpdatedTime` năm 1601, mới
+điều tra đường xuất bản timeline và cảnh báo SMTC đầu tiên trong log. Probe
+không tự biến A7 trực quan, A8 seek trên thẻ hoặc A9 ±10 giây thành `PASS`.
 
 ## Phân tích nhanh CSV loopback
 
