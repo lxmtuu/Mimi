@@ -198,7 +198,7 @@ public sealed class UserDataServiceTests : IDisposable
               "Version": 99,
               "Volume": -4,
               "VisualizerMode": " ",
-              "WatchedFolders": [" C:\\\\Music ", "c:\\\\music", "", null],
+              "WatchedFolders": [" C:\\Music ", "c:\\music", "", null],
               "LibraryView": {
                 "ActiveView": null,
                 "SelectedPlaylistId": -9,
