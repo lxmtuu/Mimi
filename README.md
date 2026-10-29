@@ -31,9 +31,15 @@ A Windows desktop music-player foundation built with C# / WPF / .NET 8 and NAudi
   songs, and reorder them by dragging or with the Up/Down actions
 - Direct favorite toggles, a Recently played view backed by playback
   history, and track removal (right-click or Delete key)
+- A Settings screen for playback/session, startup/library, Stage Engine,
+  and data/diagnostic options. Mimi remembers its window placement,
+  visualizer mode, library view/search/filters/sorting, and reopens the
+  previous song at its saved position **paused, never auto-playing**
 - Library tracks, favorites, playback errors, and play history are restored
   from the SQLite catalog at `%LocalAppData%\Mimi\library.db` (schema v1,
-  WAL + transactions); volume remains in `settings.json`. On first use, an
+  WAL + transactions); version 2 `settings.json` atomically stores volume,
+  preferences, the library-view/window state, and the paused session. On
+  first use, an
   existing legacy `library.json` / `favorites.json` pair is imported only
   when the catalog is empty, then archived as `.bak` files. If SQLite cannot
   be opened, Mimi falls back to the legacy JSON library instead of failing
@@ -48,9 +54,8 @@ A Windows desktop music-player foundation built with C# / WPF / .NET 8 and NAudi
 - Modular MVVM architecture with dependency injection and automated tests;
   Windows Release builds and unit tests are verified by GitHub Actions.
   This remains Phase 3 in development (`v0.4.0`), not the complete Phase 3
-  exit: folder watching, file associations, richer settings/session
-  restore, and measured 10,000-track performance remain open items in
-  `ROADMAP.md`
+  exit: folder watching, file associations, and measured 10,000-track
+  performance remain open items in `ROADMAP.md`
 
 ## Requirements
 - Windows 10/11 with Windows Terminal or PowerShell
@@ -181,6 +186,8 @@ nhiều bài cho các thao tác favorites/xóa/thêm vào playlist, mở **Recen
 played** để xem lịch sử nghe, dùng nút **+** ở mục **PLAYLISTS** để tạo
 playlist, chuột phải vào (các) bài đang chọn và dùng **Add to playlist**, rồi
 kéo-thả bài trong playlist (hoặc dùng nút **↑ Up/↓ Down**) để đổi thứ tự.
+Mở **Settings** để đổi chế độ Stage và các tuỳ chọn khôi phục, sau đó đóng
+rồi mở lại Mimi để kiểm tra bài/vị trí cũ được nạp ở trạng thái tạm dừng.
 Cuối cùng, bấm `F11` để mở Stage toàn màn hình (`Esc` để thoát Stage).
 
 #### 5. Mở thư mục dữ liệu và log
@@ -195,7 +202,8 @@ explorer "$env:LOCALAPPDATA\Mimi\logs"
 
 Các file chính gồm `library.db` (SQLite catalog; có thể kèm
 `library.db-wal`/`library.db-shm` khi ứng dụng đang ghi dữ liệu),
-`settings.json`, ảnh bìa đã trích xuất trong `cache\covers\` (thường là
+`settings.json` (tuỳ chọn schema v2, vị trí cửa sổ/chế độ xem và phiên
+nghe đang tạm dừng), ảnh bìa đã trích xuất trong `cache\covers\` (thường là
 cặp `{hash}-512.jpg` và `{hash}-96.jpg`; cache byte gốc của bản cũ được app
 tự nâng cấp ở nền khi mở thư viện), và log xoay theo ngày theo mẫu
 `logs\mimi-YYYYMMDD.log`. `library.json` và
