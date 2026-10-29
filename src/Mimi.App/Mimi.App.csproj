@@ -24,4 +24,30 @@
     <PackageReference Include="Serilog" Version="4.2.0" />
     <PackageReference Include="Serilog.Sinks.File" Version="6.0.0" />
   </ItemGroup>
+
+  <!-- SkiaSharp 4 exposes large native PDBs as runtime assets and the
+       cross-platform library reference also resolves non-Windows assets.
+       Remove them after package-asset resolution so the generated deps
+       file and app output only contain files Mimi can actually load. -->
+  <Target Name="TrimSkiaSharpRuntimeAssets" AfterTargets="ResolvePackageAssets">
+    <ItemGroup>
+      <_SkiaSharpPdbRuntimeAssets Include="@(RuntimeTargetsCopyLocalItems)"
+          Condition="$([System.String]::Copy('%(RuntimeTargetsCopyLocalItems.NuGetPackageId)').StartsWith('SkiaSharp')) And '%(RuntimeTargetsCopyLocalItems.Extension)' == '.pdb'" />
+      <_SkiaSharpNonWindowsRuntimeAssets Include="@(RuntimeTargetsCopyLocalItems)"
+          Condition="$([System.String]::Copy('%(RuntimeTargetsCopyLocalItems.NuGetPackageId)').StartsWith('SkiaSharp')) And '%(RuntimeTargetsCopyLocalItems.RuntimeIdentifier)' != '' And !$([System.String]::Copy('%(RuntimeTargetsCopyLocalItems.RuntimeIdentifier)').StartsWith('win'))" />
+      <RuntimeTargetsCopyLocalItems Remove="@(_SkiaSharpPdbRuntimeAssets)" />
+      <RuntimeTargetsCopyLocalItems Remove="@(_SkiaSharpNonWindowsRuntimeAssets)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="TrimSkiaSharpPublishAssets" AfterTargets="GenerateResolvedFileToPublishList">
+    <ItemGroup>
+      <_SkiaSharpPdbPublishAssets Include="@(ResolvedFileToPublish)"
+          Condition="$([System.String]::Copy('%(ResolvedFileToPublish.NuGetPackageId)').StartsWith('SkiaSharp')) And '%(ResolvedFileToPublish.Extension)' == '.pdb'" />
+      <_SkiaSharpNonWindowsPublishAssets Include="@(ResolvedFileToPublish)"
+          Condition="$([System.String]::Copy('%(ResolvedFileToPublish.NuGetPackageId)').StartsWith('SkiaSharp')) And '%(ResolvedFileToPublish.RuntimeIdentifier)' != '' And !$([System.String]::Copy('%(ResolvedFileToPublish.RuntimeIdentifier)').StartsWith('win'))" />
+      <ResolvedFileToPublish Remove="@(_SkiaSharpPdbPublishAssets)" />
+      <ResolvedFileToPublish Remove="@(_SkiaSharpNonWindowsPublishAssets)" />
+    </ItemGroup>
+  </Target>
 </Project>
