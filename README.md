@@ -91,10 +91,12 @@ A Windows desktop music-player foundation built with C# / WPF / .NET 8 and NAudi
   Phase 4 (`v0.5.0`) is **code complete — acceptance pending**: the queue /
   playback-mode, Windows media-control/keyboard, WASAPI output-device,
   and diagnostic backend-override slices are implemented. Automated
-  restore/build/test has also passed on a real Windows machine
-  (0 warnings/errors and 75/75 tests for the pre-override build), but the
-  interactive, device-removal, and WASAPI↔WaveOut A/B acceptance gates in
-  `ROADMAP.md` remain open
+  restore/build/test has also passed on a real Windows machine at
+  `04ab178` (0 warnings/errors and 83/83 tests), and short forced/auto
+  backend runs produced measurable loopback audio on the same Realtek
+  endpoint. Those 20-second runs are preliminary: the interactive
+  flyout/taskbar/media-key, physical device-loss/recovery, and longer
+  WASAPI↔WaveOut stability gates in `ROADMAP.md` remain open
 
 ## Requirements
 - Windows 10 version 1809 or later / Windows 11, with Windows Terminal or
@@ -289,6 +291,13 @@ pháp đo và điều kiện máy. Các số 100ms/200ms trong code chỉ là la
 được yêu cầu/cấu hình, **không phải latency đầu-cuối đã đo**. `auto` khôi
 phục hành vi mặc định WASAPI → WaveOut fallback; giá trị không hợp lệ sẽ
 được log cảnh báo và tự quay về `auto`.
+
+Một lượt smoke test ngày 29/10/2026 tại commit `04ab178` trên endpoint
+Speakers (Realtek(R) Audio) đã cho cả ba chế độ phát nhạc và có tín hiệu
+loopback, nhưng mỗi lượt chỉ kéo dài khoảng 20 giây. Kết quả này không
+thay thế bài kiểm tra ổn định dài hơn hay các thao tác rút/kết nối lại
+thiết bị vật lý; xem bảng số liệu và trạng thái từng cổng trong
+`ROADMAP.md`.
 
 Cuối cùng, bấm `F11` để mở Stage toàn màn hình (`Esc` để thoát Stage).
 
