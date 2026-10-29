@@ -1,7 +1,7 @@
 ﻿using System.IO;
-using MikuVerseMusic.Models;
+using Mimi.Models;
 
-namespace MikuVerseMusic.Services;
+namespace Mimi.Services;
 
 public sealed class LibraryService
 {

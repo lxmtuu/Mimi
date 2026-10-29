@@ -6,10 +6,10 @@ using System.Windows.Input;
 using System.Windows.Threading;
 using System.Text.Json;
 using Microsoft.Win32;
-using MikuVerseMusic.Models;
-using MikuVerseMusic.Services;
+using Mimi.Models;
+using Mimi.Services;
 
-namespace MikuVerseMusic;
+namespace Mimi;
 
 public partial class MainWindow : Window
 {
@@ -32,6 +32,7 @@ public partial class MainWindow : Window
         InitializeComponent();
         InitializeVisualizer();
         TrackList.ItemsSource = tracks;
+        MigrateLegacyDataIfNeeded();
         LoadFavorites();
         LoadLibrary();
         var favoriteMenu = new MenuItem { Header = "Add to favorites" };
@@ -68,7 +69,7 @@ public partial class MainWindow : Window
         lastVisualizerDiagnosticWrite = DateTime.UtcNow;
         try
         {
-            File.WriteAllText(Path.Combine(Path.GetTempPath(), "MikuVerseMusic-visualizer-debug.txt"),
+            File.WriteAllText(Path.Combine(Path.GetTempPath(), "Mimi-visualizer-debug.txt"),
                 $"playing={audio.IsPlaying}; position={audio.CurrentTime}; {audio.GetVisualizerDiagnostics()}");
         }
         catch (IOException) { }
@@ -210,9 +211,39 @@ public partial class MainWindow : Window
     }
 
     private string DataDirectory => Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Mimi");
+
+    // Mimi was previously named "MikuVerse Music". Its data lived in this
+    // legacy folder; the string below is kept only so existing data can be
+    // migrated (see MigrateLegacyDataIfNeeded). It is not the app name.
+    private string LegacyDataDirectory => Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "MikuVerseMusic");
     private string FavoritesFile => Path.Combine(DataDirectory, "favorites.json");
     private string LibraryFile => Path.Combine(DataDirectory, "library.json");
+
+    // One-time copy of the saved library/favorites from the legacy
+    // "MikuVerseMusic" folder to the new "Mimi" folder, so renaming the
+    // app doesn't lose existing data. Existing files in the new folder
+    // are never overwritten and the legacy folder is left untouched.
+    private void MigrateLegacyDataIfNeeded()
+    {
+        try
+        {
+            if (!Directory.Exists(LegacyDataDirectory)) return;
+            Directory.CreateDirectory(DataDirectory);
+            foreach (var fileName in new[] { "favorites.json", "library.json" })
+            {
+                var source = Path.Combine(LegacyDataDirectory, fileName);
+                var target = Path.Combine(DataDirectory, fileName);
+                if (File.Exists(source) && !File.Exists(target))
+                    File.Copy(source, target);
+            }
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            // Keep the player usable if legacy data cannot be copied.
+        }
+    }
 
     private void LoadLibrary()
     {
@@ -269,7 +300,7 @@ public partial class MainWindow : Window
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
-            System.Windows.MessageBox.Show($"Couldn't save favorites.\n\n{ex.Message}", "MikuVerse Music",
+            System.Windows.MessageBox.Show($"Couldn't save favorites.\n\n{ex.Message}", "Mimi",
                 MessageBoxButton.OK, MessageBoxImage.Warning);
         }
     }

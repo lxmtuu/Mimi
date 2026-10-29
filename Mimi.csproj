@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows</TargetFramework>
@@ -6,10 +6,15 @@
     <UseWindowsForms>true</UseWindowsForms>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <AssemblyName>MikuVerseMusic</AssemblyName>
-    <RootNamespace>MikuVerseMusic</RootNamespace>
+    <AssemblyName>Mimi</AssemblyName>
+    <RootNamespace>Mimi</RootNamespace>
+    <Product>Mimi</Product>
+    <Title>Mimi</Title>
+    <Description>Mimi - a personal desktop music player.</Description>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="NAudio" Version="2.2.1" />
   </ItemGroup>
 </Project>
+
+

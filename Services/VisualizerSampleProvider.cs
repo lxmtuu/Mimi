@@ -1,7 +1,7 @@
 using NAudio.Dsp;
 using NAudio.Wave;
 
-namespace MikuVerseMusic.Services;
+namespace Mimi.Services;
 
 /// <summary>Analyzes playback audio into a smoothed 32-band logarithmic FFT spectrum.</summary>
 public sealed class VisualizerSampleProvider : ISampleProvider

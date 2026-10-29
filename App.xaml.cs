@@ -1,5 +1,5 @@
 ﻿using System.Windows;
 
-namespace MikuVerseMusic;
+namespace Mimi;
 public partial class App : System.Windows.Application { }
 

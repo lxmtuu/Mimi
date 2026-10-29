@@ -1,5 +1,5 @@
 ﻿using System.IO;
-namespace MikuVerseMusic.Models;
+namespace Mimi.Models;
 
 public sealed class Track
 {

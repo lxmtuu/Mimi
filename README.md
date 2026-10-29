@@ -1,4 +1,4 @@
-# MikuVerse Music — Starter Build
+# Mimi — Starter Build
 
 A Windows desktop music-player foundation built with C# / WPF / .NET 8 and NAudio.
 
@@ -15,7 +15,7 @@ A Windows desktop music-player foundation built with C# / WPF / .NET 8 and NAudi
 - Internet connection on first build to restore the NAudio NuGet package
 
 ## Run
-Open `MikuVerseMusic.csproj` in Visual Studio 2022 (with the .NET desktop development workload), or run in PowerShell from this folder:
+Open `Mimi.csproj` in Visual Studio 2022 (with the .NET desktop development workload), or run in PowerShell from this folder:
 
 ```powershell
 dotnet restore
@@ -32,6 +32,9 @@ Planned next milestones:
 4. Add lyrics through a licensed/authorized source.
 5. Define provider adapters only for services that explicitly permit the intended playback integration.
 6. Add automated tests, diagnostics, installer, update strategy, accessibility, and license audit.
+
+## Rename note
+This app was previously named **MikuVerse Music** and is now **Mimi** (project `Mimi.csproj`, namespace `Mimi`, output `Mimi.exe`). On first launch, an existing library/favorites saved under `%LocalAppData%\MikuVerseMusic` are copied automatically to `%LocalAppData%\Mimi`; the old folder is left untouched.
 
 ## Branding and assets
 The current UI uses original abstract shapes and colors. Before distributing any build, review all fonts, images, audio samples, icons, dependencies, and trademarks for appropriate licensing. A commercial product should have its own identity unless rights for third-party character assets are secured.

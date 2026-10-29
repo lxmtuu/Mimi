@@ -1,6 +1,6 @@
 using NAudio.Wave;
 
-namespace MikuVerseMusic.Services;
+namespace Mimi.Services;
 
 /// <summary>Local-file playback engine. Online providers should be added as separate,
 /// officially authorized adapters; never scrape or bypass provider access controls.</summary>
