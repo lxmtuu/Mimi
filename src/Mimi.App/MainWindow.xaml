@@ -489,7 +489,18 @@
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
-                                <GridViewColumn Width="175" DisplayMemberBinding="{Binding Title}">
+                                <GridViewColumn Header="COVER" Width="54">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Image Source="{Binding CoverThumbnailPath}"
+                                                   Width="36" Height="36"
+                                                   Stretch="UniformToFill"
+                                                   RenderOptions.BitmapScalingMode="HighQuality"
+                                                   ToolTip="{Binding Album}"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                                <GridViewColumn Width="155" DisplayMemberBinding="{Binding Title}">
                                     <GridViewColumn.Header>
                                         <Button Content="{Binding DataContext.TitleSortLabel, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}"
                                                 Command="{Binding DataContext.SortTracksCommand, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}"
@@ -498,7 +509,7 @@
                                                 AutomationProperties.Name="Sort by title"/>
                                     </GridViewColumn.Header>
                                 </GridViewColumn>
-                                <GridViewColumn Width="120" DisplayMemberBinding="{Binding Artist}">
+                                <GridViewColumn Width="110" DisplayMemberBinding="{Binding Artist}">
                                     <GridViewColumn.Header>
                                         <Button Content="{Binding DataContext.ArtistSortLabel, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}"
                                                 Command="{Binding DataContext.SortTracksCommand, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}"
@@ -507,7 +518,7 @@
                                                 AutomationProperties.Name="Sort by artist"/>
                                     </GridViewColumn.Header>
                                 </GridViewColumn>
-                                <GridViewColumn Width="120" DisplayMemberBinding="{Binding Album}">
+                                <GridViewColumn Width="110" DisplayMemberBinding="{Binding Album}">
                                     <GridViewColumn.Header>
                                         <Button Content="{Binding DataContext.AlbumSortLabel, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}"
                                                 Command="{Binding DataContext.SortTracksCommand, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}"

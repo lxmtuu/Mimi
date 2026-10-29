@@ -51,6 +51,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     private readonly ILibraryCatalog libraryCatalog;
     private readonly IUserDataService userDataService;
     private readonly IDialogService dialogService;
+    private readonly ICoverArtOptimizer? coverArtOptimizer;
     private readonly Dispatcher uiDispatcher = Dispatcher.CurrentDispatcher;
     private readonly DispatcherTimer positionTimer = new()
     {
@@ -187,13 +188,15 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         ILibraryService libraryService,
         ILibraryCatalog libraryCatalog,
         IUserDataService userDataService,
-        IDialogService dialogService)
+        IDialogService dialogService,
+        ICoverArtOptimizer? coverArtOptimizer = null)
     {
         this.audioPlayer = audioPlayer;
         this.libraryService = libraryService;
         this.libraryCatalog = libraryCatalog;
         this.userDataService = userDataService;
         this.dialogService = dialogService;
+        this.coverArtOptimizer = coverArtOptimizer;
 
         TracksView = CollectionViewSource.GetDefaultView(Tracks);
         TracksView.Filter = FilterTrack;
@@ -998,6 +1001,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
                     .ToHashSet(StringComparer.OrdinalIgnoreCase);
                 AddTracksToCollection(storedTracks);
                 await RefreshPlaylistsAsync();
+                QueueLegacyCoverArtUpgrade();
                 if (!string.IsNullOrWhiteSpace(SearchText))
                     QueueCatalogSearch(SearchText);
                 return;
@@ -1039,6 +1043,93 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
                     $"Couldn't restore your library.\n\n{fallbackException.Message}",
                     "Library warning");
             }
+        }
+    }
+
+    private void QueueLegacyCoverArtUpgrade()
+    {
+        if (coverArtOptimizer is null || disposed) return;
+
+        _ = UpgradeLegacyCoverArtAsync();
+    }
+
+    private async Task UpgradeLegacyCoverArtAsync()
+    {
+        var optimizer = coverArtOptimizer;
+        if (optimizer is null) return;
+
+        var legacyPaths = Tracks
+            .Select(track => track.CoverArtPath)
+            .Where(path => !string.IsNullOrWhiteSpace(path) &&
+                           !CoverArtPaths.IsLargeVariant(path))
+            .Select(path => path!)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        if (legacyPaths.Length == 0) return;
+
+        try
+        {
+            var replacements = await Task.Run(
+                () =>
+                {
+                    var map = new Dictionary<string, string>(
+                        StringComparer.OrdinalIgnoreCase);
+                    foreach (var legacyPath in legacyPaths)
+                    {
+                        lifetimeCancellation.Token
+                            .ThrowIfCancellationRequested();
+                        var optimizedPath =
+                            optimizer.CreateResizedVariants(legacyPath);
+                        if (!string.IsNullOrWhiteSpace(optimizedPath))
+                            map[legacyPath] = optimizedPath;
+                    }
+
+                    return map;
+                },
+                lifetimeCancellation.Token);
+            if (replacements.Count == 0) return;
+
+            var updatedTracks = new List<Track>();
+            foreach (var item in Tracks)
+            {
+                if (item.CoverArtPath is null ||
+                    !replacements.TryGetValue(
+                        item.CoverArtPath,
+                        out var optimizedPath))
+                {
+                    continue;
+                }
+
+                item.UpdateCoverArtPath(optimizedPath);
+                updatedTracks.Add(item.Track);
+                if (item == CurrentTrack)
+                    CurrentCoverArtPath = optimizedPath;
+            }
+
+            if (updatedTracks.Count == 0) return;
+
+            if (catalogAvailable)
+            {
+                await libraryCatalog.UpsertTracksAsync(
+                    updatedTracks,
+                    lifetimeCancellation.Token);
+            }
+            else
+            {
+                SaveLibrary();
+            }
+
+            Log.Information(
+                "Upgraded {CoverCount} legacy cover cache entries to resized variants",
+                replacements.Count);
+        }
+        catch (OperationCanceledException) when (
+            lifetimeCancellation.IsCancellationRequested)
+        {
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, "Could not upgrade legacy cover art cache entries");
         }
     }
 

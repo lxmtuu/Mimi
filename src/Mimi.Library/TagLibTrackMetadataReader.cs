@@ -113,35 +113,52 @@ public sealed class TagLibTrackMetadataReader : ITrackMetadataReader
         if (bytes is null || bytes.Length == 0) return null;
 
         var hash = Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant();
+        var largeCachePath = CoverArtPaths.GetLargePath(
+            coverCacheDirectory,
+            hash);
+        var thumbnailCachePath = CoverArtPaths.GetThumbnailPath(
+            coverCacheDirectory,
+            hash);
+        if (File.Exists(largeCachePath) && File.Exists(thumbnailCachePath))
+            return largeCachePath;
+
+        if (CoverArtImageProcessor.TryCreateVariants(
+                bytes,
+                out var largeVariant,
+                out var thumbnailVariant))
+        {
+            try
+            {
+                CoverArtImageProcessor.WriteAllBytesAtomically(
+                    largeCachePath,
+                    largeVariant);
+                CoverArtImageProcessor.WriteAllBytesAtomically(
+                    thumbnailCachePath,
+                    thumbnailVariant);
+                return largeCachePath;
+            }
+            catch (Exception ex) when (
+                ex is IOException or UnauthorizedAccessException)
+            {
+                // Fall through to the original-byte cache. A mostly full
+                // disk or a transient write failure should not cost the
+                // user an otherwise readable cover image.
+            }
+        }
+
         var extension = GetImageExtension(picture?.MimeType);
         var cachePath = Path.Combine(coverCacheDirectory, hash + extension);
         if (File.Exists(cachePath)) return cachePath;
 
-        var tempPath = cachePath + "." + Guid.NewGuid().ToString("N") + ".tmp";
         try
         {
-            Directory.CreateDirectory(coverCacheDirectory);
-            File.WriteAllBytes(tempPath, bytes);
-            File.Move(tempPath, cachePath, overwrite: true);
+            CoverArtImageProcessor.WriteAllBytesAtomically(cachePath, bytes);
             return cachePath;
         }
         catch (Exception ex) when (
             ex is IOException or UnauthorizedAccessException)
         {
             return null;
-        }
-        finally
-        {
-            try
-            {
-                if (File.Exists(tempPath)) File.Delete(tempPath);
-            }
-            catch (IOException)
-            {
-            }
-            catch (UnauthorizedAccessException)
-            {
-            }
         }
     }
 

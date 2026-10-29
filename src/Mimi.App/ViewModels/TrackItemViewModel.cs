@@ -1,6 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using Mimi.Core.Text;
 using Mimi.Models;
+using Mimi.Services;
 
 namespace Mimi.ViewModels;
 
@@ -59,6 +60,9 @@ public sealed partial class TrackItemViewModel : ObservableObject
     public string FilePath => Track.FilePath;
 
     public string? CoverArtPath => Track.CoverArtPath;
+
+    public string? CoverThumbnailPath =>
+        CoverArtPaths.GetThumbnailPath(Track.CoverArtPath);
 
     public string Subtitle
     {
@@ -151,7 +155,23 @@ public sealed partial class TrackItemViewModel : ObservableObject
         OnPropertyChanged(nameof(DurationSortSeconds));
         OnPropertyChanged(nameof(BitrateLabel));
         OnPropertyChanged(nameof(CoverArtPath));
+        OnPropertyChanged(nameof(CoverThumbnailPath));
         OnPropertyChanged(nameof(Subtitle));
+    }
+
+    internal void UpdateCoverArtPath(string? coverArtPath)
+    {
+        if (string.Equals(
+                Track.CoverArtPath,
+                coverArtPath,
+                StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        Track.CoverArtPath = coverArtPath;
+        OnPropertyChanged(nameof(CoverArtPath));
+        OnPropertyChanged(nameof(CoverThumbnailPath));
     }
 
     public void MarkPlayed(DateTimeOffset playedAtUtc)

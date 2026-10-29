@@ -127,7 +127,8 @@ public sealed class LibraryService : ILibraryService
     {
         if (knownTracks is not null &&
             knownTracks.TryGetValue(filePath, out var knownTrack) &&
-            HasSameFingerprint(knownTrack, filePath))
+            HasSameFingerprint(knownTrack, filePath) &&
+            HasCurrentCoverArtVariant(knownTrack))
         {
             knownTrack.IsMissing = false;
             return knownTrack;
@@ -135,6 +136,10 @@ public sealed class LibraryService : ILibraryService
 
         return metadataReader.CreateTrack(filePath);
     }
+
+    private static bool HasCurrentCoverArtVariant(Track knownTrack) =>
+        knownTrack.CoverArtPath is null ||
+        CoverArtPaths.IsLargeVariant(knownTrack.CoverArtPath);
 
     private static bool HasSameFingerprint(Track knownTrack, string filePath)
     {
