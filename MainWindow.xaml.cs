@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
@@ -17,15 +17,22 @@ public partial class MainWindow : Window
     private readonly LibraryService library = new();
     private readonly ObservableCollection<Track> tracks = new();
     private readonly DispatcherTimer timer;
-    private readonly System.Windows.Shapes.Rectangle[] visualizerBars = new System.Windows.Shapes.Rectangle[32];
-    private readonly System.Windows.Shapes.Rectangle[] visualizerGlowBars = new System.Windows.Shapes.Rectangle[32];
+    private readonly System.Windows.Shapes.Rectangle[] visualizerBars = new System.Windows.Shapes.Rectangle[VisualizerSampleProvider.BandCount];
+    private readonly System.Windows.Shapes.Rectangle[] visualizerGlowBars = new System.Windows.Shapes.Rectangle[VisualizerSampleProvider.BandCount];
+    private static readonly System.Windows.Media.SolidColorBrush GlowTealBrush = CreateFrozenBrush(190, 71, 230, 208);
+    private static readonly System.Windows.Media.SolidColorBrush GlowPinkBrush = CreateFrozenBrush(190, 255, 92, 174);
+    private static readonly System.Windows.Media.SolidColorBrush FavoriteOnBrush = CreateFrozenBrush(255, 255, 143, 203);
+    private static readonly System.Windows.Media.SolidColorBrush FavoriteOffBrush = CreateFrozenBrush(255, 130, 150, 174);
     private bool changingProgress;
     private bool userSeeking;
     private bool showingFavorites;
-    private bool wasPlaying;
+    private bool settingsLoaded;
     private DateTime lastVisualizerDiagnosticWrite = DateTime.MinValue;
+    private DateTime lastSettingsSaveUtc = DateTime.MinValue;
+    private AppSettings settings = new();
     private readonly HashSet<string> favorites = new(StringComparer.OrdinalIgnoreCase);
-    private int currentIndex = -1;
+    private readonly HashSet<string> brokenPaths = new(StringComparer.OrdinalIgnoreCase);
+    private Track? currentTrack;
 
     public MainWindow()
     {
@@ -33,17 +40,30 @@ public partial class MainWindow : Window
         InitializeVisualizer();
         TrackList.ItemsSource = tracks;
         MigrateLegacyDataIfNeeded();
+        LoadSettings();
         LoadFavorites();
-        LoadLibrary();
+        if (LoadLibrary()) PruneFavorites();
         var favoriteMenu = new MenuItem { Header = "Add to favorites" };
         favoriteMenu.Click += (_, _) => ToggleFavorite(TrackList.SelectedItem as Track);
+        var removeMenu = new MenuItem { Header = "Remove from library" };
+        removeMenu.Click += (_, _) => RemoveTrack(TrackList.SelectedItem as Track);
         TrackList.ContextMenu = new ContextMenu();
         TrackList.ContextMenu.Items.Add(favoriteMenu);
+        TrackList.ContextMenu.Items.Add(removeMenu);
         TrackList.ContextMenu.Opened += (_, _) =>
         {
             if (TrackList.ContextMenu is not null && TrackList.SelectedItem is Track selected)
                 favoriteMenu.Header = favorites.Contains(selected.FilePath) ? "Remove from favorites" : "Add to favorites";
         };
+        // Track seeking via the thumb's drag lifecycle (it keeps mouse
+        // capture) instead of raw mouse-down/up: releasing the mouse
+        // outside the slider could otherwise leave the flag stuck and
+        // freeze the progress bar.
+        ProgressSlider.AddHandler(System.Windows.Controls.Primitives.Thumb.DragStartedEvent,
+            new System.Windows.Controls.Primitives.DragStartedEventHandler((_, _) => userSeeking = true), true);
+        ProgressSlider.AddHandler(System.Windows.Controls.Primitives.Thumb.DragCompletedEvent,
+            new System.Windows.Controls.Primitives.DragCompletedEventHandler((_, _) => userSeeking = false), true);
+        ProgressSlider.LostMouseCapture += (_, _) => userSeeking = false;
         timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(150) };
         timer.Tick += (_, _) =>
         {
@@ -54,15 +74,14 @@ public partial class MainWindow : Window
         timer.Start();
         audio.PlaybackChanged += (_, _) => Dispatcher.BeginInvoke(UpdatePlayButton);
         audio.PlaybackEnded += (_, _) => Dispatcher.BeginInvoke(new Action(() =>
-        {
-            if (tracks.Count == 0) return;
-            var next = currentIndex >= 0 && currentIndex < tracks.Count - 1 ? currentIndex + 1 : 0;
-            PlayTrack(tracks[next]);
-        }));
-        VolumeSlider.Value = 0.7;
+            PlayRelativeInView(1, showErrors: false)));
+        VolumeSlider.Value = settings.Volume;
+        audio.Volume = (float)settings.Volume;
         UpdateCount();
     }
 
+    // Release builds skip this call entirely (no per-second file writes).
+    [System.Diagnostics.Conditional("DEBUG")]
     private void WriteVisualizerDiagnostics()
     {
         if ((DateTime.UtcNow - lastVisualizerDiagnosticWrite).TotalSeconds < 1) return;
@@ -74,6 +93,14 @@ public partial class MainWindow : Window
         }
         catch (IOException) { }
         catch (UnauthorizedAccessException) { }
+    }
+
+    private static System.Windows.Media.SolidColorBrush CreateFrozenBrush(byte a, byte r, byte g, byte b)
+    {
+        var brush = new System.Windows.Media.SolidColorBrush(
+            System.Windows.Media.Color.FromArgb(a, r, g, b));
+        brush.Freeze();
+        return brush;
     }
 
     private void InitializeVisualizer()
@@ -134,8 +161,9 @@ public partial class MainWindow : Window
         var height = VisualizerCanvas.ActualHeight;
         var gap = 2.0;
         var barWidth = Math.Max(2, (width - gap * (visualizerBars.Length - 1)) / visualizerBars.Length);
+        var count = Math.Min(levels.Length, visualizerBars.Length);
 
-        for (var i = 0; i < visualizerBars.Length; i++)
+        for (var i = 0; i < count; i++)
         {
             var barHeight = Math.Clamp(6 + levels[i] * height * 0.9, 6, height);
             var x = i * (barWidth + gap);
@@ -150,10 +178,11 @@ public partial class MainWindow : Window
             glowBar.Width = barWidth + 14;
             glowBar.Height = barHeight + 12;
             glowBar.Opacity = 0.72 + levels[i] * 0.28;
-            var glowColor = levels[i] > 0.45
+            var hot = levels[i] > 0.45;
+            var glowColor = hot
                 ? System.Windows.Media.Color.FromArgb(190, 255, 92, 174)
                 : System.Windows.Media.Color.FromArgb(190, 71, 230, 208);
-            glowBar.Fill = new System.Windows.Media.SolidColorBrush(glowColor);
+            glowBar.Fill = hot ? GlowPinkBrush : GlowTealBrush;
             if (glowBar.Effect is System.Windows.Media.Effects.DropShadowEffect glow)
             {
                 glow.BlurRadius = 28 + levels[i] * 24;
@@ -178,12 +207,19 @@ public partial class MainWindow : Window
 
     private void AddFolder_Click(object sender, RoutedEventArgs e)
     {
-        using var dialog = new System.Windows.Forms.FolderBrowserDialog
+        // Built-in WPF folder picker (.NET 8) - no WinForms dependency needed.
+        var dialog = new Microsoft.Win32.OpenFolderDialog
         {
-            Description = "Choose a folder containing your music"
+            Title = "Choose a folder containing your music"
         };
-        if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
-            AddTracks(library.ScanFolder(dialog.SelectedPath));
+        if (dialog.ShowDialog() != true) return;
+
+        var result = library.ScanFolder(dialog.FolderName);
+        AddTracks(result.Tracks);
+        if (result.SkippedDirectories > 0)
+            System.Windows.MessageBox.Show(
+                $"{result.SkippedDirectories} folder(s) could not be read and were skipped.",
+                "Mimi", MessageBoxButton.OK, MessageBoxImage.Information);
     }
 
     private void AddTracks(IEnumerable<Track> additions)
@@ -193,6 +229,14 @@ public partial class MainWindow : Window
             if (existing.Add(track.FilePath)) tracks.Add(track);
         SaveLibrary();
         UpdateCount();
+        ApplySearch();
+    }
+
+    private void HomeButton_Click(object sender, RoutedEventArgs e)
+    {
+        showingFavorites = false;
+        SectionTitle.Text = "Your library";
+        if (SearchBox.Text.Length > 0) SearchBox.Clear(); // re-filters via TextChanged
         ApplySearch();
     }
 
@@ -220,6 +264,7 @@ public partial class MainWindow : Window
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "MikuVerseMusic");
     private string FavoritesFile => Path.Combine(DataDirectory, "favorites.json");
     private string LibraryFile => Path.Combine(DataDirectory, "library.json");
+    private string SettingsFile => Path.Combine(DataDirectory, "settings.json");
 
     // One-time copy of the saved library/favorites from the legacy
     // "MikuVerseMusic" folder to the new "Mimi" folder, so renaming the
@@ -245,18 +290,73 @@ public partial class MainWindow : Window
         }
     }
 
-    private void LoadLibrary()
+    // Write via a temp file + replace so a crash mid-write cannot leave a
+    // truncated file behind.
+    private static void WriteAllTextAtomic(string path, string contents)
+    {
+        var tempPath = path + ".tmp";
+        File.WriteAllText(tempPath, contents);
+        File.Move(tempPath, path, overwrite: true);
+    }
+
+    private void LoadSettings()
     {
         try
         {
-            if (!File.Exists(LibraryFile)) return;
+            if (File.Exists(SettingsFile))
+            {
+                var saved = JsonSerializer.Deserialize<AppSettings>(File.ReadAllText(SettingsFile));
+                if (saved is not null) settings = saved;
+            }
+            settings.Volume = Math.Clamp(settings.Volume, 0, 1);
+        }
+        catch (Exception ex) when (ex is IOException or JsonException or UnauthorizedAccessException)
+        {
+            settings = new AppSettings();
+        }
+        settingsLoaded = true;
+    }
+
+    private void SaveSettings(bool force = false)
+    {
+        // Dragging the volume slider fires many changes; write at most
+        // twice a second, plus one final forced write when closing.
+        if (!force && (DateTime.UtcNow - lastSettingsSaveUtc).TotalMilliseconds < 500) return;
+        lastSettingsSaveUtc = DateTime.UtcNow;
+        try
+        {
+            Directory.CreateDirectory(DataDirectory);
+            WriteAllTextAtomic(SettingsFile, JsonSerializer.Serialize(settings));
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            // Settings are best-effort; never block playback on them.
+        }
+    }
+
+    // Favorites pointing at songs no longer in the library are dead weight;
+    // drop them once per startup after the library has been restored.
+    private void PruneFavorites()
+    {
+        var libraryPaths = tracks.Select(t => t.FilePath).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        if (favorites.RemoveWhere(path => !libraryPaths.Contains(path)) > 0)
+            SaveFavorites();
+    }
+
+    private bool LoadLibrary()
+    {
+        try
+        {
+            if (!File.Exists(LibraryFile)) return true;
             var saved = JsonSerializer.Deserialize<List<string>>(File.ReadAllText(LibraryFile));
             if (saved is not null) AddTracks(library.ScanFiles(saved));
+            return true;
         }
         catch (Exception ex) when (ex is IOException or JsonException or UnauthorizedAccessException)
         {
             System.Windows.MessageBox.Show($"Couldn't restore your library.\n\n{ex.Message}", "Library warning",
                 MessageBoxButton.OK, MessageBoxImage.Warning);
+            return false;
         }
     }
 
@@ -265,7 +365,7 @@ public partial class MainWindow : Window
         try
         {
             Directory.CreateDirectory(DataDirectory);
-            File.WriteAllText(LibraryFile, JsonSerializer.Serialize(tracks.Select(t => t.FilePath).ToArray()));
+            WriteAllTextAtomic(LibraryFile, JsonSerializer.Serialize(tracks.Select(t => t.FilePath).ToArray()));
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
@@ -296,7 +396,7 @@ public partial class MainWindow : Window
         {
             var directory = Path.GetDirectoryName(FavoritesFile)!;
             Directory.CreateDirectory(directory);
-            File.WriteAllText(FavoritesFile, JsonSerializer.Serialize(favorites.ToArray()));
+            WriteAllTextAtomic(FavoritesFile, JsonSerializer.Serialize(favorites.ToArray()));
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
@@ -311,7 +411,80 @@ public partial class MainWindow : Window
         if (!favorites.Add(track.FilePath)) favorites.Remove(track.FilePath);
         SaveFavorites();
         ApplySearch();
+        TrackList.Items.Refresh();
     }
+
+    private void RemoveTrack(Track? track)
+    {
+        if (track is null || !tracks.Remove(track)) return;
+
+        if (currentTrack == track)
+        {
+            audio.Stop();
+            currentTrack = null;
+            NowTitle.Text = "Choose a song";
+            NowSubtitle.Text = "Your next favorite is waiting";
+            changingProgress = true;
+            ProgressSlider.Value = 0;
+            changingProgress = false;
+            UpdatePlayButton();
+        }
+
+        if (favorites.Remove(track.FilePath)) SaveFavorites();
+        brokenPaths.Remove(track.FilePath);
+        SaveLibrary();
+        ApplySearch();
+    }
+
+    private void TrackList_KeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Delete) RemoveTrack(TrackList.SelectedItem as Track);
+    }
+
+    private void FavoriteButton_Loaded(object sender, RoutedEventArgs e)
+    {
+        if (sender is Button button && button.DataContext is Track track)
+            UpdateFavoriteButton(button, track);
+    }
+
+    private void FavoriteButton_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
+    {
+        // ListView may recycle item containers while scrolling; Loaded alone
+        // would leave a recycled button showing the previous track's state.
+        if (sender is Button button && button.DataContext is Track track)
+            UpdateFavoriteButton(button, track);
+    }
+
+    private void FavoriteToggle_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button button || button.DataContext is not Track track) return;
+        ToggleFavorite(track);
+        UpdateFavoriteButton(button, track);
+        e.Handled = true;
+    }
+
+    private void UpdateFavoriteButton(Button button, Track track)
+    {
+        var isFavorite = favorites.Contains(track.FilePath);
+        button.Content = isFavorite ? "♥" : "♡";
+        button.Foreground = isFavorite ? FavoriteOnBrush : FavoriteOffBrush;
+        button.ToolTip = isFavorite ? "Remove from favorites" : "Add to favorites";
+    }
+
+    private void StatusCell_Loaded(object sender, RoutedEventArgs e)
+    {
+        if (sender is TextBlock text && text.DataContext is Track track)
+            UpdateStatusCell(text, track);
+    }
+
+    private void StatusCell_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
+    {
+        if (sender is TextBlock text && text.DataContext is Track track)
+            UpdateStatusCell(text, track);
+    }
+
+    private void UpdateStatusCell(TextBlock text, Track track) =>
+        text.Text = brokenPaths.Contains(track.FilePath) ? "⚠" : "";
 
     private void SearchBox_TextChanged(object sender, TextChangedEventArgs e) => ApplySearch();
 
@@ -334,10 +507,10 @@ public partial class MainWindow : Window
         var visibleCount = System.Windows.Data.CollectionViewSource.GetDefaultView(tracks).Cast<Track>().Count();
         TrackCountText.Text = showingFavorites
             ? $"{visibleCount} favorite song(s)"
-            : $"{tracks.Count} song(s) in your library";
+            : tracks.Count == 0
+                ? "No songs yet - add some music to begin"
+                : $"{tracks.Count} song(s) in your library";
     }
-
-    private void TrackList_SelectionChanged(object sender, SelectionChangedEventArgs e) { }
 
     private void TrackList_MouseDoubleClick(object sender, MouseButtonEventArgs e)
     {
@@ -346,55 +519,97 @@ public partial class MainWindow : Window
 
     private void Play_Click(object sender, RoutedEventArgs e)
     {
-        if (currentIndex < 0 && TrackList.SelectedItem is Track selected) PlayTrack(selected);
-        else if (currentIndex < 0 && tracks.Count > 0) PlayTrack(tracks[0]);
+        if (currentTrack is null && TrackList.SelectedItem is Track selected) PlayTrack(selected);
+        else if (currentTrack is null) PlayRelativeInView(1);
         else audio.Toggle();
         UpdatePlayButton();
     }
 
-    private void PlayTrack(Track track)
+    // Next/Previous and auto-advance follow the order the user can see
+    // (search / favorites filter applied), not the raw library order.
+    private List<Track> VisibleTracks() =>
+        System.Windows.Data.CollectionViewSource.GetDefaultView(tracks).Cast<Track>().ToList();
+
+    private void PlayRelativeInView(int step, bool showErrors = true)
     {
+        var visible = VisibleTracks();
+        if (visible.Count == 0) return;
+
+        // Walk in the requested direction, skipping files that fail to
+        // load, so one broken song never stalls the whole list.
+        var start = currentTrack is null ? -1 : visible.IndexOf(currentTrack);
+        for (var attempt = 0; attempt < visible.Count; attempt++)
+        {
+            var index = start < 0
+                ? (step >= 0 ? attempt : visible.Count - 1 - attempt)
+                : ((start + step * (attempt + 1)) % visible.Count + visible.Count) % visible.Count;
+            if (TryPlayTrack(visible[index], showError: false)) return;
+        }
+
+        if (showErrors)
+            System.Windows.MessageBox.Show("None of the songs in this list could be played.",
+                "Playback error", MessageBoxButton.OK, MessageBoxImage.Warning);
+    }
+
+    private void PlayTrack(Track track) => TryPlayTrack(track, showError: true);
+
+    private bool TryPlayTrack(Track track, bool showError)
+    {
+        var loaded = false;
         try
         {
-            currentIndex = tracks.IndexOf(track);
             audio.Load(track.FilePath);
+            loaded = true;
+            // Only adopt the track as current once it actually loaded, so a
+            // broken file never leaves playback state pointing at it.
+            currentTrack = track;
             audio.Volume = (float)VolumeSlider.Value;
             NowTitle.Text = track.Title;
             NowSubtitle.Text = $"{track.Format}  •  Local music";
+            changingProgress = true;
             ProgressSlider.Value = 0;
+            changingProgress = false;
             audio.Play();
             UpdatePlayButton();
             TrackList.SelectedItem = track;
+            return true;
         }
         catch (Exception ex)
         {
-            System.Windows.MessageBox.Show($"Couldn't play this file.\n\n{ex.Message}", "Playback error",
-                MessageBoxButton.OK, MessageBoxImage.Warning);
+            // Load() stops and disposes any previous track before trying the
+            // new one, so a failed load must not leave currentTrack behind.
+            if (!loaded) currentTrack = null;
+            changingProgress = false;
+            brokenPaths.Add(track.FilePath);
+            TrackList.Items.Refresh();
+            UpdatePlayButton();
+            if (showError)
+                System.Windows.MessageBox.Show($"Couldn't play this file.\n\n{ex.Message}", "Playback error",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+            return false;
         }
     }
 
-    private void Previous_Click(object sender, RoutedEventArgs e)
-    {
-        if (tracks.Count == 0) return;
-        var index = currentIndex <= 0 ? tracks.Count - 1 : currentIndex - 1;
-        PlayTrack(tracks[index]);
-    }
+    private void Previous_Click(object sender, RoutedEventArgs e) => PlayRelativeInView(-1);
 
-    private void Next_Click(object sender, RoutedEventArgs e)
-    {
-        if (tracks.Count == 0) return;
-        var index = currentIndex < 0 || currentIndex >= tracks.Count - 1 ? 0 : currentIndex + 1;
-        PlayTrack(tracks[index]);
-    }
+    private void Next_Click(object sender, RoutedEventArgs e) => PlayRelativeInView(1);
 
     private void VolumeSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
     {
         if (audio is not null) audio.Volume = (float)e.NewValue;
+        // Guarded by settingsLoaded: this event also fires while the XAML
+        // default is applied during InitializeComponent, before the saved
+        // value has been read - saving then would overwrite it.
+        if (!settingsLoaded) return;
+        settings.Volume = e.NewValue;
+        SaveSettings();
     }
 
     private void ProgressSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
     {
-        if (audio is null || changingProgress || !userSeeking) return;
+        // Timer-driven updates always run under changingProgress, so any
+        // remaining change is user input - mouse or keyboard alike.
+        if (audio is null || changingProgress) return;
         if (audio.Duration > TimeSpan.Zero)
             audio.Seek(TimeSpan.FromSeconds(audio.Duration.TotalSeconds * ProgressSlider.Value / 100d));
     }
@@ -403,7 +618,6 @@ public partial class MainWindow : Window
     {
         var duration = audio.Duration;
         var position = audio.CurrentTime;
-        wasPlaying = audio.IsPlaying;
         changingProgress = true;
         if (!userSeeking && duration.TotalSeconds > 0)
             ProgressSlider.Value = Math.Clamp(position.TotalSeconds / duration.TotalSeconds * 100d, 0, 100);
@@ -419,6 +633,7 @@ public partial class MainWindow : Window
 
     protected override void OnClosed(EventArgs e)
     {
+        SaveSettings(force: true);
         timer.Stop();
         audio.Dispose();
         base.OnClosed(e);
@@ -427,9 +642,3 @@ public partial class MainWindow : Window
     private void ProgressSlider_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e) => userSeeking = true;
     private void ProgressSlider_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e) => userSeeking = false;
 }
-
-
-
-
-
-

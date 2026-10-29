@@ -16,13 +16,53 @@ public sealed class LibraryService
             .Select(p => new Track { FilePath = p });
     }
 
-    public IEnumerable<Track> ScanFolder(string folder, bool recursive = true)
+    /// <summary>Result of a folder scan: the tracks found plus how many
+    /// directories could not be read (reported to the user, never fatal).</summary>
+    public sealed record FolderScanResult(IReadOnlyList<Track> Tracks, int SkippedDirectories);
+
+    public FolderScanResult ScanFolder(string folder, bool recursive = true)
     {
-        if (!Directory.Exists(folder)) return [];
-        var options = recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
-        try { return ScanFiles(Directory.EnumerateFiles(folder, "*", options)).ToArray(); }
-        catch (UnauthorizedAccessException) { return []; }
-        catch (IOException) { return []; }
+        if (!Directory.Exists(folder)) return new FolderScanResult([], 0);
+
+        // Walk folder-by-folder so one inaccessible subfolder only skips
+        // itself instead of discarding the result of the whole scan.
+        var files = new List<string>();
+        var skipped = 0;
+        var pending = new Stack<string>();
+        pending.Push(folder);
+
+        while (pending.Count > 0)
+        {
+            var directory = pending.Pop();
+            try
+            {
+                files.AddRange(Directory.EnumerateFiles(directory));
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException
+                                           or System.Security.SecurityException)
+            {
+                skipped++;
+                continue;
+            }
+
+            if (!recursive) continue;
+            try
+            {
+                foreach (var subDirectory in Directory.EnumerateDirectories(directory))
+                {
+                    // Do not follow junctions/symlinks: they can create cycles.
+                    if ((File.GetAttributes(subDirectory) & FileAttributes.ReparsePoint) != 0) continue;
+                    pending.Push(subDirectory);
+                }
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException
+                                           or System.Security.SecurityException)
+            {
+                skipped++;
+            }
+        }
+
+        return new FolderScanResult(ScanFiles(files).ToArray(), skipped);
     }
 }
 

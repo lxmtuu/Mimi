@@ -8,7 +8,7 @@ public sealed class VisualizerSampleProvider : ISampleProvider
 {
     private const int FftSize = 2048;
     private const int FftOrder = 11;
-    private const int BandCount = 32;
+    public const int BandCount = 32;
 
     private readonly ISampleProvider source;
     private readonly Complex[] fftBuffer = new Complex[FftSize];
@@ -34,6 +34,15 @@ public sealed class VisualizerSampleProvider : ISampleProvider
     public float[] GetLevels()
     {
         lock (levelsLock) return (float[])levels.Clone();
+    }
+
+    /// <summary>Fades the spectrum toward silence. Called while playback is
+    /// paused or stopped so the bars fall instead of freezing mid-height.</summary>
+    public void Decay()
+    {
+        lock (levelsLock)
+            for (var i = 0; i < levels.Length; i++)
+                levels[i] *= 0.82f;
     }
 
     public int Read(float[] buffer, int offset, int count)

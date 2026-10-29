@@ -1,4 +1,5 @@
 using NAudio.Wave;
+using NAudio.Wave.SampleProviders;
 
 namespace Mimi.Services;
 
@@ -9,8 +10,15 @@ public sealed class AudioService : IDisposable
     private IWavePlayer? output;
     private AudioFileReader? reader;
     private VisualizerSampleProvider? visualizer;
+    private VolumeSampleProvider? volumeProvider;
+    private float volume = 0.7f;
 
-    public float[] GetVisualizerLevels() => visualizer?.GetLevels() ?? new float[32];
+    public float[] GetVisualizerLevels()
+    {
+        if (visualizer is null) return new float[VisualizerSampleProvider.BandCount];
+        if (!IsPlaying) visualizer.Decay();
+        return visualizer.GetLevels();
+    }
     public string GetVisualizerDiagnostics() => visualizer?.GetDiagnostics() ?? "visualizer=not-initialized";
 
     public event EventHandler? PlaybackChanged;
@@ -24,9 +32,13 @@ public sealed class AudioService : IDisposable
     {
         StopAndDispose();
         reader = new AudioFileReader(path);
+        // Keep the reader at unity gain and apply volume AFTER the visualizer
+        // tap, so the spectrum reflects the music itself, not the volume slider.
+        reader.Volume = 1.0f;
         visualizer = new VisualizerSampleProvider(reader);
+        volumeProvider = new VolumeSampleProvider(visualizer) { Volume = volume };
         output = new WaveOutEvent();
-        output.Init(visualizer);
+        output.Init(volumeProvider);
         output.PlaybackStopped += Output_PlaybackStopped;
         PlaybackChanged?.Invoke(this, EventArgs.Empty);
     }
@@ -64,7 +76,11 @@ public sealed class AudioService : IDisposable
 
     public void Stop()
     {
-        output?.Stop();
+        // An explicit stop must never be mistaken for a track ending
+        // naturally (which would auto-advance to the next song).
+        suppressStoppedEvent = true;
+        try { output?.Stop(); }
+        finally { suppressStoppedEvent = false; }
         if (reader is not null) reader.Position = 0;
         PlaybackChanged?.Invoke(this, EventArgs.Empty);
     }
@@ -77,8 +93,12 @@ public sealed class AudioService : IDisposable
 
     public float Volume
     {
-        get => reader?.Volume ?? 0.7f;
-        set { if (reader is not null) reader.Volume = Math.Clamp(value, 0f, 1f); }
+        get => volume;
+        set
+        {
+            volume = Math.Clamp(value, 0f, 1f);
+            if (volumeProvider is not null) volumeProvider.Volume = volume;
+        }
     }
 
     private void StopAndDispose()
@@ -100,6 +120,8 @@ public sealed class AudioService : IDisposable
         }
         reader?.Dispose();
         reader = null;
+        visualizer = null;
+        volumeProvider = null;
     }
 
     public void Dispose() => StopAndDispose();

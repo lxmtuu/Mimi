@@ -1,3 +1,29 @@
 ﻿bin/
 obj/
 *.bak
+.vs/
+*.user
+*.suo
+TestResults/
+artifacts/
+*.tmp
+
+# Visual Studio / .NET build output
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+bld/
+
+# User-specific Visual Studio files
+*.rsuser
+*.userosscache
+*.sln.docstates
+
+# Test and package artifacts
+[Tt]est[Rr]esult*/
+*.nupkg
+project.lock.json
+project.fragment.lock.json

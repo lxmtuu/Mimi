@@ -1,4 +1,4 @@
-﻿<Window x:Class="Mimi.MainWindow"
+<Window x:Class="Mimi.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Mimi" Height="820" Width="1320" MinHeight="680" MinWidth="1050"
@@ -36,7 +36,7 @@
                 <DockPanel>
                     <StackPanel DockPanel.Dock="Top">
                         <TextBlock Text="YOUR SPACE" Foreground="#8296AE" FontSize="11" Margin="8,10,0,14"/>
-                        <Button Content="HOME" HorizontalContentAlignment="Left" Background="#203A48"/>
+                        <Button Content="HOME" HorizontalContentAlignment="Left" Background="#203A48" Click="HomeButton_Click"/>
                         <Button Content="MUSIC   My Library" HorizontalContentAlignment="Left" Click="LibraryButton_Click"/>
                         <Button Content="LOVE   Favorites" HorizontalContentAlignment="Left" Click="FavoritesButton_Click"/>
                         <TextBlock Text="PLAYLISTS" Foreground="#8296AE" FontSize="11" Margin="8,26,0,8"/>
@@ -99,7 +99,7 @@
 
                 <Border Grid.Row="2" Background="{StaticResource PanelBrush}" CornerRadius="16" Padding="8">
                     <ListView x:Name="TrackList" Background="Transparent" BorderThickness="0"
-                              Foreground="#EAF2FC" SelectionChanged="TrackList_SelectionChanged"
+                              Foreground="#EAF2FC" KeyDown="TrackList_KeyDown"
                               MouseDoubleClick="TrackList_MouseDoubleClick">
                         <ListView.Resources>
                             <Style TargetType="{x:Type GridViewColumnHeader}">
@@ -112,8 +112,26 @@
                         </ListView.Resources>
                         <ListView.View>
                             <GridView AllowsColumnReorder="False">
+                                <GridViewColumn Header="♥" Width="46">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Button Content="♡" Padding="6,2" Margin="0" Background="Transparent"
+                                                    Loaded="FavoriteButton_Loaded" DataContextChanged="FavoriteButton_DataContextChanged"
+                                                    Click="FavoriteToggle_Click"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
                                 <GridViewColumn Header="TITLE" Width="300" DisplayMemberBinding="{Binding Title}"/>
                                 <GridViewColumn Header="FORMAT" Width="85" DisplayMemberBinding="{Binding Format}"/>
+                                <GridViewColumn Header="" Width="36">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Foreground="#FFB020" Loaded="StatusCell_Loaded"
+                                                       DataContextChanged="StatusCell_DataContextChanged"
+                                                       ToolTip="This file could not be played"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
                             </GridView>
                         </ListView.View>
                         <ListView.ItemContainerStyle>

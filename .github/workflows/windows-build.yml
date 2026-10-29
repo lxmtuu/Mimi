@@ -1,0 +1,40 @@
+name: Windows build
+
+on:
+  push:
+    branches:
+      - main
+      - "arena/**"
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build (Release)
+    runs-on: windows-latest
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore packages
+        run: dotnet restore Mimi.csproj
+
+      - name: Build
+        run: dotnet build Mimi.csproj --configuration Release --no-restore
+
+      - name: Upload build output
+        uses: actions/upload-artifact@v4
+        with:
+          name: Mimi-${{ github.sha }}
+          path: bin/Release/net8.0-windows/**
+          if-no-files-found: error
+          retention-days: 14
