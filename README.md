@@ -19,8 +19,9 @@ A Windows desktop music-player foundation built with C# / WPF / .NET 8 and NAudi
   and format), metadata filters for artist/album/genre/format/playback
   state, and Extended multi-select for batch favorites, playlist additions,
   playlist removal, and library removal
-- Play / pause, queue-aware next / previous and auto-advance, ±10-second
-  seek, volume percentage, and mute. Starting a song captures the visible
+- Play / pause, queue-aware next / previous and auto-advance, ±5-second
+  keyboard seek plus ±10-second buttons, volume percentage, and mute.
+  Starting a song captures the visible
   filtered/sorted list as its playback context; Shuffle uses a no-repeat
   shuffle bag, Repeat supports Off / All / One, Previous follows the songs
   actually played, and unplayable candidates are skipped without committing
@@ -36,10 +37,17 @@ A Windows desktop music-player foundation built with C# / WPF / .NET 8 and NAudi
 - An **Up Next** playback queue with drag reordering, Up/Down buttons,
   Play-next / Add-to-queue actions for selected songs, double-click to play
   a queued song immediately, item removal, and Clear upcoming
+- Windows media integration through System Media Transport Controls:
+  song metadata, cover art, playback state, timeline seeking, shuffle /
+  repeat, hardware media keys, and the Windows volume/media flyout.
+  Mimi also has taskbar thumbnail Previous/Play/Pause/Next controls,
+  taskbar progress, and focus-aware in-window keyboard shortcuts for
+  playback, five-second seek, volume steps, track changes, and search
 - Direct favorite toggles, a Recently played view backed by playback
   history, and track removal (right-click or Delete key)
 - A Settings screen for playback/session, startup/library, Stage Engine,
-  and data/diagnostic options. Mimi remembers its window placement,
+  a keyboard-shortcut reference, and data/diagnostic options. Mimi
+  remembers its window placement,
   visualizer mode, library view/search/filters/sorting, playback modes,
   and reopens the previous song, position, and queue **paused, never
   auto-playing**
@@ -70,14 +78,14 @@ A Windows desktop music-player foundation built with C# / WPF / .NET 8 and NAudi
   and fading out while paused or stopped
 - Modular MVVM architecture with dependency injection and automated tests;
   Windows Release builds and unit tests are verified by GitHub Actions.
-  This is now Phase 4 in development (`v0.5.0`): the queue, shuffle,
-  repeat, mute, and fast-seek slice is implemented, while Windows media
-  keys/SMTC, taskbar controls, the Settings shortcut table, output-device
-  handling, and the real-Windows acceptance gates in `ROADMAP.md` remain
-  open
+  This is now Phase 4 in development (`v0.5.0`): the queue/playback-mode
+  and Windows media-control/keyboard slices are implemented, while
+  output-device handling and the real-Windows acceptance gates in
+  `ROADMAP.md` remain open
 
 ## Requirements
-- Windows 10/11 with Windows Terminal or PowerShell
+- Windows 10 version 1809 or later / Windows 11, with Windows Terminal or
+  PowerShell
 - Git
 - .NET 8 SDK (not only the .NET Runtime)
 - Internet connection on first build to restore NuGet packages
@@ -192,7 +200,7 @@ Lệnh trên build cấu hình Debug nếu cần rồi mở Mimi. Nếu bạn mu
 Release vừa build ở bước 3, dùng:
 
 ```powershell
-.\src\Mimi.App\bin\Release\net8.0-windows\Mimi.exe
+.\src\Mimi.App\bin\Release\net8.0-windows10.0.19041.0\Mimi.exe
 ```
 
 Khi cửa sổ Mimi mở, bạn có thể chọn **Add music files**, **Scan a folder**,
@@ -220,6 +228,15 @@ giữ phần trăm âm lượng đã đặt khi bỏ mute. Bấm **Previous** sa
 phát hơn 3 giây để kiểm tra bài quay về đầu; bấm lại gần đầu bài để quay về
 bài vừa nghe thật sự trước đó. Đóng và mở lại Mimi để kiểm tra bài, vị trí,
 Up Next cùng trạng thái mute/shuffle/repeat.
+Trong lúc phát, mở flyout âm lượng của Windows để kiểm tra tên bài, ảnh
+bìa và các nút Previous/Play/Pause/Next; thử kéo timeline (nếu phiên bản
+Windows của bạn hỗ trợ), chuyển Shuffle/Repeat từ flyout, thu nhỏ Mimi rồi
+dùng phím media trên bàn phím, tai nghe hoặc màn hình khoá. Di chuột lên
+biểu tượng Mimi trên taskbar để thử các nút thumbnail Previous/Play/Pause/
+Next và thanh tiến trình trên taskbar. Mở mục **Keyboard Shortcuts** trong
+Settings, thử `Ctrl+F`, `Ctrl+←/→`, rồi bấm vào vùng trống không tương tác
+để thử Space, `←/→` tua 5 giây và `↑/↓` đổi âm lượng; các phím này chủ động
+không giành quyền khi bạn đang gõ trong ô tìm kiếm hoặc dùng list/slider.
 Cuối cùng, bấm `F11` để mở Stage toàn màn hình (`Esc` để thoát Stage).
 
 #### 5. Mở thư mục dữ liệu và log

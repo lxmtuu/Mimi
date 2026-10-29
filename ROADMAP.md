@@ -209,9 +209,9 @@ Shell (Sidebar + Nội dung + Now Playing)
 | **Favorites** | Như Library, lọc `is_favorite` | Rỗng có hướng dẫn | Đã có cột ♥ bấm trực tiếp, menu chuột phải và lưu vào SQLite (JSON chỉ còn fallback/import cũ) |
 | **Playlists** | CRUD, kéo-thả bài vào, đổi thứ tự, phát tất cả/xáo trộn | Rỗng, trùng tên | Đã có sidebar playlist: tạo/đổi tên/xoá/phát, thêm bài đang chọn qua menu **Add to playlist**, gỡ bài và đổi thứ tự bằng kéo-thả hoặc Up/Down; dữ liệu nằm ở SQLite. Chưa kéo bài từ Library thả thẳng vào một hàng playlist; shuffle dùng chung `PlaybackQueue` toàn cục của Phase 4 khi phát playlist thay vì một công tắc riêng trong từng playlist |
 | **Queue** | Đang phát / Kế tiếp, kéo sắp xếp, xoá khỏi hàng đợi | Rỗng | Đã có panel **Up Next** ở cột Now Playing: nguồn là danh sách đang nhìn tại lúc phát, kéo sắp xếp hoặc Up/Down, double-click phát ngay, Play Next/Add to Queue cho bài đang chọn, xoá một bài và Clear upcoming. `PlaybackQueue` ở Core giữ History/Current/Upcoming và chỉ commit sau khi audio nạp thành công |
-| **Now Playing** | Ảnh bìa lớn, sóng nhạc phủ, seek, shuffle/repeat/mute, % volume | Chưa chọn bài, file lỗi | Đã có seek slider + nút −10s/+10s, Shuffle-bag, Repeat Off/All/One, Mute giữ nguyên % volume của slider và nhãn % hiệu dụng; Previous phát lại từ đầu nếu đã nghe hơn 3 giây, ngược lại quay đúng lịch sử đã phát |
+| **Now Playing** | Ảnh bìa lớn, sóng nhạc phủ, seek, shuffle/repeat/mute, % volume | Chưa chọn bài, file lỗi | Đã có seek slider + nút −10s/+10s, Shuffle-bag, Repeat Off/All/One, Mute giữ nguyên % volume của slider và nhãn % hiệu dụng; Previous phát lại từ đầu nếu đã nghe hơn 3 giây, ngược lại quay đúng lịch sử đã phát. Metadata/bìa/trạng thái/timeline còn được đồng bộ lên SMTC của Windows, kèm thumbnail controls và taskbar progress |
 | **Stage (toàn màn hình)** | Visualizer chiếm trọn, lời lớn, thông tin bài tối giản, ẩn con trỏ | Tạm dừng (sóng hạ dần) | Điểm nhấn sản phẩm (Phase 1) |
-| **Settings** | Playback/phiên nghe, khởi động/thư viện, Stage Engine, dữ liệu/chẩn đoán, khôi phục mặc định; mọi thay đổi lưu ngay | — | Đã có màn hình Settings trong cửa sổ chính và `settings.json` schema v3: volume/mute, shuffle/repeat, chế độ visualizer, bật/tắt khôi phục phiên/chế độ xem/vị trí cửa sổ, danh sách thư mục theo dõi, đăng ký **Open with Mimi** theo tài khoản Windows hiện tại, tự nâng cấp cache bìa cũ, reset preferences. Phiên trước được nạp về đúng bài/vị trí/History/Up Next ở trạng thái Pause; theme/ngôn ngữ vẫn thuộc Phase 5 |
+| **Settings** | Playback/phiên nghe, khởi động/thư viện, Stage Engine, dữ liệu/chẩn đoán, khôi phục mặc định; mọi thay đổi lưu ngay | — | Đã có màn hình Settings trong cửa sổ chính và `settings.json` schema v3: volume/mute, shuffle/repeat, chế độ visualizer, bật/tắt khôi phục phiên/chế độ xem/vị trí cửa sổ, danh sách thư mục theo dõi, đăng ký **Open with Mimi** theo tài khoản Windows hiện tại, bảng **Keyboard Shortcuts**, tự nâng cấp cache bìa cũ, reset preferences. Phiên trước được nạp về đúng bài/vị trí/History/Up Next ở trạng thái Pause; theme/ngôn ngữ vẫn thuộc Phase 5 |
 | **Diagnostics** | Phiên bản, thư mục dữ liệu/log, nút mở log, xuất thông tin hỗ trợ | — | Nhóm Data & Diagnostics trong Settings đã hiện phiên bản và mở được thư mục dữ liệu/log; xuất gói hỗ trợ vẫn chưa làm |
 
 ---
@@ -238,19 +238,24 @@ Tại thời điểm rà soát ban đầu, dự án là 1 project WPF với `Mai
 
 **Cập nhật Queue + chế độ phát Phase 4 (29/10/2026):** commit `ab7308f` nâng app/manifest lên `0.5.0` (đang phát triển, chưa tag) và [Windows CI restore/build/test đã đạt](https://github.com/lxmtuu/Mimi/actions/runs/40846049669). Core có `PlaybackQueue<T>` tách ngữ cảnh nguồn, lịch sử đã phát, bài hiện tại và Up Next; nó dùng shuffle-bag không lặp trong một vòng, tạo vòng mới cho Repeat All mà không bắt đầu ngay bằng bài vừa kết thúc khi còn lựa chọn khác, giữ thứ tự nguồn khi tắt shuffle và chỉ chuyển trạng thái khi ViewModel xác nhận audio đã nạp thành công nên file lỗi bị bỏ qua an toàn. Panel **Up Next** hỗ trợ kéo sắp xếp, Up/Down, phát ngay, xoá và Clear; menu bài hát có Play Next/Add to Queue cho cả lựa chọn nhiều bài. Now Playing có Shuffle, Repeat Off/All/One, Mute + % volume hiệu dụng và tua −10s/+10s; Previous quay về đầu bài sau 3 giây, nếu không sẽ đi theo lịch sử đã nghe thật. `settings.json` schema v3 lưu mute/shuffle/repeat cùng ngữ cảnh/History/Up Next của phiên Pause và vẫn migration được từ v1/v2. Bộ test hiện có 56 khai báo/71 case ước tính (đã thay các test `PlaybackNavigator` cũ bằng test queue mới); artifact app là 29.625.596 byte. Phase 4 chưa đóng vì SMTC/media keys, nút thumbnail taskbar, bảng phím tắt trong Settings, đánh giá WasapiOut/thay đổi thiết bị xuất âm và nghiệm thu Windows thật còn mở.
 
+**Cập nhật tích hợp media Windows Phase 4 (29/10/2026):** commit `a138544`, các sửa CI tính đến `f530ba9` và [Windows CI cuối đã đạt restore/build/test](https://github.com/lxmtuu/Mimi/actions/runs/40850352056) đưa riêng `Mimi.App` lên `net8.0-windows10.0.19041.0` với `SupportedOSPlatformVersion` 17763 (Windows 10 1809). `WindowsMediaControlsService` ở App layer lấy SMTC theo HWND của cửa sổ chính, marshal mọi callback về UI dispatcher và đồng bộ title/artist/album/genre/year, ảnh bìa qua `InMemoryRandomAccessStream` được giữ sống, trạng thái Play/Pause, Next/Previous, Shuffle/Repeat cùng timeline mỗi giây; lệnh Play/Pause của Windows dùng command không-toggle và seek tuyệt đối đi qua cùng đường clamp của ViewModel. `MainWindow` có taskbar thumbnail Previous/Play/Pause/Next + progress/description, còn `MainWindow.Keyboard.cs` xử lý Space/mũi tên theo focus (nhường ô nhập, button, slider và danh sách), Ctrl+←/→, Ctrl+F, F11/Esc và media-key fallback chỉ khi SMTC không sẵn sàng để tránh toggle hai lần; Settings có bảng Keyboard Shortcuts. Artifact app tăng lên 36.264.898 byte (hơn 6.639.302 byte so với lát queue, chủ yếu do WinRT projection của target Windows SDK); bộ test không đổi 56 khai báo/71 case ước tính vì lát này thuộc App/Windows integration. Phase 4 vẫn chưa đóng: cần nghiệm thu flyout/màn hình khoá/taskbar/media keys/phím tắt trên Windows thật, rồi đánh giá WasapiOut và xử lý đổi thiết bị xuất âm.
+
 ```mermaid
 flowchart TB
     subgraph Presentation["Presentation — Mimi.App (WPF)"]
         Views["Views (XAML) + Controls"]
         VM["ViewModels (CommunityToolkit.Mvvm)"]
+        WinServices["Windows services<br/>SMTC + Open With"]
         Views --> VM
+        Views --> WinServices
+        WinServices --> VM
     end
     subgraph Core["Core — Mimi.Core (không phụ thuộc UI)"]
         Models["Domain Models: Track, Playlist, Queue"]
         Ifaces["Interfaces: IAudioPlayer, ILibraryService, ISettingsService, IThemeService, ILyricsProvider"]
     end
     subgraph Infra["Infrastructure"]
-        Audio["Mimi.Audio<br/>NAudio Engine + SMTC"]
+        Audio["Mimi.Audio<br/>NAudio Engine"]
         Lib["Mimi.Library<br/>SQLite + TagLib-Sharp + Scanner"]
         Viz["Mimi.Visualizer<br/>FFT Pipeline + Renderer"]
     end
@@ -293,7 +298,7 @@ stateDiagram-v2
   *Quy tắc sắt rút ra từ rà soát: chỉ gán "bài hiện tại" **sau khi Load thành công**; file lỗi bị đánh dấu `⚠️` trong thư viện, không làm kẹt nút Play.*
 - **Queue & thứ tự phát:** `PlaybackQueue` là nguồn sự thật duy nhất cho Next/Previous/Ended. Khi người dùng phát từ Library/Favorites/Playlist/Search, queue = **danh sách đang nhìn thấy** (đã lọc) tại thời điểm phát — sửa triệt để lỗi "Next nhảy ngoài Favorites" hiện tại.
 - **Shuffle:** thuật toán *shuffle-bag* (phát hết 1 vòng không lặp mới xáo lại); **Repeat:** Off / All / One. Lưu lịch sử phát để Previous quay đúng bài vừa nghe khi shuffle.
-- **Tích hợp Windows (Phase 4):** media keys toàn cục qua **SMTC** (System Media Transport Controls) — hiện tên bài/ảnh bìa trên overlay Windows, điều khiển từ bàn phím/màn hình khoá; nút thumbnail trên taskbar; phím tắt trong app (Space, Ctrl+←/→, ←/→ tua 5s, ↑/↓ volume, Ctrl+F tìm kiếm, F11 Stage, Esc thoát Stage) — có bảng tra cứu trong Settings.
+- **Tích hợp Windows (Phase 4, đã triển khai — chờ nghiệm thu thật):** media keys toàn cục qua **SMTC** (System Media Transport Controls) — hiện tên bài/ảnh bìa trên overlay Windows, điều khiển từ bàn phím/màn hình khoá; nút thumbnail trên taskbar; phím tắt trong app (Space, Ctrl+←/→, ←/→ tua 5s, ↑/↓ volume, Ctrl+F tìm kiếm, F11 Stage, Esc thoát Stage) — có bảng tra cứu trong Settings. SMTC sống ở `WindowsMediaControlsService` của `Mimi.App`, không đưa WinRT xuống Core/Audio.
 - **Định dạng:** không tin vào đuôi file. Phase 0 lập [bảng kiểm chứng decode](#phụ-lục-b--bảng-kiểm-chứng-định-dạng-âm-thanh-trên-windows) trên Win10/11 thật (MP3/WAV/AIFF qua NAudio; AAC/M4A/WMA/FLAC qua Media Foundation) rồi mới công bố danh sách hỗ trợ chính thức; cân nhắc bổ sung `.ogg/.opus` bằng decoder tương thích license (đánh giá ở Phase 3).
 
 ### 8.2. Library & Metadata (SQLite)
@@ -421,10 +426,10 @@ AudioFileReader (unity gain)
 - **Exit:** thư viện 10.000 bài: cuộn mượt (ảo hoá), tìm < 100ms, quét nền không treo UI; tắt app giữa lúc ghi không hỏng DB. **Chưa đo/chưa đóng** trên máy Windows tham chiếu.
 
 ### Phase 4 — Hoàn thiện trải nghiệm phát nhạc (`v0.5.0`) · Cỡ: **M**
-**Trạng thái 29/10/2026:** lát nền queue/chế độ phát đã triển khai ở commit `ab7308f`, app/manifest `0.5.0` (chưa tag), và [Windows CI `40846049669`](https://github.com/lxmtuu/Mimi/actions/runs/40846049669) đạt restore/build/test với 56 khai báo/71 case ước tính. Phase **chưa đóng**: tích hợp media của Windows, phím tắt đầy đủ, thiết bị xuất âm và nghiệm thu tương tác trên Windows thật vẫn còn mở.
+**Trạng thái 29/10/2026:** lát nền queue/chế độ phát (`ab7308f`) và lát tích hợp media Windows (`a138544`…`f530ba9`) đã triển khai trên app/manifest `0.5.0` (chưa tag); [Windows CI queue `40846049669`](https://github.com/lxmtuu/Mimi/actions/runs/40846049669) và [Windows CI media `40850352056`](https://github.com/lxmtuu/Mimi/actions/runs/40850352056) đều đạt restore/build/test với 56 khai báo/71 case ước tính. Phase **chưa đóng**: thiết bị xuất âm và nghiệm thu tương tác trên Windows thật vẫn còn mở.
 - [x] Queue **Up Next** có UI kéo sắp xếp + Up/Down/phát ngay/xoá/Clear và Play Next/Add to Queue; Shuffle-bag + Repeat Off/All/One; Mute + % volume hiệu dụng; nút tua nhanh −10s/+10s; settings schema v3 khôi phục chế độ phát và queue của phiên Pause
-- [ ] Bổ sung tua ±5s trong hệ phím tắt của lát tích hợp Windows
-- [ ] Media keys + SMTC overlay của Windows; taskbar thumbnail controls; bảng phím tắt trong Settings
+- [x] Bổ sung tua ±5s trong hệ phím tắt của lát tích hợp Windows
+- [x] Media keys + SMTC overlay của Windows; taskbar thumbnail controls + progress; bảng phím tắt trong Settings
 - [ ] Đánh giá & (nếu đạt) chuyển WasapiOut; xử lý đổi thiết bị âm thanh giữa chừng (rút tai nghe → tự pause)
 - **Exit:** điều khiển trọn vẹn không cần chuột; overlay media của Windows hiện đúng bài/ảnh bìa; đổi output device không crash.
 
