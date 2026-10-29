@@ -242,6 +242,8 @@ Tại thời điểm rà soát ban đầu, dự án là 1 project WPF với `Mai
 
 **Cập nhật WASAPI + thiết bị xuất âm Phase 4 (29/10/2026):** commit `ff17c07` và [Windows CI đã đạt restore/build/test](https://github.com/lxmtuu/Mimi/actions/runs/40855564811) chuyển `AudioService` sang **WasapiOut shared mode, event sync, latency yêu cầu 100ms** trên endpoint Render/Multimedia mặc định của Windows, tận dụng AutoConvertPcm của WASAPI và up-mix riêng file mono sang stereo sau visualizer tap; `WaveOutEvent` 200ms/3 buffer chỉ còn là fallback khi WASAPI không mở được. Core có `AudioOutputStatus`/`AudioOutputChangedEventArgs` và `AudioOutputUnavailableException`, còn `WindowsAudioDeviceWatcher` ở `Mimi.Audio` đăng ký `IMMNotificationClient`, debounce 300ms và marshal việc dựng lại stream về synchronization context của app. Khi endpoint mặc định đổi, biến mất hoặc stream dừng vì lỗi thiết bị, service giữ nguyên reader/vị trí, chỉ dispose output cũ rồi mở output mới ở trạng thái Pause—không tự chuyển tiếng sang loa khác; ViewModel phân biệt “không có output” với file hỏng nên không ghi playback-error oan và hiển thị nhãn output + banner trong Now Playing/Settings. Bộ test tăng lên 60 khai báo/75 case ước tính nhờ 4 test cho status/exception; artifact app là 36.278.739 byte. Quyết định D-03 mới được chốt ở mức kiến trúc/triển khai có fallback; Phase 4 vẫn chưa đóng cho tới khi đo A/B độ trễ/ổn định WASAPI ↔ WaveOut và nghiệm thu rút USB, Bluetooth, disable/không có output cùng các exit gate tương tác khác trên Windows thật.
 
+**Xác minh Windows thật + lát hỗ trợ A/B (29/10/2026):** người dùng đã chạy trực tiếp trên Windows tại trạng thái sau `b74e5cd`: NuGet restore thành công, Release build đạt **0 warning/0 error**, unit test **75/75 passed**, `git diff --check` sạch và working tree sạch. Kết quả này xác nhận cổng build/test tự động trên máy thật, nhưng **không** thay thế bằng chứng runtime cho SMTC/flyout/media keys/taskbar, rút USB/Bluetooth, disable/không có output hay phép đo D-03. Commit `9f19f40` và [Windows CI `40872986566`](https://github.com/lxmtuu/Mimi/actions/runs/40872986566) bổ sung cơ chế chẩn đoán `MIMI_AUDIO_OUTPUT=auto|wasapi|waveout`: `auto` giữ WASAPI shared → WaveOut fallback, `wasapi` tắt WaveOut fallback, `waveout` bỏ WASAPI và báo trạng thái `WaveOutForced`/`WaveOut diagnostic` để tránh lẫn với fallback thật; giá trị sai được log cảnh báo rồi quay về `auto`. Parser nằm ở Core, lựa chọn được đọc một lần khi `AudioService` khởi tạo và xuất hiện trong log/diagnostics, không thêm công tắc Settings cho người dùng cuối. Cùng commit này, mỗi thumbnail task của SMTC sở hữu và tự dispose `CancellationTokenSource` của nó trong `finally`, còn task bị thay thế chỉ bị Cancel để tránh dispose tranh chấp. Bộ test tăng lên 62 khai báo/83 case ước tính; artifact app của CI là 36.280.049 byte. Trạng thái Phase 4 được ghi nhận là **Code complete — Acceptance pending**; các cổng P4-A…P4-H ở mục Phase 4 vẫn phải có kết quả trên Windows thật trước khi chốt D-03 hoặc đóng phase.
+
 ```mermaid
 flowchart TB
     subgraph Presentation["Presentation — Mimi.App (WPF)"]
@@ -282,7 +284,7 @@ flowchart TB
 ## 8. Thiết kế chi tiết từng phân hệ
 
 ### 8.1. Audio Engine & Playback
-- **Đầu ra (Phase 4, đã triển khai — chờ đo nghiệm thu):** mặc định dùng **`WasapiOut` shared mode + event sync** trên endpoint Multimedia mặc định, yêu cầu latency 100ms và dựa vào AutoConvertPcm cho sample-rate/format; file mono được up-mix sang stereo sau visualizer tap, còn `WaveOutEvent` 200ms/3 buffer là fallback. `WindowsAudioDeviceWatcher` nghe thay đổi endpoint; output được dựng lại quanh reader hiện tại và luôn để Pause khi thiết bị đổi/mất. Quyết định D-03 chỉ được coi là nghiệm thu xong sau phép đo A/B độ trễ/ổn định trên Windows thật.
+- **Đầu ra (Phase 4, đã triển khai — chờ đo nghiệm thu):** mặc định dùng **`WasapiOut` shared mode + event sync** trên endpoint Multimedia mặc định, yêu cầu latency 100ms và dựa vào AutoConvertPcm cho sample-rate/format; file mono được up-mix sang stereo sau visualizer tap, còn `WaveOutEvent` 200ms/3 buffer là fallback. Biến chẩn đoán `MIMI_AUDIO_OUTPUT` có thể ép WASAPI hoặc WaveOut cho cùng một build/endpoint khi đo A/B, nhưng không phải tuỳ chọn Settings của người dùng cuối; các hằng 100ms/200ms không được diễn giải là latency đầu-cuối đã đo. `WindowsAudioDeviceWatcher` nghe thay đổi endpoint; output được dựng lại quanh reader hiện tại và luôn để Pause khi thiết bị đổi/mất. Quyết định D-03 chỉ được coi là nghiệm thu xong sau phép đo A/B độ trễ/ổn định trên Windows thật.
 - **Máy trạng thái phát nhạc (chuẩn hoá mọi chuyển đổi, sửa gốc các lỗi trạng thái hiện tại):**
 ```mermaid
 stateDiagram-v2
@@ -428,12 +430,20 @@ AudioFileReader (unity gain)
 - **Exit:** thư viện 10.000 bài: cuộn mượt (ảo hoá), tìm < 100ms, quét nền không treo UI; tắt app giữa lúc ghi không hỏng DB. **Chưa đo/chưa đóng** trên máy Windows tham chiếu.
 
 ### Phase 4 — Hoàn thiện trải nghiệm phát nhạc (`v0.5.0`) · Cỡ: **M**
-**Trạng thái 29/10/2026:** các lát code queue/chế độ phát (`ab7308f`), tích hợp media Windows (`a138544`…`f530ba9`) và WASAPI/thiết bị xuất âm (`ff17c07`) đã triển khai trên app/manifest `0.5.0` (chưa tag); [Windows CI queue `40846049669`](https://github.com/lxmtuu/Mimi/actions/runs/40846049669), [Windows CI media `40850352056`](https://github.com/lxmtuu/Mimi/actions/runs/40850352056) và [Windows CI output `40855564811`](https://github.com/lxmtuu/Mimi/actions/runs/40855564811) đều đạt restore/build/test, bộ test hiện 60 khai báo/75 case ước tính. Phase **chưa đóng**: các exit gate và phép đo D-03 trên Windows thật vẫn còn mở.
+**Trạng thái 29/10/2026 — Code complete · Acceptance pending:** các lát code queue/chế độ phát (`ab7308f`), tích hợp media Windows (`a138544`…`f530ba9`), WASAPI/thiết bị xuất âm (`ff17c07`) và override backend phục vụ A/B (`9f19f40`) đã triển khai trên app/manifest `0.5.0` (chưa tag); [Windows CI queue `40846049669`](https://github.com/lxmtuu/Mimi/actions/runs/40846049669), [Windows CI media `40850352056`](https://github.com/lxmtuu/Mimi/actions/runs/40850352056), [Windows CI output `40855564811`](https://github.com/lxmtuu/Mimi/actions/runs/40855564811) và [Windows CI override `40872986566`](https://github.com/lxmtuu/Mimi/actions/runs/40872986566) đều đạt restore/build/test. Trên máy Windows thật, bản trước override cũng đã restore/build với 0 warning/0 error và test 75/75; bộ test hiện có 62 khai báo/83 case ước tính. Phase **chưa đóng**: các cổng tương tác/thiết bị P4-A…P4-H và phép đo D-03 trên Windows thật vẫn còn mở.
 - [x] Queue **Up Next** có UI kéo sắp xếp + Up/Down/phát ngay/xoá/Clear và Play Next/Add to Queue; Shuffle-bag + Repeat Off/All/One; Mute + % volume hiệu dụng; nút tua nhanh −10s/+10s; settings schema v3 khôi phục chế độ phát và queue của phiên Pause
 - [x] Bổ sung tua ±5s trong hệ phím tắt của lát tích hợp Windows
 - [x] Media keys + SMTC overlay của Windows; taskbar thumbnail controls + progress; bảng phím tắt trong Settings
 - [x] Chuyển mặc định sang WasapiOut shared mode, giữ WaveOut làm fallback; xử lý đổi/rút thiết bị âm thanh giữa chừng bằng cách giữ bài/vị trí, tự Pause và dựng lại output
-- [ ] Đo A/B độ trễ/ổn định WASAPI ↔ WaveOut và nghiệm thu USB/Bluetooth/disable/không có output trên Windows thật để chốt D-03 cùng exit gate của Phase
+- [x] Bổ sung override chẩn đoán `MIMI_AUDIO_OUTPUT` để ép WASAPI/WaveOut ngay trên cùng build và endpoint khi đo A/B; không phơi bày thành công tắc Settings của người dùng cuối
+- [ ] **P4-A — SMTC/flyout:** metadata, ảnh bìa, trạng thái, timeline và các nút điều khiển đúng trên Windows thật
+- [ ] **P4-B — Taskbar:** thumbnail Previous/Play/Pause/Next và progress phản ánh đúng trạng thái phát
+- [ ] **P4-C — Media keys/keyboard:** phím cứng và phím tắt hoạt động đúng một lần, không toggle hai lần và không phá focus của ô nhập/button/slider/danh sách
+- [ ] **P4-D — Mất thiết bị:** rút USB hoặc ngắt Bluetooth giữa lúc phát không crash, giữ bài/vị trí và dừng ở Pause
+- [ ] **P4-E — Không có output:** disable endpoint hoặc không còn output không đánh dấu bài hợp lệ là corrupt và không làm queue tự chạy loạn
+- [ ] **P4-F — Kết nối lại:** endpoint mới/cũ xuất hiện lại được nhận diện và chỉ phát tiếp sau khi người dùng bấm Play
+- [ ] **P4-G — A/B D-03:** dùng `MIMI_AUDIO_OUTPUT` để đo độ trễ/ổn định WASAPI ↔ WaveOut trên cùng máy, endpoint, file và điều kiện âm lượng; ghi phương pháp đo thay vì dùng hằng latency yêu cầu làm kết quả
+- [ ] **P4-H — Chốt hồ sơ:** ghi kết quả P4-A…P4-G vào `ROADMAP.md`, sau đó mới quyết định chốt D-03 và đóng Phase 4
 - **Exit:** điều khiển trọn vẹn không cần chuột; overlay media của Windows hiện đúng bài/ảnh bìa; đổi output device không crash.
 
 ### Phase 5 — Song ngữ & Theme cộng đồng (`v0.6.0`) · Cỡ: **L**
@@ -508,7 +518,7 @@ AudioFileReader (unity gain)
 |---|---|---|---|
 | D-01 | LICENSE mã nguồn dự án | **MIT** (đơn giản, thân thiện cộng đồng) | Trước Phase 7 (cần chủ dự án xác nhận) |
 | D-02 | Công nghệ đóng gói/auto-update | **Velopack** (hiện đại, delta update) hoặc Inno Setup (quen thuộc) | Phase 7, sau khi thử nghiệm ký số |
-| D-03 | WaveOutEvent → WasapiOut | **Đã triển khai WasapiOut shared làm mặc định + WaveOut fallback**; chỉ chốt nghiệm thu nếu đo A/B trên Windows thật không kém về độ trễ/ổn định | Phase 4, tại cổng nghiệm thu Windows thật |
+| D-03 | WaveOutEvent → WasapiOut | **Tạm giữ WasapiOut shared làm mặc định + WaveOut fallback**; đã có `MIMI_AUDIO_OUTPUT` để ép từng backend trên cùng build/endpoint, nhưng chỉ chốt nghiệm thu sau khi P4-G có số đo A/B độ trễ/ổn định trên Windows thật | Phase 4, tại cổng P4-G/P4-H |
 | D-04 | Renderer: DrawingVisual vs SkiaSharp | **DrawingVisual trước**, SkiaSharp chỉ khi số đo yêu cầu | Phase 1 |
 | D-05 | Thêm decoder `.ogg/.opus` | Đánh giá license/độ nặng của thư viện ứng viên | Phase 3 |
 | D-06 | Sản xuất mascot Mimi gốc | Thuê artist hoặc mở đợt đóng góp cộng đồng có brief + chuyển nhượng quyền rõ ràng | Phase 5 |

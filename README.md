@@ -32,7 +32,10 @@ A Windows desktop music-player foundation built with C# / WPF / .NET 8 and NAudi
   rebuilds only the output stream, and waits for an explicit Play press
   instead of unexpectedly moving sound to another device. The active
   output is shown in Now Playing and Settings; a missing output is
-  reported separately from a corrupt music file
+  reported separately from a corrupt music file. For diagnostics only,
+  `MIMI_AUDIO_OUTPUT=wasapi|waveout|auto` can force one backend for a
+  same-machine A/B comparison; it is intentionally not an end-user
+  Settings switch
 - Vietnamese diacritic-insensitive search over track metadata. When SQLite
   is available, the search box uses debounced FTS5 prefix queries and
   relevance ordering in Library/Favorites, while preserving playlist and
@@ -85,11 +88,13 @@ A Windows desktop music-player foundation built with C# / WPF / .NET 8 and NAudi
   and fading out while paused or stopped
 - Modular MVVM architecture with dependency injection and automated tests;
   Windows Release builds and unit tests are verified by GitHub Actions.
-  This is now Phase 4 in development (`v0.5.0`): the queue/playback-mode,
-  Windows media-control/keyboard, and WASAPI output-device slices are
-  implemented in code, while the real-Windows acceptance gates in
-  `ROADMAP.md`—including A/B output latency and stability measurements—
-  remain open
+  Phase 4 (`v0.5.0`) is **code complete — acceptance pending**: the queue /
+  playback-mode, Windows media-control/keyboard, WASAPI output-device,
+  and diagnostic backend-override slices are implemented. Automated
+  restore/build/test has also passed on a real Windows machine
+  (0 warnings/errors and 75/75 tests for the pre-override build), but the
+  interactive, device-removal, and WASAPI↔WaveOut A/B acceptance gates in
+  `ROADMAP.md` remain open
 
 ## Requirements
 - Windows 10 version 1809 or later / Windows 11, with Windows Terminal or
@@ -254,6 +259,37 @@ Bluetooth hoặc tắt thiết bị đang dùng: Mimi không được crash, kh�
 đánh dấu bài là lỗi; khi cắm lại hoặc chọn thiết bị khác, nhãn output phải
 cập nhật. Nếu có sẵn, thử thêm file mono và file 44.1/48/96 kHz hoặc đa
 kênh để kiểm tra chuyển đổi định dạng của WASAPI shared.
+
+**Đo A/B WASAPI ↔ WaveOut (chỉ dành cho chẩn đoán):** đóng Mimi hoàn toàn
+trước mỗi lần đổi backend, vì tiến trình Mimi đã chạy sẽ giữ backend cũ và
+single-instance sẽ chuyển yêu cầu mở mới sang chính tiến trình đó. Từ
+PowerShell tại thư mục gốc repo, chạy lần lượt từng cặp lệnh dưới đây; biến
+môi trường chỉ có hiệu lực trong cửa sổ PowerShell hiện tại và không tạo
+một công tắc backend trong Settings:
+
+```powershell
+$env:MIMI_AUDIO_OUTPUT = 'wasapi'
+Start-Process -FilePath '.\src\Mimi.App\bin\Release\net8.0-windows10.0.19041.0\Mimi.exe' -Wait
+
+$env:MIMI_AUDIO_OUTPUT = 'waveout'
+Start-Process -FilePath '.\src\Mimi.App\bin\Release\net8.0-windows10.0.19041.0\Mimi.exe' -Wait
+
+$env:MIMI_AUDIO_OUTPUT = 'auto'
+Start-Process -FilePath '.\src\Mimi.App\bin\Release\net8.0-windows10.0.19041.0\Mimi.exe' -Wait
+
+Remove-Item Env:MIMI_AUDIO_OUTPUT -ErrorAction SilentlyContinue
+```
+
+Giữ nguyên cùng endpoint, file nhạc, mức volume của Windows/app, sample
+rate và các tuỳ chọn enhancements cho cả hai lượt. Nhãn phải hiện tương ứng
+`WASAPI shared · [endpoint]` hoặc `WaveOut diagnostic · [endpoint]`; log
+cũng ghi backend đang bị ép. Hãy so độ trễ Play/Pause/seek và độ ổn định
+(glitch/dropout, chuyển bài, đổi/rút thiết bị), đồng thời ghi rõ phương
+pháp đo và điều kiện máy. Các số 100ms/200ms trong code chỉ là latency
+được yêu cầu/cấu hình, **không phải latency đầu-cuối đã đo**. `auto` khôi
+phục hành vi mặc định WASAPI → WaveOut fallback; giá trị không hợp lệ sẽ
+được log cảnh báo và tự quay về `auto`.
+
 Cuối cùng, bấm `F11` để mở Stage toàn màn hình (`Esc` để thoát Stage).
 
 #### 5. Mở thư mục dữ liệu và log
@@ -314,15 +350,16 @@ dotnet run --project .\src\Mimi.App\Mimi.App.csproj
   state machine and shuffle-bag primitive, and Vietnamese search
   normalization
 - `src/Mimi.Audio` — NAudio WASAPI shared-mode playback, WaveOut fallback,
-  and Windows output-device watching/recovery behind `IAudioPlayer`
+  a diagnostic-only backend override for A/B testing, and Windows
+  output-device watching/recovery behind `IAudioPlayer`
 - `src/Mimi.Library` — asynchronous audio-file discovery, TagLib-Sharp
   metadata/cover extraction, the SQLite library catalog, and JSON
   settings/legacy-library migration fallback
 - `src/Mimi.Visualizer` — ring-buffer capture and testable FFT/AGC analysis
 - `tests/Mimi.Tests` — xUnit tests for scanning, metadata, SQLite catalog
   search/playlists/history, user-data migration/archive, playback queue
-  and shuffle-bag behavior, Vietnamese search normalization, and spectrum
-  analysis
+  and shuffle-bag behavior, audio-output status/backend selection,
+  Vietnamese search normalization, and spectrum analysis
 
 ## Notes
 This is a first working foundation, not a finished commercial product. Online streaming is intentionally not implemented yet. Each streaming provider requires an official API/SDK, authorization, and compliance with that provider's playback and licensing rules. Do not scrape protected services or attempt to bypass DRM.
