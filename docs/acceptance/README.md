@@ -109,12 +109,24 @@ dài hạn hay latency âm học đầu-cuối.
 - Lượt thao tác trực tiếp Quick Settings ngày 29/10/2026 sau đó đã xác nhận
   **A1 metadata, A2 cover, A3 đồng bộ trạng thái, A4 Play/Pause, A5 Next và
   A6 Previous đều `PASS`**; A6 quay lại Cyan với metadata/cover trên thẻ và
-  UI Mimi đồng bộ. A7 vẫn chưa phân loại được vì thẻ không hiện progress
-  bar/thời gian để so với app; A8 bị chặn ở bề mặt nhìn thấy do không có
-  timeline để kéo; A9 mới đối chiếu được ở source, chưa chạy vận hành ±10
-  giây; A10–A12 vẫn `NOT RUN`.
-- P4-A: `PARTIAL` (A1–A6 `PASS`; A7 chưa kết luận; A8 `BLOCKED` ở bề mặt
-  Quick Settings hiện tại; A9 chưa chạy vận hành; A10–A12 `NOT RUN`).
+  UI Mimi đồng bộ. A8 bị chặn ở bề mặt nhìn thấy do không có timeline để
+  kéo; A9 mới đối chiếu được ở source, chưa chạy vận hành ±10 giây;
+  A10–A12 vẫn `NOT RUN`.
+- Probe GSMTC chỉ-đọc tại `7c14775` đã chạy thành công trên Windows với
+  session `Mimi.exe`. Lượt Cyan đầu tiên bắt đầu ở `30.107 / 30.119` giây
+  nên `Position` không đổi trong khoảng 11,26 giây là **không kết luận
+  được**. Một lượt trên Magenta khi đang `Playing` cho thấy Position tăng
+  từ khoảng `2.46` lên `7.29` giây trong 5,17 giây, duration khoảng
+  `30.119` giây và Windows ghi nhận seek/FastForward/Rewind được bật.
+  Như vậy đường xuất bản và tiến triển timeline ở tầng GSMTC đã có bằng
+  chứng hoạt động; phần progress/thời gian hiển thị trực tiếp trên thẻ
+  Quick Settings vẫn chưa được xác minh, nên **A7 vẫn `PARTIAL`**, không
+  nâng thành `PASS` toàn bộ. Lượt kiểm tra cùng thời điểm cũng xác nhận
+  source tại `7c14775` đạt 83/83 test và build 0 warning/0 error sang thư
+  mục đầu ra riêng vì tiến trình Mimi đang chạy khóa DLL đầu ra mặc định.
+- P4-A: `PARTIAL` (A1–A6 `PASS`; A7 đạt ở tầng dữ liệu GSMTC nhưng chưa
+  xác minh hiển thị trên thẻ; A8 `BLOCKED` ở bề mặt Quick Settings hiện
+  tại; A9 chưa chạy vận hành; A10–A12 `NOT RUN`).
 - P4-B: `NOT RUN` cho B1–B6.
 - P4-C: `PARTIAL` (C5/C7 mới có bằng chứng mô phỏng/một phần focus; media
   keys vật lý chưa chạy).
@@ -126,12 +138,15 @@ dài hạn hay latency âm học đầu-cuối.
 
 Khi Quick Settings không hiện progress bar/thời gian, chạy script GSMTC
 chỉ-đọc trong lúc Mimi đang `Playing` theo mục chẩn đoán A7/A8 của
-[`WINDOWS-ACCEPTANCE-CHECKLIST.md`](WINDOWS-ACCEPTANCE-CHECKLIST.md). Nếu
-Windows nhận được duration khoảng 30 giây và `Position`/`LastUpdatedTime`
-cùng tiến, vấn đề nằm ở khả năng hiển thị của bề mặt shell thay vì bằng chứng
-app thiếu timeline. Nếu timeline toàn 0 với `LastUpdatedTime` năm 1601, mới
-điều tra đường xuất bản timeline và cảnh báo SMTC đầu tiên trong log. Probe
-không tự biến A7 trực quan, A8 seek trên thẻ hoặc A9 ±10 giây thành `PASS`.
+[`WINDOWS-ACCEPTANCE-CHECKLIST.md`](WINDOWS-ACCEPTANCE-CHECKLIST.md). Hãy
+bắt đầu khi bài còn đủ thời lượng cho toàn bộ cửa sổ lấy mẫu; Summary có
+cờ `StartedNearEnd` để loại các lượt bắt đầu sát cuối bài khỏi kết luận
+Position bị đóng băng. Nếu Windows nhận được duration khoảng 30 giây và
+`Position`/`LastUpdatedTime` cùng tiến, vấn đề còn lại nằm ở khả năng hiển
+thị của bề mặt shell thay vì bằng chứng app thiếu timeline. Nếu timeline
+toàn 0 với `LastUpdatedTime` năm 1601, mới điều tra đường xuất bản timeline
+và cảnh báo SMTC đầu tiên trong log. Probe không tự biến A7 trực quan, A8
+seek trên thẻ hoặc A9 ±10 giây thành `PASS`.
 
 ## Phân tích nhanh CSV loopback
 

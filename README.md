@@ -99,9 +99,11 @@ A Windows desktop music-player foundation built with C# / WPF / .NET 8 and NAudi
   synthetic 30-second fixtures (metadata, distinct covers, playlist order,
   and audible WASAPI playback). Direct Quick Settings checks then passed
   A1–A6 (metadata, cover, state sync, Play/Pause, Next, and Previous).
-  A7 remains unclassified because that card exposes no visible progress
-  bar/time to compare, A8 is blocked on that surface, A9 is source-checked
-  only, and A10–A12 plus the taskbar/media-key/device-loss and longer
+  A read-only GSMTC probe then verified that the Magenta timeline and
+  seek bounds reach Windows and advance while playing, but A7 remains
+  partial because no visible Quick Settings progress/time was verified.
+  A8 is blocked on that surface, A9 is source-checked only, and A10–A12
+  plus the taskbar/media-key/device-loss and longer
   WASAPI↔WaveOut stability gates in `ROADMAP.md` remain open. Their
   repeatable manual procedures, result template, loopback CSV analyzer,
   and read-only GSMTC timeline probe live in the

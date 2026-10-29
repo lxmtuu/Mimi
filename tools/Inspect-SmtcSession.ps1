@@ -13,6 +13,8 @@
     The script is read-only. It never calls Play, Pause, Next, Previous,
     FastForward, Rewind, or TryChangePlaybackPositionAsync, and its output
     is not by itself an acceptance PASS for direct Quick Settings use.
+    Start it while enough of the track remains for the whole sampling
+    window; the summary flags runs that begin too close to the end.
 
     Run it with Windows PowerShell 5.1 (powershell.exe), because that host
     can load the WinRT types and System.Runtime.WindowsRuntime used below.
@@ -348,6 +350,34 @@ for ($sampleIndex = 1; $sampleIndex -le $Samples; $sampleIndex++) {
 $firstSample = $sampleRows[0]
 $lastSample = $sampleRows[$sampleRows.Count - 1]
 $sameTitleRun = $firstSample.Title -eq $lastSample.Title
+$firstRemainingSeconds = $null
+if ($firstSample.Timeline.DurationSeconds -gt 0) {
+    $firstRemainingSeconds = [Math]::Max(
+        0,
+        $firstSample.Timeline.DurationSeconds -
+        $firstSample.Timeline.RelativePositionSeconds)
+}
+
+$finalRemainingSeconds = $null
+if ($lastSample.Timeline.DurationSeconds -gt 0) {
+    $finalRemainingSeconds = [Math]::Max(
+        0,
+        $lastSample.Timeline.DurationSeconds -
+        $lastSample.Timeline.RelativePositionSeconds)
+}
+
+$plannedSamplingWindowSeconds = 0.0
+if ($Samples -gt 1) {
+    $plannedSamplingWindowSeconds = `
+        ($Samples - 1) * $IntervalMilliseconds / 1000.0
+}
+
+$startedNearEnd = $false
+if ($null -ne $firstRemainingSeconds) {
+    $startedNearEnd = `
+        $firstRemainingSeconds -le ($plannedSamplingWindowSeconds + 1.0)
+}
+
 $rawPositionDeltaSeconds = $null
 $lastUpdatedDeltaSeconds = $null
 $wallClockDeltaSeconds = $null
@@ -376,8 +406,16 @@ $hints = @()
 if (-not $timelinePublished) {
     $hints += 'timeline-not-published: EndTime/StartTime do not form a positive duration, or LastUpdatedTime is the 1601 sentinel.'
 }
-elseif ($lastSample.PlaybackStatus -eq 'Playing' -and
-        $null -ne $rawPositionDeltaSeconds -and $rawPositionDeltaSeconds -gt 0.5) {
+elseif ($startedNearEnd -and
+        ($null -eq $rawPositionDeltaSeconds -or
+         [Math]::Abs($rawPositionDeltaSeconds) -le 0.5)) {
+    $hints += 'inconclusive-started-near-end: the first sample leaves too little track remaining to judge position advancement; restart the track and rerun.'
+}
+elseif (-not $sameTitleRun) {
+    $hints += 'track-changed-during-run: first/last position deltas are not comparable; rerun within one track.'
+}
+elseif ($null -ne $rawPositionDeltaSeconds -and $rawPositionDeltaSeconds -gt 0.5 -and
+        $null -ne $lastUpdatedDeltaSeconds -and $lastUpdatedDeltaSeconds -gt 0.5) {
     $hints += 'timeline-published-and-advancing: if Quick Settings shows no seek bar, separate app publishing from shell rendering.'
 }
 elseif ($lastSample.PlaybackStatus -eq 'Playing' -and
@@ -392,12 +430,24 @@ else {
     $hints += 'not-playing-at-final-sample: a frozen raw position can be correct while paused.'
 }
 
+if ($startedNearEnd -and
+    $hints[0] -notlike 'inconclusive-started-near-end:*') {
+    $hints += 'started-near-end: interpret the run cautiously because playback may end or change tracks before sampling finishes.'
+}
+
 $summary = [pscustomobject][ordered]@{
     SourceFilter = $SourceFilter
     SourceAppUserModelId = $lastSample.SourceAppUserModelId
     Samples = $sampleRows.Count
     SameTitleForFirstAndLastSample = $sameTitleRun
     TimelinePublished = $timelinePublished
+    PlannedSamplingWindowSeconds = $plannedSamplingWindowSeconds
+    StartedNearEnd = $startedNearEnd
+    FirstPlaybackStatus = $firstSample.PlaybackStatus
+    FirstTitle = $firstSample.Title
+    FirstDurationSeconds = $firstSample.Timeline.DurationSeconds
+    FirstPositionSeconds = $firstSample.Timeline.RelativePositionSeconds
+    FirstRemainingSeconds = $firstRemainingSeconds
     WallClockDeltaSeconds = $wallClockDeltaSeconds
     RawPositionDeltaSeconds = $rawPositionDeltaSeconds
     LastUpdatedDeltaSeconds = $lastUpdatedDeltaSeconds
@@ -405,6 +455,7 @@ $summary = [pscustomobject][ordered]@{
     FinalTitle = $lastSample.Title
     FinalDurationSeconds = $lastSample.Timeline.DurationSeconds
     FinalPositionSeconds = $lastSample.Timeline.RelativePositionSeconds
+    FinalRemainingSeconds = $finalRemainingSeconds
     FinalExtrapolatedPositionSeconds = $lastSample.Timeline.ExtrapolatedPositionSeconds
     IsPlaybackPositionEnabled = $lastSample.Controls.IsPlaybackPositionEnabled
     IsFastForwardEnabled = $lastSample.Controls.IsFastForwardEnabled

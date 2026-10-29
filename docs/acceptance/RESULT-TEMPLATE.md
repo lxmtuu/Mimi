@@ -75,6 +75,23 @@
 | A11 Repeat hai chiều |  |  |
 | A12 Kết thúc bài/queue |  |  |
 
+#### Chẩn đoán GSMTC cho A7 (nếu đã chạy probe chỉ-đọc)
+
+Probe chỉ xác minh dữ liệu Windows nhận được; nó không thay thế quan sát
+thanh tiến trình/thời gian và thao tác trực tiếp trên Quick Settings.
+
+| Hạng mục | Giá trị |
+|---|---|
+| File JSON ngoài repo/ignored |  |
+| Bài và trạng thái ở mẫu đầu |  |
+| Position / Duration / Remaining ở mẫu đầu |  |
+| Bài, trạng thái và Position ở mẫu cuối |  |
+| `TimelinePublished` / `StartedNearEnd` |  |
+| `RawPositionDeltaSeconds` / `LastUpdatedDeltaSeconds` |  |
+| `IsPlaybackPositionEnabled` / FastForward / Rewind |  |
+| Quick Settings có hiện progress/thời gian không |  |
+| Kết luận tách riêng: xuất bản GSMTC và hiển thị trên thẻ |  |
+
 ### P4-B Taskbar
 
 | ID | Kết quả | Ghi chú |

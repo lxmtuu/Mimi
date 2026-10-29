@@ -186,12 +186,17 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass `
 Ghi thêm mốc thời gian/duration nhìn thấy trong Mimi ở đầu và cuối lượt lấy
 mẫu, cùng các dòng `Windows media controls`/SMTC warning đầu tiên trong log
 của phiên app. Script không gửi lệnh Play/Pause/Next/Previous/seek nào.
+Với mặc định 12 mẫu cách nhau 1 giây, hãy bắt đầu khi bài còn ít nhất khoảng
+15 giây; nếu Summary báo `StartedNearEnd = True`, lượt đó không đủ điều kiện
+để kết luận Position có đứng yên bất thường hay không.
 
 Diễn giải tối thiểu:
 
 | Dữ liệu probe | Phân loại tiếp theo |
 |---|---|
+| `StartedNearEnd = True`, Position ở sát EndTime và gần như không đổi | Lượt đo **không kết luận được**. Phát lại bài từ đầu và chạy lại; không dùng riêng lượt này để kết luận nguồn `CurrentTime` lỗi |
 | `DurationSeconds` khoảng 30; `Position` và `LastUpdatedTime` cùng tăng; tuổi của `LastUpdatedTime` nhỏ | Mimi đã xuất bản timeline. Nếu thẻ Quick Settings vẫn không có bar/time, ghi A7 bề mặt hiển thị là `BLOCKED/N/A`, chưa coi là lỗi timeline của app |
+| Bài thay đổi giữa mẫu đầu và mẫu cuối | Không so hiệu Position giữa hai bài; chạy lại trọn trong một bài còn đủ thời lượng |
 | Start/End/Position/MinSeek/MaxSeek đều 0 và `LastUpdatedTime` là năm 1601 | Windows chưa nhận timeline; điều tra `UpdateTimelineProperties`, duration và SMTC exception đầu tiên trong log |
 | `LastUpdatedTime` tăng nhưng `Position` đứng yên trong lúc app vẫn tự tăng vị trí | Điều tra nguồn `CurrentTime` dùng cho SMTC |
 | `Position` tăng nhưng `EndTime`/`MaxSeekTime` bằng 0 | Điều tra nguồn duration; không kết luận chỉ từ giao diện thẻ |
