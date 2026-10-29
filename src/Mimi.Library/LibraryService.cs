@@ -10,13 +10,10 @@ namespace Mimi.Services;
 /// </summary>
 public sealed class LibraryService : ILibraryService
 {
-    private static readonly HashSet<string> Supported = new(StringComparer.OrdinalIgnoreCase)
-    { ".mp3", ".wav", ".aiff", ".aif", ".wma", ".m4a", ".aac", ".flac" };
-
     private readonly ITrackMetadataReader metadataReader;
 
     internal static bool IsSupportedAudioFile(string filePath) =>
-        Supported.Contains(Path.GetExtension(filePath));
+        SupportedAudioFiles.IsSupported(filePath);
 
     public LibraryService()
         : this(new TagLibTrackMetadataReader())
@@ -170,7 +167,7 @@ public sealed class LibraryService : ILibraryService
 
     private static List<string> FilterCandidatePaths(IEnumerable<string> paths) =>
         paths.Where(File.Exists)
-            .Where(path => Supported.Contains(Path.GetExtension(path)))
+            .Where(SupportedAudioFiles.IsSupported)
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToList();
 

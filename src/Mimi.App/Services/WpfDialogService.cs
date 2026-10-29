@@ -10,7 +10,7 @@ public sealed class WpfDialogService : IDialogService
         var dialog = new OpenFileDialog
         {
             Title = "Choose music files",
-            Filter = "Audio files|*.mp3;*.wav;*.aiff;*.aif;*.wma;*.m4a;*.aac;*.flac|All files|*.*",
+            Filter = $"Audio files|{SupportedAudioFiles.FileDialogPattern}|All files|*.*",
             Multiselect = true
         };
 

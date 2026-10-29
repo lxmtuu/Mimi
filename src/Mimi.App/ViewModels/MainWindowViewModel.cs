@@ -53,6 +53,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     private readonly IDialogService dialogService;
     private readonly ICoverArtOptimizer? coverArtOptimizer;
     private readonly ILibraryFolderWatcher? libraryFolderWatcher;
+    private readonly IFileAssociationService? fileAssociationService;
     private readonly Dispatcher uiDispatcher = Dispatcher.CurrentDispatcher;
     private readonly DispatcherTimer positionTimer = new()
     {
@@ -192,7 +193,8 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         IUserDataService userDataService,
         IDialogService dialogService,
         ICoverArtOptimizer? coverArtOptimizer = null,
-        ILibraryFolderWatcher? libraryFolderWatcher = null)
+        ILibraryFolderWatcher? libraryFolderWatcher = null,
+        IFileAssociationService? fileAssociationService = null)
     {
         this.audioPlayer = audioPlayer;
         this.libraryService = libraryService;
@@ -201,6 +203,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         this.dialogService = dialogService;
         this.coverArtOptimizer = coverArtOptimizer;
         this.libraryFolderWatcher = libraryFolderWatcher;
+        this.fileAssociationService = fileAssociationService;
 
         TracksView = CollectionViewSource.GetDefaultView(Tracks);
         TracksView.Filter = FilterTrack;
@@ -218,6 +221,8 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
                 LibraryFolderWatcher_ChangesDetected;
             ConfigureLibraryFolderWatcher();
         }
+
+        RefreshOpenWithMimiRegistration();
 
         audioPlayer.PlaybackChanged += AudioPlayer_PlaybackChanged;
         audioPlayer.PlaybackEnded += AudioPlayer_PlaybackEnded;
@@ -2526,6 +2531,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         lifetimeCancellation.Cancel();
         scanCancellation?.Cancel();
         searchCancellation?.Cancel();
+        CancelPendingExternalOpen();
         SelectedTracks.CollectionChanged -= SelectedTracks_CollectionChanged;
         WatchedFolders.CollectionChanged -= WatchedFolders_CollectionChanged;
         if (libraryFolderWatcher is not null)

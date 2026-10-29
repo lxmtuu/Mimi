@@ -17,6 +17,8 @@ namespace Mimi;
 public partial class App : Application
 {
     private ServiceProvider? serviceProvider;
+    private SingleInstanceCoordinator? singleInstanceCoordinator;
+    private MainWindowViewModel? mainWindowViewModel;
 
     protected override void OnStartup(StartupEventArgs e)
     {
@@ -31,10 +33,40 @@ public partial class App : Application
 
         try
         {
+            singleInstanceCoordinator = new SingleInstanceCoordinator();
+            if (!singleInstanceCoordinator.TryAcquirePrimary())
+            {
+                if (singleInstanceCoordinator.TryForwardPaths(e.Args))
+                {
+                    Log.Information(
+                        "Forwarded startup paths to the primary Mimi instance");
+                    Shutdown(0);
+                    return;
+                }
+
+                if (!singleInstanceCoordinator.TryAcquirePrimary())
+                {
+                    Log.Warning(
+                        "Starting without single-instance forwarding because the " +
+                        "primary instance could not be reached");
+                }
+            }
+
             serviceProvider = BuildServices().BuildServiceProvider();
+            mainWindowViewModel =
+                serviceProvider.GetRequiredService<MainWindowViewModel>();
             var mainWindow = serviceProvider.GetRequiredService<MainWindow>();
             MainWindow = mainWindow;
             mainWindow.Show();
+
+            if (singleInstanceCoordinator.IsPrimaryInstance)
+            {
+                singleInstanceCoordinator.StartListening(
+                    HandleExternalPathsAsync);
+            }
+
+            if (e.Args.Length > 0)
+                _ = mainWindowViewModel.OpenExternalPathsAsync(e.Args);
         }
         catch (Exception ex)
         {
@@ -52,9 +84,33 @@ public partial class App : Application
     protected override void OnExit(ExitEventArgs e)
     {
         Log.Information("Mimi exiting with code {ExitCode}", e.ApplicationExitCode);
+        singleInstanceCoordinator?.Dispose();
         serviceProvider?.Dispose();
         Log.CloseAndFlush();
         base.OnExit(e);
+    }
+
+    private async Task HandleExternalPathsAsync(IReadOnlyList<string> paths)
+    {
+        await Dispatcher.InvokeAsync(() =>
+        {
+            ActivateMainWindow();
+            if (paths.Count > 0 && mainWindowViewModel is not null)
+                _ = mainWindowViewModel.OpenExternalPathsAsync(paths);
+        });
+    }
+
+    private void ActivateMainWindow()
+    {
+        if (MainWindow is null) return;
+
+        if (MainWindow.WindowState == WindowState.Minimized)
+            MainWindow.WindowState = WindowState.Normal;
+
+        if (!MainWindow.IsVisible)
+            MainWindow.Show();
+
+        MainWindow.Activate();
     }
 
     private static ServiceCollection BuildServices()
@@ -69,6 +125,7 @@ public partial class App : Application
         services.AddSingleton<ILibraryCatalog, SqliteLibraryCatalog>();
         services.AddSingleton<ICoverArtOptimizer, CoverArtOptimizer>();
         services.AddSingleton<ILibraryFolderWatcher, FileSystemLibraryFolderWatcher>();
+        services.AddSingleton<IFileAssociationService, WindowsFileAssociationService>();
         services.AddSingleton<IDialogService, WpfDialogService>();
         services.AddSingleton<MainWindowViewModel>();
         services.AddSingleton<MainWindow>();

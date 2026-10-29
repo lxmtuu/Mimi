@@ -706,6 +706,21 @@
                                             Padding="10,7" FontSize="11"
                                             AutomationProperties.Name="Remove the selected watched folder"/>
                                 </WrapPanel>
+                                <Border Height="1" Background="#24344A" Margin="0,12,0,4"/>
+                                <TextBlock Text="WINDOWS INTEGRATION" Foreground="{StaticResource AccentBrush}"
+                                           FontSize="10" FontWeight="Bold" Margin="0,4,0,0"/>
+                                <CheckBox IsChecked="{Binding IsOpenWithMimiRegistered, Mode=TwoWay}"
+                                          Content="Show Mimi in Windows' Open with menu"
+                                          AutomationProperties.Name="Show Mimi in the Windows Open with menu"/>
+                                <TextBlock Text="Registers this Mimi.exe only for your Windows account. It never changes your current default music app; you choose defaults in Windows."
+                                           Foreground="#9FB2C8" FontSize="11" TextWrapping="Wrap" Margin="24,0,0,4"/>
+                                <TextBlock Text="{Binding OpenWithMimiStatusLabel}"
+                                           Foreground="#9FB2C8" FontSize="11" TextWrapping="Wrap"
+                                           Margin="24,0,0,2"/>
+                                <TextBlock Text="{Binding OpenWithMimiExecutablePath}"
+                                           ToolTip="{Binding OpenWithMimiExecutablePath}"
+                                           Foreground="#71869E" FontSize="10"
+                                           TextTrimming="CharacterEllipsis" Margin="24,0,0,2"/>
                             </StackPanel>
                         </Border>
 
