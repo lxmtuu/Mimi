@@ -54,8 +54,11 @@ public sealed class UserDataServiceTests : IDisposable
         Assert.Equal(
             ["C:\\Music\\One.mp3", "C:\\Music\\Two.flac"],
             service.LoadLibraryPaths());
-        Assert.True(service.LoadFavorites().Contains(
-            "c:\\music\\one.mp3"));
+        var loadedFavorites = service.LoadFavorites();
+        Assert.Contains(
+            "c:\\music\\one.mp3",
+            loadedFavorites,
+            loadedFavorites.Comparer);
         Assert.False(File.Exists(Path.Combine(
             dataDirectory,
             "library.json.tmp")));
