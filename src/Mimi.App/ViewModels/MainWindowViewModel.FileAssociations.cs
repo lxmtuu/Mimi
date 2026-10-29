@@ -248,7 +248,7 @@ public sealed partial class MainWindowViewModel
                     if (track is null) continue;
 
                     SelectedTrack = track;
-                    if (TryPlayTrack(track, showError: false))
+                    if (TryPlayTrackFromCurrentView(track, showError: false))
                     {
                         played = true;
                         break;

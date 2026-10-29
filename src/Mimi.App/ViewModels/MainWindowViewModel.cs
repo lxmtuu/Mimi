@@ -142,6 +142,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(VolumePercentLabel))]
+    [NotifyPropertyChangedFor(nameof(EffectiveVolumePercentLabel))]
     private double volume = 0.7;
 
     [ObservableProperty]
@@ -424,7 +425,12 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
 
     partial void OnVolumeChanged(double value)
     {
-        audioPlayer.Volume = (float)value;
+        // Moving the slider away from silence is the natural way to leave
+        // mute; changing it while settings are first applied is not input.
+        if (settingsLoaded && IsMuted && value > 0)
+            IsMuted = false;
+        else
+            ApplyEffectiveVolume();
 
         // The saved value is assigned before settingsLoaded is set. Saving it
         // back during that initial assignment would be redundant.
@@ -648,7 +654,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
             return;
         }
 
-        TryPlayTrack(firstTrack, showError: true);
+        TryPlayTrackFromCurrentView(firstTrack, showError: true);
     }
 
     [RelayCommand]
@@ -824,12 +830,18 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     [RelayCommand]
     private void PlayPause()
     {
-        if (CurrentTrack is null && SelectedTrack is not null)
-            TryPlayTrack(SelectedTrack, showError: true);
-        else if (CurrentTrack is null)
-            PlayRelativeInView(1);
+        if (CurrentTrack is null)
+        {
+            if (!TryPlayNextFromQueue(showErrors: false) &&
+                SelectedTrack is not null)
+            {
+                TryPlayTrackFromCurrentView(SelectedTrack, showError: true);
+            }
+        }
         else
+        {
             audioPlayer.Toggle();
+        }
 
         RefreshPlaybackState();
         SaveSettings();
@@ -839,14 +851,14 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     private void PlayTrack(TrackItemViewModel? track)
     {
         if (track is not null)
-            TryPlayTrack(track, showError: true);
+            TryPlayTrackFromCurrentView(track, showError: true);
     }
 
     [RelayCommand]
-    private void Previous() => PlayRelativeInView(-1);
+    private void Previous() => TryPlayPreviousFromQueue();
 
     [RelayCommand]
-    private void Next() => PlayRelativeInView(1);
+    private void Next() => TryPlayNextFromQueue(showErrors: true);
 
     [RelayCommand]
     private async Task ToggleFavorite(TrackItemViewModel? track)
@@ -987,6 +999,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         if (SelectedTrack == track)
             SelectedTrack = null;
 
+        RemoveTrackFromPlaybackQueue(track);
         SaveSettings();
         Tracks.Remove(track);
         RefreshFilterOptions();
@@ -2191,37 +2204,10 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         }
     }
 
-    // Next/Previous and auto-advance follow the order the user can see
-    // (search / favorites filter applied), not the raw library order.
-    private void PlayRelativeInView(int step, bool showErrors = true)
-    {
-        var visible = TracksView.Cast<TrackItemViewModel>().ToList();
-        if (visible.Count == 0) return;
-
-        var currentIndex = CurrentTrack is null
-            ? -1
-            : visible.IndexOf(CurrentTrack);
-        var candidates = PlaybackNavigator.GetCandidateIndices(
-            visible.Count,
-            currentIndex,
-            step);
-
-        foreach (var candidate in candidates)
-        {
-            // Walk in the requested direction, skipping files that fail to
-            // load, so one broken song never stalls the whole list.
-            if (TryPlayTrack(visible[candidate], showError: false)) return;
-        }
-
-        if (showErrors)
-        {
-            dialogService.ShowWarning(
-                "None of the songs in this list could be played.",
-                "Playback error");
-        }
-    }
-
-    private bool TryPlayTrack(TrackItemViewModel track, bool showError)
+    private bool TryPlayTrack(
+        TrackItemViewModel track,
+        bool showError,
+        Action? onPlaybackStarted = null)
     {
         var loaded = false;
         try
@@ -2233,7 +2219,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
             // broken file never leaves playback state pointing at it.
             CurrentTrack = track;
             currentPlayHistoryId = null;
-            audioPlayer.Volume = (float)Volume;
+            ApplyEffectiveVolume();
             NowPlayingTitle = track.Title;
             NowPlayingSubtitle = track.Subtitle;
             CurrentCoverArtPath = track.CoverArtPath;
@@ -2243,6 +2229,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
             track.Track.HasError = false;
             track.Track.IsMissing = false;
             SelectedTrack = track;
+            onPlaybackStarted?.Invoke();
             RefreshPlaybackState();
             SaveSettings();
             _ = RecordPlaybackStartedAsync(track);
@@ -2257,6 +2244,8 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
                 CurrentTrack = null;
                 currentPlayHistoryId = null;
                 CurrentCoverArtPath = null;
+                playbackQueue.MoveCurrentToHistory();
+                RefreshUpcomingQueue();
             }
 
             track.HasPlaybackError = true;
@@ -2332,8 +2321,16 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     private async Task HandlePlaybackEndedAsync()
     {
         await CompleteCurrentPlaybackAsync();
-        if (!disposed)
-            PlayRelativeInView(1, showErrors: false);
+        if (disposed) return;
+
+        if (RepeatMode == RepeatMode.One && CurrentTrack is not null &&
+            TryPlayTrack(CurrentTrack, showError: false))
+        {
+            return;
+        }
+
+        if (!TryPlayNextFromQueue(showErrors: false))
+            RefreshPlaybackState();
     }
 
     private async Task CompleteCurrentPlaybackAsync()

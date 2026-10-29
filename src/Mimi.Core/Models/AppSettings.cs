@@ -6,17 +6,24 @@ namespace Mimi.Models;
 /// User preferences and the last paused playback session persisted to
 /// settings.json. Version 1 contained only the volume; version 2 adds the
 /// visualizer mode, startup-restore preferences, library-view state, window
-/// placement, watched library folders, and the paused session. Unknown
-/// string values are tolerated
+/// placement, watched library folders, and the paused session. Version 3
+/// adds mute/shuffle/repeat preferences and the paused playback queue.
+/// Unknown string values are tolerated
 /// here and interpreted defensively by the app layer.
 /// </summary>
 public sealed class AppSettings
 {
-    public const int CurrentVersion = 2;
+    public const int CurrentVersion = 3;
 
     public int Version { get; set; } = CurrentVersion;
 
     public double Volume { get; set; } = 0.7;
+
+    public bool IsMuted { get; set; }
+
+    public bool ShuffleEnabled { get; set; }
+
+    public string RepeatMode { get; set; } = "Off";
 
     public string VisualizerMode { get; set; } = "NeonSpectrum";
 
@@ -49,6 +56,7 @@ public sealed class AppSettings
             ? Math.Clamp(Volume, 0, 1)
             : 0.7;
         VisualizerMode = Clean(VisualizerMode, "NeonSpectrum", 64);
+        RepeatMode = Clean(RepeatMode, "Off", 32);
         WatchedFolders = (WatchedFolders ?? [])
             .Select(CleanNullablePath)
             .OfType<string>()
@@ -193,11 +201,27 @@ public sealed class PlaybackSessionSettings
 
     public double PositionSeconds { get; set; }
 
+    public List<string> QueueTrackPaths { get; set; } = [];
+
+    public List<string> HistoryTrackPaths { get; set; } = [];
+
+    public List<string> UpcomingTrackPaths { get; set; } = [];
+
     internal void Normalize()
     {
         CurrentTrackPath = AppSettings.CleanNullablePath(CurrentTrackPath);
         PositionSeconds = double.IsFinite(PositionSeconds)
             ? Math.Clamp(PositionSeconds, 0, MaximumPositionSeconds)
             : 0;
+        QueueTrackPaths = CleanPathList(QueueTrackPaths);
+        HistoryTrackPaths = CleanPathList(HistoryTrackPaths);
+        UpcomingTrackPaths = CleanPathList(UpcomingTrackPaths);
     }
+
+    private static List<string> CleanPathList(List<string>? paths) =>
+        (paths ?? [])
+            .Select(AppSettings.CleanNullablePath)
+            .OfType<string>()
+            .Take(10000)
+            .ToList();
 }

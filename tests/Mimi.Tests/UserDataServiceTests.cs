@@ -97,11 +97,14 @@ public sealed class UserDataServiceTests : IDisposable
     }
 
     [Fact]
-    public void Version2SettingsRoundTrip()
+    public void Version3SettingsRoundTrip()
     {
         var expected = new AppSettings
         {
             Volume = 0.4,
+            IsMuted = true,
+            ShuffleEnabled = true,
+            RepeatMode = "All",
             VisualizerMode = "TwinWave",
             RestorePlaybackSession = false,
             RestoreLibraryView = false,
@@ -134,7 +137,15 @@ public sealed class UserDataServiceTests : IDisposable
             PlaybackSession = new PlaybackSessionSettings
             {
                 CurrentTrackPath = @"C:\Music\Selected.flac",
-                PositionSeconds = 93.5
+                PositionSeconds = 93.5,
+                QueueTrackPaths =
+                [
+                    @"C:\Music\Previous.mp3",
+                    @"C:\Music\Selected.flac",
+                    @"C:\Music\Next.wav"
+                ],
+                HistoryTrackPaths = [@"C:\Music\Previous.mp3"],
+                UpcomingTrackPaths = [@"C:\Music\Next.wav"]
             }
         };
 
@@ -143,6 +154,9 @@ public sealed class UserDataServiceTests : IDisposable
 
         Assert.Equal(AppSettings.CurrentVersion, loaded.Version);
         Assert.Equal(0.4, loaded.Volume);
+        Assert.True(loaded.IsMuted);
+        Assert.True(loaded.ShuffleEnabled);
+        Assert.Equal("All", loaded.RepeatMode);
         Assert.Equal("TwinWave", loaded.VisualizerMode);
         Assert.False(loaded.RestorePlaybackSession);
         Assert.False(loaded.RestoreLibraryView);
@@ -163,10 +177,15 @@ public sealed class UserDataServiceTests : IDisposable
         Assert.True(loaded.WindowPlacement.IsMaximized);
         Assert.NotNull(loaded.PlaybackSession);
         Assert.Equal(93.5, loaded.PlaybackSession.PositionSeconds);
+        Assert.Equal(
+            [@"C:\Music\Previous.mp3", @"C:\Music\Next.wav"],
+            loaded.PlaybackSession.HistoryTrackPaths
+                .Concat(loaded.PlaybackSession.UpcomingTrackPaths));
+        Assert.Equal(3, loaded.PlaybackSession.QueueTrackPaths.Count);
     }
 
     [Fact]
-    public void Version1SettingsReceiveVersion2Defaults()
+    public void Version1SettingsReceiveCurrentDefaults()
     {
         File.WriteAllText(
             Path.Combine(dataDirectory, "settings.json"),
@@ -176,6 +195,9 @@ public sealed class UserDataServiceTests : IDisposable
 
         Assert.Equal(AppSettings.CurrentVersion, loaded.Version);
         Assert.Equal(0.25, loaded.Volume);
+        Assert.False(loaded.IsMuted);
+        Assert.False(loaded.ShuffleEnabled);
+        Assert.Equal("Off", loaded.RepeatMode);
         Assert.Equal("NeonSpectrum", loaded.VisualizerMode);
         Assert.True(loaded.RestorePlaybackSession);
         Assert.True(loaded.RestoreLibraryView);
@@ -189,7 +211,7 @@ public sealed class UserDataServiceTests : IDisposable
     }
 
     [Fact]
-    public void InvalidVersion2SettingsAreNormalized()
+    public void InvalidVersion3SettingsAreNormalized()
     {
         File.WriteAllText(
             Path.Combine(dataDirectory, "settings.json"),
@@ -240,6 +262,41 @@ public sealed class UserDataServiceTests : IDisposable
         Assert.Null(loaded.WindowPlacement.Width);
         Assert.Null(loaded.WindowPlacement.Height);
         Assert.Null(loaded.PlaybackSession);
+    }
+
+    [Fact]
+    public void Version3QueuePathsAreNormalizedWithoutRemovingDuplicates()
+    {
+        service.SaveSettings(new AppSettings
+        {
+            RepeatMode = " ",
+            PlaybackSession = new PlaybackSessionSettings
+            {
+                CurrentTrackPath = @" C:\Music\Current.mp3 ",
+                QueueTrackPaths =
+                [
+                    @" C:\Music\Current.mp3 ",
+                    "",
+                    @"C:\Music\Next.mp3"
+                ],
+                UpcomingTrackPaths =
+                [
+                    @"C:\Music\Next.mp3",
+                    @"C:\Music\Next.mp3"
+                ]
+            }
+        });
+
+        var loaded = service.LoadSettings();
+
+        Assert.Equal("Off", loaded.RepeatMode);
+        Assert.NotNull(loaded.PlaybackSession);
+        Assert.Equal(
+            [@"C:\Music\Current.mp3", @"C:\Music\Next.mp3"],
+            loaded.PlaybackSession.QueueTrackPaths);
+        Assert.Equal(
+            [@"C:\Music\Next.mp3", @"C:\Music\Next.mp3"],
+            loaded.PlaybackSession.UpcomingTrackPaths);
     }
 
     [Fact]

@@ -51,12 +51,12 @@ public sealed partial class MainWindowViewModel
     public string LogDirectory => Path.Combine(DataDirectory, "logs");
 
     public string AppVersionLabel =>
-        $"Mimi {GetType().Assembly.GetName().Version?.ToString(3) ?? "0.4.0"}";
+        $"Mimi {GetType().Assembly.GetName().Version?.ToString(3) ?? "0.5.0"}";
 
     private void ApplyLoadedSettings()
     {
         Volume = settings.Volume;
-        audioPlayer.Volume = (float)settings.Volume;
+        ApplyPlaybackPreferenceSettings();
 
         if (Enum.TryParse<VisualizerDisplayMode>(
                 settings.VisualizerMode,
@@ -226,6 +226,9 @@ public sealed partial class MainWindowViewModel
         if (!settingsLoaded || isRestoringSettings) return;
 
         settings.Volume = Volume;
+        settings.IsMuted = IsMuted;
+        settings.ShuffleEnabled = IsShuffleEnabled;
+        settings.RepeatMode = RepeatMode.ToString();
         settings.VisualizerMode = VisualizerMode.ToString();
         settings.RestorePlaybackSession = RestorePlaybackSession;
         settings.RestoreLibraryView = RestoreLibraryView;
@@ -264,16 +267,25 @@ public sealed partial class MainWindowViewModel
             settings.LibraryView = new LibraryViewSettings();
         }
 
-        settings.PlaybackSession =
-            RestorePlaybackSession && CurrentTrack is not null
-                ? new PlaybackSessionSettings
-                {
-                    CurrentTrackPath = CurrentTrack.FilePath,
-                    PositionSeconds = Math.Max(
-                        0,
-                        audioPlayer.CurrentTime.TotalSeconds)
-                }
-                : null;
+        if (RestorePlaybackSession && CurrentTrack is not null)
+        {
+            EnsurePlaybackQueueForCurrentTrack();
+            var queueSnapshot = GetPlaybackQueueSnapshot();
+            settings.PlaybackSession = new PlaybackSessionSettings
+            {
+                CurrentTrackPath = CurrentTrack.FilePath,
+                PositionSeconds = Math.Max(
+                    0,
+                    audioPlayer.CurrentTime.TotalSeconds),
+                QueueTrackPaths = queueSnapshot.SourcePaths,
+                HistoryTrackPaths = queueSnapshot.HistoryPaths,
+                UpcomingTrackPaths = queueSnapshot.UpcomingPaths
+            };
+        }
+        else
+        {
+            settings.PlaybackSession = null;
+        }
     }
 
     private void RestorePersistedState()
@@ -420,7 +432,8 @@ public sealed partial class MainWindowViewModel
             audioPlayer.Load(track.FilePath);
             CurrentTrack = track;
             currentPlayHistoryId = null;
-            audioPlayer.Volume = (float)Volume;
+            ApplyEffectiveVolume();
+            RestorePlaybackQueue(session, track);
             NowPlayingTitle = track.Title;
             NowPlayingSubtitle = track.Subtitle;
             CurrentCoverArtPath = track.CoverArtPath;
