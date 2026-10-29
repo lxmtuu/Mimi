@@ -1,0 +1,11 @@
+﻿using System.IO;
+namespace MikuVerseMusic.Models;
+
+public sealed class Track
+{
+    public string FilePath { get; init; } = "";
+    public string Title => Path.GetFileNameWithoutExtension(FilePath);
+    public string Format => Path.GetExtension(FilePath).TrimStart('.').ToUpperInvariant();
+    public override string ToString() => Title;
+}
+

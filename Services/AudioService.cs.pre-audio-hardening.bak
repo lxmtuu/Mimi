@@ -1,0 +1,79 @@
+using NAudio.Wave;
+
+namespace MikuVerseMusic.Services;
+
+/// <summary>Local-file playback engine. Online providers should be added as separate,
+/// officially authorized adapters; never scrape or bypass provider access controls.</summary>
+public sealed class AudioService : IDisposable
+{
+    private IWavePlayer? output;
+    private AudioFileReader? reader;
+
+    public event EventHandler? PlaybackChanged;
+    public event EventHandler? PlaybackEnded;
+    private bool suppressStoppedEvent;
+    public bool IsPlaying => output?.PlaybackState == PlaybackState.Playing;
+    public TimeSpan CurrentTime => reader?.CurrentTime ?? TimeSpan.Zero;
+    public TimeSpan Duration => reader?.TotalTime ?? TimeSpan.Zero;
+
+    public void Load(string path)
+    {
+        StopAndDispose();
+        reader = new AudioFileReader(path);
+        output = new WaveOutEvent();
+        output.Init(reader);
+        output.PlaybackStopped += (_, _) => PlaybackChanged?.Invoke(this, EventArgs.Empty);
+        PlaybackChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    public void Play()
+    {
+        if (output is null) return;
+        output.Play();
+        PlaybackChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    public void Pause()
+    {
+        output?.Pause();
+        PlaybackChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    public void Toggle()
+    {
+        if (IsPlaying) Pause(); else Play();
+    }
+
+    public void Stop()
+    {
+        output?.Stop();
+        if (reader is not null) reader.Position = 0;
+        PlaybackChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    public void Seek(TimeSpan position)
+    {
+        if (reader is null) return;
+        reader.CurrentTime = TimeSpan.FromSeconds(Math.Clamp(position.TotalSeconds, 0, reader.TotalTime.TotalSeconds));
+    }
+
+    public float Volume
+    {
+        get => reader?.Volume ?? 0.7f;
+        set { if (reader is not null) reader.Volume = Math.Clamp(value, 0f, 1f); }
+    }
+
+    private void StopAndDispose()
+    {
+        if (output is not null)
+        {
+            output.Stop();
+            output.Dispose();
+            output = null;
+        }
+        reader?.Dispose();
+        reader = null;
+    }
+
+    public void Dispose() => StopAndDispose();
+}

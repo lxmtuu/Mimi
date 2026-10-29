@@ -1,0 +1,178 @@
+<Window x:Class="MikuVerseMusic.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="MikuVerse Music" Height="820" Width="1320" MinHeight="680" MinWidth="1050"
+        WindowStartupLocation="CenterScreen" Background="{StaticResource BgBrush}"
+        Foreground="#F3F7FF">
+    <Grid Margin="18">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <DockPanel Grid.Row="0" Margin="6,2,6,18">
+            <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
+                <Border Width="42" Height="42" CornerRadius="14" Background="{StaticResource AccentBrush}">
+                    <TextBlock Text="M" Foreground="#07151B" FontSize="25" FontWeight="Bold"
+                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Border>
+                <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
+                    <TextBlock Text="MIKVERSE" FontSize="18" FontWeight="Bold" CharacterSpacing="180"/>
+                    <TextBlock Text="MUSIC UNIVERSE" FontSize="10" Foreground="#8296AE" CharacterSpacing="130"/>
+                </StackPanel>
+            </StackPanel>
+            <TextBlock Text="LOCAL PLAYER  •  YOUR MUSIC, YOUR WORLD" Foreground="#8296AE"
+                       VerticalAlignment="Center" HorizontalAlignment="Right"/>
+        </DockPanel>
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="210"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="270"/>
+            </Grid.ColumnDefinitions>
+
+            <Border Grid.Column="0" Background="{StaticResource PanelBrush}" CornerRadius="18" Padding="12" Margin="0,0,14,0">
+                <DockPanel>
+                    <StackPanel DockPanel.Dock="Top">
+                        <TextBlock Text="YOUR SPACE" Foreground="#8296AE" FontSize="11" Margin="8,10,0,14" CharacterSpacing="100"/>
+                        <Button Content="⌂   Home" HorizontalContentAlignment="Left" Background="#203A48"/>
+                        <Button Content="♫   My Library" HorizontalContentAlignment="Left" Click="LibraryButton_Click"/>
+                        <Button Content="♡   Favorites" HorizontalContentAlignment="Left" Click="FavoritesButton_Click"/>
+                        <TextBlock Text="PLAYLISTS" Foreground="#8296AE" FontSize="11" Margin="8,26,0,8" CharacterSpacing="100"/>
+                        <Button Content="+   Add music files" HorizontalContentAlignment="Left" Click="AddFiles_Click"/>
+                        <Button Content="▣   Scan a folder" HorizontalContentAlignment="Left" Click="AddFolder_Click"/>
+                    </StackPanel>
+                    <Border DockPanel.Dock="Bottom" Background="#172638" CornerRadius="12" Padding="12" Margin="2,14,2,2">
+                        <StackPanel>
+                            <TextBlock Text="MIKUVERSE BETA" Foreground="{StaticResource AccentBrush}" FontWeight="Bold"/>
+                            <TextBlock Text="The first step toward your own anime music universe." TextWrapping="Wrap" Foreground="#9BAEC3" FontSize="11" Margin="0,6,0,0"/>
+                        </StackPanel>
+                    </Border>
+                </DockPanel>
+            </Border>
+
+            <Grid Grid.Column="1" Margin="0,0,14,0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <Border Grid.Row="0" CornerRadius="20" Padding="24" Margin="0,0,0,16" ClipToBounds="True">
+                    <Border.Background>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                            <GradientStop Color="#183E4D" Offset="0"/>
+                            <GradientStop Color="#252542" Offset="0.55"/>
+                            <GradientStop Color="#171A2A" Offset="1"/>
+                        </LinearGradientBrush>
+                    </Border.Background>
+                    <Grid>
+                        <StackPanel VerticalAlignment="Center" MaxWidth="470" HorizontalAlignment="Left">
+                            <TextBlock Text="WELCOME TO YOUR UNIVERSE" Foreground="{StaticResource AccentBrush}" FontSize="11" CharacterSpacing="120"/>
+                            <TextBlock Text="Every song tells&#10;a different story." FontSize="30" FontWeight="Bold" Margin="0,12,0,8"/>
+                            <TextBlock Text="Build your library. Find your rhythm. Make this space yours."
+                                       Foreground="#B7C9DB" TextWrapping="Wrap" FontSize="13" Margin="0,0,0,14"/>
+                            <Button Content="＋  Add your first songs" HorizontalAlignment="Left"
+                                    Background="{StaticResource AccentBrush}" Foreground="#07151B"
+                                    FontWeight="Bold" Click="AddFiles_Click"/>
+                        </StackPanel>
+                        <Canvas HorizontalAlignment="Right" Width="145" Margin="0,0,8,0">
+                            <Ellipse Width="130" Height="130" Stroke="#6547E6D0" StrokeThickness="1" Canvas.Left="7" Canvas.Top="8"/>
+                            <Ellipse Width="100" Height="100" Stroke="#8847E6D0" StrokeThickness="2" Canvas.Left="22" Canvas.Top="23"/>
+                            <Ellipse Width="68" Height="68" Fill="#2247E6D0" Stroke="#FF47E6D0" StrokeThickness="1.5" Canvas.Left="38" Canvas.Top="39"/>
+                            <TextBlock Text="♫" FontSize="38" Foreground="{StaticResource AccentBrush}" Canvas.Left="55" Canvas.Top="48"/>
+                            <Ellipse Width="8" Height="8" Fill="{StaticResource PinkBrush}" Canvas.Left="3" Canvas.Top="34"/>
+                            <Ellipse Width="6" Height="6" Fill="{StaticResource AccentBrush}" Canvas.Left="119" Canvas.Top="110"/>
+                        </Canvas>
+                    </Grid>
+                </Border>
+
+                <DockPanel Grid.Row="1" Margin="2,0,2,12">
+                    <StackPanel DockPanel.Dock="Left">
+                        <TextBlock x:Name="SectionTitle" Text="Your library" FontSize="21" FontWeight="Bold"/>
+                        <TextBlock x:Name="TrackCountText" Text="No songs yet — add some music to begin" Foreground="#8296AE" FontSize="12" Margin="0,4,0,0"/>
+                    </StackPanel>
+                    <TextBox x:Name="SearchBox" Width="190" Height="34" VerticalContentAlignment="Center"
+                             Background="#172638" Foreground="White" BorderThickness="0" Padding="10,0"
+                             TextChanged="SearchBox_TextChanged" ToolTip="Search songs"/>
+                </DockPanel>
+
+                <Border Grid.Row="2" Background="{StaticResource PanelBrush}" CornerRadius="16" Padding="8">
+                    <ListView x:Name="TrackList" Background="Transparent" BorderThickness="0"
+                              Foreground="#EAF2FC" SelectionChanged="TrackList_SelectionChanged"
+                              MouseDoubleClick="TrackList_MouseDoubleClick">
+                        <ListView.View>
+                            <GridView AllowsColumnReorder="False">
+                                <GridViewColumn Header="TITLE" Width="300" DisplayMemberBinding="{Binding Title}"/>
+                                <GridViewColumn Header="FORMAT" Width="85" DisplayMemberBinding="{Binding Format}"/>
+                            </GridView>
+                        </ListView.View>
+                        <ListView.ItemContainerStyle>
+                            <Style TargetType="ListViewItem">
+                                <Setter Property="Padding" Value="8"/>
+                                <Setter Property="Margin" Value="0,2"/>
+                                <Setter Property="Background" Value="Transparent"/>
+                                <Setter Property="Foreground" Value="#EAF2FC"/>
+                            </Style>
+                        </ListView.ItemContainerStyle>
+                    </ListView>
+                </Border>
+            </Grid>
+
+            <Border Grid.Column="2" Background="{StaticResource PanelBrush}" CornerRadius="18" Padding="16">
+                <StackPanel>
+                    <TextBlock Text="NOW PLAYING" Foreground="#8296AE" FontSize="11" CharacterSpacing="100"/>
+                    <Border Height="210" Margin="0,14,0,16" CornerRadius="16" ClipToBounds="True">
+                        <Grid>
+                            <Grid.Background>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                    <GradientStop Color="#235D6A" Offset="0"/>
+                                    <GradientStop Color="#302A55" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Grid.Background>
+                            <Ellipse Width="150" Height="150" Stroke="#6647E6D0" StrokeThickness="1.5"/>
+                            <Ellipse Width="110" Height="110" Stroke="#AA47E6D0" StrokeThickness="1.5"/>
+                            <TextBlock Text="♫" FontSize="62" Foreground="{StaticResource AccentBrush}"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            <TextBlock Text="MUSIC IN MOTION" FontSize="9" Foreground="#B7C9DB"
+                                       HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,14" CharacterSpacing="150"/>
+                        </Grid>
+                    </Border>
+                    <TextBlock x:Name="NowTitle" Text="Choose a song" FontSize="17" FontWeight="Bold"
+                               TextTrimming="CharacterEllipsis"/>
+                    <TextBlock x:Name="NowSubtitle" Text="Your next favorite is waiting" Foreground="#8296AE"
+                               FontSize="12" Margin="0,5,0,18" TextWrapping="Wrap"/>
+                    <Slider x:Name="ProgressSlider" Minimum="0" Maximum="100" Value="0"
+                            ValueChanged="ProgressSlider_ValueChanged" IsMoveToPointEnabled="True"
+                            PreviewMouseLeftButtonDown="ProgressSlider_PreviewMouseLeftButtonDown"
+                            PreviewMouseLeftButtonUp="ProgressSlider_PreviewMouseLeftButtonUp"/>
+                    <DockPanel Margin="0,2,0,16">
+                        <TextBlock x:Name="CurrentTimeText" Text="0:00" Foreground="#8296AE" FontSize="10" DockPanel.Dock="Left"/>
+                        <TextBlock x:Name="DurationText" Text="0:00" Foreground="#8296AE" FontSize="10" DockPanel.Dock="Right"/>
+                    </DockPanel>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <Button Content="|◀" Click="Previous_Click" Padding="12,10"/>
+                        <Button x:Name="PlayButton" Content="▶" Click="Play_Click" Background="{StaticResource AccentBrush}"
+                                Foreground="#07151B" FontSize="17" Padding="18,10"/>
+                        <Button Content="▶|" Click="Next_Click" Padding="12,10"/>
+                    </StackPanel>
+                    <TextBlock Text="VOLUME" Foreground="#8296AE" FontSize="10" Margin="4,22,0,5" CharacterSpacing="100"/>
+                    <Slider x:Name="VolumeSlider" Minimum="0" Maximum="1" Value="0.7"
+                            ValueChanged="VolumeSlider_ValueChanged"/>
+                    <Border Background="#172638" CornerRadius="10" Padding="10" Margin="0,18,0,0">
+                        <StackPanel>
+                            <TextBlock Text="COMING IN FUTURE BUILDS" Foreground="{StaticResource PinkBrush}" FontSize="10" FontWeight="Bold"/>
+                            <TextBlock Text="Lyrics · Online providers · Advanced visualizers · Custom anime themes"
+                                       Foreground="#9BAEC3" FontSize="11" TextWrapping="Wrap" Margin="0,6,0,0"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <DockPanel Grid.Row="2" Margin="4,14,4,0">
+            <TextBlock Text="MIKVERSE MUSIC  •  EARLY DEVELOPMENT BUILD" Foreground="#60758D" FontSize="10" DockPanel.Dock="Left"/>
+            <TextBlock Text="A personal music space" Foreground="#60758D" FontSize="10" DockPanel.Dock="Right"/>
+        </DockPanel>
+    </Grid>
+</Window>
