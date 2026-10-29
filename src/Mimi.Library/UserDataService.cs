@@ -67,7 +67,7 @@ public sealed class UserDataService : IUserDataService
                 ? JsonSerializer.Deserialize<AppSettings>(File.ReadAllText(SettingsFile))
                 : null;
             settings ??= new AppSettings();
-            settings.Volume = Math.Clamp(settings.Volume, 0, 1);
+            settings.Normalize();
             return settings;
         }
         catch (Exception ex) when (
@@ -81,6 +81,7 @@ public sealed class UserDataService : IUserDataService
     {
         try
         {
+            settings.Normalize();
             Directory.CreateDirectory(DataDirectory);
             WriteAllTextAtomic(SettingsFile, JsonSerializer.Serialize(settings));
         }

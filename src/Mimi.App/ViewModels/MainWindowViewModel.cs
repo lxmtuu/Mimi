@@ -139,6 +139,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     private string durationLabel = "0:00";
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(VolumePercentLabel))]
     private double volume = 0.7;
 
     [ObservableProperty]
@@ -204,8 +205,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
 
         userDataService.MigrateLegacyDataIfNeeded();
         settings = userDataService.LoadSettings();
-        Volume = settings.Volume;
-        audioPlayer.Volume = (float)settings.Volume;
+        ApplyLoadedSettings();
         settingsLoaded = true;
 
         audioPlayer.PlaybackChanged += AudioPlayer_PlaybackChanged;
@@ -338,24 +338,45 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         OnPropertyChanged(nameof(IsPlaylistReorderEnabled));
         QueueCatalogSearch(value);
         ConfigureTracksView();
+        SaveSettings();
     }
 
     partial void OnActiveViewChanged(LibraryViewMode value)
     {
         ResetTrackSort();
         ConfigureTracksView();
+        SaveSettings();
     }
 
-    partial void OnSelectedArtistFilterChanged(string value) => ApplyFilter();
-
-    partial void OnSelectedAlbumFilterChanged(string value) => ApplyFilter();
-
-    partial void OnSelectedGenreFilterChanged(string value) => ApplyFilter();
-
-    partial void OnSelectedFormatFilterChanged(string value) => ApplyFilter();
-
-    partial void OnSelectedPlaybackStateFilterChanged(string value) =>
+    partial void OnSelectedArtistFilterChanged(string value)
+    {
         ApplyFilter();
+        SaveSettings();
+    }
+
+    partial void OnSelectedAlbumFilterChanged(string value)
+    {
+        ApplyFilter();
+        SaveSettings();
+    }
+
+    partial void OnSelectedGenreFilterChanged(string value)
+    {
+        ApplyFilter();
+        SaveSettings();
+    }
+
+    partial void OnSelectedFormatFilterChanged(string value)
+    {
+        ApplyFilter();
+        SaveSettings();
+    }
+
+    partial void OnSelectedPlaybackStateFilterChanged(string value)
+    {
+        ApplyFilter();
+        SaveSettings();
+    }
 
     private void SelectedTracks_CollectionChanged(
         object? sender,
@@ -370,7 +391,9 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     {
         if (value is not null)
         {
+            IsSettingsOpen = false;
             _ = ShowPlaylistAsync(value);
+            SaveSettings();
             return;
         }
 
@@ -379,6 +402,8 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
             ActiveView = LibraryViewMode.Library;
         else
             ApplyFilter();
+
+        SaveSettings();
     }
 
     partial void OnVolumeChanged(double value)
@@ -401,11 +426,13 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
 
         audioPlayer.Seek(TimeSpan.FromSeconds(
             audioPlayer.Duration.TotalSeconds * value / 100d));
+        SaveSettings();
     }
 
     [RelayCommand]
     private void ShowHome()
     {
+        IsSettingsOpen = false;
         SelectedPlaylist = null;
         ActiveView = LibraryViewMode.Library;
         SearchText = string.Empty;
@@ -415,6 +442,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     [RelayCommand]
     private void ShowLibrary()
     {
+        IsSettingsOpen = false;
         SelectedPlaylist = null;
         ActiveView = LibraryViewMode.Library;
     }
@@ -422,6 +450,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     [RelayCommand]
     private void ToggleFavoritesView()
     {
+        IsSettingsOpen = false;
         SelectedPlaylist = null;
         ActiveView = ActiveView == LibraryViewMode.Favorites
             ? LibraryViewMode.Library
@@ -431,6 +460,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     [RelayCommand]
     private void ShowRecent()
     {
+        IsSettingsOpen = false;
         SelectedPlaylist = null;
         ActiveView = LibraryViewMode.Recent;
     }
@@ -439,6 +469,8 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     private async Task ShowPlaylist(PlaylistItemViewModel? playlist)
     {
         if (playlist is null) return;
+
+        IsSettingsOpen = false;
 
         if (SelectedPlaylist != playlist)
             SelectedPlaylist = playlist;
@@ -688,6 +720,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
 
         NotifySortLabelsChanged();
         ConfigureTracksView();
+        SaveSettings();
     }
 
     [RelayCommand]
@@ -704,6 +737,8 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
             SearchText = string.Empty;
         else
             ConfigureTracksView();
+
+        SaveSettings();
     }
 
     [RelayCommand]
@@ -711,6 +746,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     {
         if (IsScanning) return;
 
+        IsSettingsOpen = false;
         var fileNames = dialogService.PickAudioFiles();
         if (fileNames.Count > 0)
             await ScanAndAddFilesAsync(fileNames);
@@ -721,6 +757,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     {
         if (IsScanning) return;
 
+        IsSettingsOpen = false;
         var folder = dialogService.PickMusicFolder();
         if (string.IsNullOrWhiteSpace(folder)) return;
 
@@ -737,6 +774,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     {
         if (paths is null || paths.Length == 0 || IsScanning) return;
 
+        IsSettingsOpen = false;
         var files = paths.Where(File.Exists).ToArray();
         var folders = paths.Where(Directory.Exists).ToArray();
         var skippedDirectories = 0;
@@ -778,6 +816,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
             audioPlayer.Toggle();
 
         RefreshPlaybackState();
+        SaveSettings();
     }
 
     [RelayCommand]
@@ -932,6 +971,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         if (SelectedTrack == track)
             SelectedTrack = null;
 
+        SaveSettings();
         Tracks.Remove(track);
         RefreshFilterOptions();
         catalogSearchPaths?.Remove(track.FilePath);
@@ -1001,6 +1041,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
                     .ToHashSet(StringComparer.OrdinalIgnoreCase);
                 AddTracksToCollection(storedTracks);
                 await RefreshPlaylistsAsync();
+                RestorePersistedState();
                 QueueLegacyCoverArtUpgrade();
                 if (!string.IsNullOrWhiteSpace(SearchText))
                     QueueCatalogSearch(SearchText);
@@ -1009,6 +1050,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
 
             await ImportLegacyJsonLibraryAsync();
             await RefreshPlaylistsAsync();
+            RestorePersistedState();
             if (!string.IsNullOrWhiteSpace(SearchText))
                 QueueCatalogSearch(SearchText);
         }
@@ -1033,6 +1075,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
                 LoadFavorites();
                 if (LoadLibrary()) PruneFavorites();
                 ApplyFilter();
+                RestorePersistedState();
             }
             catch (Exception fallbackException)
             {
@@ -1048,9 +1091,14 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
 
     private void QueueLegacyCoverArtUpgrade()
     {
-        if (coverArtOptimizer is null || disposed) return;
+        if (coverArtOptimizer is null || disposed ||
+            !AutoUpgradeLegacyCoverArt ||
+            legacyCoverArtUpgradeTask is { IsCompleted: false })
+        {
+            return;
+        }
 
-        _ = UpgradeLegacyCoverArtAsync();
+        legacyCoverArtUpgradeTask = UpgradeLegacyCoverArtAsync();
     }
 
     private async Task UpgradeLegacyCoverArtAsync()
@@ -2179,6 +2227,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
             track.Track.IsMissing = false;
             SelectedTrack = track;
             RefreshPlaybackState();
+            SaveSettings();
             _ = RecordPlaybackStartedAsync(track);
             return true;
         }
@@ -2312,6 +2361,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     private void PositionTimer_Tick(object? sender, EventArgs e)
     {
         RefreshPlaybackPosition();
+        CapturePlaybackSessionPeriodically();
         WriteVisualizerDiagnostics();
     }
 
@@ -2430,20 +2480,6 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         {
             SaveFavorites();
         }
-    }
-
-    private void SaveSettings(bool force = false)
-    {
-        // Dragging the volume slider fires many changes; write at most twice
-        // a second, plus one final forced write when the view model closes.
-        if (!force &&
-            (DateTime.UtcNow - lastSettingsSaveUtc).TotalMilliseconds < 500)
-        {
-            return;
-        }
-
-        lastSettingsSaveUtc = DateTime.UtcNow;
-        userDataService.SaveSettings(settings);
     }
 
     // Release builds skip this call entirely (no per-second file writes).
