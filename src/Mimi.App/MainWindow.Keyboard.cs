@@ -177,7 +177,7 @@ public partial class MainWindow
         {
             if (current is T) return true;
 
-            current = current is Visual or Visual3D
+            current = current is Visual
                 ? VisualTreeHelper.GetParent(current)
                 : LogicalTreeHelper.GetParent(current);
         }
