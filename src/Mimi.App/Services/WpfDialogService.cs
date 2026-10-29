@@ -28,6 +28,28 @@ public sealed class WpfDialogService : IDialogService
         return dialog.ShowDialog() == true ? dialog.FolderName : null;
     }
 
+    public string? PromptText(
+        string title,
+        string prompt,
+        string initialValue = "")
+    {
+        var owner = System.Windows.Application.Current?.MainWindow;
+        var dialog = new TextPromptWindow(title, prompt, initialValue)
+        {
+            Owner = owner is { IsLoaded: true } ? owner : null
+        };
+
+        return dialog.ShowDialog() == true ? dialog.Value : null;
+    }
+
+    public bool Confirm(string message, string title) =>
+        System.Windows.MessageBox.Show(
+            message,
+            title,
+            System.Windows.MessageBoxButton.YesNo,
+            System.Windows.MessageBoxImage.Question,
+            System.Windows.MessageBoxResult.No) == System.Windows.MessageBoxResult.Yes;
+
     public void ShowInformation(string message, string title = "Mimi") =>
         System.Windows.MessageBox.Show(
             message,

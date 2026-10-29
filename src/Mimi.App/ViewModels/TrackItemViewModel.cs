@@ -87,6 +87,12 @@ public sealed partial class TrackItemViewModel : ObservableObject
     [ObservableProperty]
     private int playCount;
 
+    [ObservableProperty]
+    private int playlistPosition = int.MaxValue;
+
+    [ObservableProperty]
+    private int searchRank = int.MaxValue;
+
     public string FavoriteGlyph => IsFavorite ? "♥" : "♡";
 
     public string FavoriteToolTip => IsFavorite

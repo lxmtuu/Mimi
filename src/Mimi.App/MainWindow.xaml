@@ -14,6 +14,7 @@
         <StreamGeometry x:Key="HistoryIconGeometry">M12,3 A9,9 0 1 1 3.2,9 L1.7,9 L5.2,4.7 L8.7,9 L5.3,9 A7,7 0 1 0 12,5 Z M11,8 L13,8 L13,12.2 L16.3,14 L15.4,15.8 L11,13.4 Z</StreamGeometry>
         <StreamGeometry x:Key="PlusIconGeometry">M10,4 H14 V10 H20 V14 H14 V20 H10 V14 H4 V10 H10 Z</StreamGeometry>
         <StreamGeometry x:Key="FolderIconGeometry">M3,6 A2,2 0 0 1 5,4 H10 L12,6 H19 A2,2 0 0 1 21,8 V18 A2,2 0 0 1 19,20 H5 A2,2 0 0 1 3,18 Z</StreamGeometry>
+        <StreamGeometry x:Key="PlaylistIconGeometry">M3,5 H14 V7 H3 Z M3,10 H14 V12 H3 Z M3,15 H9 V17 H3 Z M16,14 L21,17 L16,20 Z</StreamGeometry>
         <StreamGeometry x:Key="PreviousIconGeometry">M6,5 H8 V19 H6 Z M20,5 L9.5,12 L20,19 Z</StreamGeometry>
         <StreamGeometry x:Key="NextIconGeometry">M16,5 H18 V19 H16 Z M4,5 L14.5,12 L4,19 Z</StreamGeometry>
         <StreamGeometry x:Key="PlayIconGeometry">M8,5 L19,12 L8,19 Z</StreamGeometry>
@@ -137,7 +138,6 @@
                                 <TextBlock Text="Recently played" Margin="10,0,0,0" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
-                        <TextBlock Text="PLAYLISTS" Foreground="#9FB2C8" FontSize="11" Margin="8,26,0,8"/>
                         <Button Command="{Binding AddFilesCommand}" HorizontalContentAlignment="Left"
                                 AutomationProperties.Name="Add music files">
                             <StackPanel Orientation="Horizontal">
@@ -152,6 +152,29 @@
                                 <TextBlock Text="Scan a folder" Margin="10,0,0,0" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
+
+                        <DockPanel Margin="8,26,2,8">
+                            <TextBlock Text="PLAYLISTS" Foreground="#9FB2C8" FontSize="11"
+                                       VerticalAlignment="Center"/>
+                            <Button Command="{Binding CreatePlaylistCommand}" DockPanel.Dock="Right"
+                                    Padding="8,3" Margin="8,0,0,0" ToolTip="New playlist"
+                                    AutomationProperties.Name="New playlist">
+                                <Path Data="{StaticResource PlusIconGeometry}"
+                                      Style="{StaticResource IconPathStyle}"/>
+                            </Button>
+                        </DockPanel>
+                        <UniformGrid Columns="3" Margin="2,0,2,4"
+                                     IsEnabled="{Binding HasSelectedPlaylist}">
+                            <Button Content="Play" Command="{Binding PlaySelectedPlaylistCommand}"
+                                    Padding="6,6" FontSize="11"
+                                    AutomationProperties.Name="Play selected playlist"/>
+                            <Button Content="Rename" Command="{Binding RenameSelectedPlaylistCommand}"
+                                    Padding="6,6" FontSize="11"
+                                    AutomationProperties.Name="Rename selected playlist"/>
+                            <Button Content="Delete" Command="{Binding DeleteSelectedPlaylistCommand}"
+                                    Padding="6,6" FontSize="11"
+                                    AutomationProperties.Name="Delete selected playlist"/>
+                        </UniformGrid>
                     </StackPanel>
                     <Border DockPanel.Dock="Bottom" Background="#172638" CornerRadius="12" Padding="12" Margin="2,14,2,2">
                         <StackPanel>
@@ -159,6 +182,78 @@
                             <TextBlock Text="The first step toward your own anime music universe." TextWrapping="Wrap" Foreground="#AEC2D6" FontSize="11" Margin="0,6,0,0"/>
                         </StackPanel>
                     </Border>
+
+                    <Grid Margin="2,4,2,8">
+                        <ListBox ItemsSource="{Binding Playlists}"
+                                 SelectedItem="{Binding SelectedPlaylist, Mode=TwoWay}"
+                                 Background="Transparent" BorderThickness="0"
+                                 Foreground="#EAF2FC"
+                                 ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                 AutomationProperties.Name="Playlists">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Margin="4,3">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Grid MinWidth="0">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <Path Data="{StaticResource PlaylistIconGeometry}"
+                                                  Style="{StaticResource IconPathStyle}"
+                                                  Fill="#B7C9DB" VerticalAlignment="Center"/>
+                                            <StackPanel Grid.Column="1" Margin="8,0,0,0" MinWidth="0">
+                                                <TextBlock Text="{Binding Name}" FontWeight="SemiBold"
+                                                           TextTrimming="CharacterEllipsis"/>
+                                                <TextBlock Text="{Binding CountLabel}" FontSize="10"
+                                                           Foreground="#9FB2C8"/>
+                                            </StackPanel>
+                                        </Grid>
+                                        <Button Grid.Column="1" Padding="7,4" Margin="6,0,0,0"
+                                                Command="{Binding DataContext.PlayPlaylistCommand, RelativeSource={RelativeSource AncestorType={x:Type ListBox}}}"
+                                                CommandParameter="{Binding}"
+                                                ToolTip="Play playlist"
+                                                AutomationProperties.Name="Play playlist">
+                                            <Path Data="{StaticResource PlayIconGeometry}"
+                                                  Style="{StaticResource IconPathStyle}"/>
+                                        </Button>
+                                    </Grid>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                            <ListBox.ItemContainerStyle>
+                                <Style TargetType="{x:Type ListBoxItem}">
+                                    <Setter Property="Padding" Value="5"/>
+                                    <Setter Property="Margin" Value="1"/>
+                                    <Setter Property="Background" Value="Transparent"/>
+                                    <Setter Property="Foreground" Value="#EAF2FC"/>
+                                    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                    <Setter Property="FocusVisualStyle" Value="{StaticResource MimiFocusVisualStyle}"/>
+                                    <Style.Triggers>
+                                        <Trigger Property="IsSelected" Value="True">
+                                            <Setter Property="Background" Value="#203A48"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </ListBox.ItemContainerStyle>
+                        </ListBox>
+                        <TextBlock Text="No playlists yet. Use + to create your first mix."
+                                   Foreground="#9FB2C8" FontSize="11" TextWrapping="Wrap"
+                                   Margin="10,8" IsHitTestVisible="False">
+                            <TextBlock.Style>
+                                <Style TargetType="{x:Type TextBlock}">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Playlists.Count}" Value="0">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </Grid>
                 </DockPanel>
             </Border>
 
@@ -218,6 +313,27 @@
                             <ProgressBar Minimum="0" Maximum="100" Height="5" Margin="0,6,0,0"
                                          Value="{Binding ScanProgressPercent, Mode=OneWay}"/>
                         </StackPanel>
+                        <TextBlock Text="{Binding SearchStatusLabel}" Foreground="#B7C7DA"
+                                   FontSize="11" MinHeight="15" Margin="0,5,16,0"
+                                   AutomationProperties.LiveSetting="Polite"/>
+                        <WrapPanel Margin="0,4,12,0"
+                                   Visibility="{Binding IsPlaylistView, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <Button Content="↑ Up" Command="{Binding MoveSelectedPlaylistTrackUpCommand}"
+                                    IsEnabled="{Binding IsPlaylistReorderEnabled}"
+                                    Padding="8,4" Margin="0,0,4,4" FontSize="11"
+                                    AutomationProperties.Name="Move selected song up in playlist"/>
+                            <Button Content="↓ Down" Command="{Binding MoveSelectedPlaylistTrackDownCommand}"
+                                    IsEnabled="{Binding IsPlaylistReorderEnabled}"
+                                    Padding="8,4" Margin="0,0,4,4" FontSize="11"
+                                    AutomationProperties.Name="Move selected song down in playlist"/>
+                            <Button Content="Remove from playlist"
+                                    Command="{Binding RemoveSelectedTrackFromPlaylistCommand}"
+                                    Padding="8,4" Margin="0,0,4,4" FontSize="11"
+                                    AutomationProperties.Name="Remove selected song from playlist"/>
+                        </WrapPanel>
+                        <TextBlock Text="Drag songs to rearrange this playlist."
+                                   Foreground="#94A9C2" FontSize="10"
+                                   Visibility="{Binding IsPlaylistReorderEnabled, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                     </StackPanel>
                     <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
                              Width="190" MinWidth="140" Height="34" VerticalContentAlignment="Center"
@@ -229,7 +345,9 @@
                     <ListView x:Name="TrackList" ItemsSource="{Binding TracksView}"
                               SelectedItem="{Binding SelectedTrack, Mode=TwoWay}"
                               Background="Transparent" BorderThickness="0"
-                              Foreground="#EAF2FC" AutomationProperties.Name="Track list">
+                              Foreground="#EAF2FC" AutomationProperties.Name="Track list"
+                              behaviors:PlaylistReorderBehavior.MoveCommand="{Binding MovePlaylistTrackCommand}"
+                              behaviors:PlaylistReorderBehavior.IsReorderEnabled="{Binding IsPlaylistReorderEnabled}">
                         <ListView.InputBindings>
                             <KeyBinding Key="Delete" Command="{Binding RemoveSelectedTrackCommand}"/>
                             <MouseBinding MouseAction="LeftDoubleClick" Command="{Binding PlayTrackCommand}"
@@ -250,6 +368,27 @@
                                         </Style>
                                     </MenuItem.Style>
                                 </MenuItem>
+                                <MenuItem Header="Add to playlist"
+                                          ItemsSource="{Binding PlacementTarget.DataContext.Playlists, RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}">
+                                    <MenuItem.ItemContainerStyle>
+                                        <Style TargetType="{x:Type MenuItem}">
+                                            <Setter Property="Header" Value="{Binding Name}"/>
+                                            <Setter Property="Command" Value="{Binding PlacementTarget.DataContext.AddSelectedTrackToPlaylistCommand, RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"/>
+                                            <Setter Property="CommandParameter" Value="{Binding}"/>
+                                        </Style>
+                                    </MenuItem.ItemContainerStyle>
+                                </MenuItem>
+                                <MenuItem Header="Remove from this playlist"
+                                          Command="{Binding PlacementTarget.DataContext.RemoveSelectedTrackFromPlaylistCommand, RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"
+                                          IsEnabled="{Binding PlacementTarget.DataContext.IsPlaylistView, RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"/>
+                                <Separator/>
+                                <MenuItem Header="Move up in playlist"
+                                          Command="{Binding PlacementTarget.DataContext.MoveSelectedPlaylistTrackUpCommand, RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"
+                                          IsEnabled="{Binding PlacementTarget.DataContext.IsPlaylistReorderEnabled, RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"/>
+                                <MenuItem Header="Move down in playlist"
+                                          Command="{Binding PlacementTarget.DataContext.MoveSelectedPlaylistTrackDownCommand, RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"
+                                          IsEnabled="{Binding PlacementTarget.DataContext.IsPlaylistReorderEnabled, RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"/>
+                                <Separator/>
                                 <MenuItem Header="Remove from library"
                                           Command="{Binding PlacementTarget.DataContext.RemoveTrackCommand, RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"
                                           CommandParameter="{Binding PlacementTarget.DataContext.SelectedTrack, RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"/>

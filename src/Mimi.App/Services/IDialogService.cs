@@ -7,6 +7,13 @@ public interface IDialogService
 
     string? PickMusicFolder();
 
+    string? PromptText(
+        string title,
+        string prompt,
+        string initialValue = "");
+
+    bool Confirm(string message, string title);
+
     void ShowInformation(string message, string title = "Mimi");
 
     void ShowWarning(string message, string title);

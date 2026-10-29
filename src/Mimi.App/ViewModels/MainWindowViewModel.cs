@@ -7,6 +7,7 @@ using System.Windows.Data;
 using System.Windows.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Mimi.Behaviors;
 using Mimi.Controls;
 using Mimi.Core.Playback;
 using Mimi.Core.Text;
@@ -20,7 +21,8 @@ public enum LibraryViewMode
 {
     Library,
     Favorites,
-    Recent
+    Recent,
+    Playlist
 }
 
 /// <summary>
@@ -47,6 +49,13 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     private HashSet<string> favorites = new(StringComparer.OrdinalIgnoreCase);
     private string normalizedSearchQuery = string.Empty;
     private CancellationTokenSource? scanCancellation;
+    private CancellationTokenSource? searchCancellation;
+    private HashSet<string>? catalogSearchPaths;
+    private IReadOnlyList<string> selectedPlaylistTrackPaths = [];
+    private HashSet<string> selectedPlaylistPathSet =
+        new(StringComparer.OrdinalIgnoreCase);
+    private int searchRequestVersion;
+    private bool catalogSearchActive;
     private long? currentPlayHistoryId;
     private bool changingProgress;
     private bool userSeeking;
@@ -64,11 +73,21 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     private TrackItemViewModel? currentTrack;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsPlaylistReorderEnabled))]
     private string searchText = string.Empty;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(SectionTitle))]
+    [NotifyPropertyChangedFor(nameof(IsPlaylistView))]
+    [NotifyPropertyChangedFor(nameof(IsPlaylistReorderEnabled))]
     private LibraryViewMode activeView;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(SectionTitle))]
+    [NotifyPropertyChangedFor(nameof(HasSelectedPlaylist))]
+    [NotifyPropertyChangedFor(nameof(IsPlaylistView))]
+    [NotifyPropertyChangedFor(nameof(IsPlaylistReorderEnabled))]
+    private PlaylistItemViewModel? selectedPlaylist;
 
     [ObservableProperty]
     private string trackCountLabel = "No songs yet - add some music to begin";
@@ -113,6 +132,12 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     [ObservableProperty]
     private string scanStatusLabel = string.Empty;
 
+    [ObservableProperty]
+    private bool isSearchingCatalog;
+
+    [ObservableProperty]
+    private string searchStatusLabel = string.Empty;
+
     public MainWindowViewModel(
         IAudioPlayer audioPlayer,
         ILibraryService libraryService,
@@ -152,12 +177,23 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
 
     public ObservableCollection<TrackItemViewModel> Tracks { get; } = [];
 
+    public ObservableCollection<PlaylistItemViewModel> Playlists { get; } = [];
+
     public ICollectionView TracksView { get; }
+
+    public bool HasSelectedPlaylist => SelectedPlaylist is not null;
+
+    public bool IsPlaylistView =>
+        ActiveView == LibraryViewMode.Playlist && SelectedPlaylist is not null;
+
+    public bool IsPlaylistReorderEnabled =>
+        IsPlaylistView && normalizedSearchQuery.Length == 0;
 
     public string SectionTitle => ActiveView switch
     {
         LibraryViewMode.Favorites => "Your favorites",
         LibraryViewMode.Recent => "Recently played",
+        LibraryViewMode.Playlist => SelectedPlaylist?.Name ?? "Playlist",
         _ => "Your library"
     };
 
@@ -177,11 +213,29 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     partial void OnSearchTextChanged(string value)
     {
         normalizedSearchQuery = TextSearch.Normalize(value);
-        ApplyFilter();
+        catalogSearchActive = false;
+        OnPropertyChanged(nameof(IsPlaylistReorderEnabled));
+        QueueCatalogSearch(value);
+        ConfigureTracksView();
     }
 
     partial void OnActiveViewChanged(LibraryViewMode value) =>
         ConfigureTracksView();
+
+    partial void OnSelectedPlaylistChanged(PlaylistItemViewModel? value)
+    {
+        if (value is not null)
+        {
+            _ = ShowPlaylistAsync(value);
+            return;
+        }
+
+        ClearSelectedPlaylistOrder();
+        if (ActiveView == LibraryViewMode.Playlist)
+            ActiveView = LibraryViewMode.Library;
+        else
+            ApplyFilter();
+    }
 
     partial void OnVolumeChanged(double value)
     {
@@ -208,22 +262,256 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     [RelayCommand]
     private void ShowHome()
     {
+        SelectedPlaylist = null;
         ActiveView = LibraryViewMode.Library;
         SearchText = string.Empty;
         ApplyFilter();
     }
 
     [RelayCommand]
-    private void ShowLibrary() => ActiveView = LibraryViewMode.Library;
+    private void ShowLibrary()
+    {
+        SelectedPlaylist = null;
+        ActiveView = LibraryViewMode.Library;
+    }
 
     [RelayCommand]
-    private void ToggleFavoritesView() =>
+    private void ToggleFavoritesView()
+    {
+        SelectedPlaylist = null;
         ActiveView = ActiveView == LibraryViewMode.Favorites
             ? LibraryViewMode.Library
             : LibraryViewMode.Favorites;
+    }
 
     [RelayCommand]
-    private void ShowRecent() => ActiveView = LibraryViewMode.Recent;
+    private void ShowRecent()
+    {
+        SelectedPlaylist = null;
+        ActiveView = LibraryViewMode.Recent;
+    }
+
+    [RelayCommand]
+    private async Task ShowPlaylist(PlaylistItemViewModel? playlist)
+    {
+        if (playlist is null) return;
+
+        if (SelectedPlaylist != playlist)
+            SelectedPlaylist = playlist;
+        else
+            await ShowPlaylistAsync(playlist);
+    }
+
+    [RelayCommand]
+    private async Task CreatePlaylist()
+    {
+        await InitializationTask;
+        if (!EnsureCatalogForPlaylists()) return;
+
+        var name = dialogService.PromptText(
+            "New playlist",
+            "Name your new playlist:",
+            "New playlist");
+        if (string.IsNullOrWhiteSpace(name)) return;
+
+        try
+        {
+            var created = await libraryCatalog.CreatePlaylistAsync(
+                name,
+                lifetimeCancellation.Token);
+            var item = new PlaylistItemViewModel(created);
+            InsertPlaylistSorted(item);
+            SelectedPlaylist = item;
+        }
+        catch (OperationCanceledException) when (
+            lifetimeCancellation.IsCancellationRequested)
+        {
+        }
+        catch (ArgumentException ex)
+        {
+            dialogService.ShowWarning(ex.Message, "Playlist");
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, "Could not create playlist");
+            dialogService.ShowWarning(
+                $"Couldn't create that playlist.\n\n{ex.Message}",
+                "Playlist");
+        }
+    }
+
+    [RelayCommand]
+    private async Task RenameSelectedPlaylist()
+    {
+        var playlist = SelectedPlaylist;
+        if (playlist is null || !EnsureCatalogForPlaylists()) return;
+
+        var name = dialogService.PromptText(
+            "Rename playlist",
+            "Enter a new name for this playlist:",
+            playlist.Name);
+        if (string.IsNullOrWhiteSpace(name) ||
+            string.Equals(name.Trim(), playlist.Name, StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        try
+        {
+            if (await libraryCatalog.RenamePlaylistAsync(
+                    playlist.Id,
+                    name,
+                    lifetimeCancellation.Token))
+            {
+                playlist.Rename(name);
+                SortPlaylists();
+                OnPropertyChanged(nameof(SectionTitle));
+            }
+            else
+            {
+                await RefreshPlaylistsAsync();
+            }
+        }
+        catch (OperationCanceledException) when (
+            lifetimeCancellation.IsCancellationRequested)
+        {
+        }
+        catch (ArgumentException ex)
+        {
+            dialogService.ShowWarning(ex.Message, "Playlist");
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(
+                ex,
+                "Could not rename playlist {PlaylistId}",
+                playlist.Id);
+            dialogService.ShowWarning(
+                $"Couldn't rename that playlist.\n\n{ex.Message}",
+                "Playlist");
+        }
+    }
+
+    [RelayCommand]
+    private async Task DeleteSelectedPlaylist()
+    {
+        var playlist = SelectedPlaylist;
+        if (playlist is null || !EnsureCatalogForPlaylists()) return;
+
+        if (!dialogService.Confirm(
+                $"Delete playlist \"{playlist.Name}\"?\n\n" +
+                "The songs will stay in your library.",
+                "Delete playlist"))
+        {
+            return;
+        }
+
+        try
+        {
+            if (!await libraryCatalog.DeletePlaylistAsync(
+                    playlist.Id,
+                    lifetimeCancellation.Token))
+            {
+                await RefreshPlaylistsAsync();
+                return;
+            }
+
+            SelectedPlaylist = null;
+            Playlists.Remove(playlist);
+            ActiveView = LibraryViewMode.Library;
+        }
+        catch (OperationCanceledException) when (
+            lifetimeCancellation.IsCancellationRequested)
+        {
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(
+                ex,
+                "Could not delete playlist {PlaylistId}",
+                playlist.Id);
+            dialogService.ShowWarning(
+                $"Couldn't delete that playlist.\n\n{ex.Message}",
+                "Playlist");
+        }
+    }
+
+    [RelayCommand]
+    private async Task PlayPlaylist(PlaylistItemViewModel? playlist)
+    {
+        playlist ??= SelectedPlaylist;
+        if (playlist is null) return;
+
+        if (SelectedPlaylist != playlist)
+            SelectedPlaylist = playlist;
+
+        await ShowPlaylistAsync(playlist);
+
+        var firstTrack = TracksView.Cast<TrackItemViewModel>().FirstOrDefault();
+        if (firstTrack is null)
+        {
+            dialogService.ShowInformation(
+                "This playlist is empty. Add songs from the track list's " +
+                "\"Add to playlist\" menu.");
+            return;
+        }
+
+        TryPlayTrack(firstTrack, showError: true);
+    }
+
+    [RelayCommand]
+    private async Task PlaySelectedPlaylist() =>
+        await PlayPlaylist(SelectedPlaylist);
+
+    [RelayCommand]
+    private async Task AddSelectedTrackToPlaylist(
+        PlaylistItemViewModel? playlist)
+    {
+        if (playlist is null || SelectedTrack is null) return;
+        await AddTrackToPlaylistAsync(playlist, SelectedTrack);
+    }
+
+    [RelayCommand]
+    private async Task RemoveTrackFromSelectedPlaylist(
+        TrackItemViewModel? track)
+    {
+        if (track is not null)
+            await RemoveTrackFromSelectedPlaylistAsync(track);
+    }
+
+    [RelayCommand]
+    private async Task RemoveSelectedTrackFromPlaylist()
+    {
+        if (SelectedTrack is not null)
+            await RemoveTrackFromSelectedPlaylistAsync(SelectedTrack);
+    }
+
+    [RelayCommand]
+    private async Task MovePlaylistTrack(PlaylistMoveRequest? request)
+    {
+        if (request?.Item is TrackItemViewModel track)
+            await MovePlaylistTrackAsync(track, request.TargetPosition);
+    }
+
+    [RelayCommand]
+    private async Task MoveSelectedPlaylistTrackUp()
+    {
+        if (SelectedTrack is null) return;
+
+        var current = IndexInSelectedPlaylist(SelectedTrack.FilePath);
+        if (current > 0)
+            await MovePlaylistTrackAsync(SelectedTrack, current - 1);
+    }
+
+    [RelayCommand]
+    private async Task MoveSelectedPlaylistTrackDown()
+    {
+        if (SelectedTrack is null) return;
+
+        var current = IndexInSelectedPlaylist(SelectedTrack.FilePath);
+        if (current >= 0 && current + 1 < selectedPlaylistTrackPaths.Count)
+            await MovePlaylistTrackAsync(SelectedTrack, current + 1);
+    }
 
     [RelayCommand]
     private async Task AddFiles()
@@ -398,11 +686,33 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
             SelectedTrack = null;
 
         Tracks.Remove(track);
+        catalogSearchPaths?.Remove(track.FilePath);
+
+        if (selectedPlaylistPathSet.Remove(track.FilePath))
+        {
+            selectedPlaylistTrackPaths = selectedPlaylistTrackPaths
+                .Where(path => !string.Equals(
+                    path,
+                    track.FilePath,
+                    StringComparison.OrdinalIgnoreCase))
+                .ToArray();
+            RefreshSelectedPlaylistPositions();
+            SelectedPlaylist?.UpdateTrackCount(selectedPlaylistTrackPaths.Count);
+        }
+
         if (favorites.Remove(track.FilePath) && !catalogAvailable)
             SaveFavorites();
 
         if (!catalogAvailable)
+        {
             SaveLibrary();
+        }
+        else
+        {
+            await RefreshPlaylistsAsync();
+            if (!string.IsNullOrWhiteSpace(SearchText))
+                QueueCatalogSearch(SearchText);
+        }
 
         ApplyFilter();
     }
@@ -442,10 +752,16 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
                     .Select(track => track.FilePath)
                     .ToHashSet(StringComparer.OrdinalIgnoreCase);
                 AddTracksToCollection(storedTracks);
+                await RefreshPlaylistsAsync();
+                if (!string.IsNullOrWhiteSpace(SearchText))
+                    QueueCatalogSearch(SearchText);
                 return;
             }
 
             await ImportLegacyJsonLibraryAsync();
+            await RefreshPlaylistsAsync();
+            if (!string.IsNullOrWhiteSpace(SearchText))
+                QueueCatalogSearch(SearchText);
         }
         catch (OperationCanceledException) when (
             lifetimeCancellation.IsCancellationRequested)
@@ -461,6 +777,8 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
 
             try
             {
+                SelectedPlaylist = null;
+                Playlists.Clear();
                 Tracks.Clear();
                 LoadFavorites();
                 if (LoadLibrary()) PruneFavorites();
@@ -650,6 +968,10 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     {
         var changedTracks = AddTracksToCollection(additions);
         await PersistTracksAsync(changedTracks);
+
+        if (catalogAvailable && !string.IsNullOrWhiteSpace(SearchText))
+            QueueCatalogSearch(SearchText);
+
         return changedTracks;
     }
 
@@ -733,11 +1055,23 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         using (TracksView.DeferRefresh())
         {
             TracksView.SortDescriptions.Clear();
-            if (ActiveView == LibraryViewMode.Recent)
+            if (ActiveView == LibraryViewMode.Playlist)
+            {
+                TracksView.SortDescriptions.Add(new SortDescription(
+                    nameof(TrackItemViewModel.PlaylistPosition),
+                    ListSortDirection.Ascending));
+            }
+            else if (ActiveView == LibraryViewMode.Recent)
             {
                 TracksView.SortDescriptions.Add(new SortDescription(
                     nameof(TrackItemViewModel.LastPlayedAtUtc),
                     ListSortDirection.Descending));
+            }
+            else if (catalogSearchActive && normalizedSearchQuery.Length > 0)
+            {
+                TracksView.SortDescriptions.Add(new SortDescription(
+                    nameof(TrackItemViewModel.SearchRank),
+                    ListSortDirection.Ascending));
             }
         }
 
@@ -752,9 +1086,14 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         {
             LibraryViewMode.Favorites => track.IsFavorite,
             LibraryViewMode.Recent => track.LastPlayedAtUtc is not null,
+            LibraryViewMode.Playlist => selectedPlaylistPathSet.Contains(
+                track.FilePath),
             _ => true
         };
         if (!visibleInView) return false;
+
+        if (catalogSearchActive && catalogSearchPaths is not null)
+            return catalogSearchPaths.Contains(track.FilePath);
 
         return normalizedSearchQuery.Length == 0 ||
                track.NormalizedSearchText.Contains(
@@ -770,23 +1109,476 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
 
     private void UpdateTrackCount()
     {
-        if (ActiveView == LibraryViewMode.Favorites)
+        var visibleCount = TracksView.Cast<TrackItemViewModel>().Count();
+
+        if (normalizedSearchQuery.Length > 0)
         {
-            var visibleCount = TracksView.Cast<TrackItemViewModel>().Count();
-            TrackCountLabel = $"{visibleCount} favorite song(s)";
+            TrackCountLabel = $"{visibleCount} search result(s)";
             return;
         }
 
-        if (ActiveView == LibraryViewMode.Recent)
+        TrackCountLabel = ActiveView switch
         {
-            var visibleCount = TracksView.Cast<TrackItemViewModel>().Count();
-            TrackCountLabel = $"{visibleCount} recently played song(s)";
+            LibraryViewMode.Favorites =>
+                $"{visibleCount} favorite song(s)",
+            LibraryViewMode.Recent =>
+                $"{visibleCount} recently played song(s)",
+            LibraryViewMode.Playlist =>
+                $"{visibleCount} song(s) in this playlist",
+            _ => Tracks.Count == 0
+                ? "No songs yet - add some music to begin"
+                : $"{Tracks.Count} song(s) in your library"
+        };
+    }
+
+    private void QueueCatalogSearch(string query)
+    {
+        var version = ++searchRequestVersion;
+        searchCancellation?.Cancel();
+
+        if (string.IsNullOrWhiteSpace(query) || !catalogAvailable)
+        {
+            catalogSearchActive = false;
+            catalogSearchPaths = null;
+            IsSearchingCatalog = false;
+            SearchStatusLabel = string.Empty;
             return;
         }
 
-        TrackCountLabel = Tracks.Count == 0
-            ? "No songs yet - add some music to begin"
-            : $"{Tracks.Count} song(s) in your library";
+        var cancellation = CancellationTokenSource.CreateLinkedTokenSource(
+            lifetimeCancellation.Token);
+        searchCancellation = cancellation;
+        IsSearchingCatalog = true;
+        SearchStatusLabel = "Searching your library…";
+        _ = SearchCatalogAsync(query, version, cancellation.Token);
+    }
+
+    private async Task SearchCatalogAsync(
+        string query,
+        int version,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            // A short debounce avoids a database query for every keystroke.
+            await Task.Delay(180, cancellationToken);
+            var results = await libraryCatalog.SearchTracksAsync(
+                query,
+                cancellationToken);
+            cancellationToken.ThrowIfCancellationRequested();
+
+            if (version != searchRequestVersion ||
+                !string.Equals(SearchText, query, StringComparison.Ordinal))
+            {
+                return;
+            }
+
+            var tracksByPath = Tracks.ToDictionary(
+                track => track.FilePath,
+                StringComparer.OrdinalIgnoreCase);
+            foreach (var track in Tracks)
+                track.SearchRank = int.MaxValue;
+
+            var paths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            for (var index = 0; index < results.Count; index++)
+            {
+                if (!tracksByPath.TryGetValue(
+                        results[index].FilePath,
+                        out var item))
+                {
+                    continue;
+                }
+
+                item.SearchRank = index;
+                paths.Add(item.FilePath);
+            }
+
+            catalogSearchPaths = paths;
+            catalogSearchActive = true;
+            SearchStatusLabel = string.Empty;
+            ConfigureTracksView();
+        }
+        catch (OperationCanceledException) when (
+            cancellationToken.IsCancellationRequested)
+        {
+            // A newer query (or shutdown) superseded this one.
+        }
+        catch (Exception ex)
+        {
+            if (version != searchRequestVersion) return;
+
+            catalogSearchActive = false;
+            SearchStatusLabel =
+                "Catalog search unavailable; using local search";
+            Log.Warning(ex, "Catalog FTS search failed for query {Query}", query);
+            ConfigureTracksView();
+        }
+        finally
+        {
+            if (version == searchRequestVersion)
+                IsSearchingCatalog = false;
+        }
+    }
+
+    private bool EnsureCatalogForPlaylists()
+    {
+        if (catalogAvailable) return true;
+
+        dialogService.ShowWarning(
+            "Playlists are unavailable because the SQLite library catalog " +
+            "could not be opened. Mimi is currently using the legacy JSON " +
+            "fallback.",
+            "Playlist");
+        return false;
+    }
+
+    private async Task RefreshPlaylistsAsync()
+    {
+        if (!catalogAvailable)
+        {
+            Playlists.Clear();
+            return;
+        }
+
+        try
+        {
+            var loaded = await libraryCatalog.LoadPlaylistsAsync(
+                lifetimeCancellation.Token);
+            var loadedById = loaded.ToDictionary(playlist => playlist.Id);
+
+            for (var index = Playlists.Count - 1; index >= 0; index--)
+            {
+                var existing = Playlists[index];
+                if (loadedById.ContainsKey(existing.Id)) continue;
+
+                if (SelectedPlaylist == existing)
+                    SelectedPlaylist = null;
+                Playlists.RemoveAt(index);
+            }
+
+            foreach (var playlist in loaded)
+            {
+                var existing = Playlists.FirstOrDefault(
+                    item => item.Id == playlist.Id);
+                if (existing is null)
+                {
+                    InsertPlaylistSorted(new PlaylistItemViewModel(playlist));
+                }
+                else
+                {
+                    existing.Update(playlist);
+                    if (SelectedPlaylist == existing)
+                        OnPropertyChanged(nameof(SectionTitle));
+                }
+            }
+
+            SortPlaylists();
+        }
+        catch (OperationCanceledException) when (
+            lifetimeCancellation.IsCancellationRequested)
+        {
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, "Could not refresh playlists from the catalog");
+        }
+    }
+
+    private void InsertPlaylistSorted(PlaylistItemViewModel item)
+    {
+        var index = 0;
+        while (index < Playlists.Count &&
+               ComparePlaylists(Playlists[index], item) <= 0)
+        {
+            index++;
+        }
+
+        Playlists.Insert(index, item);
+    }
+
+    private void SortPlaylists()
+    {
+        var ordered = Playlists
+            .OrderBy(playlist => playlist, Comparer<PlaylistItemViewModel>.Create(
+                ComparePlaylists))
+            .ToArray();
+
+        for (var targetIndex = 0; targetIndex < ordered.Length; targetIndex++)
+        {
+            var currentIndex = Playlists.IndexOf(ordered[targetIndex]);
+            if (currentIndex >= 0 && currentIndex != targetIndex)
+                Playlists.Move(currentIndex, targetIndex);
+        }
+    }
+
+    private static int ComparePlaylists(
+        PlaylistItemViewModel left,
+        PlaylistItemViewModel right)
+    {
+        var byName = string.Compare(
+            left.Name,
+            right.Name,
+            StringComparison.CurrentCultureIgnoreCase);
+        return byName != 0 ? byName : left.Id.CompareTo(right.Id);
+    }
+
+    private async Task ShowPlaylistAsync(PlaylistItemViewModel playlist)
+    {
+        if (!catalogAvailable)
+        {
+            if (ActiveView == LibraryViewMode.Playlist)
+                ActiveView = LibraryViewMode.Library;
+            return;
+        }
+
+        ClearSelectedPlaylistOrder();
+        ActiveView = LibraryViewMode.Playlist;
+
+        try
+        {
+            var tracks = await libraryCatalog.LoadPlaylistTracksAsync(
+                playlist.Id,
+                lifetimeCancellation.Token);
+            if (SelectedPlaylist?.Id != playlist.Id) return;
+
+            var paths = tracks.Select(track => track.FilePath).ToArray();
+            SetSelectedPlaylistOrder(paths);
+            playlist.UpdateTrackCount(paths.Length);
+            ApplyFilter();
+        }
+        catch (OperationCanceledException) when (
+            lifetimeCancellation.IsCancellationRequested)
+        {
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(
+                ex,
+                "Could not load playlist {PlaylistId}",
+                playlist.Id);
+            if (SelectedPlaylist?.Id == playlist.Id)
+                ActiveView = LibraryViewMode.Library;
+            dialogService.ShowWarning(
+                $"Couldn't open that playlist.\n\n{ex.Message}",
+                "Playlist");
+        }
+    }
+
+    private void SetSelectedPlaylistOrder(IEnumerable<string> paths)
+    {
+        selectedPlaylistTrackPaths = paths.ToArray();
+        selectedPlaylistPathSet = new HashSet<string>(
+            selectedPlaylistTrackPaths,
+            StringComparer.OrdinalIgnoreCase);
+        RefreshSelectedPlaylistPositions();
+    }
+
+    private void ClearSelectedPlaylistOrder()
+    {
+        selectedPlaylistTrackPaths = [];
+        selectedPlaylistPathSet.Clear();
+        foreach (var track in Tracks)
+            track.PlaylistPosition = int.MaxValue;
+    }
+
+    private void RefreshSelectedPlaylistPositions()
+    {
+        var positions = new Dictionary<string, int>(
+            StringComparer.OrdinalIgnoreCase);
+        for (var index = 0; index < selectedPlaylistTrackPaths.Count; index++)
+            positions[selectedPlaylistTrackPaths[index]] = index;
+
+        foreach (var track in Tracks)
+        {
+            track.PlaylistPosition = positions.TryGetValue(
+                track.FilePath,
+                out var position)
+                ? position
+                : int.MaxValue;
+        }
+    }
+
+    private int IndexInSelectedPlaylist(string filePath)
+    {
+        for (var index = 0; index < selectedPlaylistTrackPaths.Count; index++)
+        {
+            if (string.Equals(
+                    selectedPlaylistTrackPaths[index],
+                    filePath,
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                return index;
+            }
+        }
+
+        return -1;
+    }
+
+    private async Task AddTrackToPlaylistAsync(
+        PlaylistItemViewModel playlist,
+        TrackItemViewModel track)
+    {
+        if (!EnsureCatalogForPlaylists()) return;
+
+        try
+        {
+            if (!await libraryCatalog.AddTrackToPlaylistAsync(
+                    playlist.Id,
+                    track.FilePath,
+                    lifetimeCancellation.Token))
+            {
+                var alreadyKnown = playlist == SelectedPlaylist &&
+                    selectedPlaylistPathSet.Contains(track.FilePath);
+                dialogService.ShowInformation(alreadyKnown
+                    ? $"\"{track.Title}\" is already in \"{playlist.Name}\"."
+                    : "That song could not be added. It may already be in " +
+                      "the playlist or may not be saved in the catalog yet.");
+
+                if (playlist == SelectedPlaylist)
+                    await ShowPlaylistAsync(playlist);
+                else
+                    await RefreshPlaylistsAsync();
+                return;
+            }
+
+            if (playlist == SelectedPlaylist)
+            {
+                var paths = selectedPlaylistTrackPaths.ToList();
+                if (!selectedPlaylistPathSet.Contains(track.FilePath))
+                    paths.Add(track.FilePath);
+                SetSelectedPlaylistOrder(paths);
+                playlist.UpdateTrackCount(paths.Count);
+                ApplyFilter();
+            }
+            else
+            {
+                playlist.UpdateTrackCount(playlist.TrackCount + 1);
+            }
+        }
+        catch (OperationCanceledException) when (
+            lifetimeCancellation.IsCancellationRequested)
+        {
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(
+                ex,
+                "Could not add {FilePath} to playlist {PlaylistId}",
+                track.FilePath,
+                playlist.Id);
+            dialogService.ShowWarning(
+                $"Couldn't add that song to the playlist.\n\n{ex.Message}",
+                "Playlist");
+        }
+    }
+
+    private async Task RemoveTrackFromSelectedPlaylistAsync(
+        TrackItemViewModel track)
+    {
+        var playlist = SelectedPlaylist;
+        if (playlist is null || !IsPlaylistView ||
+            !EnsureCatalogForPlaylists())
+        {
+            return;
+        }
+
+        try
+        {
+            if (!await libraryCatalog.RemoveTrackFromPlaylistAsync(
+                    playlist.Id,
+                    track.FilePath,
+                    lifetimeCancellation.Token))
+            {
+                await ShowPlaylistAsync(playlist);
+                return;
+            }
+
+            var paths = selectedPlaylistTrackPaths
+                .Where(path => !string.Equals(
+                    path,
+                    track.FilePath,
+                    StringComparison.OrdinalIgnoreCase))
+                .ToArray();
+            SetSelectedPlaylistOrder(paths);
+            playlist.UpdateTrackCount(paths.Length);
+
+            if (SelectedTrack == track)
+                SelectedTrack = null;
+
+            ApplyFilter();
+        }
+        catch (OperationCanceledException) when (
+            lifetimeCancellation.IsCancellationRequested)
+        {
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(
+                ex,
+                "Could not remove {FilePath} from playlist {PlaylistId}",
+                track.FilePath,
+                playlist.Id);
+            dialogService.ShowWarning(
+                $"Couldn't remove that song from the playlist.\n\n{ex.Message}",
+                "Playlist");
+        }
+    }
+
+    private async Task MovePlaylistTrackAsync(
+        TrackItemViewModel track,
+        int targetPosition)
+    {
+        var playlist = SelectedPlaylist;
+        if (playlist is null || !IsPlaylistReorderEnabled ||
+            !EnsureCatalogForPlaylists())
+        {
+            return;
+        }
+
+        var fromPosition = IndexInSelectedPlaylist(track.FilePath);
+        if (fromPosition < 0) return;
+
+        targetPosition = Math.Clamp(
+            targetPosition,
+            0,
+            selectedPlaylistTrackPaths.Count - 1);
+        if (targetPosition == fromPosition) return;
+
+        try
+        {
+            if (!await libraryCatalog.MovePlaylistTrackAsync(
+                    playlist.Id,
+                    fromPosition,
+                    targetPosition,
+                    lifetimeCancellation.Token))
+            {
+                await ShowPlaylistAsync(playlist);
+                return;
+            }
+
+            var paths = selectedPlaylistTrackPaths.ToList();
+            var moving = paths[fromPosition];
+            paths.RemoveAt(fromPosition);
+            paths.Insert(targetPosition, moving);
+            SetSelectedPlaylistOrder(paths);
+            SelectedTrack = track;
+            ApplyFilter();
+        }
+        catch (OperationCanceledException) when (
+            lifetimeCancellation.IsCancellationRequested)
+        {
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(
+                ex,
+                "Could not move {FilePath} in playlist {PlaylistId}",
+                track.FilePath,
+                playlist.Id);
+            dialogService.ShowWarning(
+                $"Couldn't rearrange that playlist.\n\n{ex.Message}",
+                "Playlist");
+        }
     }
 
     // Next/Previous and auto-advance follow the order the user can see
@@ -1140,6 +1932,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
 
         lifetimeCancellation.Cancel();
         scanCancellation?.Cancel();
+        searchCancellation?.Cancel();
         positionTimer.Stop();
         positionTimer.Tick -= PositionTimer_Tick;
         audioPlayer.PlaybackChanged -= AudioPlayer_PlaybackChanged;
