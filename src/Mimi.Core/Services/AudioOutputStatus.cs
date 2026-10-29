@@ -9,8 +9,65 @@ public enum AudioOutputKind
     /// <summary>WASAPI in shared mode, following the Windows default device.</summary>
     WasapiShared,
 
-    /// <summary>Legacy Windows multimedia output, used only as a fallback.</summary>
-    WaveOutFallback
+    /// <summary>Legacy Windows multimedia output, used after WASAPI fails.</summary>
+    WaveOutFallback,
+
+    /// <summary>Legacy Windows multimedia output selected for diagnostics.</summary>
+    WaveOutForced
+}
+
+/// <summary>
+/// Diagnostic-only backend selection. Automatic is the normal end-user
+/// behavior: WASAPI shared mode first, WaveOut only if WASAPI cannot be
+/// opened. The two forced values exist so the same build can be A/B-tested
+/// on the same Windows machine and endpoint without adding a user-facing
+/// engine switch to Settings.
+/// </summary>
+public enum AudioOutputBackendPreference
+{
+    Automatic,
+    ForceWasapiShared,
+    ForceWaveOut
+}
+
+/// <summary>Parses the diagnostic audio-backend preference.</summary>
+public static class AudioOutputBackendPreferenceParser
+{
+    public static bool TryParse(
+        string? value,
+        out AudioOutputBackendPreference preference)
+    {
+        preference = AudioOutputBackendPreference.Automatic;
+        if (string.IsNullOrWhiteSpace(value))
+            return true;
+
+        var normalized = value.Trim().ToLowerInvariant()
+            .Replace("_", "-", StringComparison.Ordinal);
+        switch (normalized)
+        {
+            case "auto":
+            case "automatic":
+            case "default":
+                return true;
+
+            case "wasapi":
+            case "wasapi-shared":
+            case "force-wasapi":
+            case "force-wasapi-shared":
+                preference = AudioOutputBackendPreference.ForceWasapiShared;
+                return true;
+
+            case "waveout":
+            case "wave-out":
+            case "force-waveout":
+            case "force-wave-out":
+                preference = AudioOutputBackendPreference.ForceWaveOut;
+                return true;
+
+            default:
+                return false;
+        }
+    }
 }
 
 /// <summary>

@@ -47,6 +47,37 @@ public sealed class AudioOutputStatusTests
         Assert.Same(inner, exception.InnerException);
     }
 
+    [Theory]
+    [InlineData(null, AudioOutputBackendPreference.Automatic)]
+    [InlineData("", AudioOutputBackendPreference.Automatic)]
+    [InlineData(" auto ", AudioOutputBackendPreference.Automatic)]
+    [InlineData("WASAPI", AudioOutputBackendPreference.ForceWasapiShared)]
+    [InlineData("force-wasapi-shared", AudioOutputBackendPreference.ForceWasapiShared)]
+    [InlineData("waveout", AudioOutputBackendPreference.ForceWaveOut)]
+    [InlineData("force_wave_out", AudioOutputBackendPreference.ForceWaveOut)]
+    public void BackendPreferenceParser_RecognizesDiagnosticValues(
+        string? value,
+        AudioOutputBackendPreference expected)
+    {
+        var parsed = AudioOutputBackendPreferenceParser.TryParse(
+            value,
+            out var preference);
+
+        Assert.True(parsed);
+        Assert.Equal(expected, preference);
+    }
+
+    [Fact]
+    public void BackendPreferenceParser_RejectsUnknownValues()
+    {
+        var parsed = AudioOutputBackendPreferenceParser.TryParse(
+            "directsound",
+            out var preference);
+
+        Assert.False(parsed);
+        Assert.Equal(AudioOutputBackendPreference.Automatic, preference);
+    }
+
     [Fact]
     public void UnavailableException_CoercesAnAvailableStatus()
     {

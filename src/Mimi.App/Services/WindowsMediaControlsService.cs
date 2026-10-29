@@ -126,7 +126,10 @@ public sealed class WindowsMediaControlsService : IDisposable
 
         thumbnailStream?.Dispose();
         thumbnailStream = null;
-        thumbnailCancellation?.Dispose();
+
+        // Cancellation was requested above. The in-flight update (if any)
+        // owns and disposes its CancellationTokenSource in its finally
+        // block, so only detach the field here.
         thumbnailCancellation = null;
     }
 
@@ -367,9 +370,16 @@ public sealed class WindowsMediaControlsService : IDisposable
         }
 
         var version = ++thumbnailVersion;
-        thumbnailCancellation?.Cancel();
-        thumbnailCancellation = new CancellationTokenSource();
-        _ = UpdateThumbnailAsync(version, thumbnailCancellation.Token);
+        var previousCancellation = thumbnailCancellation;
+        var cancellationSource = new CancellationTokenSource();
+        thumbnailCancellation = cancellationSource;
+
+        // The superseded task still owns its source and disposes it from
+        // its own finally block. Cancelling here only asks that task to
+        // stop; disposing the source here could race token callbacks that
+        // are still unwinding.
+        previousCancellation?.Cancel();
+        _ = UpdateThumbnailAsync(version, cancellationSource);
     }
 
     private void CancelThumbnailUpdate()
@@ -382,8 +392,9 @@ public sealed class WindowsMediaControlsService : IDisposable
 
     private async Task UpdateThumbnailAsync(
         int version,
-        CancellationToken cancellationToken)
+        CancellationTokenSource cancellationSource)
     {
+        var cancellationToken = cancellationSource.Token;
         IRandomAccessStream? newStream = null;
 
         try
@@ -436,6 +447,16 @@ public sealed class WindowsMediaControlsService : IDisposable
         {
             newStream?.Dispose();
             LogFailure(ex, "update Windows media thumbnail");
+        }
+        finally
+        {
+            // Each update owns exactly one source. A superseded task can
+            // safely dispose its own source here; the newest task also
+            // clears the field so completed sources do not accumulate.
+            if (ReferenceEquals(thumbnailCancellation, cancellationSource))
+                thumbnailCancellation = null;
+
+            cancellationSource.Dispose();
         }
     }
 

@@ -164,6 +164,8 @@ public sealed partial class MainWindowViewModel
                 $"WASAPI shared · {status.DeviceName}",
             { Kind: AudioOutputKind.WaveOutFallback } =>
                 $"WaveOut fallback · {status.DeviceName}",
+            { Kind: AudioOutputKind.WaveOutForced } =>
+                $"WaveOut diagnostic · {status.DeviceName}",
             _ => $"Windows default · {status.DeviceName}"
         };
 

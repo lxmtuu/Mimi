@@ -22,8 +22,10 @@ public sealed class AudioService : IAudioPlayer
     private const int WaveOutLatencyMilliseconds = 200;
     private const int DeviceChangeDebounceMilliseconds = 300;
     private const int DeviceInvalidatedHResult = unchecked((int)0x88890004);
+    private const string BackendPreferenceEnvironmentVariable = "MIMI_AUDIO_OUTPUT";
 
     private readonly object gate = new();
+    private readonly AudioOutputBackendPreference backendPreference;
     private readonly SynchronizationContext? synchronizationContext;
     private readonly WindowsAudioDeviceWatcher? deviceWatcher;
     private readonly System.Threading.Timer deviceChangeTimer;
@@ -46,6 +48,7 @@ public sealed class AudioService : IAudioPlayer
 
     public AudioService()
     {
+        backendPreference = ReadBackendPreference();
         synchronizationContext = SynchronizationContext.Current;
         deviceChangeTimer = new System.Threading.Timer(
             DeviceChangeTimerElapsed,
@@ -96,6 +99,7 @@ public sealed class AudioService : IAudioPlayer
         var visualizerDiagnostics = visualizer?.GetDiagnostics() ??
             "visualizer=not-initialized";
         return $"{visualizerDiagnostics}; output={status.Kind}; " +
+               $"backendPreference={backendPreference}; " +
                $"device={status.DeviceName}; available={status.IsAvailable}";
     }
 
@@ -487,13 +491,18 @@ public sealed class AudioService : IAudioPlayer
             {
                 deviceId = GetDeviceId(device);
                 deviceName = GetDeviceName(device);
-                candidate = new WasapiOut(
-                    device,
-                    AudioClientShareMode.Shared,
-                    useEventSync: true,
-                    WasapiLatencyMilliseconds);
+
+                if (backendPreference != AudioOutputBackendPreference.ForceWaveOut)
+                {
+                    candidate = new WasapiOut(
+                        device,
+                        AudioClientShareMode.Shared,
+                        useEventSync: true,
+                        WasapiLatencyMilliseconds);
+                }
             }
-            else if (deviceWatcher is null)
+            else if (backendPreference != AudioOutputBackendPreference.ForceWaveOut &&
+                     deviceWatcher is null)
             {
                 candidate = new WasapiOut(
                     AudioClientShareMode.Shared,
@@ -518,7 +527,9 @@ public sealed class AudioService : IAudioPlayer
                     true,
                     AudioOutputKind.WasapiShared,
                     deviceName,
-                    "WASAPI shared output is ready.");
+                    backendPreference == AudioOutputBackendPreference.ForceWasapiShared
+                        ? $"WASAPI shared output is ready (forced by {BackendPreferenceEnvironmentVariable} for diagnostics)."
+                        : "WASAPI shared output is ready.");
                 statusChanged = UpdateOutputStatusLocked(status);
 
                 if (previousStatus.Kind != status.Kind ||
@@ -536,7 +547,9 @@ public sealed class AudioService : IAudioPlayer
             }
 
             wasapiException = new InvalidOperationException(
-                "No default WASAPI render endpoint is available.");
+                backendPreference == AudioOutputBackendPreference.ForceWaveOut
+                    ? $"WASAPI was skipped because {BackendPreferenceEnvironmentVariable} forces WaveOut for diagnostics."
+                    : "No default WASAPI render endpoint is available.");
         }
         catch (Exception ex)
         {
@@ -546,8 +559,9 @@ public sealed class AudioService : IAudioPlayer
                 wasapiFailureLogged = true;
                 Log.Warning(
                     ex,
-                    "WASAPI shared output was unavailable for {DeviceName}; " +
-                    "trying the WaveOut fallback",
+                    backendPreference == AudioOutputBackendPreference.ForceWasapiShared
+                        ? "Forced WASAPI shared output was unavailable for {DeviceName}; WaveOut is disabled by the diagnostic backend override"
+                        : "WASAPI shared output was unavailable for {DeviceName}; trying the WaveOut fallback",
                     deviceName);
             }
             else
@@ -569,50 +583,59 @@ public sealed class AudioService : IAudioPlayer
             device?.Dispose();
         }
 
-        IWavePlayer? fallbackCandidate = null;
-        try
+        if (backendPreference != AudioOutputBackendPreference.ForceWasapiShared)
         {
-            fallbackCandidate = new WaveOutEvent
+            IWavePlayer? fallbackCandidate = null;
+            try
             {
-                DesiredLatency = WaveOutLatencyMilliseconds,
-                NumberOfBuffers = 3
-            };
-            fallbackCandidate.Init(volumeProvider);
-            fallbackCandidate.PlaybackStopped += Output_PlaybackStopped;
+                fallbackCandidate = new WaveOutEvent
+                {
+                    DesiredLatency = WaveOutLatencyMilliseconds,
+                    NumberOfBuffers = 3
+                };
+                fallbackCandidate.Init(volumeProvider);
+                fallbackCandidate.PlaybackStopped += Output_PlaybackStopped;
 
-            output = fallbackCandidate;
-            fallbackCandidate = null;
-            outputDevice = null;
-            outputDeviceId = null;
-            outputBroken = false;
+                output = fallbackCandidate;
+                fallbackCandidate = null;
+                outputDevice = null;
+                outputDeviceId = null;
+                outputBroken = false;
 
-            var status = new AudioOutputStatus(
-                true,
-                AudioOutputKind.WaveOutFallback,
-                "Windows default output",
-                "WASAPI was unavailable, so Mimi is using the WaveOut fallback.");
-            statusChanged = UpdateOutputStatusLocked(status);
+                var status = new AudioOutputStatus(
+                    true,
+                    backendPreference == AudioOutputBackendPreference.ForceWaveOut
+                        ? AudioOutputKind.WaveOutForced
+                        : AudioOutputKind.WaveOutFallback,
+                    deviceName,
+                    backendPreference == AudioOutputBackendPreference.ForceWaveOut
+                        ? $"WaveOut output is ready (forced by {BackendPreferenceEnvironmentVariable} for diagnostics)."
+                        : "WASAPI was unavailable, so Mimi is using the WaveOut fallback.");
+                statusChanged = UpdateOutputStatusLocked(status);
 
-            if (previousStatus.Kind != status.Kind)
-            {
-                Log.Information(
-                    "Audio output opened with the WaveOut fallback");
+                if (previousStatus.Kind != status.Kind)
+                {
+                    Log.Information(
+                        backendPreference == AudioOutputBackendPreference.ForceWaveOut
+                            ? "Audio output opened with WaveOut because it was forced for diagnostics"
+                            : "Audio output opened with the WaveOut fallback");
+                }
+
+                return true;
             }
-
-            return true;
-        }
-        catch (Exception ex)
-        {
-            Log.Debug(ex, "The WaveOut fallback could not be opened");
-            if (wasapiException is not null)
-                Log.Debug(wasapiException, "The preceding WASAPI attempt also failed");
-        }
-        finally
-        {
-            if (fallbackCandidate is not null)
+            catch (Exception ex)
             {
-                fallbackCandidate.PlaybackStopped -= Output_PlaybackStopped;
-                TryDisposeOutput(fallbackCandidate);
+                Log.Debug(ex, "The WaveOut fallback could not be opened");
+                if (wasapiException is not null)
+                    Log.Debug(wasapiException, "The preceding WASAPI attempt also failed");
+            }
+            finally
+            {
+                if (fallbackCandidate is not null)
+                {
+                    fallbackCandidate.PlaybackStopped -= Output_PlaybackStopped;
+                    TryDisposeOutput(fallbackCandidate);
+                }
             }
         }
 
@@ -622,8 +645,10 @@ public sealed class AudioService : IAudioPlayer
         outputBroken = false;
 
         var unavailableStatus = AudioOutputStatus.Unavailable(
-            "No audio output is available. Connect or enable an output " +
-            "device, then press Play.");
+            backendPreference == AudioOutputBackendPreference.ForceWasapiShared
+                ? $"WASAPI shared output is unavailable, and {BackendPreferenceEnvironmentVariable} disables the WaveOut fallback for diagnostics."
+                : "No audio output is available. Connect or enable an output " +
+                  "device, then press Play.");
         statusChanged = UpdateOutputStatusLocked(unavailableStatus);
 
         if (previousStatus.IsAvailable)
@@ -1005,6 +1030,33 @@ public sealed class AudioService : IAudioPlayer
             Log.Debug(ex, "Could not read the audio output identifier");
             return null;
         }
+    }
+
+    private static AudioOutputBackendPreference ReadBackendPreference()
+    {
+        var configured = Environment.GetEnvironmentVariable(
+            BackendPreferenceEnvironmentVariable);
+        if (AudioOutputBackendPreferenceParser.TryParse(
+                configured,
+                out var preference))
+        {
+            if (preference != AudioOutputBackendPreference.Automatic)
+            {
+                Log.Information(
+                    "Audio output backend forced by {EnvironmentVariable}: {Preference}",
+                    BackendPreferenceEnvironmentVariable,
+                    preference);
+            }
+
+            return preference;
+        }
+
+        Log.Warning(
+            "Ignoring invalid {EnvironmentVariable} value {Value}; " +
+            "expected auto, wasapi, or waveout",
+            BackendPreferenceEnvironmentVariable,
+            configured);
+        return AudioOutputBackendPreference.Automatic;
     }
 
     private static bool IsLikelyOutputFailure(Exception ex) =>
