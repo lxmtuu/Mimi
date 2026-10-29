@@ -129,6 +129,7 @@ Ghi chú thêm về crash/hộp thoại/thời gian phản ứng:
 | Định dạng thu |  |
 | File/đoạn tín hiệu |  |
 | Vị trí bắt đầu mỗi lượt |  |
+| CSV bắt đầu lúc nào; pre-roll/trigger offset trên timeline |  |
 | Endpoint |  |
 | Windows volume / app volume / mute |  |
 | Sample rate/enhancements |  |
@@ -137,7 +138,7 @@ Ghi chú thêm về crash/hộp thoại/thời gian phản ứng:
 
 ### Từng lượt chạy
 
-| Lượt | Chế độ ép | Backend log xác nhận | Thời lượng | Buffer sau tín hiệu đầu | % có tín hiệu | First-signal (ms) | Gap p50/p95/p99/max (ms) | Gap >100ms | Chuỗi im lặng dài nhất | Glitch nghe được |
+| Lượt | Chế độ ép | Backend log xác nhận | Thời lượng | Buffer sau tín hiệu đầu | % có tín hiệu | First-signal từ CSV start / sau trigger (ms) | Gap p50/p95/p99/max (ms) | Gap >100ms | Chuỗi im lặng dài nhất | Glitch nghe được |
 |---:|---|---|---:|---:|---:|---:|---|---:|---|---|
 | 1 |  |  |  |  |  |  |  |  |  |  |
 | 2 |  |  |  |  |  |  |  |  |  |  |

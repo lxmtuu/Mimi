@@ -92,10 +92,11 @@ A Windows desktop music-player foundation built with C# / WPF / .NET 8 and NAudi
   playback-mode, Windows media-control/keyboard, WASAPI output-device,
   and diagnostic backend-override slices are implemented. Automated
   restore/build/test has also passed on a real Windows machine at
-  `04ab178` (0 warnings/errors and 83/83 tests), and short forced/auto
-  backend runs produced measurable loopback audio on the same Realtek
-  endpoint. Those 20-second runs are preliminary: the interactive
-  flyout/taskbar/media-key, physical device-loss/recovery, and longer
+  `a056377` (0 warnings/errors and 83 passed / 0 failed / 0 skipped), and
+  short forced/auto backend runs produced measurable loopback audio on
+  the same Realtek endpoint. Those roughly 22-second runs are
+  preliminary: direct flyout/taskbar/media-key acceptance is still
+  partial or not run, and physical device-loss/recovery plus longer
   WASAPI↔WaveOut stability gates in `ROADMAP.md` remain open. Their
   repeatable manual procedures, result template, and loopback CSV
   analyzer live in the [Windows Acceptance Kit](docs/acceptance/README.md)
@@ -296,9 +297,9 @@ phục hành vi mặc định WASAPI → WaveOut fallback; giá trị không h�
 
 Một lượt smoke test ngày 29/10/2026 tại commit `04ab178` trên endpoint
 Speakers (Realtek(R) Audio) đã cho cả ba chế độ phát nhạc và có tín hiệu
-loopback, nhưng mỗi lượt chỉ kéo dài khoảng 20 giây. Kết quả này không
-thay thế bài kiểm tra ổn định dài hơn hay các thao tác rút/kết nối lại
-thiết bị vật lý; xem bảng số liệu và trạng thái từng cổng trong
+loopback; phân tích lại tại `a056377` cho thấy mỗi CSV dài khoảng 22 giây.
+Kết quả này không thay thế bài kiểm tra ổn định dài hơn hay các thao tác
+rút/kết nối lại thiết bị vật lý; xem bảng số liệu và trạng thái từng cổng trong
 `ROADMAP.md`, còn quy trình kiểm tra lặp lại được và mẫu ghi kết quả nằm
 trong [Windows Acceptance Kit](docs/acceptance/README.md).
 

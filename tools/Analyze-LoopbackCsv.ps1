@@ -10,15 +10,19 @@
 
     These are digital loopback measurements. Time to first signal is not an
     end-to-end acoustic latency measurement from a Play command to a
-    loudspeaker.
+    loudspeaker. If a capture includes pre-roll before the test trigger,
+    pass -TriggerOffsetMilliseconds with the known trigger position on the
+    CSV timeline so the report can distinguish first signal from CSV start
+    from first signal after that trigger.
 
 .EXAMPLE
     .\tools\Analyze-LoopbackCsv.ps1 -Path '.\wasapi.csv','.\waveout.csv'
 
 .EXAMPLE
     .\tools\Analyze-LoopbackCsv.ps1 -Path '.\wasapi.csv' `
-        -MarkdownPath '.\loopback-summary.md' `
-        -JsonPath '.\loopback-summary.json'
+        -TriggerOffsetMilliseconds 2000 `
+        -MarkdownPath '.\artifacts\acceptance\loopback-summary.md' `
+        -JsonPath '.\artifacts\acceptance\loopback-summary.json'
 #>
 [CmdletBinding()]
 param(
@@ -30,6 +34,8 @@ param(
     [double]$LargeGapMilliseconds = 100,
 
     [int]$TopGapCount = 10,
+
+    [double]$TriggerOffsetMilliseconds = 0,
 
     [ValidateSet('Auto', 'Seconds', 'Milliseconds', 'Microseconds', 'Minutes', 'Ticks')]
     [string]$TimestampUnit = 'Auto',
@@ -46,6 +52,10 @@ param(
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
+
+if ($TriggerOffsetMilliseconds -lt 0) {
+    throw 'TriggerOffsetMilliseconds cannot be negative.'
+}
 
 function Normalize-ColumnName {
     param([string]$Name)
@@ -537,6 +547,7 @@ foreach ($inputPath in $Path) {
         $postSignalWithSignal = 0
         $postSignalPercent = $null
         $timeToFirstSignalMs = $null
+        $timeToFirstSignalAfterTriggerMs = $null
         $gapValues = @()
         $rmsValues = @()
         $silentRuns = New-Object System.Collections.ArrayList
@@ -555,6 +566,15 @@ foreach ($inputPath in $Path) {
 
             if ($hasTimestamps -and $null -ne $records[$firstSignalIndex].TimeMs) {
                 $timeToFirstSignalMs = [double]$records[$firstSignalIndex].TimeMs
+                $timeToFirstSignalAfterTriggerMs =
+                    $timeToFirstSignalMs - $TriggerOffsetMilliseconds
+
+                if ($timeToFirstSignalAfterTriggerMs -lt 0) {
+                    Write-Warning (
+                        "First above-threshold buffer occurs before the supplied " +
+                        "trigger offset in $filePath. Check pre-roll/trigger alignment."
+                    )
+                }
             }
 
             $runStart = -1
@@ -692,7 +712,10 @@ foreach ($inputPath in $Path) {
             SignalMetric = $signalMetricName
             SignalThreshold = $SignalThreshold
             FirstSignalRow = $firstSignalRow
+            TriggerOffsetMs = $TriggerOffsetMilliseconds
             TimeToFirstSignalMs = $timeToFirstSignalMs
+            TimeToFirstSignalFromCsvStartMs = $timeToFirstSignalMs
+            TimeToFirstSignalAfterTriggerMs = $timeToFirstSignalAfterTriggerMs
             BuffersFromFirstSignal = $postSignalCount
             SignalBuffersFromFirstSignal = $postSignalWithSignal
             SignalPercentFromFirstSignal = $postSignalPercent
@@ -747,9 +770,9 @@ if (-not [string]::IsNullOrWhiteSpace($MarkdownPath)) {
     $lines = New-Object System.Collections.ArrayList
     [void]$lines.Add('# Loopback CSV summary')
     [void]$lines.Add('')
-    [void]$lines.Add('Digital loopback only: time to first signal is a software-side metric, not end-to-end acoustic latency.')
+    [void]$lines.Add('Digital loopback only: first signal after the supplied trigger offset is a software-side metric, not end-to-end acoustic latency. The JSON/console summary also retains first signal from CSV start.')
     [void]$lines.Add('')
-    [void]$lines.Add('| File | Buffers from first signal | Signal buffers | Signal % | First signal (ms) | Gap p50/p95/p99/max (ms) | Gaps > threshold | Longest silent run | Average RMS |')
+    [void]$lines.Add('| File | Buffers from first signal | Signal buffers | Signal % | First signal after trigger (ms) | Gap p50/p95/p99/max (ms) | Gaps > threshold | Longest silent run | Average RMS |')
     [void]$lines.Add('|---|---:|---:|---:|---:|---|---:|---|---:|')
 
     foreach ($result in $results) {
@@ -767,7 +790,7 @@ if (-not [string]::IsNullOrWhiteSpace($MarkdownPath)) {
             $summary.BuffersFromFirstSignal, `
             $summary.SignalBuffersFromFirstSignal, `
             (Format-NullableNumber $summary.SignalPercentFromFirstSignal), `
-            (Format-NullableNumber $summary.TimeToFirstSignalMs), `
+            (Format-NullableNumber $summary.TimeToFirstSignalAfterTriggerMs), `
             $gapText, `
             $summary.GapsOverThreshold, `
             $silentText, `
@@ -783,6 +806,7 @@ if (-not [string]::IsNullOrWhiteSpace($MarkdownPath)) {
         [void]$lines.Add('- Timestamp: `' + $result.Summary.TimestampColumn + '` (' + $result.Summary.TimestampUnitUsed + ')')
         [void]$lines.Add('- Gap: `' + $result.Summary.GapColumn + '` (' + $result.Summary.GapUnitUsed + ')')
         [void]$lines.Add('- Gaps over 2x median: ' + (Format-NullableNumber $result.Summary.GapsOver2xMedian 0))
+        [void]$lines.Add('- Trigger offset: ' + (Format-NullableNumber $result.Summary.TriggerOffsetMs) + ' ms; first signal from CSV start: ' + (Format-NullableNumber $result.Summary.TimeToFirstSignalFromCsvStartMs) + ' ms')
 
         if ($result.TopGaps.Count -gt 0) {
             [void]$lines.Add('')

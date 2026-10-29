@@ -80,14 +80,22 @@ dài hạn hay latency âm học đầu-cuối.
 
 ## Điểm xuất phát đã được ghi nhận ngày 29/10/2026
 
-- Commit được chạy trên Windows thật: `04ab178`.
-- Restore/Release build: 0 warning/0 error; unit test thực tế: 83/83.
-- `wasapi`, `waveout` và `auto` đều mở đúng backend trên
-  Speakers (Realtek(R) Audio), phát nhạc khoảng 20 giây và có tín hiệu
-  loopback.
-- P4-A và P4-G: `PARTIAL`.
-- P4-B, P4-C, P4-D, P4-E, P4-F và P4-H: chưa đóng.
-- D-03 vẫn tạm thời: WASAPI Shared mặc định, WaveOut fallback.
+- S0 đã chạy lại trên Windows thật tại `a056377`: restore/Release build đạt
+  0 warning/0 error; unit test 83 passed, 0 failed, 0 skipped. App mở được,
+  log xác nhận WASAPI Shared trên Speakers (Realtek(R) Audio) và SMTC khởi
+  tạo. **S0: `PASS`**.
+- Ba CSV cũ đều có header
+  `elapsed_ms,bytes,rms,peak,callback_gap_ms`; script đã nhận diện đúng,
+  tạo được Markdown/JSON và cho thấy mỗi file có 353–354 dòng, khoảng 22
+  giây, không có chuỗi im lặng sau tín hiệu đầu tiên.
+- P4-A: `PARTIAL` (A1/A3 một phần; A2/A5 đang `BLOCKED` vì fixture; phần
+  lớn thao tác flyout còn `NOT RUN`).
+- P4-B: `NOT RUN` cho B1–B6.
+- P4-C: `PARTIAL` (C5/C7 mới có bằng chứng mô phỏng/một phần focus; media
+  keys vật lý chưa chạy).
+- P4-D, P4-E, P4-F và P4-H: chưa đóng.
+- P4-G: `PARTIAL`; D-03 vẫn tạm thời: WASAPI Shared mặc định, WaveOut
+  fallback.
 
 ## Phân tích nhanh CSV loopback
 
@@ -99,6 +107,13 @@ Từ thư mục gốc repo:
   -MarkdownPath '.\artifacts\acceptance\loopback-summary.md' `
   -JsonPath '.\artifacts\acceptance\loopback-summary.json'
 ```
+
+Nếu CSV chứa pre-roll và mốc kích hoạt phép thử trên cùng timeline được
+biết chính xác—ví dụ trigger ở `elapsed_ms = 2000`—thêm
+`-TriggerOffsetMilliseconds 2000`. Báo cáo sẽ tách
+`TimeToFirstSignalFromCsvStartMs` khỏi
+`TimeToFirstSignalAfterTriggerMs`. Nếu chỉ biết pre-roll “khoảng” hai giây,
+không dùng hiệu số này như latency đo được.
 
 Thư mục `artifacts/` đã được `.gitignore` loại khỏi Git. Nếu chính sách
 thực thi của Windows chặn script chưa ký số, chỉ nới lỏng cho đúng cửa sổ

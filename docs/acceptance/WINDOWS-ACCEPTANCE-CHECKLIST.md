@@ -330,6 +330,9 @@ ngoài loa.
   cố định, ví dụ 0:30, ở trạng thái Pause; sau lượt đo lại đưa về mốc đó.
 - Đoạn được đo phải có tín hiệu liên tục; tránh intro/đoạn lặng có chủ ý.
 - Cùng định dạng loopback và cùng ngưỡng phân tích.
+- Ghi rõ CSV bắt đầu trước mốc kích hoạt bao lâu. Nếu có pre-roll, mốc
+  trigger phải được xác định trên cùng trục `elapsed` của CSV; không lấy
+  thời gian từ dòng đầu CSV làm thời gian từ lúc bấm Play.
 - Đóng Mimi hoàn toàn trước khi đổi `MIMI_AUDIO_OUTPUT`.
 - Xen kẽ thứ tự, ví dụ WASAPI → WaveOut → WaveOut → WASAPI, để giảm ảnh
   hưởng của thứ tự chạy.
@@ -377,11 +380,19 @@ chính sách thực thi chặn, chạy
 `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass` trong đúng cửa
 sổ PowerShell hiện tại rồi thử lại; không cần thay đổi chính sách toàn máy.
 
+Nếu mốc trigger trên timeline CSV được biết chính xác, thêm ví dụ
+`-TriggerOffsetMilliseconds 2000`. Chỉ số
+`TimeToFirstSignalAfterTriggerMs` khi đó mới có ý nghĩa so sánh phần mềm;
+`TimeToFirstSignalFromCsvStartMs` luôn bao gồm pre-roll. Nếu trigger chỉ
+được ước lượng, hãy ghi nó là không xác định thay vì suy ra một latency có
+vẻ chính xác.
+
 Báo cáo ít nhất:
 
 - số buffer và thời lượng sau buffer có tín hiệu đầu tiên;
 - tỉ lệ buffer có tín hiệu;
-- thời gian đến tín hiệu đầu tiên, kèm mô tả đây là chỉ số phần mềm;
+- thời gian đến tín hiệu đầu tiên từ đầu CSV và—chỉ khi trigger được biết
+  chính xác—sau trigger, kèm mô tả đây là chỉ số phần mềm;
 - p50/p95/p99/max của khoảng callback;
 - số khoảng >100ms và số khoảng >2 lần trung vị;
 - chuỗi im lặng dài nhất sau tín hiệu đầu tiên;
