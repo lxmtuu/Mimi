@@ -4,14 +4,29 @@ A Windows desktop music-player foundation built with C# / WPF / .NET 8 and NAudi
 
 ## Current starter features
 - Dark anime-inspired cyan/pink desktop UI with the Mimi app icon
-- Local audio file selection and a resilient recursive folder scan that reports
-  directories it could not read instead of discarding the whole result
+- Local audio file selection, Explorer drag-and-drop, and a resilient
+  recursive folder scan that reports directories it could not read instead of
+  discarding the whole result. Folder/file scans run in the background with
+  progress and cancellation, and unchanged files reuse known metadata based
+  on file size + modified time
+- Embedded metadata and cover art read with TagLib-Sharp (title, artist,
+  album, genre, year, duration, bitrate, and sample rate), with a filename
+  fallback for missing or damaged tags; title, artist, album, time, and file
+  format are shown in the library
 - Play / pause, next / previous, volume and seek; next / previous and
   auto-advance follow the visible filtered list and skip unplayable files
-- Vietnamese diacritic-insensitive library search, direct favorite toggles,
-  and track removal (right-click or Delete key)
-- Library, favorites and volume restored on startup from `%LocalAppData%\Mimi`
-  (`library.json` / `favorites.json` / `settings.json`) with atomic JSON writes
+- Vietnamese diacritic-insensitive search over track metadata, direct
+  favorite toggles, a Recently played view backed by playback history, and
+  track removal (right-click or Delete key)
+- Library tracks, favorites, playback errors, and play history are restored
+  from the SQLite catalog at `%LocalAppData%\Mimi\library.db` (schema v1,
+  WAL + transactions); volume remains in `settings.json`. On first use, an
+  existing legacy `library.json` / `favorites.json` pair is imported only
+  when the catalog is empty, then archived as `.bak` files. If SQLite cannot
+  be opened, Mimi falls back to the legacy JSON library instead of failing
+  startup. The catalog exposes FTS5 accent-insensitive search and playlist
+  storage APIs; the current main-window search still filters the loaded
+  in-memory list, and a playlist-management UI is not included yet
 - Rolling diagnostic logs in `%LocalAppData%\Mimi\logs`, with global exception
   logging so unexpected failures are traceable
 - Stage Engine visualizer (beta): worker-thread 32-band FFT with dB/AGC
@@ -19,7 +34,11 @@ A Windows desktop music-player foundation built with C# / WPF / .NET 8 and NAudi
   (`F11`), live FPS/draw-time diagnostics, sampled before the volume gain,
   and fading out while paused or stopped
 - Modular MVVM architecture with dependency injection and automated tests;
-  Windows Release builds and unit tests are verified by GitHub Actions
+  Windows Release builds and unit tests are verified by GitHub Actions.
+  This is the Phase 3 foundation (`v0.4.0` in development), not the complete
+  Phase 3 exit: playlist UI, folder watching, file associations, richer
+  settings/session restore, and measured 10,000-track performance remain
+  open items in `ROADMAP.md`
 
 ## Requirements
 - Windows 10/11 with Windows Terminal or PowerShell
@@ -66,7 +85,7 @@ Sau khi cài, đóng Terminal và mở lại để Windows nhận biến môi tr
 rồi chạy lại hai lệnh kiểm tra ở trên. Lưu ý phải cài **.NET 8 SDK**; chỉ có
 .NET Runtime thì chạy được ứng dụng đã build nhưng không build được source.
 
-#### 2. Clone repo và chọn đúng branch Phase 2
+#### 2. Clone repo và chọn đúng working branch hiện tại
 
 Nếu bạn chưa clone Mimi:
 
@@ -78,9 +97,9 @@ git clone --branch arena/cdda374d-mimi https://github.com/lxmtuu/Mimi.git
 Set-Location .\Mimi
 ```
 
-`arena/cdda374d-mimi` hiện là branch chứa bản Phase 2 mới nhất. Khi branch
-này đã được merge, bạn có thể bỏ tùy chọn `--branch ...` để dùng branch mặc
-định.
+`arena/cdda374d-mimi` hiện là working branch chứa nền tảng Phase 3
+(`v0.4.0` đang phát triển). Khi branch này đã được merge, bạn có thể bỏ tùy
+chọn `--branch ...` để dùng branch mặc định.
 
 Nếu bạn đã clone repo từ trước:
 
@@ -116,8 +135,9 @@ dotnet test .\tests\Mimi.Tests\Mimi.Tests.csproj --configuration Release --no-bu
 ```
 
 Lần restore đầu tiên cần Internet để tải NAudio, CommunityToolkit.Mvvm,
-Microsoft.Extensions.DependencyInjection, Serilog, xUnit và các package phụ
-thuộc. Build/test đạt khi Terminal báo tương tự:
+Microsoft.Extensions.DependencyInjection, Microsoft.Data.Sqlite,
+TagLibSharp, Serilog, xUnit và các package phụ thuộc. Build/test đạt khi
+Terminal báo tương tự:
 
 ```text
 Build succeeded.
@@ -139,22 +159,30 @@ Release vừa build ở bước 3, dùng:
 .\src\Mimi.App\bin\Release\net8.0-windows\Mimi.exe
 ```
 
-Khi cửa sổ Mimi mở, bạn có thể chọn **Add music files** hoặc **Scan a
-folder**, double-click một bài để phát, thử tìm bài tiếng Việt bằng từ khóa
-không dấu, và bấm `F11` để mở Stage toàn màn hình (`Esc` để thoát Stage).
+Khi cửa sổ Mimi mở, bạn có thể chọn **Add music files**, **Scan a folder**,
+hoặc kéo-thả file/thư mục nhạc từ Explorer vào cửa sổ. Trong lúc quét, thanh
+tiến độ và nút **Cancel** xuất hiện ở khu vực tiêu đề thư viện. Sau đó hãy
+double-click một bài để phát, thử tìm bài tiếng Việt bằng từ khóa không dấu,
+mở **Recently played** để xem lịch sử nghe, và bấm `F11` để mở Stage toàn
+màn hình (`Esc` để thoát Stage).
 
 #### 5. Mở thư mục dữ liệu và log
 
-Mimi lưu thư viện, favorites và settings trong `%LocalAppData%\Mimi`. Mở các
-thư mục này từ PowerShell bằng:
+Mimi lưu catalog thư viện, favorites, lịch sử nghe, settings và cache ảnh
+bìa trong `%LocalAppData%\Mimi`. Mở các thư mục này từ PowerShell bằng:
 
 ```powershell
 explorer "$env:LOCALAPPDATA\Mimi"
 explorer "$env:LOCALAPPDATA\Mimi\logs"
 ```
 
-Các file chính gồm `library.json`, `favorites.json`, `settings.json` và log
-xoay theo ngày theo mẫu `logs\mimi-YYYYMMDD.log`.
+Các file chính gồm `library.db` (SQLite catalog; có thể kèm
+`library.db-wal`/`library.db-shm` khi ứng dụng đang ghi dữ liệu),
+`settings.json`, ảnh bìa đã trích xuất trong `cache\covers\`, và log xoay
+theo ngày theo mẫu `logs\mimi-YYYYMMDD.log`. `library.json` và
+`favorites.json` chỉ còn là nguồn migration/fallback của các bản cũ; sau khi
+nhập thành công vào SQLite, chúng được đổi tên thành file `.bak` để làm bản
+sao lưu.
 
 #### 6. Cập nhật source ở những lần sau
 
@@ -190,10 +218,13 @@ dotnet run --project .\src\Mimi.App\Mimi.App.csproj
 - `src/Mimi.Core` — shared models, service contracts, playback-order logic,
   shuffle-bag primitives, and Vietnamese search normalization
 - `src/Mimi.Audio` — NAudio playback implementation behind `IAudioPlayer`
-- `src/Mimi.Library` — audio-file discovery and JSON user-data persistence
+- `src/Mimi.Library` — asynchronous audio-file discovery, TagLib-Sharp
+  metadata/cover extraction, the SQLite library catalog, and JSON
+  settings/legacy-library migration fallback
 - `src/Mimi.Visualizer` — ring-buffer capture and testable FFT/AGC analysis
-- `tests/Mimi.Tests` — xUnit tests for library, persistence, search,
-  playback order, shuffle-bag, migration, and spectrum analysis
+- `tests/Mimi.Tests` — xUnit tests for scanning, metadata, SQLite catalog
+  search/playlists/history, user-data migration/archive, playback order,
+  shuffle-bag, Vietnamese search normalization, and spectrum analysis
 
 ## Notes
 This is a first working foundation, not a finished commercial product. Online streaming is intentionally not implemented yet. Each streaming provider requires an official API/SDK, authorization, and compliance with that provider's playback and licensing rules. Do not scrape protected services or attempt to bypass DRM.
@@ -206,7 +237,7 @@ designs (audio, SQLite library, 60fps visualizer, lyrics, bilingual vi/en UI),
 Phase 0–7 plan with exit criteria, audit findings, and open decisions.
 
 ## Rename note
-This app was previously named **MikuVerse Music** and is now **Mimi** (application project `src/Mimi.App/Mimi.App.csproj`, namespace `Mimi`, output `Mimi.exe`). On first launch, an existing library/favorites saved under `%LocalAppData%\MikuVerseMusic` are copied automatically to `%LocalAppData%\Mimi`; the old folder is left untouched.
+This app was previously named **MikuVerse Music** and is now **Mimi** (application project `src/Mimi.App/Mimi.App.csproj`, namespace `Mimi`, output `Mimi.exe`). On first launch, an existing library/favorites saved under `%LocalAppData%\MikuVerseMusic` are copied automatically to `%LocalAppData%\Mimi`; when the SQLite catalog is empty, those JSON records are then imported into `library.db` and the imported JSON files are archived as `.bak`. The old `MikuVerseMusic` folder is left untouched.
 
 ## Branding and assets
 The current UI uses original abstract shapes and colors. Before distributing any build, review all fonts, images, audio samples, icons, dependencies, and trademarks for appropriate licensing. A commercial product should have its own identity unless rights for third-party character assets are secured.

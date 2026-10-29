@@ -205,13 +205,13 @@ Shell (Sidebar + Nội dung + Now Playing)
 | Màn hình | Thành phần chính | Trạng thái bắt buộc | Ghi chú từ hiện trạng |
 |---|---|---|---|
 | **Home** | Hero chào theo giờ, Nghe gần đây, Yêu thích, Playlist gợi ý | Rỗng (chưa có nhạc) | Nút HOME hiện tại **chưa có handler** → nối ở Phase 0 |
-| **Library** | Bảng: #/Bài hát/Nghệ sĩ/Album/Thời lượng/Định dạng/♥; sắp xếp theo cột; tìm kiếm không dấu; chọn nhiều | Đang quét (tiến độ + Huỷ), lỗi từng file (badge ⚠️) | Hiện chỉ có TITLE/FORMAT, title = tên file → Phase 3 metadata |
-| **Favorites** | Như Library, lọc `is_favorite` | Rỗng có hướng dẫn | Hiện chỉ bật/tắt qua menu chuột phải ẩn → thêm cột ♥ bấm trực tiếp |
-| **Playlists** | CRUD, kéo-thả bài vào, đổi thứ tự, phát tất cả/xáo trộn | Rỗng, trùng tên | Chưa có (Phase 3) |
+| **Library** | Bảng: #/Bài hát/Nghệ sĩ/Album/Thời lượng/Định dạng/♥; sắp xếp theo cột; tìm kiếm không dấu; chọn nhiều | Đang quét (tiến độ + Huỷ), lỗi từng file (badge ⚠️) | Nền tảng Phase 3 đã có metadata TagLib, cột Title/Artist/Album/Time/Format, quét nền có tiến độ/huỷ, ảnh bìa ở Now Playing và kéo-thả từ Explorer; sắp xếp theo cột/chọn nhiều vẫn chưa làm, ô tìm kiếm chính vẫn lọc trong bộ nhớ trên metadata đã chuẩn hoá (FTS5 đã có ở catalog nhưng chưa nối vào UI) |
+| **Favorites** | Như Library, lọc `is_favorite` | Rỗng có hướng dẫn | Đã có cột ♥ bấm trực tiếp, menu chuột phải và lưu vào SQLite (JSON chỉ còn fallback/import cũ) |
+| **Playlists** | CRUD, kéo-thả bài vào, đổi thứ tự, phát tất cả/xáo trộn | Rỗng, trùng tên | Catalog SQLite đã có CRUD/thêm-xoá/đổi thứ tự và unit test; **chưa có màn hình/quy trình UI quản lý playlist** |
 | **Queue** | Đang phát / Kế tiếp, kéo sắp xếp, xoá khỏi hàng đợi | Rỗng | Chưa có (Phase 4) — nền cho shuffle/repeat đúng nghĩa |
 | **Now Playing** | Ảnh bìa lớn, sóng nhạc phủ, seek, shuffle/repeat/mute, % volume | Chưa chọn bài, file lỗi | Bổ sung shuffle/repeat/mute/% (Phase 4) |
 | **Stage (toàn màn hình)** | Visualizer chiếm trọn, lời lớn, thông tin bài tối giản, ẩn con trỏ | Tạm dừng (sóng hạ dần) | Điểm nhấn sản phẩm (Phase 1) |
-| **Settings** | 6 nhóm như sơ đồ; mọi thay đổi lưu ngay + khôi phục mặc định | — | Chưa có settings (Phase 3–5) |
+| **Settings** | 6 nhóm như sơ đồ; mọi thay đổi lưu ngay + khôi phục mặc định | — | Hiện mới lưu âm lượng trong `settings.json`; chưa có màn hình Settings, tuỳ chọn thư viện/quét, khôi phục phiên nghe đang tạm dừng |
 | **Diagnostics** | Phiên bản, thư mục dữ liệu/log, nút mở log, xuất thông tin hỗ trợ | — | Thay cơ chế ghi file debug `%TEMP%` hiện tại |
 
 ---
@@ -221,6 +221,8 @@ Shell (Sidebar + Nội dung + Now Playing)
 Tại thời điểm rà soát ban đầu, dự án là 1 project WPF với `MainWindow.xaml.cs` 435 dòng ôm toàn bộ logic — phù hợp prototype nhưng **không kiểm thử được và khó nhận đóng góp** (file còn phình thêm sau các vá Phase 0, càng củng cố nhu cầu refactor theo Phase 2). Kiến trúc đích (đạt ở Phase 2, chuyển đổi dần, không "viết lại từ đầu"):
 
 **Hiện trạng code sau Phase 2 (29/10/2026):** repo đã có `Mimi.sln` gồm `Mimi.App`, `Mimi.Core`, `Mimi.Audio`, `Mimi.Library`, `Mimi.Visualizer` và `Mimi.Tests`. `MainWindow.xaml.cs` còn 145 dòng glue-code; nghiệp vụ nằm ở `MainWindowViewModel`/`TrackItemViewModel` và các contract `IAudioPlayer`, `ILibraryService`, `IUserDataService`. FFT/AGC đã tách thành `SpectrumAnalyzer` để test độc lập. Các phần SQLite, async scanner, theme/lyrics trong sơ đồ vẫn là đích của các Phase sau, chưa được tính là đã triển khai.
+
+**Cập nhật nền tảng Phase 3 (29/10/2026):** commit `875b325` nâng app/manifest lên `0.4.0` (đang phát triển, chưa tag) và [Windows CI restore/build/test đã đạt](https://github.com/lxmtuu/Mimi/actions/runs/40830179675) với 39 khai báo test/45 case ước tính theo `Fact`/`Theory`+`InlineData`. `Mimi.Library` nay chứa scanner bất đồng bộ có tiến độ/huỷ + fingerprint `file_size`/`mtime`, `TagLibTrackMetadataReader` (metadata + cache ảnh bìa theo hash, chưa resize 96/512) và `SqliteLibraryCatalog` schema v1 dùng WAL/transaction/FTS5; Core có thêm `ILibraryCatalog`/`ITrackMetadataReader`. App khởi tạo SQLite ở nền, nhập JSON cũ chỉ khi catalog rỗng rồi archive JSON thành `.bak`, fallback về JSON nếu SQLite không mở được, ghi lịch sử nghe/Recently played, hiện cột Artist/Album/Time, ảnh bìa và nhận kéo-thả Explorer. Đây **chưa phải điểm đóng Phase 3**: UI chưa nối tìm kiếm vào FTS5 và chưa có playlist UI (catalog/playlist mới ở tầng dữ liệu), chưa có `FileSystemWatcher`, “Open with Mimi”, settings/phiên nghe đầy đủ; mục tiêu 10.000 bài/tìm <100ms và kiểm thử nâng cấp trên Windows thật vẫn chưa đo.
 
 ```mermaid
 flowchart TB
@@ -307,6 +309,7 @@ flowchart LR
 ```
   Mục tiêu: quét 10.000 file UI vẫn phản hồi; rescan tăng dần theo `file_mtime/size`; `FileSystemWatcher` theo dõi thư mục đã đăng ký (Phase 3, có debounce + tắt được).
 - **Tìm kiếm tiếng Việt:** chuẩn hoá bỏ dấu (NFD + loại `CombiningDiacriticalMarks`, `đ→d`) cả phía truy vấn và dữ liệu — gõ "Miku" hay "miku", "Nhac" vẫn tìm thấy "Nhạc".
+- **Hiện trạng triển khai nền tảng (29/10/2026):** schema v1 trong `SqliteLibraryCatalog` đã có `tracks`, `playlists`, `playlist_tracks`, `play_history`, `settings`, `schema_migrations`, các cột normalized và FTS5 external-content + trigger đồng bộ; thư viện/favorites/lịch sử dùng SQLite là đường chính, còn `settings.json` vẫn là nơi app lưu âm lượng hiện tại. Scanner hiện dùng `Parallel.ForEachAsync` giới hạn tối đa 4 luồng (thay cho Channel producer/consumer trong sơ đồ), ghi upsert theo transaction và tái dùng metadata khi `file_size`+`mtime` không đổi. Cache ảnh bìa đang lưu byte ảnh gốc theo SHA-256, chưa resize 96/512. API FTS5 của catalog đã có unit test, nhưng ô tìm kiếm ở `MainWindow` vẫn lọc danh sách trong bộ nhớ bằng text metadata đã chuẩn hoá — việc nối UI vào FTS5 và đo ngân sách tìm kiếm vẫn còn mở.
 
 ### 8.3. Visualizer — "Stage Engine" (ƯU TIÊN SỐ 1 ⭐)
 Đây là linh hồn sản phẩm nên được thiết kế như một phân hệ độc lập có ngân sách hiệu năng riêng.
@@ -384,12 +387,19 @@ AudioFileReader (unity gain)
 
 ### Phase 3 — Thư viện chuyên nghiệp (`v0.4.0`) · Cỡ: **XL**
 **Mục tiêu:** từ "danh sách file" thành thư viện nhạc thật.
-- [ ] SQLite + migrations + nhập dữ liệu từ JSON cũ (kiểm thử nâng cấp từ v0.1.x/v0.2/v0.3)
-- [ ] Metadata đầy đủ (nghệ sĩ/album/năm/thể loại/thời lượng/bitrate) + ảnh bìa + cache; cột sắp xếp/lọc; tìm kiếm FTS5 bỏ dấu
-- [ ] Quét bất đồng bộ có tiến độ/huỷ; rescan tăng dần; (tuỳ chọn) theo dõi thư mục bằng FileSystemWatcher
-- [ ] Playlists CRUD + kéo thả thứ tự; Lịch sử nghe & "Nghe gần đây" cho Home; lưu Settings + khôi phục phiên
-- [ ] Kéo-thả file/thư mục từ Explorer vào app; mở file bằng "Open with Mimi" (đăng ký đuôi file tuỳ chọn)
-- **Exit:** thư viện 10.000 bài: cuộn mượt (ảo hoá), tìm < 100ms, quét nền không treo UI; tắt app giữa lúc ghi không hỏng DB.
+
+**Trạng thái 29/10/2026:** nền tảng dữ liệu/quét đã triển khai trên branch `arena/cdda374d-mimi` ở commit `875b325`; app/manifest đang ở `0.4.0` (chưa tag) và [Windows CI restore/build/test đã đạt](https://github.com/lxmtuu/Mimi/actions/runs/40830179675). Các mục được đánh `[x]` dưới đây mới là phần nền tảng đã có code + unit test; Phase **chưa đóng** vì playlist UI, watcher/file association, settings/phiên nghe đầy đủ và toàn bộ cổng hiệu năng/nâng cấp trên Windows thật vẫn còn mở.
+- [x] SQLite schema v1 có `schema_migrations`, WAL/foreign keys/transaction; app nhập `library.json`/`favorites.json` cũ khi catalog rỗng, archive JSON thành `.bak` sau khi nhập thành công và fallback về JSON nếu SQLite không mở được
+- [ ] Kiểm thử nâng cấp bằng dữ liệu/binary thật từ v0.1.x/v0.2/v0.3 trên Windows 10/11, gồm cả trường hợp tắt app giữa lúc ghi/migrate
+- [x] Metadata bằng TagLib-Sharp: title/nghệ sĩ/album/album artist/thể loại/năm/thời lượng/bitrate/sample-rate, fallback tên file khi tag lỗi; trích xuất ảnh bìa vào cache theo hash; cột Artist/Album/Time/Format; catalog có FTS5 external-content trên trường gốc + trường đã bỏ dấu
+- [ ] Nối ô tìm kiếm của UI vào FTS5 (hiện vẫn lọc danh sách trong bộ nhớ bằng metadata đã chuẩn hoá); sắp xếp theo cột/lọc nâng cao/chọn nhiều; resize ảnh bìa thành 96/512 thay vì cache byte gốc
+- [x] Quét file/thư mục bất đồng bộ, song song có giới hạn, có tiến độ + nút huỷ; bỏ qua thư mục không đọc được/reparse point; rescan tăng dần bằng fingerprint kích thước file + `mtime`
+- [ ] Theo dõi thư mục bằng `FileSystemWatcher` (debounce + tắt được)
+- [x] Tầng catalog có Playlists CRUD, thêm/xoá bài và đổi thứ tự; app ghi `play_history`, cập nhật lượt nghe/lần nghe cuối và có mục **Recently played**
+- [ ] Playlist UI đầy đủ (tạo/đổi tên/xoá, thêm bài từ thư viện, kéo-thả thứ tự, phát playlist); Settings đầy đủ + khôi phục phiên đang tạm dừng (hiện mới lưu âm lượng ở `settings.json`)
+- [x] Kéo-thả file/thư mục từ Explorer vào cửa sổ app
+- [ ] Mở file bằng "Open with Mimi" (đăng ký đuôi file tuỳ chọn)
+- **Exit:** thư viện 10.000 bài: cuộn mượt (ảo hoá), tìm < 100ms, quét nền không treo UI; tắt app giữa lúc ghi không hỏng DB. **Chưa đo/chưa đóng** trên máy Windows tham chiếu.
 
 ### Phase 4 — Hoàn thiện trải nghiệm phát nhạc (`v0.5.0`) · Cỡ: **M**
 - [ ] Queue có UI kéo sắp xếp; Shuffle-bag + Repeat Off/All/One hoàn chỉnh; Mute + % volume; tua 5/10s
