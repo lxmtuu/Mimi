@@ -6,6 +6,7 @@ using System.Windows.Input;
 using System.Windows.Threading;
 using System.Text.Json;
 using Microsoft.Win32;
+using Mimi.Controls;
 using Mimi.Models;
 using Mimi.Services;
 
@@ -17,10 +18,11 @@ public partial class MainWindow : Window
     private readonly LibraryService library = new();
     private readonly ObservableCollection<Track> tracks = new();
     private readonly DispatcherTimer timer;
-    private readonly System.Windows.Shapes.Rectangle[] visualizerBars = new System.Windows.Shapes.Rectangle[VisualizerSampleProvider.BandCount];
-    private readonly System.Windows.Shapes.Rectangle[] visualizerGlowBars = new System.Windows.Shapes.Rectangle[VisualizerSampleProvider.BandCount];
-    private static readonly System.Windows.Media.SolidColorBrush GlowTealBrush = CreateFrozenBrush(190, 71, 230, 208);
-    private static readonly System.Windows.Media.SolidColorBrush GlowPinkBrush = CreateFrozenBrush(190, 255, 92, 174);
+    private static readonly System.Windows.Media.SolidColorBrush VisualizerModeInactiveBrush = CreateFrozenBrush(255, 32, 48, 68);
+    private static readonly System.Windows.Media.SolidColorBrush VisualizerModeActiveTextBrush = CreateFrozenBrush(255, 7, 21, 27);
+    private static readonly System.Windows.Media.SolidColorBrush VisualizerModeInactiveTextBrush = CreateFrozenBrush(255, 243, 247, 255);
+    private VisualizerDisplayMode visualizerMode = VisualizerDisplayMode.NeonSpectrum;
+    private StageWindow? stageWindow;
     private static readonly System.Windows.Media.SolidColorBrush FavoriteOnBrush = CreateFrozenBrush(255, 255, 143, 203);
     private static readonly System.Windows.Media.SolidColorBrush FavoriteOffBrush = CreateFrozenBrush(255, 130, 150, 174);
     private bool changingProgress;
@@ -37,7 +39,8 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
-        InitializeVisualizer();
+        MainVisualizer.FrameProvider = audio.GetVisualizerFrame;
+        SetVisualizerMode(VisualizerDisplayMode.NeonSpectrum);
         TrackList.ItemsSource = tracks;
         MigrateLegacyDataIfNeeded();
         LoadSettings();
@@ -68,7 +71,7 @@ public partial class MainWindow : Window
         timer.Tick += (_, _) =>
         {
             RefreshPlaybackPosition();
-            RenderVisualizer();
+            UpdateStageDiagnostics();
             WriteVisualizerDiagnostics();
         };
         timer.Start();
@@ -103,96 +106,84 @@ public partial class MainWindow : Window
         return brush;
     }
 
-    private void InitializeVisualizer()
+    private void SetVisualizerMode(VisualizerDisplayMode mode)
     {
-        // Draw a soft, wide glow layer first so the crisp spectrum bars stay on top.
-        for (var i = 0; i < visualizerGlowBars.Length; i++)
-        {
-            var glowBar = new System.Windows.Shapes.Rectangle
-            {
-                RadiusX = 3,
-                RadiusY = 3,
-                Width = 6,
-                Height = 4,
-                Fill = new System.Windows.Media.SolidColorBrush(
-                    System.Windows.Media.Color.FromArgb(180, 71, 230, 208)),
-                Opacity = 0.62,
-                Effect = new System.Windows.Media.Effects.DropShadowEffect
-                {
-                    Color = System.Windows.Media.Color.FromRgb(71, 230, 208),
-                    BlurRadius = 24,
-                    ShadowDepth = 0,
-                    Opacity = 1
-                },
-                IsHitTestVisible = false
-            };
-            visualizerGlowBars[i] = glowBar;
-            VisualizerCanvas.Children.Add(glowBar);
-        }
-
-        for (var i = 0; i < visualizerBars.Length; i++)
-        {
-            var bar = new System.Windows.Shapes.Rectangle
-            {
-                RadiusX = 2,
-                RadiusY = 2,
-                Width = 4,
-                Height = 3,
-                Fill = new System.Windows.Media.LinearGradientBrush(
-                    System.Windows.Media.Color.FromRgb(71, 230, 208),
-                    System.Windows.Media.Color.FromRgb(255, 92, 174),
-                    90),
-                Opacity = 1,
-                IsHitTestVisible = false
-            };
-            visualizerBars[i] = bar;
-            VisualizerCanvas.Children.Add(bar);
-        }
-
-        SizeChanged += (_, _) => RenderVisualizer();
-        Loaded += (_, _) => RenderVisualizer();
+        visualizerMode = mode;
+        MainVisualizer.Mode = mode;
+        stageWindow?.SetMode(mode);
+        UpdateVisualizerModeButtons();
     }
 
-    private void RenderVisualizer()
+    private void UpdateVisualizerModeButtons()
     {
-        if (VisualizerCanvas.ActualWidth <= 0 || VisualizerCanvas.ActualHeight <= 0) return;
-        var levels = audio.GetVisualizerLevels();
-        var width = VisualizerCanvas.ActualWidth;
-        var height = VisualizerCanvas.ActualHeight;
-        var gap = 2.0;
-        var barWidth = Math.Max(2, (width - gap * (visualizerBars.Length - 1)) / visualizerBars.Length);
-        var count = Math.Min(levels.Length, visualizerBars.Length);
-
-        for (var i = 0; i < count; i++)
-        {
-            var barHeight = Math.Clamp(6 + levels[i] * height * 0.9, 6, height);
-            var x = i * (barWidth + gap);
-            var y = height - barHeight;
-            var bar = visualizerBars[i];
-            bar.Width = barWidth;
-            bar.Height = barHeight;
-            System.Windows.Controls.Canvas.SetLeft(bar, x);
-            System.Windows.Controls.Canvas.SetTop(bar, y);
-
-            var glowBar = visualizerGlowBars[i];
-            glowBar.Width = barWidth + 14;
-            glowBar.Height = barHeight + 12;
-            glowBar.Opacity = 0.72 + levels[i] * 0.28;
-            var hot = levels[i] > 0.45;
-            var glowColor = hot
-                ? System.Windows.Media.Color.FromArgb(190, 255, 92, 174)
-                : System.Windows.Media.Color.FromArgb(190, 71, 230, 208);
-            glowBar.Fill = hot ? GlowPinkBrush : GlowTealBrush;
-            if (glowBar.Effect is System.Windows.Media.Effects.DropShadowEffect glow)
-            {
-                glow.BlurRadius = 28 + levels[i] * 24;
-                glow.Opacity = 1;
-                glow.Color = glowColor;
-            }
-            System.Windows.Controls.Canvas.SetLeft(glowBar, x - 7);
-            System.Windows.Controls.Canvas.SetTop(glowBar, y - 6);
-        }
+        SetVisualizerModeButtonState(SpectrumModeButton, visualizerMode == VisualizerDisplayMode.NeonSpectrum);
+        SetVisualizerModeButtonState(WaveModeButton, visualizerMode == VisualizerDisplayMode.TwinWave);
+        SetVisualizerModeButtonState(HaloModeButton, visualizerMode == VisualizerDisplayMode.HaloCircle);
     }
+
+    private void SetVisualizerModeButtonState(Button button, bool isActive)
+    {
+        button.Background = isActive
+            ? (System.Windows.Media.Brush)FindResource("AccentBrush")
+            : VisualizerModeInactiveBrush;
+        button.Foreground = isActive
+            ? VisualizerModeActiveTextBrush
+            : VisualizerModeInactiveTextBrush;
+        button.FontWeight = isActive ? FontWeights.Bold : FontWeights.Normal;
+    }
+
+    private void SpectrumModeButton_Click(object sender, RoutedEventArgs e) =>
+        SetVisualizerMode(VisualizerDisplayMode.NeonSpectrum);
+
+    private void WaveModeButton_Click(object sender, RoutedEventArgs e) =>
+        SetVisualizerMode(VisualizerDisplayMode.TwinWave);
+
+    private void HaloModeButton_Click(object sender, RoutedEventArgs e) =>
+        SetVisualizerMode(VisualizerDisplayMode.HaloCircle);
+
+    private void StageButton_Click(object sender, RoutedEventArgs e) => ToggleStage();
+
+    private void ToggleStage()
+    {
+        if (stageWindow is { IsLoaded: true })
+        {
+            stageWindow.Close();
+            return;
+        }
+
+        OpenStage();
+    }
+
+    private void OpenStage()
+    {
+        if (stageWindow is { IsLoaded: true })
+        {
+            stageWindow.Activate();
+            return;
+        }
+
+        stageWindow = new StageWindow(audio, visualizerMode) { Owner = this };
+        stageWindow.SetTrack(NowTitle.Text, NowSubtitle.Text);
+        stageWindow.ModeChanged += SetVisualizerMode;
+        stageWindow.Closed += (_, _) => stageWindow = null;
+        stageWindow.Show();
+    }
+
+    protected override void OnKeyDown(KeyEventArgs e)
+    {
+        if (e.Key == Key.F11)
+        {
+            ToggleStage();
+            e.Handled = true;
+            return;
+        }
+
+        base.OnKeyDown(e);
+    }
+
+    private void UpdateStageDiagnostics() =>
+        VisualizerMetricsText.Text =
+            $"{MainVisualizer.FramesPerSecond:0} FPS · {MainVisualizer.AverageDrawMilliseconds:0.00} ms";
 
     private void AddFiles_Click(object sender, RoutedEventArgs e)
     {
@@ -424,6 +415,7 @@ public partial class MainWindow : Window
             currentTrack = null;
             NowTitle.Text = "Choose a song";
             NowSubtitle.Text = "Your next favorite is waiting";
+            stageWindow?.SetTrack(NowTitle.Text, NowSubtitle.Text);
             changingProgress = true;
             ProgressSlider.Value = 0;
             changingProgress = false;
@@ -572,6 +564,7 @@ public partial class MainWindow : Window
             audio.Play();
             UpdatePlayButton();
             TrackList.SelectedItem = track;
+            stageWindow?.SetTrack(track.Title, NowSubtitle.Text);
             return true;
         }
         catch (Exception ex)
@@ -633,6 +626,7 @@ public partial class MainWindow : Window
 
     protected override void OnClosed(EventArgs e)
     {
+        stageWindow?.Close();
         SaveSettings(force: true);
         timer.Stop();
         audio.Dispose();

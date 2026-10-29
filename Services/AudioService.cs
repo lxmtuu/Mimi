@@ -13,11 +13,16 @@ public sealed class AudioService : IDisposable
     private VolumeSampleProvider? volumeProvider;
     private float volume = 0.7f;
 
+    public VisualizerFrame GetVisualizerFrame() =>
+        visualizer?.GetFrame() ?? VisualizerFrame.Silence;
+
     public float[] GetVisualizerLevels()
     {
-        if (visualizer is null) return new float[VisualizerSampleProvider.BandCount];
-        if (!IsPlaying) visualizer.Decay();
-        return visualizer.GetLevels();
+        var spectrum = GetVisualizerFrame().Spectrum;
+        var levels = new float[spectrum.Count];
+        for (var i = 0; i < spectrum.Count; i++)
+            levels[i] = spectrum[i];
+        return levels;
     }
     public string GetVisualizerDiagnostics() => visualizer?.GetDiagnostics() ?? "visualizer=not-initialized";
 
@@ -118,9 +123,10 @@ public sealed class AudioService : IDisposable
                 suppressStoppedEvent = false;
             }
         }
+        visualizer?.Dispose();
+        visualizer = null;
         reader?.Dispose();
         reader = null;
-        visualizer = null;
         volumeProvider = null;
     }
 

@@ -1,0 +1,67 @@
+<Window x:Class="Mimi.StageWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="clr-namespace:Mimi.Controls"
+        Title="Mimi Stage"
+        WindowStyle="None"
+        ResizeMode="NoResize"
+        WindowState="Maximized"
+        WindowStartupLocation="CenterOwner"
+        ShowInTaskbar="False"
+        Topmost="True"
+        Background="{StaticResource BgBrush}"
+        Foreground="#F3F7FF">
+    <Grid>
+        <Grid.Background>
+            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                <GradientStop Color="#0B202B" Offset="0"/>
+                <GradientStop Color="#171A2A" Offset="0.55"/>
+                <GradientStop Color="#0B101B" Offset="1"/>
+            </LinearGradientBrush>
+        </Grid.Background>
+
+        <controls:VisualizerView x:Name="StageVisualizer"
+                                  Margin="36"
+                                  IsHitTestVisible="False"/>
+
+        <Border HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                MaxWidth="760"
+                Padding="28,16"
+                CornerRadius="18"
+                Background="#590B101B"
+                IsHitTestVisible="False">
+            <StackPanel>
+                <TextBlock x:Name="StageTitle"
+                           Text="Choose a song"
+                           FontSize="34"
+                           FontWeight="Bold"
+                           TextAlignment="Center"
+                           TextTrimming="CharacterEllipsis"/>
+                <TextBlock x:Name="StageSubtitle"
+                           Text="Your next favorite is waiting"
+                           Margin="0,8,0,0"
+                           Foreground="#B7C9DB"
+                           FontSize="15"
+                           TextAlignment="Center"
+                           TextTrimming="CharacterEllipsis"/>
+            </StackPanel>
+        </Border>
+
+        <TextBlock x:Name="StageMetricsText"
+                   Text="0 FPS · 0.00 ms"
+                   HorizontalAlignment="Right"
+                   VerticalAlignment="Top"
+                   Margin="0,24,28,0"
+                   Foreground="#8296AE"
+                   FontSize="12"
+                   IsHitTestVisible="False"/>
+        <TextBlock Text="ESC / F11 close  ·  1 Spectrum  ·  2 Twin Wave  ·  3 Halo"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Bottom"
+                   Margin="0,0,0,24"
+                   Foreground="#8296AE"
+                   FontSize="12"
+                   IsHitTestVisible="False"/>
+    </Grid>
+</Window>
