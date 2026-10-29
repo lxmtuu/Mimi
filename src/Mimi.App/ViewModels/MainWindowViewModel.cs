@@ -235,6 +235,8 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
 
         audioPlayer.PlaybackChanged += AudioPlayer_PlaybackChanged;
         audioPlayer.PlaybackEnded += AudioPlayer_PlaybackEnded;
+        audioPlayer.OutputStatusChanged += AudioPlayer_OutputStatusChanged;
+        RefreshAudioOutputStatus(audioPlayer.OutputStatus);
         positionTimer.Tick += PositionTimer_Tick;
         positionTimer.Start();
 
@@ -848,7 +850,14 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         }
         else
         {
-            audioPlayer.Toggle();
+            try
+            {
+                audioPlayer.Toggle();
+            }
+            catch (AudioOutputUnavailableException ex)
+            {
+                ShowAudioOutputUnavailable(ex);
+            }
         }
 
         RefreshPlaybackState();
@@ -2243,6 +2252,56 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
             _ = RecordPlaybackStartedAsync(track);
             return true;
         }
+        catch (AudioOutputUnavailableException ex)
+        {
+            RefreshAudioOutputStatus(
+                ex.Status,
+                playbackInterrupted: loaded);
+
+            if (!loaded)
+            {
+                RefreshPlaybackState();
+                Log.Warning(
+                    ex,
+                    "Could not prepare {FilePath} because the audio output is unavailable",
+                    track.FilePath);
+                if (showError)
+                {
+                    dialogService.ShowWarning(
+                        "Mimi can't play this song because no usable audio " +
+                        $"output is available.\n\n{ex.Message}",
+                        "Audio output");
+                }
+
+                return false;
+            }
+
+            // The file decoded successfully and has already been adopted as
+            // CurrentTrack. Commit its queue occurrence and leave it ready
+            // paused; an absent output device must never mark the song as
+            // corrupt or silently skip through the rest of the queue.
+            track.HasPlaybackError = false;
+            track.Track.HasError = false;
+            track.Track.IsMissing = false;
+            SelectedTrack = track;
+            onPlaybackStarted?.Invoke();
+            RefreshPlaybackState();
+            SaveSettings();
+            Log.Warning(
+                ex,
+                "Loaded {FilePath}, but playback is paused because the audio output is unavailable",
+                track.FilePath);
+
+            if (showError)
+            {
+                dialogService.ShowWarning(
+                    "This song is loaded, but Mimi can't start it because " +
+                    $"no usable audio output is available.\n\n{ex.Message}",
+                    "Audio output");
+            }
+
+            return true;
+        }
         catch (Exception ex)
         {
             // Load() stops and disposes any previous track before trying the
@@ -2405,7 +2464,12 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         RefreshPlaybackState();
     }
 
-    private void RefreshPlaybackState() => IsPlaying = audioPlayer.IsPlaying;
+    private void RefreshPlaybackState()
+    {
+        IsPlaying = audioPlayer.IsPlaying;
+        if (IsPlaying && AudioOutputNotice.Length != 0)
+            AudioOutputNotice = string.Empty;
+    }
 
     private void SetProgressPercent(double value)
     {
@@ -2550,6 +2614,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         positionTimer.Tick -= PositionTimer_Tick;
         audioPlayer.PlaybackChanged -= AudioPlayer_PlaybackChanged;
         audioPlayer.PlaybackEnded -= AudioPlayer_PlaybackEnded;
+        audioPlayer.OutputStatusChanged -= AudioPlayer_OutputStatusChanged;
         SaveSettings(force: true);
     }
 

@@ -9,13 +9,24 @@ public interface IAudioPlayer : IDisposable
 {
     event EventHandler? PlaybackChanged;
     event EventHandler? PlaybackEnded;
+    event EventHandler<AudioOutputStatusChangedEventArgs>? OutputStatusChanged;
 
     bool IsPlaying { get; }
     TimeSpan CurrentTime { get; }
     TimeSpan Duration { get; }
     float Volume { get; set; }
+    AudioOutputStatus OutputStatus { get; }
 
+    /// <summary>
+    /// Decodes a file and prepares it paused. A successful load does not by
+    /// itself prove that an output device is currently usable.
+    /// </summary>
     void Load(string path);
+
+    /// <summary>Starts or resumes the loaded file.</summary>
+    /// <exception cref="AudioOutputUnavailableException">
+    /// The file is loaded, but no usable Windows audio output is available.
+    /// </exception>
     void Play();
     void Pause();
     void Toggle();

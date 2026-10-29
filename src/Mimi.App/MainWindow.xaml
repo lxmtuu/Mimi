@@ -707,6 +707,13 @@
                                     <TextBlock Text=" / " Foreground="#9FB2C8" FontSize="11"/>
                                     <TextBlock Text="{Binding DurationLabel}" FontSize="11"/>
                                 </StackPanel>
+                                <TextBlock Text="Audio output" Foreground="#9FB2C8" FontSize="10"
+                                           Margin="0,12,0,2"/>
+                                <TextBlock Text="{Binding AudioOutputLabel}"
+                                           ToolTip="{Binding AudioOutputLabel}"
+                                           FontSize="11" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                                <TextBlock Text="Mimi follows Windows' default output through WASAPI shared mode (WaveOut is only a fallback). If that device changes or disappears during playback, Mimi pauses instead of moving sound unexpectedly; press Play to continue on the new output."
+                                           Foreground="#9FB2C8" FontSize="11" TextWrapping="Wrap" Margin="0,4,0,2"/>
                             </StackPanel>
                         </Border>
 
@@ -1013,6 +1020,16 @@
                                     Value="{Binding Volume, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                     AutomationProperties.Name="Volume"/>
                         </Grid>
+                        <TextBlock Text="{Binding AudioOutputLabel}"
+                                   ToolTip="{Binding AudioOutputLabel}"
+                                   Foreground="#71869E" FontSize="9"
+                                   TextTrimming="CharacterEllipsis" Margin="4,8,4,0"/>
+                        <Border Background="#34251A" BorderBrush="#7A5327" BorderThickness="1"
+                                CornerRadius="10" Padding="10" Margin="0,10,0,0"
+                                Visibility="{Binding HasAudioOutputNotice, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <TextBlock Text="{Binding AudioOutputNotice}" Foreground="#FFD9A0"
+                                       FontSize="10" TextWrapping="Wrap"/>
+                        </Border>
                         <Border Background="#172638" CornerRadius="10" Padding="10" Margin="0,18,0,0">
                             <StackPanel>
                                 <DockPanel>

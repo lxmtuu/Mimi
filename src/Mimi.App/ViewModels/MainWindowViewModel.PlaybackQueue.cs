@@ -6,6 +6,8 @@ using CommunityToolkit.Mvvm.Input;
 using Mimi.Behaviors;
 using Mimi.Core.Playback;
 using Mimi.Models;
+using Mimi.Services;
+using Serilog;
 
 namespace Mimi.ViewModels;
 
@@ -41,7 +43,17 @@ public sealed partial class MainWindowViewModel
     [ObservableProperty]
     private PlaybackQueueItemViewModel? selectedQueueItem;
 
+    [ObservableProperty]
+    private string audioOutputLabel = "Windows default output";
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasAudioOutputNotice))]
+    private string audioOutputNotice = string.Empty;
+
     public ObservableCollection<PlaybackQueueItemViewModel> UpcomingQueueItems { get; } = [];
+
+    public bool HasAudioOutputNotice =>
+        !string.IsNullOrWhiteSpace(AudioOutputNotice);
 
     public string EffectiveVolumePercentLabel => IsMuted
         ? "Muted"
@@ -120,6 +132,74 @@ public sealed partial class MainWindowViewModel
             SaveSettings();
     }
 
+    partial void OnCurrentTrackChanged(TrackItemViewModel? value)
+    {
+        if (value is null)
+            AudioOutputNotice = string.Empty;
+    }
+
+    private void AudioPlayer_OutputStatusChanged(
+        object? sender,
+        AudioOutputStatusChangedEventArgs e) =>
+        uiDispatcher.BeginInvoke(new Action(() =>
+        {
+            RefreshAudioOutputStatus(e.Status, e.PlaybackInterrupted);
+            RefreshPlaybackState();
+
+            // Device loss can be followed immediately by an app exit. Save
+            // the retained song and position as soon as the interruption is
+            // known rather than relying only on the periodic session timer.
+            if (e.PlaybackInterrupted && CurrentTrack is not null)
+                SaveSettings();
+        }));
+
+    private void RefreshAudioOutputStatus(
+        AudioOutputStatus status,
+        bool playbackInterrupted = false)
+    {
+        AudioOutputLabel = status switch
+        {
+            { IsAvailable: false } => "No audio output available",
+            { Kind: AudioOutputKind.WasapiShared } =>
+                $"WASAPI shared · {status.DeviceName}",
+            { Kind: AudioOutputKind.WaveOutFallback } =>
+                $"WaveOut fallback · {status.DeviceName}",
+            _ => $"Windows default · {status.DeviceName}"
+        };
+
+        if (playbackInterrupted || !status.IsAvailable)
+        {
+            AudioOutputNotice = status.Message;
+        }
+        else if (CurrentTrack is null)
+        {
+            AudioOutputNotice = string.Empty;
+        }
+        else if (!string.IsNullOrWhiteSpace(AudioOutputNotice) &&
+                 !audioPlayer.IsPlaying)
+        {
+            AudioOutputNotice =
+                $"Audio output is ready: {status.DeviceName}. " +
+                "Press Play to continue.";
+        }
+    }
+
+    private void ShowAudioOutputUnavailable(
+        AudioOutputUnavailableException ex)
+    {
+        RefreshAudioOutputStatus(
+            ex.Status,
+            playbackInterrupted: CurrentTrack is not null);
+        RefreshPlaybackState();
+        Log.Warning(
+            ex,
+            "Playback could not start because no usable audio output is available");
+        dialogService.ShowWarning(
+            "Mimi can't start playback because no usable audio output " +
+            $"is available.\n\n{ex.Message}",
+            "Audio output");
+    }
+
     private void ApplyPlaybackPreferenceSettings()
     {
         IsMuted = settings.IsMuted;
@@ -183,7 +263,24 @@ public sealed partial class MainWindowViewModel
         }
 
         if (!audioPlayer.IsPlaying)
-            audioPlayer.Play();
+        {
+            try
+            {
+                audioPlayer.Play();
+            }
+            catch (AudioOutputUnavailableException ex)
+            {
+                // SMTC/headset resume requests should update the visible
+                // output notice without unexpectedly raising a modal dialog
+                // while another application has focus.
+                RefreshAudioOutputStatus(
+                    ex.Status,
+                    playbackInterrupted: true);
+                Log.Warning(
+                    ex,
+                    "Could not resume playback because the audio output is unavailable");
+            }
+        }
 
         RefreshPlaybackState();
         SaveSettings();
