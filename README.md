@@ -96,7 +96,9 @@ A Windows desktop music-player foundation built with C# / WPF / .NET 8 and NAudi
   backend runs produced measurable loopback audio on the same Realtek
   endpoint. Those 20-second runs are preliminary: the interactive
   flyout/taskbar/media-key, physical device-loss/recovery, and longer
-  WASAPI↔WaveOut stability gates in `ROADMAP.md` remain open
+  WASAPI↔WaveOut stability gates in `ROADMAP.md` remain open. Their
+  repeatable manual procedures, result template, and loopback CSV
+  analyzer live in the [Windows Acceptance Kit](docs/acceptance/README.md)
 
 ## Requirements
 - Windows 10 version 1809 or later / Windows 11, with Windows Terminal or
@@ -297,7 +299,8 @@ Speakers (Realtek(R) Audio) đã cho cả ba chế độ phát nhạc và có t�
 loopback, nhưng mỗi lượt chỉ kéo dài khoảng 20 giây. Kết quả này không
 thay thế bài kiểm tra ổn định dài hơn hay các thao tác rút/kết nối lại
 thiết bị vật lý; xem bảng số liệu và trạng thái từng cổng trong
-`ROADMAP.md`.
+`ROADMAP.md`, còn quy trình kiểm tra lặp lại được và mẫu ghi kết quả nằm
+trong [Windows Acceptance Kit](docs/acceptance/README.md).
 
 Cuối cùng, bấm `F11` để mở Stage toàn màn hình (`Esc` để thoát Stage).
 
@@ -369,6 +372,11 @@ dotnet run --project .\src\Mimi.App\Mimi.App.csproj
   search/playlists/history, user-data migration/archive, playback queue
   and shuffle-bag behavior, audio-output status/backend selection,
   Vietnamese search normalization, and spectrum analysis
+- `docs/acceptance` — repeatable real-Windows acceptance checklist and
+  result template; `ROADMAP.md` remains the decision/status record
+- `tools` — diagnostic utilities that are not part of the shipped app,
+  currently the PowerShell loopback-CSV analyzer used for Phase 4 A/B
+  measurements
 
 ## Notes
 This is a first working foundation, not a finished commercial product. Online streaming is intentionally not implemented yet. Each streaming provider requires an official API/SDK, authorization, and compliance with that provider's playback and licensing rules. Do not scrape protected services or attempt to bypass DRM.
@@ -379,6 +387,9 @@ roadmap (in Vietnamese): vision and IP principles for the anime × Vocaloid-insp
 "Mimi Neon Stage" design system, screen specs, target architecture, per-subsystem
 designs (audio, SQLite library, 60fps visualizer, lyrics, bilingual vi/en UI),
 Phase 0–7 plan with exit criteria, audit findings, and open decisions.
+For executing the remaining manual Windows gates, use the
+**[Windows Acceptance Kit](docs/acceptance/README.md)** and copy its
+result template for each test session.
 
 ## Rename note
 This app was previously named **MikuVerse Music** and is now **Mimi** (application project `src/Mimi.App/Mimi.App.csproj`, namespace `Mimi`, output `Mimi.exe`). On first launch, an existing library/favorites saved under `%LocalAppData%\MikuVerseMusic` are copied automatically to `%LocalAppData%\Mimi`; when the SQLite catalog is empty, those JSON records are then imported into `library.db` and the imported JSON files are archived as `.bak`. The old `MikuVerseMusic` folder is left untouched.

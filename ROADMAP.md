@@ -447,6 +447,7 @@ AudioFileReader (unity gain)
 - [x] Chuyển mặc định sang WasapiOut shared mode, giữ WaveOut làm fallback; xử lý đổi/rút thiết bị âm thanh giữa chừng bằng cách giữ bài/vị trí, tự Pause và dựng lại output
 - [x] Bổ sung override chẩn đoán `MIMI_AUDIO_OUTPUT` để ép WASAPI/WaveOut ngay trên cùng build và endpoint khi đo A/B; không phơi bày thành công tắc Settings của người dùng cuối
 - [x] Smoke test Windows thật tại `04ab178`: ba chế độ mở đúng backend, phát được nhạc khoảng 20 giây trên Speakers (Realtek(R) Audio), thu được loopback có tín hiệu và thoát bình thường
+- [x] Bổ sung [Windows Acceptance Kit](docs/acceptance/README.md): checklist phiên S0–S5, mẫu báo cáo kết quả và `tools/Analyze-LoopbackCsv.ps1` để các cổng còn lại được kiểm tra lặp lại được; bộ kit không làm thay đổi trạng thái của P4-A…P4-H
 - [ ] **P4-A — SMTC/flyout:** metadata, ảnh bìa, trạng thái, timeline và các nút điều khiển đúng trên Windows thật *(một phần: SMTC đã khởi tạo và app phát nhạc; chưa thao tác trực tiếp flyout để xác nhận metadata/cover/nút/seek)*
 - [ ] **P4-B — Taskbar:** thumbnail Previous/Play/Pause/Next và progress phản ánh đúng trạng thái phát
 - [ ] **P4-C — Media keys/keyboard:** phím cứng và phím tắt hoạt động đúng một lần, không toggle hai lần và không phá focus của ô nhập/button/slider/danh sách *(UI Automation đã bấm Play trong app để phục vụ smoke test; chưa kiểm tra phím media vật lý/shortcut)*
@@ -455,7 +456,7 @@ AudioFileReader (unity gain)
 - [ ] **P4-F — Kết nối lại:** endpoint mới/cũ xuất hiện lại được nhận diện và chỉ phát tiếp sau khi người dùng bấm Play
 - [ ] **P4-G — A/B D-03:** dùng `MIMI_AUDIO_OUTPUT` để đo độ trễ/ổn định WASAPI ↔ WaveOut trên cùng máy, endpoint, file và điều kiện âm lượng; ghi phương pháp đo thay vì dùng hằng latency yêu cầu làm kết quả *(một phần: đã có loopback khoảng 20 giây/backend; cần lặp lại dài hơn, theo dõi khoảng callback 111,47ms đơn lẻ của WASAPI forced và chưa kết luận latency vật lý)*
 - [ ] **P4-H — Chốt hồ sơ:** tiếp tục ghi kết quả đầy đủ của P4-A…P4-G vào `ROADMAP.md` khi các cổng còn lại có bằng chứng, sau đó mới quyết định chốt D-03 và đóng Phase 4 *(hồ sơ đợt smoke/A-B ngắn đã được ghi, chưa phải hồ sơ chốt)*
-- **Thứ tự nghiệm thu đề xuất:** (1) một phiên tương tác ở chế độ `auto` với bài có metadata/ảnh bìa để kiểm tra lần lượt flyout SMTC, taskbar thumbnail/progress, media keys vật lý và phím tắt theo từng trạng thái focus; (2) một phiên thiết bị dùng USB/Bluetooth hoặc endpoint phụ để đổi thiết bị mặc định, rút/ngắt thiết bị đang phát, disable/không còn output rồi kết nối lại, đối chiếu crash, bài/vị trí, nhãn/banner, lỗi corrupt và việc phải bấm Play; (3) một vòng A/B dài hơn với từng backend bị ép trên cùng playlist/endpoint/volume, gồm nhiều bài và các thao tác Pause/seek/Next, báo cáo phân bố khoảng callback (p95/p99/max, số khoảng >100ms), các chuỗi buffer im lặng sau giai đoạn khởi động và mọi glitch nghe được kèm thời điểm trong log. Không dùng riêng thời gian tới buffer loopback đầu tiên để kết luận latency vật lý.
+- **Thứ tự nghiệm thu đề xuất:** thực hiện theo [Windows Acceptance Kit](docs/acceptance/README.md) — (1) một phiên tương tác ở chế độ `auto` với bài có metadata/ảnh bìa để kiểm tra lần lượt flyout SMTC, taskbar thumbnail/progress, media keys vật lý và phím tắt theo từng trạng thái focus; (2) một phiên thiết bị dùng USB/Bluetooth hoặc endpoint phụ để đổi thiết bị mặc định, rút/ngắt thiết bị đang phát, disable/không còn output rồi kết nối lại, đối chiếu crash, bài/vị trí, nhãn/banner, lỗi corrupt và việc phải bấm Play; (3) một vòng A/B dài hơn với từng backend bị ép trên cùng playlist/endpoint/volume và vị trí bắt đầu, gồm nhiều bài và các thao tác Pause/seek/Next, báo cáo phân bố khoảng callback (p50/p95/p99/max, số khoảng >100ms và >2 lần trung vị), các chuỗi buffer im lặng sau giai đoạn khởi động và mọi glitch nghe được kèm thời điểm trong log. Không dùng riêng thời gian tới buffer loopback đầu tiên để kết luận latency vật lý.
 - **Exit:** điều khiển trọn vẹn không cần chuột; overlay media của Windows hiện đúng bài/ảnh bìa; đổi output device không crash.
 
 ### Phase 5 — Song ngữ & Theme cộng đồng (`v0.6.0`) · Cỡ: **L**
@@ -502,7 +503,7 @@ AudioFileReader (unity gain)
 |---|---|---|
 | Unit | Scanner, chuẩn hoá tiếng Việt, FFT bands, shuffle-bag, settings/migration | xUnit (`Mimi.Tests`) |
 | Integration | SQLite migrations từ mọi phiên bản cũ, đọc metadata bộ file mẫu đủ định dạng | xUnit + file mẫu tự sinh |
-| UI/Manual | Checklist phát hành: cài sạch, quét thư mục lỗi quyền, file hỏng, rút tai nghe, đổi DPI 100–200%, bàn phím-only, VI/EN | Checklist trong PR release |
+| UI/Manual | Checklist phát hành: cài sạch, quét thư mục lỗi quyền, file hỏng, rút tai nghe, đổi DPI 100–200%, bàn phím-only, VI/EN | [Windows Acceptance Kit](docs/acceptance/README.md) + checklist trong PR release |
 | Hiệu năng | Visualizer fps/CPU, quét 10k file, khởi động lạnh | Profiler + trang Diagnostics |
 | Tương thích | Win10 22H2 + Win11, .NET runtime self-contained | Máy ảo sạch |
 
