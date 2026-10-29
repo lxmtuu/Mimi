@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Windows;
 using System.Windows.Shell;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -76,13 +77,13 @@ public sealed partial class MainWindowViewModel
         }
     }
 
-    public ThumbButtonInfoVisibility TaskbarPlayButtonVisibility => IsPlaying
-        ? ThumbButtonInfoVisibility.Collapsed
-        : ThumbButtonInfoVisibility.Visible;
+    public Visibility TaskbarPlayButtonVisibility => IsPlaying
+        ? Visibility.Collapsed
+        : Visibility.Visible;
 
-    public ThumbButtonInfoVisibility TaskbarPauseButtonVisibility => IsPlaying
-        ? ThumbButtonInfoVisibility.Visible
-        : ThumbButtonInfoVisibility.Collapsed;
+    public Visibility TaskbarPauseButtonVisibility => IsPlaying
+        ? Visibility.Visible
+        : Visibility.Collapsed;
 
     public double TaskbarProgressValue =>
         Math.Clamp(ProgressPercent / 100d, 0, 1);
