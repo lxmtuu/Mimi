@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
@@ -25,6 +26,18 @@ public enum LibraryViewMode
     Playlist
 }
 
+public enum TrackSortField
+{
+    None,
+    Title,
+    Artist,
+    Album,
+    Genre,
+    Year,
+    Duration,
+    Format
+}
+
 /// <summary>
 /// Owns the main window's presentation and playback state. Native dialogs,
 /// file persistence, library scanning, and audio output sit behind injected
@@ -45,6 +58,15 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     };
     private readonly CancellationTokenSource lifetimeCancellation = new();
 
+    private const string AllArtistsFilter = "All artists";
+    private const string AllAlbumsFilter = "All albums";
+    private const string AllGenresFilter = "All genres";
+    private const string AllFormatsFilter = "All formats";
+    private const string AllPlaybackStatesFilter = "All states";
+    private const string ReadyPlaybackStateFilter = "Ready";
+    private const string ErrorPlaybackStateFilter = "Has error";
+    private const string MissingPlaybackStateFilter = "Missing";
+
     private AppSettings settings = new();
     private HashSet<string> favorites = new(StringComparer.OrdinalIgnoreCase);
     private string normalizedSearchQuery = string.Empty;
@@ -56,6 +78,8 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         new(StringComparer.OrdinalIgnoreCase);
     private int searchRequestVersion;
     private bool catalogSearchActive;
+    private TrackSortField trackSortField;
+    private ListSortDirection trackSortDirection = ListSortDirection.Ascending;
     private long? currentPlayHistoryId;
     private bool changingProgress;
     private bool userSeeking;
@@ -138,6 +162,26 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     [ObservableProperty]
     private string searchStatusLabel = string.Empty;
 
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasActiveAdvancedFilters))]
+    private string selectedArtistFilter = AllArtistsFilter;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasActiveAdvancedFilters))]
+    private string selectedAlbumFilter = AllAlbumsFilter;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasActiveAdvancedFilters))]
+    private string selectedGenreFilter = AllGenresFilter;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasActiveAdvancedFilters))]
+    private string selectedFormatFilter = AllFormatsFilter;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasActiveAdvancedFilters))]
+    private string selectedPlaybackStateFilter = AllPlaybackStatesFilter;
+
     public MainWindowViewModel(
         IAudioPlayer audioPlayer,
         ILibraryService libraryService,
@@ -153,6 +197,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
 
         TracksView = CollectionViewSource.GetDefaultView(Tracks);
         TracksView.Filter = FilterTrack;
+        SelectedTracks.CollectionChanged += SelectedTracks_CollectionChanged;
 
         userDataService.MigrateLegacyDataIfNeeded();
         settings = userDataService.LoadSettings();
@@ -179,7 +224,79 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
 
     public ObservableCollection<PlaylistItemViewModel> Playlists { get; } = [];
 
+    public ObservableCollection<TrackItemViewModel> SelectedTracks { get; } = [];
+
+    public ObservableCollection<string> ArtistFilterOptions { get; } =
+        [AllArtistsFilter];
+
+    public ObservableCollection<string> AlbumFilterOptions { get; } =
+        [AllAlbumsFilter];
+
+    public ObservableCollection<string> GenreFilterOptions { get; } =
+        [AllGenresFilter];
+
+    public ObservableCollection<string> FormatFilterOptions { get; } =
+        [AllFormatsFilter];
+
+    public IReadOnlyList<string> PlaybackStateFilterOptions { get; } =
+    [
+        AllPlaybackStatesFilter,
+        ReadyPlaybackStateFilter,
+        ErrorPlaybackStateFilter,
+        MissingPlaybackStateFilter
+    ];
+
     public ICollectionView TracksView { get; }
+
+    public bool HasSelectedTracks => SelectedTracks.Count > 0;
+
+    public bool HasMultipleSelectedTracks => SelectedTracks.Count > 1;
+
+    public string SelectedTracksCountLabel =>
+        $"{SelectedTracks.Count} selected";
+
+    public bool HasActiveAdvancedFilters =>
+        !string.Equals(
+            SelectedArtistFilter,
+            AllArtistsFilter,
+            StringComparison.Ordinal) ||
+        !string.Equals(
+            SelectedAlbumFilter,
+            AllAlbumsFilter,
+            StringComparison.Ordinal) ||
+        !string.Equals(
+            SelectedGenreFilter,
+            AllGenresFilter,
+            StringComparison.Ordinal) ||
+        !string.Equals(
+            SelectedFormatFilter,
+            AllFormatsFilter,
+            StringComparison.Ordinal) ||
+        !string.Equals(
+            SelectedPlaybackStateFilter,
+            AllPlaybackStatesFilter,
+            StringComparison.Ordinal);
+
+    public string TitleSortLabel =>
+        GetSortLabel("TITLE", TrackSortField.Title);
+
+    public string ArtistSortLabel =>
+        GetSortLabel("ARTIST", TrackSortField.Artist);
+
+    public string AlbumSortLabel =>
+        GetSortLabel("ALBUM", TrackSortField.Album);
+
+    public string GenreSortLabel =>
+        GetSortLabel("GENRE", TrackSortField.Genre);
+
+    public string YearSortLabel =>
+        GetSortLabel("YEAR", TrackSortField.Year);
+
+    public string DurationSortLabel =>
+        GetSortLabel("TIME", TrackSortField.Duration);
+
+    public string FormatSortLabel =>
+        GetSortLabel("FORMAT", TrackSortField.Format);
 
     public bool HasSelectedPlaylist => SelectedPlaylist is not null;
 
@@ -214,13 +331,37 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     {
         normalizedSearchQuery = TextSearch.Normalize(value);
         catalogSearchActive = false;
+        ResetTrackSort();
         OnPropertyChanged(nameof(IsPlaylistReorderEnabled));
         QueueCatalogSearch(value);
         ConfigureTracksView();
     }
 
-    partial void OnActiveViewChanged(LibraryViewMode value) =>
+    partial void OnActiveViewChanged(LibraryViewMode value)
+    {
+        ResetTrackSort();
         ConfigureTracksView();
+    }
+
+    partial void OnSelectedArtistFilterChanged(string value) => ApplyFilter();
+
+    partial void OnSelectedAlbumFilterChanged(string value) => ApplyFilter();
+
+    partial void OnSelectedGenreFilterChanged(string value) => ApplyFilter();
+
+    partial void OnSelectedFormatFilterChanged(string value) => ApplyFilter();
+
+    partial void OnSelectedPlaybackStateFilterChanged(string value) =>
+        ApplyFilter();
+
+    private void SelectedTracks_CollectionChanged(
+        object? sender,
+        NotifyCollectionChangedEventArgs e)
+    {
+        OnPropertyChanged(nameof(HasSelectedTracks));
+        OnPropertyChanged(nameof(HasMultipleSelectedTracks));
+        OnPropertyChanged(nameof(SelectedTracksCountLabel));
+    }
 
     partial void OnSelectedPlaylistChanged(PlaylistItemViewModel? value)
     {
@@ -467,8 +608,9 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     private async Task AddSelectedTrackToPlaylist(
         PlaylistItemViewModel? playlist)
     {
-        if (playlist is null || SelectedTrack is null) return;
-        await AddTrackToPlaylistAsync(playlist, SelectedTrack);
+        var tracks = GetSelectedTracksSnapshot();
+        if (playlist is null || tracks.Length == 0) return;
+        await AddTracksToPlaylistAsync(playlist, tracks);
     }
 
     [RelayCommand]
@@ -482,8 +624,10 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     [RelayCommand]
     private async Task RemoveSelectedTrackFromPlaylist()
     {
-        if (SelectedTrack is not null)
-            await RemoveTrackFromSelectedPlaylistAsync(SelectedTrack);
+        if (!IsPlaylistView) return;
+
+        foreach (var track in GetSelectedTracksSnapshot())
+            await RemoveTrackFromSelectedPlaylistAsync(track);
     }
 
     [RelayCommand]
@@ -511,6 +655,52 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         var current = IndexInSelectedPlaylist(SelectedTrack.FilePath);
         if (current >= 0 && current + 1 < selectedPlaylistTrackPaths.Count)
             await MovePlaylistTrackAsync(SelectedTrack, current + 1);
+    }
+
+    [RelayCommand]
+    private void SortTracks(string? fieldName)
+    {
+        if (ActiveView == LibraryViewMode.Playlist) return;
+        if (!Enum.TryParse<TrackSortField>(
+                fieldName,
+                ignoreCase: true,
+                out var field) ||
+            field == TrackSortField.None)
+        {
+            return;
+        }
+
+        if (trackSortField == field)
+        {
+            trackSortDirection =
+                trackSortDirection == ListSortDirection.Ascending
+                    ? ListSortDirection.Descending
+                    : ListSortDirection.Ascending;
+        }
+        else
+        {
+            trackSortField = field;
+            trackSortDirection = ListSortDirection.Ascending;
+        }
+
+        NotifySortLabelsChanged();
+        ConfigureTracksView();
+    }
+
+    [RelayCommand]
+    private void ClearLibraryFilters()
+    {
+        SelectedArtistFilter = AllArtistsFilter;
+        SelectedAlbumFilter = AllAlbumsFilter;
+        SelectedGenreFilter = AllGenresFilter;
+        SelectedFormatFilter = AllFormatsFilter;
+        SelectedPlaybackStateFilter = AllPlaybackStatesFilter;
+        ResetTrackSort();
+
+        if (SearchText.Length > 0)
+            SearchText = string.Empty;
+        else
+            ConfigureTracksView();
     }
 
     [RelayCommand]
@@ -640,7 +830,61 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     }
 
     [RelayCommand]
-    private async Task RemoveSelectedTrack() => await RemoveTrack(SelectedTrack);
+    private async Task ToggleSelectedFavorites()
+    {
+        var tracks = GetSelectedTracksSnapshot();
+        if (tracks.Length == 0) return;
+
+        var newValue = tracks.Any(track => !track.IsFavorite);
+        var originalValues = tracks.ToDictionary(
+            track => track,
+            track => track.IsFavorite);
+
+        foreach (var track in tracks)
+            SetFavorite(track, newValue);
+
+        if (catalogAvailable)
+        {
+            try
+            {
+                foreach (var track in tracks)
+                {
+                    await libraryCatalog.SetFavoriteAsync(
+                        track.FilePath,
+                        newValue,
+                        lifetimeCancellation.Token);
+                }
+            }
+            catch (OperationCanceledException) when (
+                lifetimeCancellation.IsCancellationRequested)
+            {
+                return;
+            }
+            catch (Exception ex)
+            {
+                foreach (var (track, wasFavorite) in originalValues)
+                    SetFavorite(track, wasFavorite);
+
+                Log.Warning(ex, "Could not save favorites for selected tracks");
+                dialogService.ShowWarning(
+                    $"Couldn't save favorites.\n\n{ex.Message}",
+                    "Mimi");
+            }
+        }
+        else
+        {
+            SaveFavorites();
+        }
+
+        ApplyFilter();
+    }
+
+    [RelayCommand]
+    private async Task RemoveSelectedTrack()
+    {
+        foreach (var track in GetSelectedTracksSnapshot())
+            await RemoveTrack(track);
+    }
 
     [RelayCommand]
     private async Task RemoveTrack(TrackItemViewModel? track)
@@ -686,6 +930,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
             SelectedTrack = null;
 
         Tracks.Remove(track);
+        RefreshFilterOptions();
         catalogSearchPaths?.Remove(track.FilePath);
 
         if (selectedPlaylistPathSet.Remove(track.FilePath))
@@ -780,6 +1025,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
                 SelectedPlaylist = null;
                 Playlists.Clear();
                 Tracks.Clear();
+                RefreshFilterOptions();
                 LoadFavorites();
                 if (LoadLibrary()) PruneFavorites();
                 ApplyFilter();
@@ -1015,6 +1261,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
             changedTracks.Add(track);
         }
 
+        RefreshFilterOptions();
         ApplyFilter();
         return changedTracks;
     }
@@ -1061,6 +1308,37 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
                     nameof(TrackItemViewModel.PlaylistPosition),
                     ListSortDirection.Ascending));
             }
+            else if (trackSortField != TrackSortField.None)
+            {
+                var propertyName = trackSortField switch
+                {
+                    TrackSortField.Title =>
+                        nameof(TrackItemViewModel.Title),
+                    TrackSortField.Artist =>
+                        nameof(TrackItemViewModel.Artist),
+                    TrackSortField.Album =>
+                        nameof(TrackItemViewModel.Album),
+                    TrackSortField.Genre =>
+                        nameof(TrackItemViewModel.Genre),
+                    TrackSortField.Year =>
+                        nameof(TrackItemViewModel.YearSortValue),
+                    TrackSortField.Duration =>
+                        nameof(TrackItemViewModel.DurationSortSeconds),
+                    TrackSortField.Format =>
+                        nameof(TrackItemViewModel.Format),
+                    _ => nameof(TrackItemViewModel.Title)
+                };
+                TracksView.SortDescriptions.Add(new SortDescription(
+                    propertyName,
+                    trackSortDirection));
+
+                if (trackSortField != TrackSortField.Title)
+                {
+                    TracksView.SortDescriptions.Add(new SortDescription(
+                        nameof(TrackItemViewModel.Title),
+                        ListSortDirection.Ascending));
+                }
+            }
             else if (ActiveView == LibraryViewMode.Recent)
             {
                 TracksView.SortDescriptions.Add(new SortDescription(
@@ -1091,6 +1369,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
             _ => true
         };
         if (!visibleInView) return false;
+        if (!MatchesAdvancedFilters(track)) return false;
 
         if (catalogSearchActive && catalogSearchPaths is not null)
             return catalogSearchPaths.Contains(track.FilePath);
@@ -1117,6 +1396,12 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
             return;
         }
 
+        if (HasActiveAdvancedFilters)
+        {
+            TrackCountLabel = $"{visibleCount} filtered song(s)";
+            return;
+        }
+
         TrackCountLabel = ActiveView switch
         {
             LibraryViewMode.Favorites =>
@@ -1129,6 +1414,134 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
                 ? "No songs yet - add some music to begin"
                 : $"{Tracks.Count} song(s) in your library"
         };
+    }
+
+    private TrackItemViewModel[] GetSelectedTracksSnapshot()
+    {
+        var selected = SelectedTracks
+            .Where(track => Tracks.Contains(track))
+            .Distinct()
+            .ToArray();
+        if (selected.Length > 0) return selected;
+
+        return SelectedTrack is not null && Tracks.Contains(SelectedTrack)
+            ? [SelectedTrack]
+            : [];
+    }
+
+    private void RefreshFilterOptions()
+    {
+        SelectedArtistFilter = RebuildFilterOptions(
+            ArtistFilterOptions,
+            Tracks.Select(track => track.Artist),
+            AllArtistsFilter,
+            SelectedArtistFilter);
+        SelectedAlbumFilter = RebuildFilterOptions(
+            AlbumFilterOptions,
+            Tracks.Select(track => track.Album),
+            AllAlbumsFilter,
+            SelectedAlbumFilter);
+        SelectedGenreFilter = RebuildFilterOptions(
+            GenreFilterOptions,
+            Tracks.Select(track => track.Genre),
+            AllGenresFilter,
+            SelectedGenreFilter);
+        SelectedFormatFilter = RebuildFilterOptions(
+            FormatFilterOptions,
+            Tracks.Select(track => track.Format),
+            AllFormatsFilter,
+            SelectedFormatFilter);
+    }
+
+    private static string RebuildFilterOptions(
+        ObservableCollection<string> options,
+        IEnumerable<string> values,
+        string allLabel,
+        string selectedValue)
+    {
+        var distinctValues = values
+            .Where(value => !string.IsNullOrWhiteSpace(value))
+            .Distinct(StringComparer.CurrentCultureIgnoreCase)
+            .OrderBy(value => value, StringComparer.CurrentCultureIgnoreCase)
+            .ToArray();
+
+        options.Clear();
+        options.Add(allLabel);
+        foreach (var value in distinctValues)
+            options.Add(value);
+
+        return options.Contains(selectedValue) ? selectedValue : allLabel;
+    }
+
+    private bool MatchesAdvancedFilters(TrackItemViewModel track)
+    {
+        if (!MatchesFilterValue(
+                SelectedArtistFilter,
+                AllArtistsFilter,
+                track.Artist) ||
+            !MatchesFilterValue(
+                SelectedAlbumFilter,
+                AllAlbumsFilter,
+                track.Album) ||
+            !MatchesFilterValue(
+                SelectedGenreFilter,
+                AllGenresFilter,
+                track.Genre) ||
+            !MatchesFilterValue(
+                SelectedFormatFilter,
+                AllFormatsFilter,
+                track.Format))
+        {
+            return false;
+        }
+
+        return SelectedPlaybackStateFilter switch
+        {
+            ReadyPlaybackStateFilter =>
+                !track.Track.HasError && !track.Track.IsMissing,
+            ErrorPlaybackStateFilter => track.Track.HasError,
+            MissingPlaybackStateFilter => track.Track.IsMissing,
+            _ => true
+        };
+    }
+
+    private static bool MatchesFilterValue(
+        string selectedValue,
+        string allLabel,
+        string actualValue) =>
+        string.Equals(selectedValue, allLabel, StringComparison.Ordinal) ||
+        string.Equals(
+            selectedValue,
+            actualValue,
+            StringComparison.CurrentCultureIgnoreCase);
+
+    private string GetSortLabel(string label, TrackSortField field)
+    {
+        if (trackSortField != field) return label;
+
+        return trackSortDirection == ListSortDirection.Ascending
+            ? $"{label} ↑"
+            : $"{label} ↓";
+    }
+
+    private void ResetTrackSort()
+    {
+        if (trackSortField == TrackSortField.None) return;
+
+        trackSortField = TrackSortField.None;
+        trackSortDirection = ListSortDirection.Ascending;
+        NotifySortLabelsChanged();
+    }
+
+    private void NotifySortLabelsChanged()
+    {
+        OnPropertyChanged(nameof(TitleSortLabel));
+        OnPropertyChanged(nameof(ArtistSortLabel));
+        OnPropertyChanged(nameof(AlbumSortLabel));
+        OnPropertyChanged(nameof(GenreSortLabel));
+        OnPropertyChanged(nameof(YearSortLabel));
+        OnPropertyChanged(nameof(DurationSortLabel));
+        OnPropertyChanged(nameof(FormatSortLabel));
     }
 
     private void QueueCatalogSearch(string query)
@@ -1414,61 +1827,102 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         return -1;
     }
 
-    private async Task AddTrackToPlaylistAsync(
+    private async Task AddTracksToPlaylistAsync(
         PlaylistItemViewModel playlist,
-        TrackItemViewModel track)
+        IEnumerable<TrackItemViewModel> tracks)
     {
         if (!EnsureCatalogForPlaylists()) return;
 
+        var distinctTracks = tracks
+            .GroupBy(
+                track => track.FilePath,
+                StringComparer.OrdinalIgnoreCase)
+            .Select(group => group.First())
+            .ToArray();
+        if (distinctTracks.Length == 0) return;
+
+        var addedPaths = new List<string>();
+        var skippedCount = 0;
+
         try
         {
-            if (!await libraryCatalog.AddTrackToPlaylistAsync(
-                    playlist.Id,
-                    track.FilePath,
-                    lifetimeCancellation.Token))
+            foreach (var track in distinctTracks)
             {
-                var alreadyKnown = playlist == SelectedPlaylist &&
-                    selectedPlaylistPathSet.Contains(track.FilePath);
-                dialogService.ShowInformation(alreadyKnown
-                    ? $"\"{track.Title}\" is already in \"{playlist.Name}\"."
-                    : "That song could not be added. It may already be in " +
-                      "the playlist or may not be saved in the catalog yet.");
-
-                if (playlist == SelectedPlaylist)
-                    await ShowPlaylistAsync(playlist);
+                if (await libraryCatalog.AddTrackToPlaylistAsync(
+                        playlist.Id,
+                        track.FilePath,
+                        lifetimeCancellation.Token))
+                {
+                    addedPaths.Add(track.FilePath);
+                }
                 else
-                    await RefreshPlaylistsAsync();
-                return;
+                {
+                    skippedCount++;
+                }
             }
 
-            if (playlist == SelectedPlaylist)
+            ApplyPlaylistAdditions(playlist, addedPaths);
+
+            if (skippedCount > 0)
             {
-                var paths = selectedPlaylistTrackPaths.ToList();
-                if (!selectedPlaylistPathSet.Contains(track.FilePath))
-                    paths.Add(track.FilePath);
-                SetSelectedPlaylistOrder(paths);
-                playlist.UpdateTrackCount(paths.Count);
-                ApplyFilter();
-            }
-            else
-            {
-                playlist.UpdateTrackCount(playlist.TrackCount + 1);
+                var message = distinctTracks.Length == 1
+                    ? $"\"{distinctTracks[0].Title}\" could not be added. " +
+                      "It may already be in the playlist or may not be " +
+                      "saved in the catalog yet."
+                    : $"{addedPaths.Count} song(s) were added to " +
+                      $"\"{playlist.Name}\"; {skippedCount} were skipped " +
+                      "because they were already there or not saved yet.";
+                dialogService.ShowInformation(message);
+
+                if (addedPaths.Count == 0)
+                {
+                    if (playlist == SelectedPlaylist)
+                        await ShowPlaylistAsync(playlist);
+                    else
+                        await RefreshPlaylistsAsync();
+                }
             }
         }
         catch (OperationCanceledException) when (
             lifetimeCancellation.IsCancellationRequested)
         {
+            ApplyPlaylistAdditions(playlist, addedPaths);
         }
         catch (Exception ex)
         {
+            ApplyPlaylistAdditions(playlist, addedPaths);
             Log.Warning(
                 ex,
-                "Could not add {FilePath} to playlist {PlaylistId}",
-                track.FilePath,
+                "Could not add selected tracks to playlist {PlaylistId}",
                 playlist.Id);
             dialogService.ShowWarning(
-                $"Couldn't add that song to the playlist.\n\n{ex.Message}",
+                $"Couldn't add the selected song(s) to the playlist.\n\n{ex.Message}",
                 "Playlist");
+        }
+    }
+
+    private void ApplyPlaylistAdditions(
+        PlaylistItemViewModel playlist,
+        IReadOnlyCollection<string> addedPaths)
+    {
+        if (addedPaths.Count == 0) return;
+
+        if (playlist == SelectedPlaylist)
+        {
+            var paths = selectedPlaylistTrackPaths.ToList();
+            foreach (var path in addedPaths)
+            {
+                if (!selectedPlaylistPathSet.Contains(path))
+                    paths.Add(path);
+            }
+
+            SetSelectedPlaylistOrder(paths);
+            playlist.UpdateTrackCount(paths.Count);
+            ApplyFilter();
+        }
+        else
+        {
+            playlist.UpdateTrackCount(playlist.TrackCount + addedPaths.Count);
         }
     }
 
@@ -1933,6 +2387,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         lifetimeCancellation.Cancel();
         scanCancellation?.Cancel();
         searchCancellation?.Cancel();
+        SelectedTracks.CollectionChanged -= SelectedTracks_CollectionChanged;
         positionTimer.Stop();
         positionTimer.Tick -= PositionTimer_Tick;
         audioPlayer.PlaybackChanged -= AudioPlayer_PlaybackChanged;

@@ -30,6 +30,10 @@ public sealed partial class TrackItemViewModel : ObservableObject
         ? "Unknown album"
         : Track.Album;
 
+    public string AlbumArtist => string.IsNullOrWhiteSpace(Track.AlbumArtist)
+        ? Artist
+        : Track.AlbumArtist;
+
     public string Genre => string.IsNullOrWhiteSpace(Track.Genre)
         ? "Unknown genre"
         : Track.Genre;
@@ -40,6 +44,11 @@ public sealed partial class TrackItemViewModel : ObservableObject
                                     duration > TimeSpan.Zero
         ? FormatDuration(duration)
         : "--:--";
+
+    public double DurationSortSeconds =>
+        Track.Duration?.TotalSeconds ?? -1;
+
+    public int YearSortValue => Track.Year ?? -1;
 
     public string BitrateLabel => Track.BitrateKbps is { } bitrate && bitrate > 0
         ? $"{bitrate} kbps"
@@ -134,9 +143,12 @@ public sealed partial class TrackItemViewModel : ObservableObject
         OnPropertyChanged(nameof(Title));
         OnPropertyChanged(nameof(Artist));
         OnPropertyChanged(nameof(Album));
+        OnPropertyChanged(nameof(AlbumArtist));
         OnPropertyChanged(nameof(Genre));
         OnPropertyChanged(nameof(YearLabel));
+        OnPropertyChanged(nameof(YearSortValue));
         OnPropertyChanged(nameof(DurationLabel));
+        OnPropertyChanged(nameof(DurationSortSeconds));
         OnPropertyChanged(nameof(BitrateLabel));
         OnPropertyChanged(nameof(CoverArtPath));
         OnPropertyChanged(nameof(Subtitle));
