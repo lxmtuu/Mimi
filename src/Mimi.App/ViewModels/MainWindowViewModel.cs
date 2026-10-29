@@ -16,6 +16,13 @@ using Serilog;
 
 namespace Mimi.ViewModels;
 
+public enum LibraryViewMode
+{
+    Library,
+    Favorites,
+    Recent
+}
+
 /// <summary>
 /// Owns the main window's presentation and playback state. Native dialogs,
 /// file persistence, library scanning, and audio output sit behind injected
@@ -26,6 +33,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
 {
     private readonly IAudioPlayer audioPlayer;
     private readonly ILibraryService libraryService;
+    private readonly ILibraryCatalog libraryCatalog;
     private readonly IUserDataService userDataService;
     private readonly IDialogService dialogService;
     private readonly Dispatcher uiDispatcher = Dispatcher.CurrentDispatcher;
@@ -33,13 +41,18 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     {
         Interval = TimeSpan.FromMilliseconds(150)
     };
+    private readonly CancellationTokenSource lifetimeCancellation = new();
 
     private AppSettings settings = new();
     private HashSet<string> favorites = new(StringComparer.OrdinalIgnoreCase);
     private string normalizedSearchQuery = string.Empty;
+    private CancellationTokenSource? scanCancellation;
+    private long? currentPlayHistoryId;
     private bool changingProgress;
     private bool userSeeking;
     private bool settingsLoaded;
+    private bool catalogAvailable;
+    private bool libraryInitialized;
     private bool disposed;
     private DateTime lastSettingsSaveUtc = DateTime.MinValue;
     private DateTime lastVisualizerDiagnosticWrite = DateTime.MinValue;
@@ -55,7 +68,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(SectionTitle))]
-    private bool showingFavorites;
+    private LibraryViewMode activeView;
 
     [ObservableProperty]
     private string trackCountLabel = "No songs yet - add some music to begin";
@@ -65,6 +78,9 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
 
     [ObservableProperty]
     private string nowPlayingSubtitle = "Your next favorite is waiting";
+
+    [ObservableProperty]
+    private string? currentCoverArtPath;
 
     [ObservableProperty]
     private bool isPlaying;
@@ -87,14 +103,26 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     [ObservableProperty]
     private string visualizerMetricsLabel = "0 FPS · 0.00 ms";
 
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(CancelScanCommand))]
+    private bool isScanning;
+
+    [ObservableProperty]
+    private double scanProgressPercent;
+
+    [ObservableProperty]
+    private string scanStatusLabel = string.Empty;
+
     public MainWindowViewModel(
         IAudioPlayer audioPlayer,
         ILibraryService libraryService,
+        ILibraryCatalog libraryCatalog,
         IUserDataService userDataService,
         IDialogService dialogService)
     {
         this.audioPlayer = audioPlayer;
         this.libraryService = libraryService;
+        this.libraryCatalog = libraryCatalog;
         this.userDataService = userDataService;
         this.dialogService = dialogService;
 
@@ -107,9 +135,6 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         audioPlayer.Volume = (float)settings.Volume;
         settingsLoaded = true;
 
-        LoadFavorites();
-        if (LoadLibrary()) PruneFavorites();
-
         audioPlayer.PlaybackChanged += AudioPlayer_PlaybackChanged;
         audioPlayer.PlaybackEnded += AudioPlayer_PlaybackEnded;
         positionTimer.Tick += PositionTimer_Tick;
@@ -117,17 +142,24 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
 
         RefreshPlaybackState();
         UpdateTrackCount();
+
+        InitializationTask = InitializeLibraryAsync();
     }
 
     public event EventHandler? StageToggleRequested;
+
+    public Task InitializationTask { get; }
 
     public ObservableCollection<TrackItemViewModel> Tracks { get; } = [];
 
     public ICollectionView TracksView { get; }
 
-    public string SectionTitle => ShowingFavorites
-        ? "Your favorites"
-        : "Your library";
+    public string SectionTitle => ActiveView switch
+    {
+        LibraryViewMode.Favorites => "Your favorites",
+        LibraryViewMode.Recent => "Recently played",
+        _ => "Your library"
+    };
 
     public Func<VisualizerFrame> VisualizerFrameProvider =>
         audioPlayer.GetVisualizerFrame;
@@ -148,7 +180,8 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         ApplyFilter();
     }
 
-    partial void OnShowingFavoritesChanged(bool value) => ApplyFilter();
+    partial void OnActiveViewChanged(LibraryViewMode value) =>
+        ConfigureTracksView();
 
     partial void OnVolumeChanged(double value)
     {
@@ -175,44 +208,83 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     [RelayCommand]
     private void ShowHome()
     {
-        ShowingFavorites = false;
+        ActiveView = LibraryViewMode.Library;
         SearchText = string.Empty;
         ApplyFilter();
     }
 
     [RelayCommand]
-    private void ShowLibrary()
-    {
-        ShowingFavorites = false;
-        ApplyFilter();
-    }
+    private void ShowLibrary() => ActiveView = LibraryViewMode.Library;
 
     [RelayCommand]
-    private void ToggleFavoritesView() => ShowingFavorites = !ShowingFavorites;
+    private void ToggleFavoritesView() =>
+        ActiveView = ActiveView == LibraryViewMode.Favorites
+            ? LibraryViewMode.Library
+            : LibraryViewMode.Favorites;
 
     [RelayCommand]
-    private void AddFiles()
+    private void ShowRecent() => ActiveView = LibraryViewMode.Recent;
+
+    [RelayCommand]
+    private async Task AddFiles()
     {
+        if (IsScanning) return;
+
         var fileNames = dialogService.PickAudioFiles();
         if (fileNames.Count > 0)
-            AddTracks(libraryService.ScanFiles(fileNames));
+            await ScanAndAddFilesAsync(fileNames);
     }
 
     [RelayCommand]
-    private void AddFolder()
+    private async Task AddFolder()
     {
+        if (IsScanning) return;
+
         var folder = dialogService.PickMusicFolder();
         if (string.IsNullOrWhiteSpace(folder)) return;
 
-        var result = libraryService.ScanFolder(folder);
-        AddTracks(result.Tracks);
-
-        if (result.SkippedDirectories > 0)
+        var result = await ScanAndAddFolderAsync(folder);
+        if (result?.SkippedDirectories > 0)
         {
             dialogService.ShowInformation(
                 $"{result.SkippedDirectories} folder(s) could not be read and were skipped.");
         }
     }
+
+    [RelayCommand]
+    private async Task AddDroppedPaths(string[]? paths)
+    {
+        if (paths is null || paths.Length == 0 || IsScanning) return;
+
+        var files = paths.Where(File.Exists).ToArray();
+        var folders = paths.Where(Directory.Exists).ToArray();
+        var skippedDirectories = 0;
+
+        if (files.Length > 0)
+            await ScanAndAddFilesAsync(files);
+
+        foreach (var folder in folders)
+        {
+            var result = await ScanAndAddFolderAsync(folder);
+            if (result is not null)
+                skippedDirectories += result.SkippedDirectories;
+        }
+
+        if (skippedDirectories > 0)
+        {
+            dialogService.ShowInformation(
+                $"{skippedDirectories} folder(s) could not be read and were skipped.");
+        }
+    }
+
+    [RelayCommand(CanExecute = nameof(CanCancelScan))]
+    private void CancelScan()
+    {
+        scanCancellation?.Cancel();
+        ScanStatusLabel = "Canceling scan…";
+    }
+
+    private bool CanCancelScan() => IsScanning;
 
     [RelayCommand]
     private void PlayPause()
@@ -241,32 +313,81 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     private void Next() => PlayRelativeInView(1);
 
     [RelayCommand]
-    private void ToggleFavorite(TrackItemViewModel? track)
+    private async Task ToggleFavorite(TrackItemViewModel? track)
     {
         if (track is null) return;
 
-        track.IsFavorite = !track.IsFavorite;
-        if (track.IsFavorite)
-            favorites.Add(track.FilePath);
-        else
-            favorites.Remove(track.FilePath);
+        var newValue = !track.IsFavorite;
+        SetFavorite(track, newValue);
 
-        SaveFavorites();
+        if (catalogAvailable)
+        {
+            try
+            {
+                await libraryCatalog.SetFavoriteAsync(
+                    track.FilePath,
+                    newValue,
+                    lifetimeCancellation.Token);
+            }
+            catch (OperationCanceledException) when (
+                lifetimeCancellation.IsCancellationRequested)
+            {
+                return;
+            }
+            catch (Exception ex)
+            {
+                SetFavorite(track, !newValue);
+                Log.Warning(ex, "Could not save favorite for {FilePath}", track.FilePath);
+                dialogService.ShowWarning(
+                    $"Couldn't save favorites.\n\n{ex.Message}",
+                    "Mimi");
+            }
+        }
+        else
+        {
+            SaveFavorites();
+        }
+
         ApplyFilter();
     }
 
     [RelayCommand]
-    private void RemoveSelectedTrack() => RemoveTrack(SelectedTrack);
+    private async Task RemoveSelectedTrack() => await RemoveTrack(SelectedTrack);
 
     [RelayCommand]
-    private void RemoveTrack(TrackItemViewModel? track)
+    private async Task RemoveTrack(TrackItemViewModel? track)
     {
-        if (track is null || !Tracks.Remove(track)) return;
+        if (track is null || !Tracks.Contains(track)) return;
+
+        if (catalogAvailable)
+        {
+            try
+            {
+                await libraryCatalog.RemoveTrackAsync(
+                    track.FilePath,
+                    lifetimeCancellation.Token);
+            }
+            catch (OperationCanceledException) when (
+                lifetimeCancellation.IsCancellationRequested)
+            {
+                return;
+            }
+            catch (Exception ex)
+            {
+                Log.Warning(ex, "Could not remove {FilePath} from catalog", track.FilePath);
+                dialogService.ShowWarning(
+                    $"Couldn't remove this song from the library.\n\n{ex.Message}",
+                    "Library warning");
+                return;
+            }
+        }
 
         if (CurrentTrack == track)
         {
             audioPlayer.Stop();
             CurrentTrack = null;
+            currentPlayHistoryId = null;
+            CurrentCoverArtPath = null;
             NowPlayingTitle = "Choose a song";
             NowPlayingSubtitle = "Your next favorite is waiting";
             SetProgressPercent(0);
@@ -276,10 +397,13 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         if (SelectedTrack == track)
             SelectedTrack = null;
 
-        if (favorites.Remove(track.FilePath))
+        Tracks.Remove(track);
+        if (favorites.Remove(track.FilePath) && !catalogAvailable)
             SaveFavorites();
 
-        SaveLibrary();
+        if (!catalogAvailable)
+            SaveLibrary();
+
         ApplyFilter();
     }
 
@@ -299,36 +423,341 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     private void ToggleStage() =>
         StageToggleRequested?.Invoke(this, EventArgs.Empty);
 
+    private async Task InitializeLibraryAsync()
+    {
+        if (libraryInitialized) return;
+        libraryInitialized = true;
+
+        try
+        {
+            await libraryCatalog.InitializeAsync(lifetimeCancellation.Token);
+            catalogAvailable = true;
+
+            var storedTracks = await libraryCatalog.LoadTracksAsync(
+                lifetimeCancellation.Token);
+            if (storedTracks.Count > 0)
+            {
+                favorites = storedTracks
+                    .Where(track => track.IsFavorite)
+                    .Select(track => track.FilePath)
+                    .ToHashSet(StringComparer.OrdinalIgnoreCase);
+                AddTracksToCollection(storedTracks);
+                return;
+            }
+
+            await ImportLegacyJsonLibraryAsync();
+        }
+        catch (OperationCanceledException) when (
+            lifetimeCancellation.IsCancellationRequested)
+        {
+            // The window is closing; there is nothing left to initialize.
+        }
+        catch (Exception ex)
+        {
+            catalogAvailable = false;
+            Log.Error(
+                ex,
+                "SQLite library catalog is unavailable; falling back to JSON data");
+
+            try
+            {
+                Tracks.Clear();
+                LoadFavorites();
+                if (LoadLibrary()) PruneFavorites();
+                ApplyFilter();
+            }
+            catch (Exception fallbackException)
+            {
+                Log.Error(
+                    fallbackException,
+                    "JSON library fallback also failed during startup");
+                dialogService.ShowWarning(
+                    $"Couldn't restore your library.\n\n{fallbackException.Message}",
+                    "Library warning");
+            }
+        }
+    }
+
+    private async Task ImportLegacyJsonLibraryAsync()
+    {
+        LoadFavorites();
+
+        IReadOnlyList<string> paths;
+        try
+        {
+            paths = userDataService.LoadLibraryPaths();
+        }
+        catch (Exception ex) when (
+            ex is IOException or JsonException or UnauthorizedAccessException)
+        {
+            Log.Warning(ex, "Could not read the legacy JSON library for import");
+            dialogService.ShowWarning(
+                $"Couldn't restore your library.\n\n{ex.Message}",
+                "Library warning");
+            return;
+        }
+
+        if (paths.Count == 0) return;
+
+        var importedTracks = await ScanAndAddFilesAsync(paths);
+        if (importedTracks.Count == 0) return;
+
+        PruneFavorites();
+
+        try
+        {
+            userDataService.ArchiveImportedLibraryData();
+            Log.Information(
+                "Imported {TrackCount} legacy JSON library tracks into SQLite",
+                importedTracks.Count);
+        }
+        catch (Exception ex) when (
+            ex is IOException or UnauthorizedAccessException)
+        {
+            // The SQLite import already succeeded. Keeping the JSON files is
+            // safer than failing startup because their backup rename failed.
+            Log.Warning(
+                ex,
+                "Imported the JSON library but could not archive the legacy files");
+        }
+    }
+
+    private async Task<IReadOnlyList<Track>> ScanAndAddFilesAsync(
+        IEnumerable<string> paths)
+    {
+        var cancellation = BeginScan();
+        if (cancellation is null) return [];
+
+        try
+        {
+            var tracks = await libraryService.ScanFilesAsync(
+                paths,
+                CreateScanProgress(),
+                KnownTracksByPath(),
+                cancellation.Token);
+            return await AddTracksAsync(tracks);
+        }
+        catch (OperationCanceledException) when (cancellation.IsCancellationRequested)
+        {
+            ScanStatusLabel = "Scan canceled";
+            return [];
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, "Music file scan failed");
+            dialogService.ShowWarning(
+                $"Couldn't scan those music files.\n\n{ex.Message}",
+                "Library warning");
+            return [];
+        }
+        finally
+        {
+            EndScan(cancellation);
+        }
+    }
+
+    private async Task<FolderScanResult?> ScanAndAddFolderAsync(string folder)
+    {
+        var cancellation = BeginScan();
+        if (cancellation is null) return null;
+
+        try
+        {
+            var result = await libraryService.ScanFolderAsync(
+                folder,
+                recursive: true,
+                CreateScanProgress(),
+                KnownTracksByPath(),
+                cancellation.Token);
+            await AddTracksAsync(result.Tracks);
+            return result;
+        }
+        catch (OperationCanceledException) when (cancellation.IsCancellationRequested)
+        {
+            ScanStatusLabel = "Scan canceled";
+            return null;
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, "Music folder scan failed for {Folder}", folder);
+            dialogService.ShowWarning(
+                $"Couldn't scan that folder.\n\n{ex.Message}",
+                "Library warning");
+            return null;
+        }
+        finally
+        {
+            EndScan(cancellation);
+        }
+    }
+
+    private CancellationTokenSource? BeginScan()
+    {
+        if (IsScanning) return null;
+
+        var cancellation = CancellationTokenSource.CreateLinkedTokenSource(
+            lifetimeCancellation.Token);
+        scanCancellation = cancellation;
+        IsScanning = true;
+        ScanProgressPercent = 0;
+        ScanStatusLabel = "Scanning your music…";
+        return cancellation;
+    }
+
+    private void EndScan(CancellationTokenSource cancellation)
+    {
+        if (ReferenceEquals(scanCancellation, cancellation))
+            scanCancellation = null;
+
+        IsScanning = false;
+        cancellation.Dispose();
+    }
+
+    private Progress<LibraryScanProgress> CreateScanProgress() =>
+        new(OnScanProgressChanged);
+
+    private void OnScanProgressChanged(LibraryScanProgress progress)
+    {
+        ScanProgressPercent = progress.DiscoveredFiles <= 0
+            ? 0
+            : Math.Clamp(
+                progress.ProcessedFiles * 100d / progress.DiscoveredFiles,
+                0,
+                100);
+
+        if (progress.DiscoveredFiles <= 0)
+        {
+            ScanStatusLabel = "Discovering music files…";
+            return;
+        }
+
+        var fileName = string.IsNullOrWhiteSpace(progress.CurrentFilePath)
+            ? string.Empty
+            : Path.GetFileName(progress.CurrentFilePath);
+        ScanStatusLabel = fileName.Length == 0
+            ? $"Scanning {progress.ProcessedFiles}/{progress.DiscoveredFiles}…"
+            : $"Scanning {progress.ProcessedFiles}/{progress.DiscoveredFiles} — {fileName}";
+    }
+
+    private IReadOnlyDictionary<string, Track> KnownTracksByPath() =>
+        Tracks.ToDictionary(
+            track => track.FilePath,
+            track => track.Track,
+            StringComparer.OrdinalIgnoreCase);
+
+    private async Task<IReadOnlyList<Track>> AddTracksAsync(
+        IEnumerable<Track> additions)
+    {
+        var changedTracks = AddTracksToCollection(additions);
+        await PersistTracksAsync(changedTracks);
+        return changedTracks;
+    }
+
     private void AddTracks(IEnumerable<Track> additions)
     {
-        var existing = Tracks
-            .Select(track => track.FilePath)
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var changedTracks = AddTracksToCollection(additions);
+        if (catalogAvailable)
+            _ = PersistTracksAsync(changedTracks);
+        else if (changedTracks.Count > 0)
+            SaveLibrary();
+    }
+
+    private List<Track> AddTracksToCollection(IEnumerable<Track> additions)
+    {
+        var existingByPath = Tracks.ToDictionary(
+            track => track.FilePath,
+            StringComparer.OrdinalIgnoreCase);
+        var changedTracks = new List<Track>();
 
         foreach (var track in additions)
         {
-            if (existing.Add(track.FilePath))
+            if (existingByPath.TryGetValue(track.FilePath, out var existingItem))
             {
-                Tracks.Add(new TrackItemViewModel(
-                    track,
-                    favorites.Contains(track.FilePath)));
+                if (!ReferenceEquals(existingItem.Track, track))
+                {
+                    existingItem.UpdateMetadata(track);
+                    changedTracks.Add(existingItem.Track);
+                }
+
+                continue;
+            }
+
+            var item = new TrackItemViewModel(
+                track,
+                favorites.Contains(track.FilePath));
+            if (item.IsFavorite)
+                favorites.Add(track.FilePath);
+
+            Tracks.Add(item);
+            existingByPath[track.FilePath] = item;
+            changedTracks.Add(track);
+        }
+
+        ApplyFilter();
+        return changedTracks;
+    }
+
+    private async Task PersistTracksAsync(IReadOnlyCollection<Track> tracks)
+    {
+        if (tracks.Count == 0) return;
+
+        if (!catalogAvailable)
+        {
+            SaveLibrary();
+            return;
+        }
+
+        try
+        {
+            await libraryCatalog.UpsertTracksAsync(
+                tracks,
+                lifetimeCancellation.Token);
+        }
+        catch (OperationCanceledException) when (
+            lifetimeCancellation.IsCancellationRequested)
+        {
+            // Shutdown is in progress; SQLite transactions keep the catalog
+            // either fully at the previous state or fully at the new state.
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, "Could not save tracks to the SQLite catalog");
+            dialogService.ShowWarning(
+                $"Couldn't save your library.\n\n{ex.Message}",
+                "Library warning");
+        }
+    }
+
+    private void ConfigureTracksView()
+    {
+        using (TracksView.DeferRefresh())
+        {
+            TracksView.SortDescriptions.Clear();
+            if (ActiveView == LibraryViewMode.Recent)
+            {
+                TracksView.SortDescriptions.Add(new SortDescription(
+                    nameof(TrackItemViewModel.LastPlayedAtUtc),
+                    ListSortDirection.Descending));
             }
         }
 
-        SaveLibrary();
         ApplyFilter();
     }
 
     private bool FilterTrack(object item)
     {
         if (item is not TrackItemViewModel track) return false;
-        if (ShowingFavorites && !track.IsFavorite) return false;
-        if (normalizedSearchQuery.Length == 0) return true;
 
-        return track.NormalizedTitle.Contains(
-                   normalizedSearchQuery,
-                   StringComparison.Ordinal) ||
-               track.NormalizedFormat.Contains(
+        var visibleInView = ActiveView switch
+        {
+            LibraryViewMode.Favorites => track.IsFavorite,
+            LibraryViewMode.Recent => track.LastPlayedAtUtc is not null,
+            _ => true
+        };
+        if (!visibleInView) return false;
+
+        return normalizedSearchQuery.Length == 0 ||
+               track.NormalizedSearchText.Contains(
                    normalizedSearchQuery,
                    StringComparison.Ordinal);
     }
@@ -341,10 +770,17 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
 
     private void UpdateTrackCount()
     {
-        if (ShowingFavorites)
+        if (ActiveView == LibraryViewMode.Favorites)
         {
             var visibleCount = TracksView.Cast<TrackItemViewModel>().Count();
             TrackCountLabel = $"{visibleCount} favorite song(s)";
+            return;
+        }
+
+        if (ActiveView == LibraryViewMode.Recent)
+        {
+            var visibleCount = TracksView.Cast<TrackItemViewModel>().Count();
+            TrackCountLabel = $"{visibleCount} recently played song(s)";
             return;
         }
 
@@ -394,23 +830,35 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
             // Only adopt the track as current once it actually loaded, so a
             // broken file never leaves playback state pointing at it.
             CurrentTrack = track;
+            currentPlayHistoryId = null;
             audioPlayer.Volume = (float)Volume;
             NowPlayingTitle = track.Title;
-            NowPlayingSubtitle = $"{track.Format}  •  Local music";
+            NowPlayingSubtitle = track.Subtitle;
+            CurrentCoverArtPath = track.CoverArtPath;
             SetProgressPercent(0);
             audioPlayer.Play();
             track.HasPlaybackError = false;
+            track.Track.HasError = false;
+            track.Track.IsMissing = false;
             SelectedTrack = track;
             RefreshPlaybackState();
+            _ = RecordPlaybackStartedAsync(track);
             return true;
         }
         catch (Exception ex)
         {
             // Load() stops and disposes any previous track before trying the
             // new one, so a failed load must not leave CurrentTrack behind.
-            if (!loaded) CurrentTrack = null;
+            if (!loaded)
+            {
+                CurrentTrack = null;
+                currentPlayHistoryId = null;
+                CurrentCoverArtPath = null;
+            }
 
             track.HasPlaybackError = true;
+            track.Track.HasError = true;
+            _ = PersistPlaybackErrorAsync(track);
             RefreshPlaybackState();
             Log.Warning(ex, "Could not play {FilePath}", track.FilePath);
 
@@ -425,12 +873,104 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         }
     }
 
+    private async Task RecordPlaybackStartedAsync(TrackItemViewModel track)
+    {
+        track.MarkPlayed(DateTimeOffset.UtcNow);
+        if (ActiveView == LibraryViewMode.Recent)
+            ApplyFilter();
+
+        if (!catalogAvailable) return;
+
+        try
+        {
+            var historyId = await libraryCatalog.RecordPlaybackStartedAsync(
+                track.FilePath,
+                lifetimeCancellation.Token);
+            if (CurrentTrack == track)
+                currentPlayHistoryId = historyId > 0 ? historyId : null;
+        }
+        catch (OperationCanceledException) when (
+            lifetimeCancellation.IsCancellationRequested)
+        {
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(
+                ex,
+                "Could not record playback history for {FilePath}",
+                track.FilePath);
+        }
+    }
+
+    private async Task PersistPlaybackErrorAsync(TrackItemViewModel track)
+    {
+        if (!catalogAvailable) return;
+
+        try
+        {
+            await libraryCatalog.SetPlaybackErrorAsync(
+                track.FilePath,
+                hasError: true,
+                lifetimeCancellation.Token);
+        }
+        catch (OperationCanceledException) when (
+            lifetimeCancellation.IsCancellationRequested)
+        {
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(
+                ex,
+                "Could not save playback error for {FilePath}",
+                track.FilePath);
+        }
+    }
+
+    private async Task HandlePlaybackEndedAsync()
+    {
+        await CompleteCurrentPlaybackAsync();
+        if (!disposed)
+            PlayRelativeInView(1, showErrors: false);
+    }
+
+    private async Task CompleteCurrentPlaybackAsync()
+    {
+        var historyId = currentPlayHistoryId;
+        currentPlayHistoryId = null;
+        if (!catalogAvailable || historyId is null) return;
+
+        try
+        {
+            await libraryCatalog.MarkPlaybackCompletedAsync(
+                historyId.Value,
+                lifetimeCancellation.Token);
+        }
+        catch (OperationCanceledException) when (
+            lifetimeCancellation.IsCancellationRequested)
+        {
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, "Could not complete playback history {HistoryId}", historyId);
+        }
+    }
+
+    private void SetFavorite(TrackItemViewModel track, bool isFavorite)
+    {
+        track.IsFavorite = isFavorite;
+        track.Track.IsFavorite = isFavorite;
+
+        if (isFavorite)
+            favorites.Add(track.FilePath);
+        else
+            favorites.Remove(track.FilePath);
+    }
+
     private void AudioPlayer_PlaybackChanged(object? sender, EventArgs e) =>
         uiDispatcher.BeginInvoke(new Action(RefreshPlaybackState));
 
     private void AudioPlayer_PlaybackEnded(object? sender, EventArgs e) =>
-        uiDispatcher.BeginInvoke(new Action(() =>
-            PlayRelativeInView(1, showErrors: false)));
+        uiDispatcher.BeginInvoke(new Action(() => _ = HandlePlaybackEndedAsync()));
 
     private void PositionTimer_Tick(object? sender, EventArgs e)
     {
@@ -548,8 +1088,11 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
             .Select(track => track.FilePath)
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
-        if (favorites.RemoveWhere(path => !libraryPaths.Contains(path)) > 0)
+        if (favorites.RemoveWhere(path => !libraryPaths.Contains(path)) > 0 &&
+            !catalogAvailable)
+        {
             SaveFavorites();
+        }
     }
 
     private void SaveSettings(bool force = false)
@@ -595,6 +1138,8 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         if (disposed) return;
         disposed = true;
 
+        lifetimeCancellation.Cancel();
+        scanCancellation?.Cancel();
         positionTimer.Stop();
         positionTimer.Tick -= PositionTimer_Tick;
         audioPlayer.PlaybackChanged -= AudioPlayer_PlaybackChanged;

@@ -1,3 +1,4 @@
+using Mimi.Models;
 using Mimi.Services;
 
 namespace Mimi.Tests;
@@ -81,6 +82,59 @@ public sealed class LibraryServiceTests : IDisposable
         Assert.Equal(0, result.SkippedDirectories);
     }
 
+    [Fact]
+    public async Task ScanFolderAsync_FindsSupportedFilesAndReportsProgress()
+    {
+        var rootSong = Touch("root.mp3");
+        var childSong = Touch(Path.Combine("nested", "child.flac"));
+        Touch("notes.txt");
+        var progress = new RecordingProgress();
+
+        var result = await service.ScanFolderAsync(root, progress: progress);
+
+        Assert.Equal(
+            new[] { rootSong, childSong }.Order(StringComparer.OrdinalIgnoreCase),
+            result.Tracks.Select(track => track.FilePath)
+                .Order(StringComparer.OrdinalIgnoreCase));
+        var reports = progress.Reports;
+        Assert.NotEmpty(reports);
+        Assert.Equal(2, reports[^1].DiscoveredFiles);
+        Assert.Equal(2, reports[^1].ProcessedFiles);
+    }
+
+    [Fact]
+    public async Task ScanFolderAsync_WithCanceledToken_ThrowsOperationCanceledException()
+    {
+        Touch("song.mp3");
+        using var cancellation = new CancellationTokenSource();
+        cancellation.Cancel();
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(
+            () => service.ScanFolderAsync(
+                root,
+                cancellationToken: cancellation.Token));
+    }
+
+    [Fact]
+    public async Task ScanFilesAsync_ReusesKnownTrackWhenFileFingerprintIsUnchanged()
+    {
+        var song = Touch("Known.mp3");
+        var known = Assert.Single(service.ScanFiles([song]));
+        known.MetadataTitle = "Known Title";
+        var knownTracks = new Dictionary<string, Track>(
+            StringComparer.OrdinalIgnoreCase)
+        {
+            [song] = known
+        };
+
+        var tracks = await service.ScanFilesAsync(
+            [song],
+            knownTracks: knownTracks);
+
+        Assert.Same(known, Assert.Single(tracks));
+        Assert.Equal("Known Title", tracks[0].Title);
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(root))
@@ -93,5 +147,24 @@ public sealed class LibraryServiceTests : IDisposable
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
         File.WriteAllBytes(path, [1]);
         return path;
+    }
+
+    private sealed class RecordingProgress : IProgress<LibraryScanProgress>
+    {
+        private readonly object reportsLock = new();
+        private readonly List<LibraryScanProgress> reports = [];
+
+        public IReadOnlyList<LibraryScanProgress> Reports
+        {
+            get
+            {
+                lock (reportsLock) return reports.ToArray();
+            }
+        }
+
+        public void Report(LibraryScanProgress value)
+        {
+            lock (reportsLock) reports.Add(value);
+        }
     }
 }

@@ -65,6 +65,26 @@ public sealed class UserDataServiceTests : IDisposable
     }
 
     [Fact]
+    public void ArchiveImportedLibraryDataRenamesLibraryAndFavoritesAsBackups()
+    {
+        var libraryFile = Path.Combine(dataDirectory, "library.json");
+        var favoritesFile = Path.Combine(dataDirectory, "favorites.json");
+        File.WriteAllText(libraryFile, "[\"one.mp3\"]");
+        File.WriteAllText(favoritesFile, "[\"one.mp3\"]");
+
+        service.ArchiveImportedLibraryData();
+
+        Assert.False(File.Exists(libraryFile));
+        Assert.False(File.Exists(favoritesFile));
+        Assert.Equal(
+            "[\"one.mp3\"]",
+            File.ReadAllText(libraryFile + ".bak"));
+        Assert.Equal(
+            "[\"one.mp3\"]",
+            File.ReadAllText(favoritesFile + ".bak"));
+    }
+
+    [Fact]
     public void SettingsRoundTripAndClampVolume()
     {
         service.SaveSettings(new AppSettings { Volume = 0.25 });

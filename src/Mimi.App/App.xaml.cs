@@ -61,8 +61,12 @@ public partial class App : Application
     {
         var services = new ServiceCollection();
         services.AddSingleton<IAudioPlayer, AudioService>();
-        services.AddSingleton<ILibraryService, LibraryService>();
         services.AddSingleton<IUserDataService, UserDataService>();
+        services.AddSingleton<ITrackMetadataReader>(provider =>
+            new TagLibTrackMetadataReader(
+                provider.GetRequiredService<IUserDataService>()));
+        services.AddSingleton<ILibraryService, LibraryService>();
+        services.AddSingleton<ILibraryCatalog, SqliteLibraryCatalog>();
         services.AddSingleton<IDialogService, WpfDialogService>();
         services.AddSingleton<MainWindowViewModel>();
         services.AddSingleton<MainWindow>();

@@ -125,6 +125,26 @@ public sealed class UserDataService : IUserDataService
             JsonSerializer.Serialize(paths.ToArray()));
     }
 
+    public void ArchiveImportedLibraryData()
+    {
+        ArchiveFile(LibraryFile);
+        ArchiveFile(FavoritesFile);
+    }
+
+    private static void ArchiveFile(string path)
+    {
+        if (!File.Exists(path)) return;
+
+        var backupPath = path + ".bak";
+        if (File.Exists(backupPath))
+        {
+            var timestamp = DateTime.UtcNow.ToString("yyyyMMddHHmmss");
+            backupPath = $"{path}.bak-{timestamp}";
+        }
+
+        File.Move(path, backupPath);
+    }
+
     // Write via a temp file + replace so a crash mid-write cannot leave a
     // truncated file behind.
     internal static void WriteAllTextAtomic(string path, string contents)

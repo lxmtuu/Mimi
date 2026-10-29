@@ -22,4 +22,10 @@ public interface IUserDataService
 
     HashSet<string> LoadFavorites();
     void SaveFavorites(IEnumerable<string> paths);
+
+    /// <summary>
+    /// Renames library/favorites JSON files to backups after their contents
+    /// have been imported successfully into the SQLite catalog.
+    /// </summary>
+    void ArchiveImportedLibraryData();
 }
