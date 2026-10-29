@@ -90,6 +90,8 @@ thanh tiến trình/thời gian và thao tác trực tiếp trên Quick Settings
 | `RawPositionDeltaSeconds` / `LastUpdatedDeltaSeconds` |  |
 | `IsPlaybackPositionEnabled` / FastForward / Rewind |  |
 | Quick Settings có hiện progress/thời gian không |  |
+| Các nút nhìn thấy trên thẻ; trạng thái Play/Pause lúc chụp |  |
+| Nhãn nguồn app trên thẻ (ví dụ `Mimi`, `Mimi.exe`, `Unknown app`) |  |
 | Kết luận tách riêng: xuất bản GSMTC và hiển thị trên thẻ |  |
 
 ### P4-B Taskbar

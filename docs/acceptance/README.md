@@ -133,15 +133,27 @@ dài hạn hay latency âm học đầu-cuối.
   lý vào dòng Cyan, nhưng điều đó không phải tiêu chí của A7.
 - Ảnh Quick Settings chụp từ xa trong lượt Cyan sạch chỉ thấy một phần
   mép phải của bảng do sai lệch tọa độ/kích thước, nên không bổ sung bằng
-  chứng đáng tin cậy về progress/thời gian, FastForward/Rewind hay
-  Shuffle/Repeat trên toàn bộ thẻ. Đây là giới hạn quan sát từ xa, không
-  phải bằng chứng Mimi hoặc Windows lỗi. Phần hiển thị trực tiếp trên thẻ
-  vẫn chưa được chốt độc lập, nên **A7 vẫn `PARTIAL`**, không nâng thành
-  `PASS` toàn bộ chỉ bằng dữ liệu GSMTC.
+  chứng đáng tin cậy về toàn bộ thẻ. Ảnh toàn thẻ do chủ dự án cung cấp
+  sau đó cho thấy đúng title `Acceptance One - Cyan Signal`, artist
+  `Mimi Acceptance Lab` và cover Cyan; hàng điều khiển chỉ có
+  Previous/Play/Next. Không thấy progress/thời gian, FastForward/Rewind
+  hay Shuffle/Repeat trên thẻ. Nút giữa là Play, nên ảnh được chụp khi
+  session đang ở trạng thái có thể phát tiếp/Paused; kết hợp với báo cáo
+  trực tiếp trước đó rằng không có timeline để kéo, phần hiển thị/seek
+  của Quick Settings được phân loại `BLOCKED/N/A` cho bề mặt/build này.
+  Đây không phải bằng chứng Mimi thiếu timeline, vì GSMTC đã xác minh
+  duration, seek bounds và Position tiến triển. **A7 vẫn `PARTIAL`** vì
+  tiêu chí trực quan trên thẻ không được bề mặt này phơi bày để nghiệm
+  thu như một `PASS` trực tiếp.
+- Cùng ảnh toàn thẻ ghi nhận nhãn nguồn là `Unknown app` dù title,
+  artist và cover đúng. Đây là `Minor/Observation` riêng về app identity
+  của bản unpackaged đang chạy từ thư mục build; nó không thay đổi kết
+  luận metadata/track của A1/A2 và không phải nguyên nhân đã chứng minh
+  cho việc thẻ không vẽ timeline.
 - P4-A: `PARTIAL` (A1–A6 `PASS`; xuất bản/tiến triển timeline A7 đã đạt
-  ở tầng GSMTC trên cả Magenta và Cyan nhưng hiển thị trên thẻ chưa được
-  chốt; A8 `BLOCKED` ở bề mặt Quick Settings hiện tại; A9 chưa chạy vận
-  hành; A10–A12 `NOT RUN`).
+  ở tầng GSMTC trên cả Magenta và Cyan, còn progress/thời gian trên thẻ
+  `BLOCKED/N/A`; A8 `BLOCKED` ở bề mặt Quick Settings hiện tại; A9 chưa
+  chạy vận hành; A10–A12 `NOT RUN`).
 - P4-B: `NOT RUN` cho B1–B6.
 - P4-C: `PARTIAL` (C5/C7 mới có bằng chứng mô phỏng/một phần focus; media
   keys vật lý chưa chạy).
