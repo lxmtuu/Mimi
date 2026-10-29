@@ -72,6 +72,6 @@ jobs:
         uses: actions/upload-artifact@v7.0.2
         with:
           name: Mimi-${{ github.sha }}
-          path: src/Mimi.App/bin/Release/net8.0-windows10.0.19041/**
+          path: src/Mimi.App/bin/Release/net8.0-windows10.0.19041.0/**
           if-no-files-found: error
           retention-days: 14
