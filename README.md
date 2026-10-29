@@ -26,6 +26,13 @@ A Windows desktop music-player foundation built with C# / WPF / .NET 8 and NAudi
   shuffle bag, Repeat supports Off / All / One, Previous follows the songs
   actually played, and unplayable candidates are skipped without committing
   queue state
+- WASAPI shared-mode playback following the Windows default output, with
+  WaveOut retained as a fallback. If the default device changes or
+  disappears during playback, Mimi pauses, keeps the song and position,
+  rebuilds only the output stream, and waits for an explicit Play press
+  instead of unexpectedly moving sound to another device. The active
+  output is shown in Now Playing and Settings; a missing output is
+  reported separately from a corrupt music file
 - Vietnamese diacritic-insensitive search over track metadata. When SQLite
   is available, the search box uses debounced FTS5 prefix queries and
   relevance ordering in Library/Favorites, while preserving playlist and
@@ -78,10 +85,11 @@ A Windows desktop music-player foundation built with C# / WPF / .NET 8 and NAudi
   and fading out while paused or stopped
 - Modular MVVM architecture with dependency injection and automated tests;
   Windows Release builds and unit tests are verified by GitHub Actions.
-  This is now Phase 4 in development (`v0.5.0`): the queue/playback-mode
-  and Windows media-control/keyboard slices are implemented, while
-  output-device handling and the real-Windows acceptance gates in
-  `ROADMAP.md` remain open
+  This is now Phase 4 in development (`v0.5.0`): the queue/playback-mode,
+  Windows media-control/keyboard, and WASAPI output-device slices are
+  implemented in code, while the real-Windows acceptance gates in
+  `ROADMAP.md`—including A/B output latency and stability measurements—
+  remain open
 
 ## Requirements
 - Windows 10 version 1809 or later / Windows 11, with Windows Terminal or
@@ -237,6 +245,15 @@ Next và thanh tiến trình trên taskbar. Mở mục **Keyboard Shortcuts** tr
 Settings, thử `Ctrl+F`, `Ctrl+←/→`, rồi bấm vào vùng trống không tương tác
 để thử Space, `←/→` tua 5 giây và `↑/↓` đổi âm lượng; các phím này chủ động
 không giành quyền khi bạn đang gõ trong ô tìm kiếm hoặc dùng list/slider.
+Kiểm tra nhãn nhỏ dưới **VOLUME** và mục **Audio output** trong Settings:
+thông thường phải hiện `WASAPI shared · [tên thiết bị]`. Khi đang phát, hãy
+đổi thiết bị xuất mặc định trong Windows Settings/Quick Settings; Mimi
+phải tự tạm dừng, giữ nguyên bài và vị trí, hiện banner output rồi chỉ phát
+tiếp trên thiết bị mới khi bạn bấm Play. Thử rút tai nghe USB, ngắt
+Bluetooth hoặc tắt thiết bị đang dùng: Mimi không được crash, không được
+đánh dấu bài là lỗi; khi cắm lại hoặc chọn thiết bị khác, nhãn output phải
+cập nhật. Nếu có sẵn, thử thêm file mono và file 44.1/48/96 kHz hoặc đa
+kênh để kiểm tra chuyển đổi định dạng của WASAPI shared.
 Cuối cùng, bấm `F11` để mở Stage toàn màn hình (`Esc` để thoát Stage).
 
 #### 5. Mở thư mục dữ liệu và log
@@ -296,7 +313,8 @@ dotnet run --project .\src\Mimi.App\Mimi.App.csproj
 - `src/Mimi.Core` — shared models, service contracts, the `PlaybackQueue`
   state machine and shuffle-bag primitive, and Vietnamese search
   normalization
-- `src/Mimi.Audio` — NAudio playback implementation behind `IAudioPlayer`
+- `src/Mimi.Audio` — NAudio WASAPI shared-mode playback, WaveOut fallback,
+  and Windows output-device watching/recovery behind `IAudioPlayer`
 - `src/Mimi.Library` — asynchronous audio-file discovery, TagLib-Sharp
   metadata/cover extraction, the SQLite library catalog, and JSON
   settings/legacy-library migration fallback

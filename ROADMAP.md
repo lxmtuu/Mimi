@@ -209,9 +209,9 @@ Shell (Sidebar + Nội dung + Now Playing)
 | **Favorites** | Như Library, lọc `is_favorite` | Rỗng có hướng dẫn | Đã có cột ♥ bấm trực tiếp, menu chuột phải và lưu vào SQLite (JSON chỉ còn fallback/import cũ) |
 | **Playlists** | CRUD, kéo-thả bài vào, đổi thứ tự, phát tất cả/xáo trộn | Rỗng, trùng tên | Đã có sidebar playlist: tạo/đổi tên/xoá/phát, thêm bài đang chọn qua menu **Add to playlist**, gỡ bài và đổi thứ tự bằng kéo-thả hoặc Up/Down; dữ liệu nằm ở SQLite. Chưa kéo bài từ Library thả thẳng vào một hàng playlist; shuffle dùng chung `PlaybackQueue` toàn cục của Phase 4 khi phát playlist thay vì một công tắc riêng trong từng playlist |
 | **Queue** | Đang phát / Kế tiếp, kéo sắp xếp, xoá khỏi hàng đợi | Rỗng | Đã có panel **Up Next** ở cột Now Playing: nguồn là danh sách đang nhìn tại lúc phát, kéo sắp xếp hoặc Up/Down, double-click phát ngay, Play Next/Add to Queue cho bài đang chọn, xoá một bài và Clear upcoming. `PlaybackQueue` ở Core giữ History/Current/Upcoming và chỉ commit sau khi audio nạp thành công |
-| **Now Playing** | Ảnh bìa lớn, sóng nhạc phủ, seek, shuffle/repeat/mute, % volume | Chưa chọn bài, file lỗi | Đã có seek slider + nút −10s/+10s, Shuffle-bag, Repeat Off/All/One, Mute giữ nguyên % volume của slider và nhãn % hiệu dụng; Previous phát lại từ đầu nếu đã nghe hơn 3 giây, ngược lại quay đúng lịch sử đã phát. Metadata/bìa/trạng thái/timeline còn được đồng bộ lên SMTC của Windows, kèm thumbnail controls và taskbar progress |
+| **Now Playing** | Ảnh bìa lớn, sóng nhạc phủ, seek, shuffle/repeat/mute, % volume | Chưa chọn bài, file lỗi | Đã có seek slider + nút −10s/+10s, Shuffle-bag, Repeat Off/All/One, Mute giữ nguyên % volume của slider và nhãn % hiệu dụng; Previous phát lại từ đầu nếu đã nghe hơn 3 giây, ngược lại quay đúng lịch sử đã phát. Metadata/bìa/trạng thái/timeline còn được đồng bộ lên SMTC của Windows, kèm thumbnail controls và taskbar progress. Nhãn output WASAPI/WaveOut hiện dưới Volume; khi thiết bị đổi hoặc mất, banner báo nhạc đã Pause và yêu cầu bấm Play để tiếp tục |
 | **Stage (toàn màn hình)** | Visualizer chiếm trọn, lời lớn, thông tin bài tối giản, ẩn con trỏ | Tạm dừng (sóng hạ dần) | Điểm nhấn sản phẩm (Phase 1) |
-| **Settings** | Playback/phiên nghe, khởi động/thư viện, Stage Engine, dữ liệu/chẩn đoán, khôi phục mặc định; mọi thay đổi lưu ngay | — | Đã có màn hình Settings trong cửa sổ chính và `settings.json` schema v3: volume/mute, shuffle/repeat, chế độ visualizer, bật/tắt khôi phục phiên/chế độ xem/vị trí cửa sổ, danh sách thư mục theo dõi, đăng ký **Open with Mimi** theo tài khoản Windows hiện tại, bảng **Keyboard Shortcuts**, tự nâng cấp cache bìa cũ, reset preferences. Phiên trước được nạp về đúng bài/vị trí/History/Up Next ở trạng thái Pause; theme/ngôn ngữ vẫn thuộc Phase 5 |
+| **Settings** | Playback/phiên nghe, khởi động/thư viện, Stage Engine, dữ liệu/chẩn đoán, khôi phục mặc định; mọi thay đổi lưu ngay | — | Đã có màn hình Settings trong cửa sổ chính và `settings.json` schema v3: volume/mute, shuffle/repeat, thông tin output WASAPI/WaveOut và quy tắc Pause khi đổi thiết bị, chế độ visualizer, bật/tắt khôi phục phiên/chế độ xem/vị trí cửa sổ, danh sách thư mục theo dõi, đăng ký **Open with Mimi** theo tài khoản Windows hiện tại, bảng **Keyboard Shortcuts**, tự nâng cấp cache bìa cũ, reset preferences. Phiên trước được nạp về đúng bài/vị trí/History/Up Next ở trạng thái Pause; theme/ngôn ngữ vẫn thuộc Phase 5 |
 | **Diagnostics** | Phiên bản, thư mục dữ liệu/log, nút mở log, xuất thông tin hỗ trợ | — | Nhóm Data & Diagnostics trong Settings đã hiện phiên bản và mở được thư mục dữ liệu/log; xuất gói hỗ trợ vẫn chưa làm |
 
 ---
@@ -240,6 +240,8 @@ Tại thời điểm rà soát ban đầu, dự án là 1 project WPF với `Mai
 
 **Cập nhật tích hợp media Windows Phase 4 (29/10/2026):** commit `a138544`, các sửa CI tính đến `f530ba9` và [Windows CI cuối đã đạt restore/build/test](https://github.com/lxmtuu/Mimi/actions/runs/40850352056) đưa riêng `Mimi.App` lên `net8.0-windows10.0.19041.0` với `SupportedOSPlatformVersion` 17763 (Windows 10 1809). `WindowsMediaControlsService` ở App layer lấy SMTC theo HWND của cửa sổ chính, marshal mọi callback về UI dispatcher và đồng bộ title/artist/album/genre/year, ảnh bìa qua `InMemoryRandomAccessStream` được giữ sống, trạng thái Play/Pause, Next/Previous, Shuffle/Repeat cùng timeline mỗi giây; lệnh Play/Pause của Windows dùng command không-toggle và seek tuyệt đối đi qua cùng đường clamp của ViewModel. `MainWindow` có taskbar thumbnail Previous/Play/Pause/Next + progress/description, còn `MainWindow.Keyboard.cs` xử lý Space/mũi tên theo focus (nhường ô nhập, button, slider và danh sách), Ctrl+←/→, Ctrl+F, F11/Esc và media-key fallback chỉ khi SMTC không sẵn sàng để tránh toggle hai lần; Settings có bảng Keyboard Shortcuts. Artifact app tăng lên 36.264.898 byte (hơn 6.639.302 byte so với lát queue, chủ yếu do WinRT projection của target Windows SDK); bộ test không đổi 56 khai báo/71 case ước tính vì lát này thuộc App/Windows integration. Phase 4 vẫn chưa đóng: cần nghiệm thu flyout/màn hình khoá/taskbar/media keys/phím tắt trên Windows thật, rồi đánh giá WasapiOut và xử lý đổi thiết bị xuất âm.
 
+**Cập nhật WASAPI + thiết bị xuất âm Phase 4 (29/10/2026):** commit `ff17c07` và [Windows CI đã đạt restore/build/test](https://github.com/lxmtuu/Mimi/actions/runs/40855564811) chuyển `AudioService` sang **WasapiOut shared mode, event sync, latency yêu cầu 100ms** trên endpoint Render/Multimedia mặc định của Windows, tận dụng AutoConvertPcm của WASAPI và up-mix riêng file mono sang stereo sau visualizer tap; `WaveOutEvent` 200ms/3 buffer chỉ còn là fallback khi WASAPI không mở được. Core có `AudioOutputStatus`/`AudioOutputChangedEventArgs` và `AudioOutputUnavailableException`, còn `WindowsAudioDeviceWatcher` ở `Mimi.Audio` đăng ký `IMMNotificationClient`, debounce 300ms và marshal việc dựng lại stream về synchronization context của app. Khi endpoint mặc định đổi, biến mất hoặc stream dừng vì lỗi thiết bị, service giữ nguyên reader/vị trí, chỉ dispose output cũ rồi mở output mới ở trạng thái Pause—không tự chuyển tiếng sang loa khác; ViewModel phân biệt “không có output” với file hỏng nên không ghi playback-error oan và hiển thị nhãn output + banner trong Now Playing/Settings. Bộ test tăng lên 60 khai báo/75 case ước tính nhờ 4 test cho status/exception; artifact app là 36.278.739 byte. Quyết định D-03 mới được chốt ở mức kiến trúc/triển khai có fallback; Phase 4 vẫn chưa đóng cho tới khi đo A/B độ trễ/ổn định WASAPI ↔ WaveOut và nghiệm thu rút USB, Bluetooth, disable/không có output cùng các exit gate tương tác khác trên Windows thật.
+
 ```mermaid
 flowchart TB
     subgraph Presentation["Presentation — Mimi.App (WPF)"]
@@ -255,7 +257,7 @@ flowchart TB
         Ifaces["Interfaces: IAudioPlayer, ILibraryService, ISettingsService, IThemeService, ILyricsProvider"]
     end
     subgraph Infra["Infrastructure"]
-        Audio["Mimi.Audio<br/>NAudio Engine"]
+        Audio["Mimi.Audio<br/>NAudio WASAPI shared + WaveOut fallback"]
         Lib["Mimi.Library<br/>SQLite + TagLib-Sharp + Scanner"]
         Viz["Mimi.Visualizer<br/>FFT Pipeline + Renderer"]
     end
@@ -280,7 +282,7 @@ flowchart TB
 ## 8. Thiết kế chi tiết từng phân hệ
 
 ### 8.1. Audio Engine & Playback
-- **Đầu ra:** đánh giá chuyển `WaveOutEvent` → **`WasapiOut` (shared mode)** để giảm độ trễ và tích hợp tốt với Windows; giữ WaveOut làm fallback (Quyết định D-03, đo thực tế ở Phase 0/4).
+- **Đầu ra (Phase 4, đã triển khai — chờ đo nghiệm thu):** mặc định dùng **`WasapiOut` shared mode + event sync** trên endpoint Multimedia mặc định, yêu cầu latency 100ms và dựa vào AutoConvertPcm cho sample-rate/format; file mono được up-mix sang stereo sau visualizer tap, còn `WaveOutEvent` 200ms/3 buffer là fallback. `WindowsAudioDeviceWatcher` nghe thay đổi endpoint; output được dựng lại quanh reader hiện tại và luôn để Pause khi thiết bị đổi/mất. Quyết định D-03 chỉ được coi là nghiệm thu xong sau phép đo A/B độ trễ/ổn định trên Windows thật.
 - **Máy trạng thái phát nhạc (chuẩn hoá mọi chuyển đổi, sửa gốc các lỗi trạng thái hiện tại):**
 ```mermaid
 stateDiagram-v2
@@ -288,7 +290,7 @@ stateDiagram-v2
     Stopped --> Loading: Play(track)
     Loading --> Playing: Load OK
     Loading --> Error: Load Failed (báo + tự bỏ qua nếu đang trong Queue)
-    Playing --> Paused: Pause / Toggle
+    Playing --> Paused: Pause / Toggle / Output đổi hoặc mất
     Paused --> Playing: Resume
     Playing --> Loading: Next / Previous / Ended
     Playing --> Stopped: Stop / Xoá bài đang phát
@@ -426,11 +428,12 @@ AudioFileReader (unity gain)
 - **Exit:** thư viện 10.000 bài: cuộn mượt (ảo hoá), tìm < 100ms, quét nền không treo UI; tắt app giữa lúc ghi không hỏng DB. **Chưa đo/chưa đóng** trên máy Windows tham chiếu.
 
 ### Phase 4 — Hoàn thiện trải nghiệm phát nhạc (`v0.5.0`) · Cỡ: **M**
-**Trạng thái 29/10/2026:** lát nền queue/chế độ phát (`ab7308f`) và lát tích hợp media Windows (`a138544`…`f530ba9`) đã triển khai trên app/manifest `0.5.0` (chưa tag); [Windows CI queue `40846049669`](https://github.com/lxmtuu/Mimi/actions/runs/40846049669) và [Windows CI media `40850352056`](https://github.com/lxmtuu/Mimi/actions/runs/40850352056) đều đạt restore/build/test với 56 khai báo/71 case ước tính. Phase **chưa đóng**: thiết bị xuất âm và nghiệm thu tương tác trên Windows thật vẫn còn mở.
+**Trạng thái 29/10/2026:** các lát code queue/chế độ phát (`ab7308f`), tích hợp media Windows (`a138544`…`f530ba9`) và WASAPI/thiết bị xuất âm (`ff17c07`) đã triển khai trên app/manifest `0.5.0` (chưa tag); [Windows CI queue `40846049669`](https://github.com/lxmtuu/Mimi/actions/runs/40846049669), [Windows CI media `40850352056`](https://github.com/lxmtuu/Mimi/actions/runs/40850352056) và [Windows CI output `40855564811`](https://github.com/lxmtuu/Mimi/actions/runs/40855564811) đều đạt restore/build/test, bộ test hiện 60 khai báo/75 case ước tính. Phase **chưa đóng**: các exit gate và phép đo D-03 trên Windows thật vẫn còn mở.
 - [x] Queue **Up Next** có UI kéo sắp xếp + Up/Down/phát ngay/xoá/Clear và Play Next/Add to Queue; Shuffle-bag + Repeat Off/All/One; Mute + % volume hiệu dụng; nút tua nhanh −10s/+10s; settings schema v3 khôi phục chế độ phát và queue của phiên Pause
 - [x] Bổ sung tua ±5s trong hệ phím tắt của lát tích hợp Windows
 - [x] Media keys + SMTC overlay của Windows; taskbar thumbnail controls + progress; bảng phím tắt trong Settings
-- [ ] Đánh giá & (nếu đạt) chuyển WasapiOut; xử lý đổi thiết bị âm thanh giữa chừng (rút tai nghe → tự pause)
+- [x] Chuyển mặc định sang WasapiOut shared mode, giữ WaveOut làm fallback; xử lý đổi/rút thiết bị âm thanh giữa chừng bằng cách giữ bài/vị trí, tự Pause và dựng lại output
+- [ ] Đo A/B độ trễ/ổn định WASAPI ↔ WaveOut và nghiệm thu USB/Bluetooth/disable/không có output trên Windows thật để chốt D-03 cùng exit gate của Phase
 - **Exit:** điều khiển trọn vẹn không cần chuột; overlay media của Windows hiện đúng bài/ảnh bìa; đổi output device không crash.
 
 ### Phase 5 — Song ngữ & Theme cộng đồng (`v0.6.0`) · Cỡ: **L**
@@ -505,7 +508,7 @@ AudioFileReader (unity gain)
 |---|---|---|---|
 | D-01 | LICENSE mã nguồn dự án | **MIT** (đơn giản, thân thiện cộng đồng) | Trước Phase 7 (cần chủ dự án xác nhận) |
 | D-02 | Công nghệ đóng gói/auto-update | **Velopack** (hiện đại, delta update) hoặc Inno Setup (quen thuộc) | Phase 7, sau khi thử nghiệm ký số |
-| D-03 | WaveOutEvent → WasapiOut | Chuyển nếu đo được độ trễ/ổn định tốt hơn | Phase 4 |
+| D-03 | WaveOutEvent → WasapiOut | **Đã triển khai WasapiOut shared làm mặc định + WaveOut fallback**; chỉ chốt nghiệm thu nếu đo A/B trên Windows thật không kém về độ trễ/ổn định | Phase 4, tại cổng nghiệm thu Windows thật |
 | D-04 | Renderer: DrawingVisual vs SkiaSharp | **DrawingVisual trước**, SkiaSharp chỉ khi số đo yêu cầu | Phase 1 |
 | D-05 | Thêm decoder `.ogg/.opus` | Đánh giá license/độ nặng của thư viện ứng viên | Phase 3 |
 | D-06 | Sản xuất mascot Mimi gốc | Thuê artist hoặc mở đợt đóng góp cộng đồng có brief + chuyển nhượng quyền rõ ràng | Phase 5 |
