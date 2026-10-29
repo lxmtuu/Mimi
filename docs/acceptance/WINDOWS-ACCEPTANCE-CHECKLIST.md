@@ -128,6 +128,10 @@ Với fixture dài 30 giây, hãy phát lại bài đầu rồi mở Quick Setti
 trong lúc trạng thái còn Playing. Không kết luận thẻ media vắng mặt chỉ vì
 UI Automation không đọc được cửa sổ shell; người kiểm thử phải nhìn và thao
 tác trực tiếp, đồng thời ghi lại ảnh chụp đã che thông tin riêng tư nếu cần.
+Ảnh chụp từ xa bị cắt, lệch tọa độ hoặc chỉ thấy một phần thẻ chỉ được ghi
+là bằng chứng quan sát chưa đủ; không dùng nó để kết luận progress, nút tua
+hoặc Shuffle/Repeat vắng mặt. Cần quan sát trực tiếp hoặc ảnh chụp toàn bộ
+thẻ trước khi phân loại các điều khiển trực quan.
 Nếu Mimi đang Playing mà vẫn không có thẻ, hãy ghi giờ hệ thống, kiểm tra log
 SMTC và chạy một app media tham chiếu trong cùng phiên Windows để phân biệt
 lỗi shell/môi trường với lỗi tích hợp của Mimi. Nếu một điều khiển không được

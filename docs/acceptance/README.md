@@ -118,15 +118,30 @@ dài hạn hay latency âm học đầu-cuối.
   được**. Một lượt trên Magenta khi đang `Playing` cho thấy Position tăng
   từ khoảng `2.46` lên `7.29` giây trong 5,17 giây, duration khoảng
   `30.119` giây và Windows ghi nhận seek/FastForward/Rewind được bật.
-  Như vậy đường xuất bản và tiến triển timeline ở tầng GSMTC đã có bằng
-  chứng hoạt động; phần progress/thời gian hiển thị trực tiếp trên thẻ
-  Quick Settings vẫn chưa được xác minh, nên **A7 vẫn `PARTIAL`**, không
-  nâng thành `PASS` toàn bộ. Lượt kiểm tra cùng thời điểm cũng xác nhận
-  source tại `7c14775` đạt 83/83 test và build 0 warning/0 error sang thư
-  mục đầu ra riêng vì tiến trình Mimi đang chạy khóa DLL đầu ra mặc định.
-- P4-A: `PARTIAL` (A1–A6 `PASS`; A7 đạt ở tầng dữ liệu GSMTC nhưng chưa
-  xác minh hiển thị trên thẻ; A8 `BLOCKED` ở bề mặt Quick Settings hiện
-  tại; A9 chưa chạy vận hành; A10–A12 `NOT RUN`).
+  Lượt kiểm tra cùng thời điểm cũng xác nhận source tại `7c14775` đạt
+  83/83 test và build 0 warning/0 error sang thư mục đầu ra riêng vì tiến
+  trình Mimi đang chạy khóa DLL đầu ra mặc định.
+- Lượt Cyan sạch tiếp theo tại `2a26e90` xác nhận lại kết quả trên chính
+  bài từng gây nghi ngờ: playlist được phát lại từ đầu bằng UI Automation,
+  cả mẫu đầu/cuối đều là Cyan ở trạng thái `Playing`, duration `30.119`
+  giây, Position tăng `2.161 → 9.161` giây. `TimelinePublished = True`,
+  `StartedNearEnd = False`, `RawPositionDeltaSeconds = 7.000`,
+  `LastUpdatedDeltaSeconds = 6.998` và `WallClockDeltaSeconds = 7.206`.
+  Quan sát Cyan đứng ở cuối bài trước đó vì vậy được khép lại như một
+  lượt đo không đủ tiền điều kiện, không còn là bằng chứng nghi ngờ nguồn
+  `CurrentTime`. Lượt này không xác minh riêng thao tác double-click vật
+  lý vào dòng Cyan, nhưng điều đó không phải tiêu chí của A7.
+- Ảnh Quick Settings chụp từ xa trong lượt Cyan sạch chỉ thấy một phần
+  mép phải của bảng do sai lệch tọa độ/kích thước, nên không bổ sung bằng
+  chứng đáng tin cậy về progress/thời gian, FastForward/Rewind hay
+  Shuffle/Repeat trên toàn bộ thẻ. Đây là giới hạn quan sát từ xa, không
+  phải bằng chứng Mimi hoặc Windows lỗi. Phần hiển thị trực tiếp trên thẻ
+  vẫn chưa được chốt độc lập, nên **A7 vẫn `PARTIAL`**, không nâng thành
+  `PASS` toàn bộ chỉ bằng dữ liệu GSMTC.
+- P4-A: `PARTIAL` (A1–A6 `PASS`; xuất bản/tiến triển timeline A7 đã đạt
+  ở tầng GSMTC trên cả Magenta và Cyan nhưng hiển thị trên thẻ chưa được
+  chốt; A8 `BLOCKED` ở bề mặt Quick Settings hiện tại; A9 chưa chạy vận
+  hành; A10–A12 `NOT RUN`).
 - P4-B: `NOT RUN` cho B1–B6.
 - P4-C: `PARTIAL` (C5/C7 mới có bằng chứng mô phỏng/một phần focus; media
   keys vật lý chưa chạy).
