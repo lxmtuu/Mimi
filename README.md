@@ -3,13 +3,19 @@
 A Windows desktop music-player foundation built with C# / WPF / .NET 8 and NAudio.
 
 ## Current starter features
-- Dark anime-inspired cyan/pink desktop UI
-- Local audio file selection and recursive folder scan
-- Play / pause, next / previous, volume and seek
-- Library list with search and favorites (right-click a song), restored on startup
-  from `%LocalAppData%\Mimi` (`library.json` / `favorites.json`)
-- Real-time 32-band FFT spectrum visualizer (v1)
+- Dark anime-inspired cyan/pink desktop UI with the Mimi app icon
+- Local audio file selection and a resilient recursive folder scan that reports
+  directories it could not read instead of discarding the whole result
+- Play / pause, next / previous, volume and seek; next / previous and
+  auto-advance follow the visible filtered list and skip unplayable files
+- Library search, direct favorite toggles, and track removal (right-click or
+  Delete key)
+- Library, favorites and volume restored on startup from `%LocalAppData%\Mimi`
+  (`library.json` / `favorites.json` / `settings.json`) with atomic JSON writes
+- Real-time 32-band FFT spectrum visualizer (v1), sampled before the volume
+  gain and fading out while paused or stopped
 - Playback engine isolated in `Services/AudioService.cs`
+- Windows Release builds verified by GitHub Actions
 
 ## Requirements
 - Windows 10/11

@@ -218,7 +218,7 @@ Shell (Sidebar + Nội dung + Now Playing)
 
 ## 7. Kiến trúc kỹ thuật đích
 
-Hiện tại là 1 project WPF với `MainWindow.xaml.cs` 435 dòng ôm toàn bộ logic — phù hợp prototype nhưng **không kiểm thử được và khó nhận đóng góp**. Kiến trúc đích (đạt ở Phase 2, chuyển đổi dần, không "viết lại từ đầu"):
+Tại thời điểm rà soát ban đầu, dự án là 1 project WPF với `MainWindow.xaml.cs` 435 dòng ôm toàn bộ logic — phù hợp prototype nhưng **không kiểm thử được và khó nhận đóng góp** (file còn phình thêm sau các vá Phase 0, càng củng cố nhu cầu refactor theo Phase 2). Kiến trúc đích (đạt ở Phase 2, chuyển đổi dần, không "viết lại từ đầu"):
 
 ```mermaid
 flowchart TB
@@ -344,14 +344,17 @@ AudioFileReader (unity gain)
 
 ### Phase 0 — Ổn định nền tảng (đề xuất tag `v0.1.1`) · Cỡ: **M**
 **Mục tiêu:** sửa toàn bộ lỗi đúng/sai từ rà soát 29/10/2026, biến prototype thành bản dùng hằng ngày không khó chịu.
-- [ ] Quét thư mục: dùng `EnumerationOptions(IgnoreInaccessible)` + báo số file bỏ qua thay vì trả rỗng im lặng (`Services/LibraryService.cs`)
-- [ ] Next/Previous/Ended đi theo **danh sách đang lọc**; gán bài hiện tại **sau khi Load thành công**; file lỗi → đánh dấu + tự bỏ qua
-- [ ] Seek: dùng sự kiện kéo Thumb + hỗ trợ phím mũi tên; hết lỗi kẹt cờ seek làm đóng băng thanh tiến trình
-- [ ] Xoá bài khỏi thư viện (menu chuột phải + phím Delete); nút **HOME** có chức năng; cột ♥ bấm trực tiếp để thích/bỏ thích
-- [ ] Visualizer v1 vá nhanh: sóng hạ dần khi pause/stop; lấy mẫu trước volume; tắt ghi file debug ở bản Release (`#if DEBUG`); dùng chung hằng số `BandCount`
-- [ ] Lưu JSON kiểu atomic + dọn favorites "chết"; lưu volume; dọn dead code (`wasPlaying`, handler rỗng…)
-- [ ] Thay `FolderBrowserDialog` (WinForms) bằng `Microsoft.Win32.OpenFolderDialog`, bỏ `UseWindowsForms`
-- [ ] Thêm `.editorconfig`, bổ sung `.gitignore` chuẩn Visual Studio, `app.manifest` khai báo DPI PerMonitorV2, icon tạm thời cho `Mimi.exe`
+
+**Trạng thái 29/10/2026:** phần code đã triển khai trên branch `arena/cdda374d-mimi` (commit `2f4318a`) và [Windows CI build Release đã đạt](https://github.com/lxmtuu/Mimi/actions/runs/40820442896). Phase **chưa đóng** cho tới khi hoàn tất kiểm chứng định dạng và kiểm thử tay các tiêu chí Exit trên Windows 10/11 thật.
+- [x] Quét thư mục từng cấp: thư mục con không đọc được chỉ bị bỏ qua cục bộ, không theo junction/symlink và báo số thư mục đã bỏ qua thay vì trả rỗng im lặng (`Services/LibraryService.cs`)
+- [x] Next/Previous/Ended đi theo **danh sách đang lọc**; gán bài hiện tại **sau khi Load thành công**; file lỗi → đánh dấu + tự bỏ qua
+- [x] Seek: dùng sự kiện kéo Thumb + hỗ trợ phím mũi tên; hết lỗi kẹt cờ seek làm đóng băng thanh tiến trình
+- [x] Xoá bài khỏi thư viện (menu chuột phải + phím Delete); nút **HOME** có chức năng; cột ♥ bấm trực tiếp để thích/bỏ thích
+- [x] Visualizer v1 vá nhanh: sóng hạ dần khi pause/stop; lấy mẫu trước volume; tắt ghi file debug ở bản Release (`[Conditional("DEBUG")]`); dùng chung hằng số `BandCount`
+- [x] Lưu JSON kiểu atomic + dọn favorites "chết" khi thư viện khôi phục thành công; lưu volume; dọn dead code (`wasPlaying`, handler rỗng…)
+- [x] Thay `FolderBrowserDialog` (WinForms) bằng `Microsoft.Win32.OpenFolderDialog`, bỏ `UseWindowsForms`
+- [x] Thêm `.editorconfig`, bổ sung `.gitignore` chuẩn Visual Studio, `app.manifest` khai báo DPI PerMonitorV2, icon tạm thời cho `Mimi.exe`
+- [x] Thêm GitHub Actions build Release trên Windows để kiểm chứng compile/đóng gói cơ bản ngay từ Phase 0
 - [ ] Điền [bảng kiểm chứng định dạng](#phụ-lục-b--bảng-kiểm-chứng-định-dạng-âm-thanh-trên-windows) trên máy Windows thật
 - **Exit:** mọi mục P0 (Phụ lục A) đóng; mở app → quét thư mục có thư mục con bị khoá vẫn ra nhạc; Next trong Favorites không thoát Favorites; file nhạc hỏng không làm kẹt Play; build Release không sinh file debug.
 
@@ -369,7 +372,7 @@ AudioFileReader (unity gain)
 - [ ] Tạo `Mimi.sln` + tách project theo mục 7; chuyển logic khỏi `MainWindow.xaml.cs` theo từng màn hình (không big-bang)
 - [ ] DI + Logging (Serilog) + xử lý crash toàn cục có log
 - [ ] Unit test xUnit: LibraryService (lọc/trùng/quét lỗi), chuẩn hoá tìm kiếm bỏ dấu, thuật toán dải FFT, shuffle-bag, migration dữ liệu rename
-- [ ] GitHub Actions: build + test trên `windows-latest` mỗi PR; cảnh báo biên dịch = lỗi (warnings as errors cho code mới)
+- [ ] Mở rộng GitHub Actions sẵn có (Windows Release build đã được thêm từ Phase 0): chạy test trên `windows-latest` mỗi PR; cảnh báo biên dịch = lỗi (warnings as errors cho code mới)
 - [ ] Layout thích ứng (bỏ `MinWidth` cứng), icon vector thay icon-chữ, focus-visible + nhãn accessibility; nâng tương phản `text.faint`
 - **Exit:** `MainWindow.xaml.cs` < 150 dòng (chỉ còn glue-code); CI xanh trên PR mẫu; contributor mới build được theo README trong < 15 phút.
 
