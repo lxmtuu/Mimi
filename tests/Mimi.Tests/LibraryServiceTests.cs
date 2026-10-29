@@ -26,6 +26,20 @@ public sealed class LibraryServiceTests : IDisposable
     }
 
     [Fact]
+    public void ScanFiles_DeduplicatesPathsCaseInsensitively()
+    {
+        var song = Touch("Repeat.mp3");
+
+        var tracks = service.ScanFiles([
+            song,
+            song,
+            song.ToUpperInvariant()
+        ]).ToArray();
+
+        Assert.Single(tracks);
+    }
+
+    [Fact]
     public void ScanFolder_RecursiveFindsNestedAudioFiles()
     {
         var rootSong = Touch("root.wav");
