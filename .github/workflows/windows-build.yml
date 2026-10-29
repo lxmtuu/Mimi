@@ -34,6 +34,31 @@ jobs:
       - name: Run unit tests
         run: dotnet test tests/Mimi.Tests/Mimi.Tests.csproj --configuration Release --no-build --logger "trx;LogFileName=mimi-tests.trx" --results-directory TestResults
 
+      - name: Report failed tests
+        if: failure()
+        shell: pwsh
+        run: |
+          $trx = Get-ChildItem TestResults -Filter *.trx -ErrorAction SilentlyContinue | Select-Object -First 1
+          if ($null -eq $trx) { return }
+          [xml]$document = Get-Content -LiteralPath $trx.FullName
+          $namespaces = New-Object System.Xml.XmlNamespaceManager($document.NameTable)
+          $namespaces.AddNamespace(
+            "t",
+            "http://microsoft.com/schemas/VisualStudio/TeamTest/2010")
+          $failed = $document.SelectNodes(
+            "//t:UnitTestResult[@outcome='Failed']",
+            $namespaces)
+          foreach ($result in $failed) {
+            $name = $result.GetAttribute("testName")
+            $messageNode = $result.SelectSingleNode(".//t:Message", $namespaces)
+            $message = if ($null -ne $messageNode) {
+              $messageNode.InnerText -replace "%", "%25" -replace "[\r\n]+", " "
+            } else {
+              "No failure message"
+            }
+            Write-Host "::error title=Failed test::$name -- $message"
+          }
+
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v7.0.2
