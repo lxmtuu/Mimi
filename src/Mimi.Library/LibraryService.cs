@@ -1,9 +1,9 @@
-﻿using System.IO;
+using System.IO;
 using Mimi.Models;
 
 namespace Mimi.Services;
 
-public sealed class LibraryService
+public sealed class LibraryService : ILibraryService
 {
     private static readonly HashSet<string> Supported = new(StringComparer.OrdinalIgnoreCase)
     { ".mp3", ".wav", ".aiff", ".aif", ".wma", ".m4a", ".aac", ".flac" };
@@ -15,10 +15,6 @@ public sealed class LibraryService
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .Select(p => new Track { FilePath = p });
     }
-
-    /// <summary>Result of a folder scan: the tracks found plus how many
-    /// directories could not be read (reported to the user, never fatal).</summary>
-    public sealed record FolderScanResult(IReadOnlyList<Track> Tracks, int SkippedDirectories);
 
     public FolderScanResult ScanFolder(string folder, bool recursive = true)
     {

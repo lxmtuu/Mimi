@@ -11,7 +11,7 @@ public partial class StageWindow : Window
     private readonly DispatcherTimer cursorTimer;
     private readonly DispatcherTimer metricsTimer;
 
-    public StageWindow(AudioService audio, VisualizerDisplayMode mode)
+    public StageWindow(IAudioPlayer audio, VisualizerDisplayMode mode)
     {
         InitializeComponent();
         StageVisualizer.FrameProvider = audio.GetVisualizerFrame;

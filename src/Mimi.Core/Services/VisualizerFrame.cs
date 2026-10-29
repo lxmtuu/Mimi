@@ -7,6 +7,7 @@ namespace Mimi.Services;
 /// </summary>
 public sealed class VisualizerFrame
 {
+    public const int SpectrumBandCount = 32;
     public const int WaveformPointCount = 256;
 
     internal VisualizerFrame(float[] spectrum, float[] waveform, long frameId)
@@ -17,7 +18,7 @@ public sealed class VisualizerFrame
     }
 
     public static VisualizerFrame Silence { get; } = new(
-        new float[VisualizerSampleProvider.BandCount],
+        new float[SpectrumBandCount],
         new float[WaveformPointCount],
         frameId: 0);
 

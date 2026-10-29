@@ -35,8 +35,8 @@ public sealed class VisualizerView : FrameworkElement
     private static readonly Pen HaloPinkPen = CreateFrozenPen(CreateFrozenBrush(255, 255, 92, 174), 3.0);
 
     private readonly DrawingVisual visual = new();
-    private readonly float[] displayedSpectrum = new float[VisualizerSampleProvider.BandCount];
-    private readonly float[] peakSpectrum = new float[VisualizerSampleProvider.BandCount];
+    private readonly float[] displayedSpectrum = new float[VisualizerFrame.SpectrumBandCount];
+    private readonly float[] peakSpectrum = new float[VisualizerFrame.SpectrumBandCount];
 
     private bool renderingAttached;
     private bool hasLastDrawnAt;
@@ -61,7 +61,18 @@ public sealed class VisualizerView : FrameworkElement
 
     public Func<VisualizerFrame>? FrameProvider { get; set; }
 
-    public VisualizerDisplayMode Mode { get; set; } = VisualizerDisplayMode.NeonSpectrum;
+    public static readonly DependencyProperty ModeProperty =
+        DependencyProperty.Register(
+            nameof(Mode),
+            typeof(VisualizerDisplayMode),
+            typeof(VisualizerView),
+            new PropertyMetadata(VisualizerDisplayMode.NeonSpectrum));
+
+    public VisualizerDisplayMode Mode
+    {
+        get => (VisualizerDisplayMode)GetValue(ModeProperty);
+        set => SetValue(ModeProperty, value);
+    }
 
     public double FramesPerSecond { get; private set; }
 

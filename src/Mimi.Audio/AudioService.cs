@@ -5,7 +5,7 @@ namespace Mimi.Services;
 
 /// <summary>Local-file playback engine. Online providers should be added as separate,
 /// officially authorized adapters; never scrape or bypass provider access controls.</summary>
-public sealed class AudioService : IDisposable
+public sealed class AudioService : IAudioPlayer
 {
     private IWavePlayer? output;
     private AudioFileReader? reader;
