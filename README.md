@@ -4,9 +4,11 @@ A Windows desktop music-player foundation built with C# / WPF / .NET 8 and NAudi
 
 ## Current starter features
 - Dark anime-inspired cyan/pink desktop UI
-- Local audio file selection and folder scan
+- Local audio file selection and recursive folder scan
 - Play / pause, next / previous, volume and seek
-- Basic library list and search
+- Library list with search and favorites (right-click a song), restored on startup
+  from `%LocalAppData%\Mimi` (`library.json` / `favorites.json`)
+- Real-time 32-band FFT spectrum visualizer (v1)
 - Playback engine isolated in `Services/AudioService.cs`
 
 ## Requirements
@@ -25,13 +27,12 @@ dotnet run
 ## Notes
 This is a first working foundation, not a finished commercial product. Online streaming is intentionally not implemented yet. Each streaming provider requires an official API/SDK, authorization, and compliance with that provider's playback and licensing rules. Do not scrape protected services or attempt to bypass DRM.
 
-Planned next milestones:
-1. Persist library, playlists, and settings with SQLite.
-2. Add robust metadata extraction and cover art.
-3. Add audio analysis + real-time FFT visualizer.
-4. Add lyrics through a licensed/authorized source.
-5. Define provider adapters only for services that explicitly permit the intended playback integration.
-6. Add automated tests, diagnostics, installer, update strategy, accessibility, and license audit.
+## Design & roadmap
+See **[ROADMAP.md](ROADMAP.md)** for the full product design and phased development
+roadmap (in Vietnamese): vision and IP principles for the anime × Vocaloid-inspired
+"Mimi Neon Stage" design system, screen specs, target architecture, per-subsystem
+designs (audio, SQLite library, 60fps visualizer, lyrics, bilingual vi/en UI),
+Phase 0–7 plan with exit criteria, audit findings, and open decisions.
 
 ## Rename note
 This app was previously named **MikuVerse Music** and is now **Mimi** (project `Mimi.csproj`, namespace `Mimi`, output `Mimi.exe`). On first launch, an existing library/favorites saved under `%LocalAppData%\MikuVerseMusic` are copied automatically to `%LocalAppData%\Mimi`; the old folder is left untouched.
