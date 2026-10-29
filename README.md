@@ -12,8 +12,10 @@ A Windows desktop music-player foundation built with C# / WPF / .NET 8 and NAudi
   Delete key)
 - Library, favorites and volume restored on startup from `%LocalAppData%\Mimi`
   (`library.json` / `favorites.json` / `settings.json`) with atomic JSON writes
-- Real-time 32-band FFT spectrum visualizer (v1), sampled before the volume
-  gain and fading out while paused or stopped
+- Stage Engine visualizer (beta): worker-thread 32-band FFT with dB/AGC
+  scaling, Neon Spectrum / Twin Wave / Halo Circle modes, fullscreen Stage
+  (`F11`), live FPS/draw-time diagnostics, sampled before the volume gain,
+  and fading out while paused or stopped
 - Playback engine isolated in `Services/AudioService.cs`
 - Windows Release builds verified by GitHub Actions
 

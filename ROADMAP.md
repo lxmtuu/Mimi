@@ -360,11 +360,13 @@ AudioFileReader (unity gain)
 
 ### Phase 1 — Visualizer "Stage Engine" Beta (`v0.2.0`) · Cỡ: **L** ⭐
 **Mục tiêu:** đưa điểm nhấn sản phẩm lên chuẩn trình diễn 60fps.
-- [ ] Tách pipeline: ring-buffer + FFT worker thread + khung hình bất biến (mục 8.3)
-- [ ] Renderer `DrawingVisual` chạy theo `CompositionTarget.Rendering`; brush đóng băng; 0 allocation/frame
-- [ ] Chuẩn hoá dB + AGC; làm mượt theo thời gian thực (không phụ thuộc số cửa sổ FFT)
-- [ ] 3 chế độ: Neon Spectrum / Twin Wave / Halo Circle; Stage toàn màn hình (F11, Esc thoát, ẩn trỏ chuột)
-- [ ] Tự giảm fps khi mất focus/tiết kiệm pin; trang Diagnostics hiện fps + thời gian vẽ
+
+**Trạng thái 29/10/2026:** phần code đã triển khai trên branch `arena/cdda374d-mimi` (commit `199729d`) và [Windows CI build Release đã đạt](https://github.com/lxmtuu/Mimi/actions/runs/40822288933). Phase **chưa đóng** cho tới khi đo FPS/CPU/mức cấp phát và nghiệm thu thị giác trên máy Windows tham chiếu thật.
+- [x] Tách pipeline: ring-buffer + FFT worker thread + khung hình bất biến (mục 8.3)
+- [x] Renderer `DrawingVisual` chạy theo `CompositionTarget.Rendering`; brush/pen đóng băng; không cấp phát buffer/brush/pen/control trong vòng lặp vẽ
+- [x] Chuẩn hoá dB + AGC; làm mượt theo thời gian thực (không phụ thuộc số cửa sổ FFT)
+- [x] 3 chế độ: Neon Spectrum / Twin Wave / Halo Circle; Stage toàn màn hình (F11, Esc thoát, ẩn trỏ chuột)
+- [x] Tự giảm xuống 30fps khi cửa sổ mất focus hoặc Windows bật Battery Saver; chỉ số Diagnostics trong panel chính và Stage hiện fps + thời gian vẽ
 - **Exit:** đạt ngân sách hiệu năng mục 8.3 trên máy tham chiếu; bài to/nhỏ sóng đều đẹp (không bão hoà/câm); pause → sóng hạ mượt về sàn.
 
 ### Phase 2 — Kiến trúc bền vững cho cộng đồng (`v0.3.0`) · Cỡ: **L**
