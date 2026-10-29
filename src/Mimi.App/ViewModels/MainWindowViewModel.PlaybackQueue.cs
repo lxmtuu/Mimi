@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Windows.Shell;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mimi.Behaviors;
@@ -75,6 +76,27 @@ public sealed partial class MainWindowViewModel
         }
     }
 
+    public ThumbButtonInfoVisibility TaskbarPlayButtonVisibility => IsPlaying
+        ? ThumbButtonInfoVisibility.Collapsed
+        : ThumbButtonInfoVisibility.Visible;
+
+    public ThumbButtonInfoVisibility TaskbarPauseButtonVisibility => IsPlaying
+        ? ThumbButtonInfoVisibility.Visible
+        : ThumbButtonInfoVisibility.Collapsed;
+
+    public double TaskbarProgressValue =>
+        Math.Clamp(ProgressPercent / 100d, 0, 1);
+
+    public TaskbarItemProgressState TaskbarProgressState => CurrentTrack is null
+        ? TaskbarItemProgressState.None
+        : IsPlaying
+            ? TaskbarItemProgressState.Normal
+            : TaskbarItemProgressState.Paused;
+
+    public string TaskbarDescription => CurrentTrack is null
+        ? "Mimi"
+        : $"{NowPlayingTitle} — {NowPlayingSubtitle}";
+
     partial void OnIsMutedChanged(bool value)
     {
         ApplyEffectiveVolume();
@@ -138,18 +160,66 @@ public sealed partial class MainWindowViewModel
     [RelayCommand]
     private void SeekForward10() => SeekRelative(TimeSpan.FromSeconds(10));
 
-    private void SeekRelative(TimeSpan offset)
+    [RelayCommand]
+    private void SeekBackward5() => SeekRelative(TimeSpan.FromSeconds(-5));
+
+    [RelayCommand]
+    private void SeekForward5() => SeekRelative(TimeSpan.FromSeconds(5));
+
+    [RelayCommand]
+    private void IncreaseVolume() => ChangeVolumeBy(0.05);
+
+    [RelayCommand]
+    private void DecreaseVolume() => ChangeVolumeBy(-0.05);
+
+    [RelayCommand]
+    private void ResumePlayback()
+    {
+        if (CurrentTrack is null)
+        {
+            PlayPause();
+            return;
+        }
+
+        if (!audioPlayer.IsPlaying)
+            audioPlayer.Play();
+
+        RefreshPlaybackState();
+        SaveSettings();
+    }
+
+    [RelayCommand]
+    private void PausePlayback()
+    {
+        if (CurrentTrack is not null && audioPlayer.IsPlaying)
+            audioPlayer.Pause();
+
+        RefreshPlaybackState();
+        SaveSettings();
+    }
+
+    public void SeekToPosition(TimeSpan position)
     {
         if (CurrentTrack is null || audioPlayer.Duration <= TimeSpan.Zero)
             return;
 
-        var target = audioPlayer.CurrentTime + offset;
-        if (target < TimeSpan.Zero) target = TimeSpan.Zero;
-        if (target > audioPlayer.Duration) target = audioPlayer.Duration;
+        if (position < TimeSpan.Zero) position = TimeSpan.Zero;
+        if (position > audioPlayer.Duration) position = audioPlayer.Duration;
 
-        audioPlayer.Seek(target);
+        audioPlayer.Seek(position);
         RefreshPlaybackPosition();
         SaveSettings();
+    }
+
+    private void SeekRelative(TimeSpan offset) =>
+        SeekToPosition(audioPlayer.CurrentTime + offset);
+
+    private void ChangeVolumeBy(double offset)
+    {
+        if (IsMuted)
+            IsMuted = false;
+
+        Volume = Math.Clamp(Volume + offset, 0, 1);
     }
 
     private PlaybackQueueItemViewModel GetOrCreateQueueEntry(

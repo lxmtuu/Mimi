@@ -97,6 +97,8 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     private TrackItemViewModel? selectedTrack;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(TaskbarProgressState))]
+    [NotifyPropertyChangedFor(nameof(TaskbarDescription))]
     private TrackItemViewModel? currentTrack;
 
     [ObservableProperty]
@@ -120,18 +122,24 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     private string trackCountLabel = "No songs yet - add some music to begin";
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(TaskbarDescription))]
     private string nowPlayingTitle = "Choose a song";
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(TaskbarDescription))]
     private string nowPlayingSubtitle = "Your next favorite is waiting";
 
     [ObservableProperty]
     private string? currentCoverArtPath;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(TaskbarPlayButtonVisibility))]
+    [NotifyPropertyChangedFor(nameof(TaskbarPauseButtonVisibility))]
+    [NotifyPropertyChangedFor(nameof(TaskbarProgressState))]
     private bool isPlaying;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(TaskbarProgressValue))]
     private double progressPercent;
 
     [ObservableProperty]

@@ -1,7 +1,7 @@
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls.Primitives;
-using System.Windows.Input;
+using System.Windows.Interop;
 using System.Windows.Threading;
 using Mimi.Controls;
 using Mimi.Services;
@@ -22,6 +22,7 @@ public partial class MainWindow : Window
     private readonly DispatcherTimer metricsTimer =
         new() { Interval = TimeSpan.FromMilliseconds(500) };
     private StageWindow? stageWindow;
+    private WindowsMediaControlsService? mediaControls;
 
     public MainWindow(MainWindowViewModel viewModel, IAudioPlayer audioPlayer)
     {
@@ -51,16 +52,17 @@ public partial class MainWindow : Window
         metricsTimer.Start();
     }
 
-    protected override void OnKeyDown(KeyEventArgs e)
+    protected override void OnSourceInitialized(EventArgs e)
     {
-        if (e.Key == Key.F11)
-        {
-            ToggleStage();
-            e.Handled = true;
-            return;
-        }
+        base.OnSourceInitialized(e);
 
-        base.OnKeyDown(e);
+        // SMTC is keyed to the top-level HWND. It must therefore be created
+        // after WPF has created the native window, not in the view model.
+        mediaControls = new WindowsMediaControlsService(
+            viewModel,
+            audioPlayer,
+            Dispatcher);
+        mediaControls.Initialize(new WindowInteropHelper(this).Handle);
     }
 
     protected override void OnClosed(EventArgs e)
@@ -70,6 +72,8 @@ public partial class MainWindow : Window
         viewModel.StageToggleRequested -= ViewModel_StageToggleRequested;
         viewModel.PropertyChanged -= ViewModel_PropertyChanged;
         stageWindow?.Close();
+        mediaControls?.Dispose();
+        mediaControls = null;
         viewModel.Dispose();
         base.OnClosed(e);
     }
