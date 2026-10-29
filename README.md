@@ -38,6 +38,11 @@ A Windows desktop music-player foundation built with C# / WPF / .NET 8 and NAudi
 - Optional watched folders: new or changed songs in selected folders are
   scanned after a short debounce, while externally deleted files remain in
   the library and are marked missing instead of being silently removed
+- Optional per-user **Open with Mimi** registration for MP3, WAV, AIFF/AIF,
+  WMA, M4A, AAC, and FLAC. Files opened from Explorer are added to the
+  library and played; if Mimi is already running, the request is forwarded
+  to that window instead of starting a second player. Registration does not
+  change the user's Windows default music app
 - Library tracks, favorites, playback errors, and play history are restored
   from the SQLite catalog at `%LocalAppData%\Mimi\library.db` (schema v1,
   WAL + transactions); version 2 `settings.json` atomically stores volume,
@@ -57,8 +62,8 @@ A Windows desktop music-player foundation built with C# / WPF / .NET 8 and NAudi
 - Modular MVVM architecture with dependency injection and automated tests;
   Windows Release builds and unit tests are verified by GitHub Actions.
   This remains Phase 3 in development (`v0.4.0`), not the complete Phase 3
-  exit: file associations and measured 10,000-track performance remain
-  open items in `ROADMAP.md`
+  exit: measured 10,000-track performance and real-Windows upgrade checks
+  remain open items in `ROADMAP.md`
 
 ## Requirements
 - Windows 10/11 with Windows Terminal or PowerShell
@@ -192,7 +197,10 @@ kéo-thả bài trong playlist (hoặc dùng nút **↑ Up/↓ Down**) để đ�
 Mở **Settings** để đổi chế độ Stage và các tuỳ chọn khôi phục; thêm một thư
 mục vào **Watched folders**, thử chép thêm bài từ Explorer để Mimi tự quét,
 sau đó đóng rồi mở lại Mimi để kiểm tra bài/vị trí cũ được nạp ở trạng thái
-tạm dừng.
+tạm dừng. Trong **Windows integration**, bật **Show Mimi in Windows' Open
+with menu**, chuột phải vào một file nhạc trong Explorer và chọn
+**Open with → Mimi**; nếu Mimi đang mở, bài phải được chuyển sang chính
+cửa sổ đó thay vì tạo thêm một cửa sổ Mimi thứ hai.
 Cuối cùng, bấm `F11` để mở Stage toàn màn hình (`Esc` để thoát Stage).
 
 #### 5. Mở thư mục dữ liệu và log
