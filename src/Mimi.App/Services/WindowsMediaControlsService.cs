@@ -245,7 +245,7 @@ public sealed class WindowsMediaControlsService : IDisposable
             () =>
             {
                 var updater = controls.DisplayUpdater;
-                updater.AppMediaId = "Mimi";
+                updater.AppMediaId = WindowsAppIdentity.AppUserModelId;
                 updater.Type = MediaPlaybackType.Music;
 
                 var music = updater.MusicProperties;

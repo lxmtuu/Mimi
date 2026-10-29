@@ -144,6 +144,14 @@ thấy thanh tiến trình trên thẻ vì vậy **chưa đủ** để kết lu�
 timeline. Trước khi quyết định sửa code, hãy chạy chẩn đoán GSMTC chỉ-đọc ở
 mục ngay sau A12 để kiểm tra dữ liệu Windows thực sự nhận được.
 
+Nhãn nguồn ở đầu thẻ là app identity, không phải metadata của bài. Với bản
+sửa identity, hãy thoát hẳn Mimi cũ, chạy bản mới, bật **Register Mimi with
+Windows for this account** trong Settings (tắt rồi bật lại nếu tùy chọn đã
+bật từ bản trước), khởi động lại Mimi rồi mới ghi nhãn thực tế. Kỳ vọng ở
+tầng GSMTC là `SourceAppUserModelId = Mimi.App`; nhãn mong muốn trên thẻ là
+`Mimi`. Nếu vẫn là `Unknown app`, giữ nguyên `Minor/Observation` và không
+đánh trượt A1 chỉ vì nhãn nguồn.
+
 - [ ] **A1 Metadata:** title đúng bài hiện tại; artist/album đúng ở những vị
   trí Windows có hiển thị.
 - [ ] **A2 Ảnh bìa:** đúng bài, không còn ảnh của bài trước sau khi chuyển
@@ -204,6 +212,8 @@ Diễn giải tối thiểu:
 | Start/End/Position/MinSeek/MaxSeek đều 0 và `LastUpdatedTime` là năm 1601 | Windows chưa nhận timeline; điều tra `UpdateTimelineProperties`, duration và SMTC exception đầu tiên trong log |
 | `LastUpdatedTime` tăng nhưng `Position` đứng yên trong lúc app vẫn tự tăng vị trí | Điều tra nguồn `CurrentTime` dùng cho SMTC |
 | `Position` tăng nhưng `EndTime`/`MaxSeekTime` bằng 0 | Điều tra nguồn duration; không kết luận chỉ từ giao diện thẻ |
+| `SourceAppUserModelId = Mimi.App` | Tiến trình unpackaged đã nhận explicit app identity; vẫn phải nhìn nhãn thực tế trên thẻ mới được kết luận `Unknown app` đã hết |
+| `SourceAppUserModelId` vẫn là `Mimi.exe` hoặc đường dẫn | Kiểm tra đã thoát hẳn tiến trình cũ và đang chạy đúng bản có bản sửa identity; không dùng riêng dữ kiện này để kết luận timeline lỗi |
 | `IsPlaybackPositionEnabled = True` | Windows ghi nhận phiên hỗ trợ đổi vị trí, nhưng **không** biến A8 kéo-trên-thẻ thành `PASS` nếu thẻ không cho kéo |
 | `IsFastForwardEnabled`/`IsRewindEnabled = True` | Chỉ chứng minh khả năng đã được quảng bá; A9 ±10 giây vẫn cần một thao tác vận hành thật từ bề mặt/thiết bị hỗ trợ |
 

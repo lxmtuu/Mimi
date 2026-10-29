@@ -150,6 +150,16 @@ dài hạn hay latency âm học đầu-cuối.
   của bản unpackaged đang chạy từ thư mục build; nó không thay đổi kết
   luận metadata/track của A1/A2 và không phải nguyên nhân đã chứng minh
   cho việc thẻ không vẽ timeline.
+- Bản sửa identity ứng viên sau checkpoint đó đặt explicit
+  AppUserModelID `Mimi.App` cho tiến trình unpackaged ngay từ startup,
+  đồng bộ SMTC `AppMediaId` với ID này và—khi người dùng bật **Register
+  Mimi with Windows for this account**—tạo/cập nhật shortcut Start theo
+  tài khoản mang cùng ID để shell có tên/icon mà phân giải. Khi kiểm tra
+  lại phải thoát hẳn bản cũ, build/chạy bản mới, bật đăng ký Windows (tắt
+  rồi bật lại nếu trước đó đã bật), khởi động lại Mimi, rồi ghi nhãn trên
+  thẻ cùng `SourceAppUserModelId` từ GSMTC probe. Chưa có kết quả Windows
+  thật cho bản sửa này, nên `Unknown app` vẫn là `Minor/Observation` chưa
+  đóng.
 - P4-A: `PARTIAL` (A1–A6 `PASS`; xuất bản/tiến triển timeline A7 đã đạt
   ở tầng GSMTC trên cả Magenta và Cyan, còn progress/thời gian trên thẻ
   `BLOCKED/N/A`; A8 `BLOCKED` ở bề mặt Quick Settings hiện tại; A9 chưa

@@ -64,11 +64,13 @@ A Windows desktop music-player foundation built with C# / WPF / .NET 8 and NAudi
 - Optional watched folders: new or changed songs in selected folders are
   scanned after a short debounce, while externally deleted files remain in
   the library and are marked missing instead of being silently removed
-- Optional per-user **Open with Mimi** registration for MP3, WAV, AIFF/AIF,
-  WMA, M4A, AAC, and FLAC. Files opened from Explorer are added to the
-  library and played; if Mimi is already running, the request is forwarded
-  to that window instead of starting a second player. Registration does not
-  change the user's Windows default music app
+- Optional per-user Windows registration for **Open with Mimi** (MP3, WAV,
+  AIFF/AIF, WMA, M4A, AAC, and FLAC) plus a Start menu shortcut carrying
+  Mimi's `Mimi.App` shell identity for Windows media controls. Files opened
+  from Explorer are added to the library and played; if Mimi is already
+  running, the request is forwarded to that window instead of starting a
+  second player. Registration does not change the user's Windows default
+  music app
 - Library tracks, favorites, playback errors, and play history are restored
   from the SQLite catalog at `%LocalAppData%\Mimi\library.db` (schema v1,
   WAL + transactions); version 3 `settings.json` atomically stores volume,
@@ -102,9 +104,11 @@ A Windows desktop music-player foundation built with C# / WPF / .NET 8 and NAudi
   A read-only GSMTC probe then verified that the Magenta and clean-restart
   Cyan timelines and seek bounds reach Windows and advance while playing.
   A full-card Quick Settings screenshot shows only Previous/Play/Next—no
-  visible progress/time, FastForward/Rewind, or Shuffle/Repeat—so A7's
-  visual surface and A8 remain blocked on that card, A9 is source-checked
-  only, and A10–A12
+  visible progress/time, FastForward/Rewind, or Shuffle/Repeat—and labels
+  the source `Unknown app`. An explicit `Mimi.App` AppUserModelID plus an
+  opt-in Start menu identity shortcut now address that label in code,
+  pending a real-Windows retest. A7's visual surface and A8 remain blocked
+  on that card, A9 is source-checked only, and A10–A12
   plus the taskbar/media-key/device-loss and longer
   WASAPI↔WaveOut stability gates in `ROADMAP.md` remain open. Their
   repeatable manual procedures, result template, loopback CSV analyzer,

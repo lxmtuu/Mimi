@@ -2,6 +2,7 @@ using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using Microsoft.Win32;
+using Serilog;
 
 namespace Mimi.Services;
 
@@ -9,7 +10,9 @@ namespace Mimi.Services;
 /// Per-user Windows "Open with" registration. Everything is written under
 /// HKEY_CURRENT_USER, so no elevation is required. Mimi registers its ProgID
 /// and capabilities but deliberately never writes the protected UserChoice
-/// values that choose the user's default application.
+/// values that choose the user's default application. The same opt-in
+/// registration also maintains a per-user Start menu identity shortcut so
+/// the Windows shell can resolve Mimi's AppUserModelID to its name and icon.
 /// </summary>
 public sealed class WindowsFileAssociationService : IFileAssociationService
 {
@@ -17,6 +20,9 @@ public sealed class WindowsFileAssociationService : IFileAssociationService
     private const string ProgId = "Mimi.AudioFile";
     private const string CapabilitiesPath = @"Software\Mimi\Capabilities";
     private const string RegisteredApplicationsPath = @"Software\RegisteredApplications";
+    private const string AppUserModelIdValueName = "AppUserModelId";
+    private const string StartMenuShortcutTargetValueName =
+        "StartMenuShortcutTarget";
     private const uint AssociationChanged = 0x08000000;
     private const uint IdListFlag = 0x0000;
 
@@ -109,12 +115,48 @@ public sealed class WindowsFileAssociationService : IFileAssociationService
                 Path.GetDirectoryName(ExecutablePath) ?? string.Empty);
         }
 
-        WriteCapabilities();
+        var ownsStartMenuShortcut = ValueExists(
+            CapabilitiesPath,
+            StartMenuShortcutTargetValueName);
+        try
+        {
+            var shortcutUpdate =
+                WindowsAppIdentity.EnsureStartMenuShortcut(ExecutablePath);
+            ownsStartMenuShortcut = ownsStartMenuShortcut ||
+                shortcutUpdate ==
+                WindowsAppIdentity.StartMenuShortcutUpdate.Created;
+        }
+        catch (Exception ex) when (
+            ex is ArgumentException or
+            COMException or
+            DllNotFoundException or
+            EntryPointNotFoundException or
+            InvalidCastException or
+            InvalidComObjectException or
+            IOException or
+            NotSupportedException or
+            UnauthorizedAccessException or
+            InvalidOperationException or
+            System.Security.SecurityException)
+        {
+            // The Explorer registration above is independently useful. A
+            // shortcut failure is therefore diagnostic-only here; Windows
+            // may keep showing a generic source label until re-registration.
+            Log.Warning(
+                ex,
+                "Could not create or update Mimi's Start menu identity shortcut");
+        }
+
+        WriteCapabilities(ownsStartMenuShortcut);
         NotifyAssociationsChanged();
     }
 
     public void Unregister()
     {
+        var ownsStartMenuShortcut = ValueExists(
+            CapabilitiesPath,
+            StartMenuShortcutTargetValueName);
+
         Registry.CurrentUser.DeleteSubKeyTree(
             $@"Software\Classes\{ProgId}",
             throwOnMissingSubKey: false);
@@ -149,6 +191,30 @@ public sealed class WindowsFileAssociationService : IFileAssociationService
             DeleteValue(
                 $@"Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\{extension}\OpenWithProgids",
                 ProgId);
+        }
+
+        if (ownsStartMenuShortcut)
+        {
+            try
+            {
+                _ = WindowsAppIdentity.RemoveStartMenuShortcut(
+                    ExecutablePath);
+            }
+            catch (Exception ex) when (
+                ex is ArgumentException or
+                COMException or
+                InvalidCastException or
+                InvalidComObjectException or
+                IOException or
+                NotSupportedException or
+                UnauthorizedAccessException or
+                InvalidOperationException or
+                System.Security.SecurityException)
+            {
+                Log.Warning(
+                    ex,
+                    "Could not remove Mimi's Start menu identity shortcut");
+            }
         }
 
         NotifyAssociationsChanged();
@@ -210,7 +276,7 @@ public sealed class WindowsFileAssociationService : IFileAssociationService
             RegistryValueKind.None);
     }
 
-    private void WriteCapabilities()
+    private void WriteCapabilities(bool ownsStartMenuShortcut)
     {
         using var capabilities = CreateSubKey(
             Registry.CurrentUser,
@@ -220,6 +286,21 @@ public sealed class WindowsFileAssociationService : IFileAssociationService
             "ApplicationDescription",
             "Mimi is a desktop music player with a local library, playlists, and a reactive Stage visualizer.");
         capabilities.SetValue("ApplicationIcon", IconValue);
+        capabilities.SetValue(
+            AppUserModelIdValueName,
+            WindowsAppIdentity.AppUserModelId);
+        if (ownsStartMenuShortcut)
+        {
+            capabilities.SetValue(
+                StartMenuShortcutTargetValueName,
+                ExecutablePath);
+        }
+        else
+        {
+            capabilities.DeleteValue(
+                StartMenuShortcutTargetValueName,
+                throwOnMissingValue: false);
+        }
 
         using (var fileAssociations = CreateSubKey(
                    capabilities,

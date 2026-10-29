@@ -45,7 +45,7 @@ public sealed partial class MainWindowViewModel
         if (fileAssociationService is null)
         {
             dialogService.ShowWarning(
-                "Explorer integration is unavailable in this build.",
+                "Windows integration is unavailable in this build.",
                 "Settings");
             RefreshOpenWithMimiRegistration();
             return;
@@ -63,12 +63,12 @@ public sealed partial class MainWindowViewModel
             Log.Warning(
                 ex,
                 value
-                    ? "Could not register Mimi with Windows Explorer"
-                    : "Could not remove Mimi's Windows Explorer registration");
+                    ? "Could not register Mimi with Windows"
+                    : "Could not remove Mimi's Windows registration");
             dialogService.ShowWarning(
                 value
-                    ? $"Couldn't add Mimi to Windows' Open with menu.\n\n{ex.Message}"
-                    : $"Couldn't remove Mimi from Windows' Open with menu.\n\n{ex.Message}",
+                    ? $"Couldn't register Mimi with Windows.\n\n{ex.Message}"
+                    : $"Couldn't remove Mimi's Windows registration.\n\n{ex.Message}",
                 "Settings");
         }
         finally

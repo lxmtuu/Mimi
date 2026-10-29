@@ -89,6 +89,8 @@ thanh tiến trình/thời gian và thao tác trực tiếp trên Quick Settings
 | `TimelinePublished` / `StartedNearEnd` |  |
 | `RawPositionDeltaSeconds` / `LastUpdatedDeltaSeconds` |  |
 | `IsPlaybackPositionEnabled` / FastForward / Rewind |  |
+| `SourceAppUserModelId` từ GSMTC Summary |  |
+| Đăng ký Windows + shortcut Start identity đã bật và app đã khởi động lại chưa |  |
 | Quick Settings có hiện progress/thời gian không |  |
 | Các nút nhìn thấy trên thẻ; trạng thái Play/Pause lúc chụp |  |
 | Nhãn nguồn app trên thẻ (ví dụ `Mimi`, `Mimi.exe`, `Unknown app`) |  |

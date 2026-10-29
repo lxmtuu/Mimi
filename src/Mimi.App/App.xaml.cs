@@ -25,6 +25,7 @@ public partial class App : Application
         base.OnStartup(e);
 
         ConfigureLogging();
+        WindowsAppIdentity.TrySetProcessAppUserModelId();
         RegisterGlobalExceptionHandlers();
         Log.Information(
             "Mimi {Version} starting",

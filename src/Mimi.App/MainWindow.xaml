@@ -832,9 +832,9 @@
                                 <TextBlock Text="WINDOWS INTEGRATION" Foreground="{StaticResource AccentBrush}"
                                            FontSize="10" FontWeight="Bold" Margin="0,4,0,0"/>
                                 <CheckBox IsChecked="{Binding IsOpenWithMimiRegistered, Mode=TwoWay}"
-                                          Content="Show Mimi in Windows' Open with menu"
-                                          AutomationProperties.Name="Show Mimi in the Windows Open with menu"/>
-                                <TextBlock Text="Registers this Mimi.exe only for your Windows account. It never changes your current default music app; you choose defaults in Windows."
+                                          Content="Register Mimi with Windows for this account"
+                                          AutomationProperties.Name="Register Mimi with Windows for this account"/>
+                                <TextBlock Text="Adds Mimi to Explorer's Open with menu and creates or updates a Start menu shortcut carrying Mimi's app identity, so Windows media controls can show Mimi's name and icon. It never changes your current default music app; you choose defaults in Windows."
                                            Foreground="#9FB2C8" FontSize="11" TextWrapping="Wrap" Margin="24,0,0,4"/>
                                 <TextBlock Text="{Binding OpenWithMimiStatusLabel}"
                                            Foreground="#9FB2C8" FontSize="11" TextWrapping="Wrap"
