@@ -113,9 +113,12 @@ A Windows desktop music-player foundation built with C# / WPF / .NET 8 and NAudi
   visible source name `Mimi`, the correct Cyan title, artist, and
   artwork, and Previous/Pause/Next while playing; it still showed no
   seek bar, elapsed/duration time, or separate FastForward/Rewind
-  buttons. That still image does not itself operate Previous/Next, so
-  the earlier direct A4–A6 session remains the operational evidence.
-  The real-Windows run at `7be7675` passed
+  buttons. A follow-up real-Windows operation at the same code
+  checkpoint then used the card's Next control to advance and its
+  Previous control to return successfully, refreshing the earlier
+  direct A5/A6 evidence; the earlier direct session remains the
+  operational evidence for A4 Play/Pause. The real-Windows run at
+  `7be7675` passed
   the Release build but exposed a flaky parallel scan-progress ordering
   test (82/83). After the counter/report pair was serialized and a
   32-file regression test was added, the clean real-Windows retest at

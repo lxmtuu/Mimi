@@ -173,10 +173,14 @@ dài hạn hay latency âm học đầu-cuối.
   Ảnh này khép lại phần nhãn `Unknown app` ở tiêu chí trực quan và củng
   cố phân loại progress/seek trên thẻ là `BLOCKED/N/A` cho shell/build
   hiện tại; timeline GSMTC đã xác minh là bằng chứng tách biệt nên A7
-  tổng thể vẫn `PARTIAL`. Riêng ảnh tĩnh không thao tác Previous/Next
-  và không nêu riêng biểu tượng nguồn hay taskbar grouping/thumbnail,
-  nên nó không thay thế bằng chứng thao tác trực tiếp A4–A6 trước đó
-  và không biến P4-B thành `PASS`.
+  tổng thể vẫn `PARTIAL`. Ảnh tĩnh ban đầu không nêu riêng biểu tượng
+  nguồn hay taskbar grouping/thumbnail và tự nó không biến P4-B thành
+  `PASS`. Lượt thao tác thực tế tiếp nối trên cùng checkpoint code
+  `9a925f3` sau đó đã nhấn Next trên thẻ để chuyển sang bài tiếp theo
+  và Previous để quay lại bài trước, cả hai đều `PASS`; kết quả này
+  làm mới trực tiếp bằng chứng A5/A6 trên checkpoint hiện tại. Lượt
+  tiếp nối không báo cáo riêng một thao tác Play/Pause mới, nên A4 vẫn
+  dựa trên phiên thao tác trực tiếp đã ghi trước đó.
 - Lượt kiểm tra lại tại `7be7675` trên Windows thật ghi Git đồng bộ và
   Release build đạt 0 warning/0 error, nhưng unit test chỉ đạt 82/83.
   Test `ScanFolderAsync_FindsSupportedFilesAndReportsProgress` bộc lộ
@@ -199,7 +203,9 @@ dài hạn hay latency âm học đầu-cuối.
   vậy đã đạt retest Windows thật ở checkpoint targeted đầu tiên + full
   suite + build; bằng chứng lặp dài vẫn được giữ làm mục theo dõi còn
   lại của phát hiện `Minor` này.
-- P4-A: `PARTIAL` (A1–A6 `PASS`; xuất bản/tiến triển timeline A7 đã đạt
+- P4-A: `PARTIAL` (A1–A6 `PASS`, trong đó A5/A6 đã được làm mới tại
+  `9a925f3` bằng thao tác Next/Previous thực tế trên thẻ; xuất bản/tiến
+  triển timeline A7 đã đạt
   ở tầng GSMTC trên cả Magenta và Cyan, còn progress/thời gian trên thẻ
   `BLOCKED/N/A`; A8 `BLOCKED` ở bề mặt Quick Settings hiện tại; A9 chưa
   chạy vận hành; A10–A12 `NOT RUN`; đăng ký Windows/AppUserModelID/GSMTC
