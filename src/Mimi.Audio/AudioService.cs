@@ -232,14 +232,19 @@ public sealed class AudioService : IAudioPlayer
             else
             {
                 endedNaturally = reader is not null &&
-                    reader.Length > 0 &&
-                    reader.Position >= reader.Length;
+                    reader.Length > 0;
             }
         }
 
         PlaybackChanged?.Invoke(this, EventArgs.Empty);
         if (endedNaturally)
+        {
+            Log.Information(
+                "Audio playback reached end at {Position}/{Duration} seconds",
+                CurrentTime.TotalSeconds,
+                Duration.TotalSeconds);
             PlaybackEnded?.Invoke(this, EventArgs.Empty);
+        }
 
         if (scheduleRecovery)
         {
