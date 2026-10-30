@@ -97,6 +97,7 @@ public sealed class LibraryService : ILibraryService
 
         var results = new Track?[candidates.Count];
         var processed = 0;
+        var progressGate = new object();
         var options = new ParallelOptions
         {
             CancellationToken = cancellationToken,
@@ -109,12 +110,22 @@ public sealed class LibraryService : ILibraryService
             (index, _) =>
             {
                 results[index] = CreateTrack(candidates[index], knownTracks);
-                var completed = Interlocked.Increment(ref processed);
-                progress?.Report(new LibraryScanProgress(
-                    candidates.Count,
-                    completed,
-                    skippedDirectories,
-                    candidates[index]));
+
+                // Increment and report as one serialized step. Interlocked
+                // alone assigns each worker a unique count, but a worker
+                // with a later count could call Report before an earlier
+                // count is reported, making progress appear to move
+                // backwards and leaving a stale value last.
+                lock (progressGate)
+                {
+                    var completed = ++processed;
+                    progress?.Report(new LibraryScanProgress(
+                        candidates.Count,
+                        completed,
+                        skippedDirectories,
+                        candidates[index]));
+                }
+
                 return ValueTask.CompletedTask;
             });
 

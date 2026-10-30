@@ -97,9 +97,30 @@ public sealed class LibraryServiceTests : IDisposable
             result.Tracks.Select(track => track.FilePath)
                 .Order(StringComparer.OrdinalIgnoreCase));
         var reports = progress.Reports;
-        Assert.NotEmpty(reports);
-        Assert.Equal(2, reports[^1].DiscoveredFiles);
-        Assert.Equal(2, reports[^1].ProcessedFiles);
+        Assert.Equal(2, reports.Count);
+        Assert.Equal([1, 2], reports.Select(report => report.ProcessedFiles));
+        Assert.All(
+            reports,
+            report => Assert.Equal(2, report.DiscoveredFiles));
+    }
+
+    [Fact]
+    public async Task ScanFilesAsync_ReportsProcessedFilesInStrictlyIncreasingOrder()
+    {
+        var songs = Enumerable.Range(1, 32)
+            .Select(number => Touch($"song-{number:00}.mp3"))
+            .ToArray();
+        var progress = new RecordingProgress();
+
+        var tracks = await service.ScanFilesAsync(songs, progress: progress);
+
+        Assert.Equal(songs.Length, tracks.Count);
+        Assert.Equal(
+            Enumerable.Range(1, songs.Length),
+            progress.Reports.Select(report => report.ProcessedFiles));
+        Assert.All(
+            progress.Reports,
+            report => Assert.Equal(songs.Length, report.DiscoveredFiles));
     }
 
     [Fact]

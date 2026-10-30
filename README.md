@@ -110,7 +110,11 @@ A Windows desktop music-player foundation built with C# / WPF / .NET 8 and NAudi
   entries, all eight audio extensions, the Start menu shortcut and its
   icon, the `Mimi.App` AppUserModelID, and GSMTC app recognition; the
   visible card source label was not separately reported, so that visual
-  observation remains open. A7's visual surface and A8 remain blocked
+  observation remains open. A later real-Windows run at `7be7675` passed
+  the Release build but exposed a flaky parallel scan-progress ordering
+  test (82/83); the counter/report pair is now serialized and covered by
+  an added regression test, pending repeated real-Windows retest. A7's
+  visual surface and A8 remain blocked
   on that card, A9 is source-checked only, and A10–A12
   plus the taskbar/media-key/device-loss and longer
   WASAPI↔WaveOut stability gates in `ROADMAP.md` remain open. Their

@@ -164,6 +164,19 @@ dài hạn hay latency âm học đầu-cuối.
   lượt kiểm tra, nên `Unknown app` chưa được tự đóng ở tiêu chí trực
   quan; `Minor/Observation` được thu hẹp còn việc xác nhận nhãn trên thẻ
   và sanity của taskbar grouping/thumbnail sau khi identity thay đổi.
+- Lượt kiểm tra lại tại `7be7675` trên Windows thật ghi Git đồng bộ và
+  Release build đạt 0 warning/0 error, nhưng unit test chỉ đạt 82/83.
+  Test `ScanFolderAsync_FindsSupportedFilesAndReportsProgress` bộc lộ
+  race trong báo cáo tiến trình: `Interlocked.Increment` cấp mỗi worker
+  một số duy nhất nhưng không giữ cặp tăng bộ đếm + `Report` nguyên tử,
+  nên `ProcessedFiles = 2` có thể tới trước `ProcessedFiles = 1`. Bản
+  sửa tiếp theo serialize đúng cặp thao tác này bằng một gate trong
+  `LibraryService`, siết test cũ thành dãy `[1, 2]` và thêm regression
+  test 32 file yêu cầu dãy xử lý `1..32` (suite tăng thêm một test).
+  Phân loại hiện tại là lỗi `Minor` ở hợp đồng thứ tự tiến trình quét
+  và độ ổn định của test, không phải bằng chứng mất dữ liệu thư viện;
+  vẫn cần chạy lại test riêng nhiều lần, toàn bộ suite và Release build
+  trên Windows thật trước khi đóng phát hiện này.
 - P4-A: `PARTIAL` (A1–A6 `PASS`; xuất bản/tiến triển timeline A7 đã đạt
   ở tầng GSMTC trên cả Magenta và Cyan, còn progress/thời gian trên thẻ
   `BLOCKED/N/A`; A8 `BLOCKED` ở bề mặt Quick Settings hiện tại; A9 chưa
