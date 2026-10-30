@@ -105,9 +105,12 @@ A Windows desktop music-player foundation built with C# / WPF / .NET 8 and NAudi
   Cyan timelines and seek bounds reach Windows and advance while playing.
   A full-card Quick Settings screenshot shows only Previous/Play/Next—no
   visible progress/time, FastForward/Rewind, or Shuffle/Repeat—and labels
-  the source `Unknown app`. An explicit `Mimi.App` AppUserModelID plus an
-  opt-in Start menu identity shortcut now address that label in code,
-  pending a real-Windows retest. A7's visual surface and A8 remain blocked
+  the source `Unknown app`. A real-Windows retest after enabling the
+  opt-in registration passed the ProgID and RegisteredApplications
+  entries, all eight audio extensions, the Start menu shortcut and its
+  icon, the `Mimi.App` AppUserModelID, and GSMTC app recognition; the
+  visible card source label was not separately reported, so that visual
+  observation remains open. A7's visual surface and A8 remain blocked
   on that card, A9 is source-checked only, and A10–A12
   plus the taskbar/media-key/device-loss and longer
   WASAPI↔WaveOut stability gates in `ROADMAP.md` remain open. Their
