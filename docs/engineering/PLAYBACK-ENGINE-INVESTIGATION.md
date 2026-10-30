@@ -2,7 +2,9 @@
 
 > Cập nhật: 2026-10-31
 > Branch: `arena/cdda374d-mimi`
-> Code checkpoint khi ghi tài liệu: `2babf5c`
+> Code checkpoint khi ghi bản đầu: `2babf5c`
+> Implementation checkpoint: `2137840`
+> Windows CI: [`41138155858`](https://github.com/lxmtuu/Mimi/actions/runs/41138155858) — success
 
 ## Mục tiêu
 
@@ -10,43 +12,49 @@ Hoàn tất kiểm tra sâu P0 Playback Engine trước khi mở rộng các h�
 
 ## Công việc đã thực hiện
 
-### 1. Playback-end notification gate
+### 1. Playback-end generation, gate và coordinator
 
-Đã có lớp `PlaybackEndNotificationGate` với trạng thái pending gắn theo playback generation:
+Bản triển khai đã commit tại `2137840` đặt generation tại audio engine thay vì chỉ lấy generation hiện tại khi ViewModel nhận event:
 
-- `TryQueue(out eventGeneration)` gộp thông báo trùng trong cùng generation.
-- `Invalidate()` tăng generation khi nguồn phát thay đổi.
-- `IsCurrent(eventGeneration)` cho phép bỏ qua callback đã lỗi thời.
-- `Complete(eventGeneration)` chỉ giải phóng pending của đúng generation; callback cũ không thể xóa pending của generation mới.
+- `AudioService.PlaybackGeneration` tăng khi `Load`, `Stop` hoặc `Seek` bắt đầu một playback run khác.
+- Khi output dừng, `AudioService` chụp generation của reader/output vừa dừng trong lock và gửi qua `PlaybackEndedEventArgs`; vì vậy event của bài cũ không bị gán nhầm cho bài mới nếu `Load` chen vào trước khi subscriber xử lý.
+- `PlaybackEndNotificationGate.TryQueue(generation)` gộp notification trùng của cùng generation; `Complete(generation)` chỉ giải phóng đúng generation đó.
+- `PlaybackEndCoordinator` kiểm tra generation trước phần việc async và kiểm tra lại sau khi await hoàn tất, rồi mới cho phép Repeat/Next.
 
-Các thay đổi liên quan đang nằm trong working tree ở thời điểm ghi tài liệu; xem `src/Mimi.Core/Playback/PlaybackEndNotificationGate.cs`, `src/Mimi.App/ViewModels/MainWindowViewModel.cs` và `tests/Mimi.Tests/PlaybackEndNotificationGateTests.cs`.
+Các file chính là `src/Mimi.Core/Playback/PlaybackEndedEventArgs.cs`, `PlaybackEndNotificationGate.cs`, `PlaybackEndCoordinator.cs`, `src/Mimi.Core/Services/IAudioPlayer.cs`, `src/Mimi.Audio/AudioService.cs` và `src/Mimi.App/ViewModels/MainWindowViewModel.cs`.
 
-### 2. Unit tests cho gate
+### 2. Unit tests cho gate/coordinator
 
-Hiện có 5 test bao phủ:
+Có 5 test cho gate và 4 test cho coordinator, bao phủ:
 
-1. Gộp notification trùng trong cùng generation.
+1. Gộp notification trùng trong cùng generation, kể cả khi queue đồng thời.
 2. Generation mới vẫn queue được khi notification cũ còn pending.
 3. Complete generation cũ không xóa pending của generation mới.
-4. Complete generation hiện tại cho phép queue notification tiếp theo.
-5. Notification sau invalidate không còn current.
+4. Complete generation hiện tại cho phép queue lại.
+5. Callback cũ không tiêu thụ callback mới đang pending.
+6. Generation đổi trong lúc phần async đang chờ thì callback cũ không được advance.
+7. Pending được giải phóng khi phần async ném exception.
 
-### 3. Kiểm tra luồng tích hợp trong ViewModel
+### 3. Luồng tích hợp trong ViewModel
 
-Đã rà soát `MainWindowViewModel`:
+`MainWindowViewModel` hiện xử lý như sau:
 
-- `AudioPlayer_PlaybackEnded` lấy generation trước khi enqueue callback vào Dispatcher.
-- `ProcessPlaybackEndedAsync` kiểm tra generation trước khi gọi `HandlePlaybackEndedAsync`.
-- `finally` gọi `Complete(eventGeneration)`.
-- Dispatcher operation bị abort hoặc enqueue ném exception cũng giải phóng đúng generation.
-- `TryPlayTrack` invalidate notification cũ trước khi load nguồn mới.
+- `AudioPlayer_PlaybackEnded` lấy generation từ `PlaybackEndedEventArgs` và gọi `TryQueue` trước khi enqueue vào Dispatcher.
+- Dispatcher operation bị abort hoặc enqueue ném exception đều gọi `Complete(eventGeneration)`.
+- `ProcessPlaybackEndedAsync` chụp đúng track đã kết thúc trước `await CompleteCurrentPlaybackAsync()`.
+- `PlaybackEndCoordinator` kiểm tra `audioPlayer.PlaybackGeneration` trước và sau await; `finally` trong coordinator giải phóng pending của generation.
+- `AdvanceAfterPlaybackEnded` chỉ Repeat/Next khi `CurrentTrack` vẫn là đúng object đã chụp trước await.
+- Mọi `TryPlayTrack` đều đi qua `AudioService.Load`; `Stop`/`Seek` cũng đổi generation nên thao tác can thiệp trong lúc Dispatcher/async đang chờ sẽ làm callback cũ hết hiệu lực.
 
-**Điểm cần kiểm chứng tiếp:** `HandlePlaybackEndedAsync` gọi `await CompleteCurrentPlaybackAsync()` sau lần kiểm tra generation ban đầu. Generation có thể thay đổi trong lúc await; cần test xác định callback cũ có thể tiếp tục logic Repeat/Next sau khi track đã đổi hay không. Đây là rủi ro cần điều tra, chưa phải lỗi đã tái hiện.
+Test deterministic của coordinator giữ phần async chưa hoàn tất bằng `TaskCompletionSource`, đổi generation ở giữa await, rồi xác nhận hành động advance không chạy. Đây là test logic/coordinator, không phải bằng chứng đã tái hiện race trên WPF thật trước bản sửa.
 
-### 3. Natural-end classification
+### 4. Natural-end classification
 
-`PlaybackStopClassifier` và `PlaybackStopClassifierTests` cũng đang có trong working tree. Classifier phân biệt natural end với output dừng do exception, kiểm tra reader length/position và tolerance theo byte; test bao phủ các biên length/position, tolerance âm và trường hợp có exception. Hạng mục này liên quan việc nhận diện kết thúc bài, nhưng không thay thế test race Dispatcher/async nêu trên.
+`PlaybackStopClassifier` đã được commit cùng 7 test case. Bản committed giữ nguyên ngữ nghĩa đã qua A12: output hiện tại dừng không có exception và reader đã nạp có `Length > 0` thì là natural end. Classifier **không** dùng `Position >= Length` làm hard gate, vì WASAPI/MP3 đã từng báo dừng khi vị trí còn thiếu khoảng 12ms so với duration ước tính; deliberate Stop vẫn được `AudioService` unsubscribe trước, còn output cũ bị loại bằng kiểm tra sender. Position/duration của reader vừa kết thúc được chụp trong lock chỉ để log đúng bài.
+
 ## Kết quả kiểm thử đã chạy
+
+### Working tree Windows khi ghi bản đầu
 
 Lệnh chạy trên Windows:
 
@@ -54,37 +62,33 @@ Lệnh chạy trên Windows:
 dotnet test .\tests\Mimi.Tests\Mimi.Tests.csproj -c Release --no-restore --logger 'console;verbosity=minimal'
 ```
 
-Kết quả tại lần chạy ngày 2026-10-31:
+Kết quả được báo cáo ngày 2026-10-31 là **107 passed / 0 failed / 0 skipped**, exit code `0`. Kết quả này thuộc working tree chưa commit ở thời điểm đó, không phải cây thư mục của `4a926e0` trên GitHub.
 
-- **107 passed**
-- **0 failed**
-- **0 skipped**
-- Thời gian test: khoảng 490 ms
-- Exit code: `0`
+### Bản triển khai đã commit
 
-Đây là kết quả full unit-test suite hiện tại; chưa chứng minh race condition tích hợp Dispatcher/async đã được tái hiện hoặc loại trừ.
+Commit `2137840` bổ sung 16 test case mới: 5 cho gate, 4 cho coordinator và 7 cho classifier. Windows CI [`41138155858`](https://github.com/lxmtuu/Mimi/actions/runs/41138155858) đã hoàn tất `success`, gồm restore, Release build và unit tests. CI xác nhận code/test đã commit; nó không thay thế một lượt chạy runtime trên Windows thật để xác nhận lại A12 sau thay đổi event/generation.
 
 ## Trạng thái điều tra
 
 | Hạng mục | Trạng thái | Ghi chú |
 |---|---|---|
-| Gate generation-aware | Implemented trong working tree | Cần giữ nguyên các thay đổi hiện có |
-| Unit tests cho gate | PASS | 5 test; full suite 107/107 PASS |
-| Callback cũ còn chờ Dispatcher | Chưa kiểm thử tích hợp | Cần deterministic dispatcher/test seam |
-| Generation đổi trong lúc `await` | Chưa kiểm thử | Ưu tiên test tiếp theo |
-| Race condition thực tế | Chưa tái hiện | Không ghi nhận là bug đã xác nhận |
-| Release build sau checkpoint hiện tại | Chưa chạy lại trong lượt điều tra này | Chạy sau khi hoàn thiện test/fix nếu có |
+| Generation từ audio engine | Implemented tại `2137840` | Event mang generation được chụp trong `AudioService` |
+| Gate/coordinator | Implemented tại `2137840` | Pending theo generation; kiểm tra lại sau await |
+| Unit tests mới | PASS trên Windows CI | 16 case mới trong run `41138155858` |
+| Callback cũ còn chờ Dispatcher | PASS ở coordinator logic | Test thứ tự A cũ/B mới; chưa phải WPF integration test toàn phần |
+| Generation đổi trong lúc `await` | PASS ở coordinator logic | Test giữ async bằng `TaskCompletionSource` |
+| Race condition thực tế | Đã phòng vệ, chưa tái hiện runtime trước bản sửa | Không ghi nhận là bug runtime đã xác nhận |
+| Release build | PASS trên Windows CI | Cùng run `41138155858` |
+| Retest runtime A12 sau `2137840` | Chưa chạy | Cần một lượt Windows thật cho natural-end auto-advance |
 
 ## Kế hoạch tiếp theo
 
-1. Tạo test có điều khiển thứ tự callback: queue A → invalidate/chuyển B → queue B → chạy callback A cũ → chạy callback B.
-2. Tạo test giữ `CompleteCurrentPlaybackAsync` ở trạng thái chưa hoàn tất, đổi generation trong lúc await, rồi xác nhận callback A không được thực hiện Next/Repeat trên B.
-3. Nếu test cần seam, tách phần điều phối end-of-track thành thành phần nhỏ có thể kiểm thử mà không cần khởi tạo toàn bộ WPF `MainWindowViewModel`.
-4. Chỉ sửa production code khi có test thất bại hoặc có lỗi luồng được chứng minh; chạy focused tests, full suite và Release build sau sửa.
-5. Không đánh dấu P0/Phase 4 hoàn tất chỉ dựa trên unit tests hiện có.
+1. Trên Windows thật tại checkpoint mới, phát fixture Cyan tới hết bài và xác nhận A12 vẫn tự chuyển sang Magenta.
+2. Chạy tiếp lượt vận hành Shuffle/Repeat của Phase 4 closeout; không dùng riêng unit tests này để đóng P4-A hoặc Phase 4.
+3. Nếu sau này tái hiện được race ở tầng WPF/Dispatcher ngoài coordinator seam, ghi log generation/track trước khi sửa thêm.
 
 ## Phạm vi và an toàn thay đổi
 
 - Không thay đổi cấu hình audio endpoint, driver hoặc thiết bị vật lý.
-- Không commit/push các thay đổi code đang có trong working tree cùng với tài liệu này.
-- Tài liệu này chỉ ghi nhận kết quả đã quan sát và các bước cần làm; không thay thế `ROADMAP.md` hoặc Phase 4 closeout.
+- Checkout Windows từng được ghi có các thay đổi working tree cùng chủ đề và có thể trùng tên file với bản đã commit tại `2137840`; trước khi pull, hãy kiểm tra `git status`, sao lưu/stash và đối chiếu, không reset hoặc ghi đè mù.
+- Tài liệu này chỉ ghi nhận điều tra Playback Engine; không thay thế `ROADMAP.md` hoặc Phase 4 closeout.
