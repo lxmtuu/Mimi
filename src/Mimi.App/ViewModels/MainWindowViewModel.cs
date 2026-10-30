@@ -55,6 +55,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     private readonly ILibraryFolderWatcher? libraryFolderWatcher;
     private readonly IFileAssociationService? fileAssociationService;
     private readonly Dispatcher uiDispatcher = Dispatcher.CurrentDispatcher;
+    private readonly PlaybackEndCoordinator playbackEndCoordinator = new();
     private readonly DispatcherTimer positionTimer = new()
     {
         Interval = TimeSpan.FromMilliseconds(150)
@@ -2385,13 +2386,49 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         }
     }
 
-    private async Task HandlePlaybackEndedAsync()
+    private async Task ProcessPlaybackEndedAsync(long eventGeneration)
     {
-        await CompleteCurrentPlaybackAsync();
-        if (disposed) return;
+        TrackItemViewModel? endedTrack = null;
 
-        if (RepeatMode == RepeatMode.One && CurrentTrack is not null &&
-            TryPlayTrack(CurrentTrack, showError: false))
+        try
+        {
+            await playbackEndCoordinator.ProcessAsync(
+                eventGeneration,
+                () => audioPlayer.PlaybackGeneration,
+                async () =>
+                {
+                    if (disposed) return;
+
+                    // Capture the track before the first await. The
+                    // coordinator checks the audio generation again after
+                    // history persistence, and AdvanceAfterPlaybackEnded
+                    // also verifies that this exact track is still current.
+                    endedTrack = CurrentTrack;
+                    await CompleteCurrentPlaybackAsync();
+                },
+                () => AdvanceAfterPlaybackEnded(endedTrack));
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(
+                ex,
+                "Could not process the end of playback generation {PlaybackGeneration}",
+                eventGeneration);
+            RefreshPlaybackState();
+        }
+    }
+
+    private void AdvanceAfterPlaybackEnded(TrackItemViewModel? endedTrack)
+    {
+        if (disposed || endedTrack is null ||
+            !ReferenceEquals(CurrentTrack, endedTrack))
+        {
+            RefreshPlaybackState();
+            return;
+        }
+
+        if (RepeatMode == RepeatMode.One &&
+            TryPlayTrack(endedTrack, showError: false))
         {
             return;
         }
@@ -2436,8 +2473,32 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     private void AudioPlayer_PlaybackChanged(object? sender, EventArgs e) =>
         uiDispatcher.BeginInvoke(new Action(RefreshPlaybackState));
 
-    private void AudioPlayer_PlaybackEnded(object? sender, EventArgs e) =>
-        uiDispatcher.BeginInvoke(new Action(() => _ = HandlePlaybackEndedAsync()));
+    private void AudioPlayer_PlaybackEnded(
+        object? sender,
+        PlaybackEndedEventArgs e)
+    {
+        var eventGeneration = e.PlaybackGeneration;
+        if (disposed || !playbackEndCoordinator.TryQueue(eventGeneration))
+            return;
+
+        try
+        {
+            var operation = uiDispatcher.BeginInvoke(
+                new Action(() => _ = ProcessPlaybackEndedAsync(eventGeneration)));
+            operation.Aborted += (_, _) =>
+                playbackEndCoordinator.Complete(eventGeneration);
+            if (operation.Status == DispatcherOperationStatus.Aborted)
+                playbackEndCoordinator.Complete(eventGeneration);
+        }
+        catch (Exception ex)
+        {
+            playbackEndCoordinator.Complete(eventGeneration);
+            Log.Warning(
+                ex,
+                "Could not queue playback-end handling for generation {PlaybackGeneration}",
+                eventGeneration);
+        }
+    }
 
     private void PositionTimer_Tick(object? sender, EventArgs e)
     {

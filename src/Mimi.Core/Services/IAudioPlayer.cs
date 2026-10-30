@@ -1,3 +1,5 @@
+using Mimi.Core.Playback;
+
 namespace Mimi.Services;
 
 /// <summary>
@@ -8,8 +10,16 @@ namespace Mimi.Services;
 public interface IAudioPlayer : IDisposable
 {
     event EventHandler? PlaybackChanged;
-    event EventHandler? PlaybackEnded;
+    event EventHandler<PlaybackEndedEventArgs>? PlaybackEnded;
     event EventHandler<AudioOutputStatusChangedEventArgs>? OutputStatusChanged;
+
+    /// <summary>
+    /// Monotonic identifier for the current playback run. Implementations
+    /// change it when a new file is loaded and when the loaded run is
+    /// explicitly stopped or seeked, allowing delayed natural-end events to
+    /// be matched to the run that actually ended.
+    /// </summary>
+    long PlaybackGeneration { get; }
 
     bool IsPlaying { get; }
     TimeSpan CurrentTime { get; }

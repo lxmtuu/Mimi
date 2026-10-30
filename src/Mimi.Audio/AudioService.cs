@@ -1,4 +1,5 @@
 using System.Runtime.InteropServices;
+using Mimi.Core.Playback;
 using NAudio;
 using NAudio.CoreAudioApi;
 using NAudio.Wave;
@@ -41,6 +42,7 @@ public sealed class AudioService : IAudioPlayer
     private volatile bool hasAvailableOutput;
     private volatile bool outputBroken;
     private bool wasapiFailureLogged;
+    private long playbackGeneration;
     private int deviceChangeVersion;
     private int pendingForceOutputRebuild;
     private int pendingPlaybackInterruption;
@@ -78,8 +80,17 @@ public sealed class AudioService : IAudioPlayer
     }
 
     public event EventHandler? PlaybackChanged;
-    public event EventHandler? PlaybackEnded;
+    public event EventHandler<PlaybackEndedEventArgs>? PlaybackEnded;
     public event EventHandler<AudioOutputStatusChangedEventArgs>? OutputStatusChanged;
+
+    public long PlaybackGeneration
+    {
+        get
+        {
+            lock (gate)
+                return playbackGeneration;
+        }
+    }
 
     public VisualizerFrame GetVisualizerFrame() =>
         visualizer?.GetFrame() ?? VisualizerFrame.Silence;
@@ -142,6 +153,9 @@ public sealed class AudioService : IAudioPlayer
     private bool IsPlayingLocked =>
         output?.PlaybackState == PlaybackState.Playing;
 
+    private void AdvancePlaybackGenerationLocked() =>
+        playbackGeneration = unchecked(playbackGeneration + 1);
+
     public void Load(string path)
     {
         AudioOutputStatusChangedEventArgs? statusChanged = null;
@@ -149,6 +163,7 @@ public sealed class AudioService : IAudioPlayer
         lock (gate)
         {
             ThrowIfDisposedLocked();
+            AdvancePlaybackGenerationLocked();
             DisposeLoadedTrackLocked();
 
             AudioFileReader? newReader = null;
@@ -209,6 +224,9 @@ public sealed class AudioService : IAudioPlayer
     private void Output_PlaybackStopped(object? sender, StoppedEventArgs e)
     {
         var endedNaturally = false;
+        var endedGeneration = 0L;
+        var endedPosition = TimeSpan.Zero;
+        var endedDuration = TimeSpan.Zero;
         var scheduleRecovery = false;
         var playbackInterrupted = false;
 
@@ -231,8 +249,18 @@ public sealed class AudioService : IAudioPlayer
             }
             else
             {
-                endedNaturally = reader is not null &&
-                    reader.Length > 0;
+                endedNaturally = PlaybackStopClassifier.IsNaturalEnd(
+                    hasException: false,
+                    reader?.Length);
+                if (endedNaturally)
+                {
+                    // Capture the ending run while the reader/output pair
+                    // is still the one that stopped. Another Load may occur
+                    // before subscribers finish handling the event.
+                    endedGeneration = playbackGeneration;
+                    endedPosition = reader!.CurrentTime;
+                    endedDuration = reader.TotalTime;
+                }
             }
         }
 
@@ -241,9 +269,11 @@ public sealed class AudioService : IAudioPlayer
         {
             Log.Information(
                 "Audio playback reached end at {Position}/{Duration} seconds",
-                CurrentTime.TotalSeconds,
-                Duration.TotalSeconds);
-            PlaybackEnded?.Invoke(this, EventArgs.Empty);
+                endedPosition.TotalSeconds,
+                endedDuration.TotalSeconds);
+            PlaybackEnded?.Invoke(
+                this,
+                new PlaybackEndedEventArgs(endedGeneration));
         }
 
         if (scheduleRecovery)
@@ -401,6 +431,8 @@ public sealed class AudioService : IAudioPlayer
 
             if (reader is not null)
                 reader.Position = 0;
+
+            AdvancePlaybackGenerationLocked();
         }
 
         if (scheduleRecovery)
@@ -415,6 +447,7 @@ public sealed class AudioService : IAudioPlayer
         {
             if (reader is null || disposed) return;
 
+            AdvancePlaybackGenerationLocked();
             var maximum = Math.Max(0, reader.TotalTime.TotalSeconds);
             reader.CurrentTime = TimeSpan.FromSeconds(
                 Math.Clamp(position.TotalSeconds, 0, maximum));
