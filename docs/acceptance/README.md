@@ -164,6 +164,19 @@ dài hạn hay latency âm học đầu-cuối.
   lượt kiểm tra, nên `Unknown app` chưa được tự đóng ở tiêu chí trực
   quan; `Minor/Observation` được thu hẹp còn việc xác nhận nhãn trên thẻ
   và sanity của taskbar grouping/thumbnail sau khi identity thay đổi.
+- Ảnh/báo cáo Quick Settings tại `9a925f3` sau đó xác nhận đầu thẻ hiện
+  tên nguồn `Mimi` thay vì `Unknown app`, cùng title
+  `Acceptance One - Cyan Signal`, artist `Mimi Acceptance Lab` và cover
+  Cyan đúng. Hàng điều khiển hiện Previous/Pause/Next, trong đó biểu
+  tượng Pause cho thấy ảnh được chụp khi đang phát; vẫn không thấy seek
+  bar, thời gian elapsed/duration hay nút FastForward/Rewind riêng.
+  Ảnh này khép lại phần nhãn `Unknown app` ở tiêu chí trực quan và củng
+  cố phân loại progress/seek trên thẻ là `BLOCKED/N/A` cho shell/build
+  hiện tại; timeline GSMTC đã xác minh là bằng chứng tách biệt nên A7
+  tổng thể vẫn `PARTIAL`. Riêng ảnh tĩnh không thao tác Previous/Next
+  và không nêu riêng biểu tượng nguồn hay taskbar grouping/thumbnail,
+  nên nó không thay thế bằng chứng thao tác trực tiếp A4–A6 trước đó
+  và không biến P4-B thành `PASS`.
 - Lượt kiểm tra lại tại `7be7675` trên Windows thật ghi Git đồng bộ và
   Release build đạt 0 warning/0 error, nhưng unit test chỉ đạt 82/83.
   Test `ScanFolderAsync_FindsSupportedFilesAndReportsProgress` bộc lộ
@@ -190,8 +203,9 @@ dài hạn hay latency âm học đầu-cuối.
   ở tầng GSMTC trên cả Magenta và Cyan, còn progress/thời gian trên thẻ
   `BLOCKED/N/A`; A8 `BLOCKED` ở bề mặt Quick Settings hiện tại; A9 chưa
   chạy vận hành; A10–A12 `NOT RUN`; đăng ký Windows/AppUserModelID/GSMTC
-  identity đã `PASS`, nhưng nhãn nguồn nhìn thấy trên thẻ chưa được báo
-  cáo riêng).
+  identity đã `PASS` và ảnh tại `9a925f3` đã xác nhận nhãn nguồn nhìn
+  thấy trên thẻ là `Mimi`; ảnh khi đang phát vẫn không hiện
+  progress/thời gian).
 - P4-B: `NOT RUN` cho B1–B6.
 - P4-C: `PARTIAL` (C5/C7 mới có bằng chứng mô phỏng/một phần focus; media
   keys vật lý chưa chạy).

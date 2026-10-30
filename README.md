@@ -108,9 +108,14 @@ A Windows desktop music-player foundation built with C# / WPF / .NET 8 and NAudi
   the source `Unknown app`. A real-Windows retest after enabling the
   opt-in registration passed the ProgID and RegisteredApplications
   entries, all eight audio extensions, the Start menu shortcut and its
-  icon, the `Mimi.App` AppUserModelID, and GSMTC app recognition; the
-  visible card source label was not separately reported, so that visual
-  observation remains open. A later real-Windows run at `7be7675` passed
+  icon, the `Mimi.App` AppUserModelID, and GSMTC app recognition. A
+  later Quick Settings image/report at `9a925f3` then confirmed the
+  visible source name `Mimi`, the correct Cyan title, artist, and
+  artwork, and Previous/Pause/Next while playing; it still showed no
+  seek bar, elapsed/duration time, or separate FastForward/Rewind
+  buttons. That still image does not itself operate Previous/Next, so
+  the earlier direct A4–A6 session remains the operational evidence.
+  The real-Windows run at `7be7675` passed
   the Release build but exposed a flaky parallel scan-progress ordering
   test (82/83). After the counter/report pair was serialized and a
   32-file regression test was added, the clean real-Windows retest at
