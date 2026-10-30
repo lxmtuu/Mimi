@@ -16,6 +16,7 @@ Phase 5 hoặc nghĩ tới phát hành cộng đồng.
 |---|---|
 | [`WINDOWS-ACCEPTANCE-CHECKLIST.md`](WINDOWS-ACCEPTANCE-CHECKLIST.md) | Checklist từng phiên kiểm tra, thao tác, kết quả kỳ vọng và tiêu chí Pass/Fail |
 | [`RESULT-TEMPLATE.md`](RESULT-TEMPLATE.md) | Mẫu báo cáo ngắn để sao chép cho mỗi đợt kiểm tra |
+| [`PHASE-4-CLOSEOUT.md`](PHASE-4-CLOSEOUT.md) | Bảng đối chiếu trạng thái/bằng chứng Phase 4 tại `b0cd13a` và danh sách quyết định còn thiếu trước P4-H |
 | [`../../tools/Analyze-LoopbackCsv.ps1`](../../tools/Analyze-LoopbackCsv.ps1) | Phân tích CSV loopback: phân bố khoảng callback, tín hiệu, chuỗi im lặng và các khoảng lớn nhất |
 | [`../../tools/Inspect-SmtcSession.ps1`](../../tools/Inspect-SmtcSession.ps1) | Chẩn đoán GSMTC chỉ-đọc cho A7/A8/A9: lấy mẫu metadata, trạng thái, cờ điều khiển và timeline Windows nhận được mà không gửi lệnh phát/seek |
 
@@ -80,6 +81,11 @@ dài hạn hay latency âm học đầu-cuối.
   app lỗi chỉ vì bề mặt điều khiển đó vắng mặt.
 
 ## Điểm xuất phát đã được ghi nhận ngày 29/10/2026
+
+> Các bullet dưới đây là hồ sơ theo từng checkpoint; một số trạng thái
+> trong bullet cũ đã được các lượt kiểm tra sau thay thế. Trạng thái hiện
+> hành được đối chiếu tại [`PHASE-4-CLOSEOUT.md`](PHASE-4-CLOSEOUT.md) và
+> các cổng chính thức trong [`ROADMAP.md`](../../ROADMAP.md).
 
 - S0 đã chạy lại trên Windows thật tại `a056377`: restore/Release build đạt
   0 warning/0 error; unit test 83 passed, 0 failed, 0 skipped. App mở được,
@@ -202,22 +208,60 @@ dài hạn hay latency âm học đầu-cuối.
   chưa được xác nhận đầy đủ và hồ sơ không khẳng định 20/20. Bản sửa vì
   vậy đã đạt retest Windows thật ở checkpoint targeted đầu tiên + full
   suite + build; bằng chứng lặp dài vẫn được giữ làm mục theo dõi còn
-  lại của phát hiện `Minor` này.
+  lại của phát hiện `Minor` này tại thời điểm của báo cáo đó.
+- Báo cáo automated tại `57b14a3` ghi `PlaybackQueueTests` +
+  `ShuffleBagTests` đạt 11/11 và toàn bộ `Mimi.Tests` đạt 84/84. Bằng
+  chứng này bao phủ logic shuffle-bag không lặp trong chu kỳ, Previous
+  theo lịch sử phát thực tế, tắt Shuffle khôi phục thứ tự nguồn cho bài
+  sắp phát, Repeat All, Shuffle + Repeat All và tính nhất quán sau các
+  thao tác queue. Báo cáo không thao tác Shuffle/Repeat trên UI thật,
+  không xác nhận test queue tương đương cho Repeat One và không biến
+  A10/A11 đồng bộ flyout thành `PASS`.
+- Retest cục bộ tại `57b14a3` ngày 31/10/2026 ghi restore đạt, Release
+  build 0 warning/0 error, full suite 84/84, `git diff --check` sạch và
+  regression tiến trình quét đạt **20/20 lượt liên tiếp**; khoản bằng
+  chứng lặp dài của race quét thư viện vì vậy đã đóng. Bộ fixture S1
+  thực tế trên máy cũng đã được xác minh metadata/duration/cover và ghi
+  SHA-256 fingerprint cho ba MP3 trong `ROADMAP.md`, dù thư mục không
+  có manifest phát hành độc lập.
+- Lượt fixture thật tại `57b14a3` phát hiện A12 từng `FAIL`: Cyan kết
+  thúc tự nhiên nhưng không tự chuyển bài vì callback dừng ở
+  30.107/30.119 giây không thỏa điều kiện vị trí byte tuyệt đối. Commit
+  `589a1e0` sửa nhận diện natural playback end và thêm log chẩn đoán;
+  retest Release ghi Cyan kết thúc rồi Magenta bắt đầu ở 0.131 giây và
+  tiếp tục phát. A12 vì vậy đã chuyển thành `PASS` sau bản sửa.
+- Các lượt S2/S3 ngày 31/10/2026 ghi nhận đổi default endpoint khiến
+  Mimi rebuild output và giữ Pause/vị trí, sau Play mới tiếp tục; việc
+  tạo trạng thái không còn output vẫn bị chặn bởi Windows/CIM. S3 có ba
+  lượt 5 phút hợp lệ cho mỗi backend và một control-run trên mỗi
+  backend, nhưng phép đo latency âm học qua Microphone Array không
+  nhất quán nên P4-G/D-03 vẫn `PARTIAL`.
+- Tại `b0cd13a`, chủ dự án xác nhận nghiệm thu trực tiếp P4-B taskbar,
+  P4-C media keys/bàn phím và P4-D/F ngắt–kết nối lại thiết bị; roadmap
+  ghi các cổng này `PASS` nhưng chưa có chi tiết từng tiểu mục/endpoint
+  trong hồ sơ. P4-E vẫn `BLOCKED`, P4-G `PARTIAL` và P4-H còn mở.
 - P4-A: `PARTIAL` (A1–A6 `PASS`, trong đó A5/A6 đã được làm mới tại
   `9a925f3` bằng thao tác Next/Previous thực tế trên thẻ; xuất bản/tiến
-  triển timeline A7 đã đạt
-  ở tầng GSMTC trên cả Magenta và Cyan, còn progress/thời gian trên thẻ
-  `BLOCKED/N/A`; A8 `BLOCKED` ở bề mặt Quick Settings hiện tại; A9 chưa
-  chạy vận hành; A10–A12 `NOT RUN`; đăng ký Windows/AppUserModelID/GSMTC
-  identity đã `PASS` và ảnh tại `9a925f3` đã xác nhận nhãn nguồn nhìn
-  thấy trên thẻ là `Mimi`; ảnh khi đang phát vẫn không hiện
-  progress/thời gian).
-- P4-B: `NOT RUN` cho B1–B6.
-- P4-C: `PARTIAL` (C5/C7 mới có bằng chứng mô phỏng/một phần focus; media
-  keys vật lý chưa chạy).
-- P4-D, P4-E, P4-F và P4-H: chưa đóng.
+  triển timeline A7 đã đạt ở tầng GSMTC trên cả Magenta và Cyan, còn
+  progress/thời gian trên thẻ `BLOCKED/N/A`; A8 `BLOCKED/N/A` ở bề mặt
+  Quick Settings hiện tại; A9–A11 `BLOCKED/N/A` vì thẻ đã quan sát
+  không hiện FastForward/Rewind/Shuffle/Repeat; A12 `PASS` sau bản sửa
+  `589a1e0` và retest fixture thật; đăng ký
+  Windows/AppUserModelID/GSMTC identity đã `PASS` và ảnh tại `9a925f3`
+  đã xác nhận nhãn nguồn nhìn thấy trên thẻ là `Mimi`).
+- P4-B: `PASS` theo xác nhận nghiệm thu trực tiếp của chủ dự án tại
+  `b0cd13a`; chi tiết từng tiểu mục B1–B6 chưa được ghi.
+- P4-C: `PASS` theo xác nhận nghiệm thu trực tiếp của chủ dự án tại
+  `b0cd13a`; chi tiết từng tiểu mục chưa được ghi.
+- P4-D: `PASS` và P4-F: `PASS` theo xác nhận nghiệm thu trực tiếp của
+  chủ dự án; endpoint/chi tiết quan sát chưa được ghi.
+- P4-E: `BLOCKED` vì chưa tạo được trạng thái không còn output để chạy
+  kiểm tra app-level.
 - P4-G: `PARTIAL`; D-03 vẫn tạm thời: WASAPI Shared mặc định, WaveOut
   fallback.
+- P4-H: còn mở chờ quyết định waiver/đóng phase và checkpoint tích hợp;
+  bảng tổng hợp hiện hành nằm tại
+  [`PHASE-4-CLOSEOUT.md`](PHASE-4-CLOSEOUT.md).
 
 ## Chẩn đoán nhanh timeline SMTC cho A7
 

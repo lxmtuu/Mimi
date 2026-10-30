@@ -124,16 +124,21 @@ A Windows desktop music-player foundation built with C# / WPF / .NET 8 and NAudi
   32-file regression test was added, the clean real-Windows retest at
   `9a925f3` passed restore and `git diff --check`, an initial targeted
   scan-progress run (2/2), the full suite (84 passed / 0 failed /
-  0 skipped), and the Release build (0 warnings / 0 errors). A full
-  20-run focused campaign was not completed because remote test sessions
-  ended mid-run, so no 20-for-20 stability claim is recorded. A7's
-  visual surface and A8 remain blocked
-  on that card, A9 is source-checked only, and A10–A12
-  plus the taskbar/media-key/device-loss and longer
-  WASAPI↔WaveOut stability gates in `ROADMAP.md` remain open. Their
+  0 skipped), and the Release build (0 warnings / 0 errors); a later
+  local Windows retest recorded the focused scan-progress regression
+  at 20/20 consecutive runs. A natural-end auto-advance failure found
+  at `57b14a3` was fixed in `589a1e0`, after which a real fixture
+  retest advanced Cyan to Magenta, so A12 passes. The observed Quick
+  Settings card still blocks A7's visual criterion and A8, and exposes
+  no FastForward/Rewind or Shuffle/Repeat controls for A9–A11
+  (`BLOCKED/N/A`). The project owner has since directly accepted the
+  taskbar, media-key/keyboard, device-disconnect, and reconnect gates
+  recorded in `ROADMAP.md` (`b0cd13a`), while app-level no-output
+  remains blocked, D-03 remains provisional after longer loopback
+  A/B runs, and the P4-H closeout decision remains open. Their
   repeatable manual procedures, result template, loopback CSV analyzer,
-  and read-only GSMTC timeline probe live in the
-  [Windows Acceptance Kit](docs/acceptance/README.md)
+  read-only GSMTC timeline probe, and current reconciliation matrix
+  live in the [Windows Acceptance Kit](docs/acceptance/README.md)
 
 ## Requirements
 - Windows 10 version 1809 or later / Windows 11, with Windows Terminal or
