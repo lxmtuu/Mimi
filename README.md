@@ -112,8 +112,13 @@ A Windows desktop music-player foundation built with C# / WPF / .NET 8 and NAudi
   visible card source label was not separately reported, so that visual
   observation remains open. A later real-Windows run at `7be7675` passed
   the Release build but exposed a flaky parallel scan-progress ordering
-  test (82/83); the counter/report pair is now serialized and covered by
-  an added regression test, pending repeated real-Windows retest. A7's
+  test (82/83). After the counter/report pair was serialized and a
+  32-file regression test was added, the clean real-Windows retest at
+  `9a925f3` passed restore and `git diff --check`, an initial targeted
+  scan-progress run (2/2), the full suite (84 passed / 0 failed /
+  0 skipped), and the Release build (0 warnings / 0 errors). A full
+  20-run focused campaign was not completed because remote test sessions
+  ended mid-run, so no 20-for-20 stability claim is recorded. A7's
   visual surface and A8 remain blocked
   on that card, A9 is source-checked only, and A10–A12
   plus the taskbar/media-key/device-loss and longer

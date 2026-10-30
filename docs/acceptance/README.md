@@ -173,10 +173,19 @@ dài hạn hay latency âm học đầu-cuối.
   sửa tiếp theo serialize đúng cặp thao tác này bằng một gate trong
   `LibraryService`, siết test cũ thành dãy `[1, 2]` và thêm regression
   test 32 file yêu cầu dãy xử lý `1..32` (suite tăng thêm một test).
-  Phân loại hiện tại là lỗi `Minor` ở hợp đồng thứ tự tiến trình quét
-  và độ ổn định của test, không phải bằng chứng mất dữ liệu thư viện;
-  vẫn cần chạy lại test riêng nhiều lần, toàn bộ suite và Release build
-  trên Windows thật trước khi đóng phát hiện này.
+  Phân loại là lỗi `Minor` ở hợp đồng thứ tự tiến trình quét và độ ổn
+  định của test, không phải bằng chứng mất dữ liệu thư viện. Retest trên
+  Windows thật tại `9a925f3` được thực hiện trên checkout sạch đúng
+  upstream sau khi thay đổi tạm thời tương đương của lượt điều tra trước
+  bị loại bỏ để fast-forward: restore và `git diff --check` đạt; lượt
+  targeted Release đầu tiên cho hai test tiến trình quét đạt 2/2; toàn
+  bộ suite đạt **84 passed / 0 failed / 0 skipped**; Release build đạt
+  `Build succeeded`, 0 Warning(s), 0 Error(s). Vì một số phiên thực thi
+  từ xa bị kết thúc giữa chừng, chiến dịch 20 lượt targeted liên tiếp
+  chưa được xác nhận đầy đủ và hồ sơ không khẳng định 20/20. Bản sửa vì
+  vậy đã đạt retest Windows thật ở checkpoint targeted đầu tiên + full
+  suite + build; bằng chứng lặp dài vẫn được giữ làm mục theo dõi còn
+  lại của phát hiện `Minor` này.
 - P4-A: `PARTIAL` (A1–A6 `PASS`; xuất bản/tiến triển timeline A7 đã đạt
   ở tầng GSMTC trên cả Magenta và Cyan, còn progress/thời gian trên thẻ
   `BLOCKED/N/A`; A8 `BLOCKED` ở bề mặt Quick Settings hiện tại; A9 chưa
