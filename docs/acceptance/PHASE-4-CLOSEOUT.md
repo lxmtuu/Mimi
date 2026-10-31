@@ -275,3 +275,12 @@ Giới hạn bằng chứng: test xác minh metadata/managed adapter, không t�
 Sau khi harden COM interface, đã tạo harness tạm ngoài repository tại C:\Temp\MimiComWatcherSmoke, load assembly Release của Mimi.Audio và khởi tạo watcher nội bộ bằng reflection. Trên Windows host Yami, RegisterEndpointNotificationCallback thành công (IsMonitoringAvailable=True); UnregisterEndpointNotificationCallback và dispose enumerator hoàn tất không exception. Lặp **20 chu kỳ** khởi tạo/đăng ký/hủy đăng ký; cả 20/20 đều thành công, mỗi watcher được gọi Dispose hai lần để xác nhận idempotency.
 
 Đây là smoke test COM/CoreAudio thật cho vòng đời register/unregister, mạnh hơn test metadata/fault injection trước đó. Tuy nhiên harness không chờ hoặc xác minh callback do Windows phát ra khi endpoint đổi, không tháo/cắm endpoint và không thử tình huống endpoint-less. Không thay đổi endpoint, driver hay default device; Mimi PID 20108 không bị restart. P4-E vẫn **BLOCKED** cho acceptance mất output vật lý và callback thực tế.
+
+
+## P4-E concurrent COM watcher disposal stress - 31/10/2026
+
+Mở rộng smoke harness ngoài repository để kiểm tra tranh chấp Dispose thật trên CoreAudio: lặp 100 lần tạo watcher và đăng ký COM thành công; mỗi watcher nhận 16 lời gọi Dispose đồng thời từ 16 Task. Kết quả **100/100 watcher đăng ký thành công; 1.600 lời gọi Dispose đồng thời không exception**. Đây xác nhận Interlocked guard bảo vệ đường unregister/dispose dưới cạnh tranh đa luồng trên host hiện tại.
+
+Sau stress test, chạy lại toàn bộ test suite: **109 passed, 0 failed, 0 skipped**; Release solution build: **0 warnings, 0 errors**; `git diff --check` PASS. Output cô lập tại C:\Temp\MimiWatcherFinalTest và C:\Temp\MimiWatcherFinalBuild. Mimi PID 20108 vẫn Responding; không thay đổi endpoint/driver/default audio device, không restart app.
+
+Giới hạn: test stress chủ động gọi Dispose đồng thời, không đồng thời kích hoạt callback COM do Windows phát ra. Chưa xác minh callback vật lý khi endpoint đổi/mất và chưa làm endpoint-less test. P4-E vẫn **BLOCKED**.

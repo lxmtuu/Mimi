@@ -650,3 +650,6 @@ P4-E watcher lifecycle/disposal review (31/10/2026): cờ disposed của Windows
 
 
 **P4-E real CoreAudio watcher lifecycle smoke (31/10/2026):** harness tạm ngoài repo khởi tạo watcher production thật, xác nhận RegisterEndpointNotificationCallback trả thành công và UnregisterEndpointNotificationCallback + dispose không exception; lặp **20/20** chu kỳ, gọi Dispose hai lần mỗi vòng. Đây là xác minh register/unregister thật trên CoreAudio, không chỉ reflection/fault injection. Chưa xác minh callback do Windows phát khi endpoint thay đổi và chưa rút endpoint vật lý; P4-E vẫn **BLOCKED**. Không thay đổi endpoint/driver/default device, không restart Mimi PID 20108. Chi tiết trong [Phase 4 closeout](docs/acceptance/PHASE-4-CLOSEOUT.md).
+
+
+**P4-E concurrent COM watcher disposal stress (31/10/2026):** 100 lần đăng ký watcher CoreAudio thật; mỗi watcher nhận 16 Dispose đồng thời — **1.600/1.600 lời gọi không exception**. Re-run toàn bộ suite **109/109 PASS**, Release solution build **0 warning / 0 error**, diff-check PASS. Stress test không kích hoạt callback do Windows gửi khi endpoint đổi; chưa kiểm tra endpoint-less, P4-E vẫn **BLOCKED**. Mimi PID 20108 không restart; không đổi endpoint/driver/default device. Chi tiết trong [Phase 4 closeout](docs/acceptance/PHASE-4-CLOSEOUT.md).
