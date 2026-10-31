@@ -268,3 +268,10 @@ Rà soát thêm hình dạng COM của `AudioDeviceNotificationClient`. Class đ
 Bổ sung regression test kiểm tra metadata reflection: class COM-visible, class interface là `None`, và `IMMNotificationClient` vẫn được implement. Full test suite: **109 passed, 0 failed, 0 skipped**. Full Release solution build: **0 warnings, 0 errors**; `git diff --check` PASS. Build/test output được cô lập dưới `C:\Temp\MimiWatcherLifecycleTest\`.
 
 Giới hạn bằng chứng: test xác minh metadata/managed adapter, không tạo COM callable wrapper thực tế, không gọi `RegisterEndpointNotificationCallback` / `UnregisterEndpointNotificationCallback` trên CoreAudio và không rút endpoint vật lý. P4-E vẫn **BLOCKED** cho acceptance CoreAudio thật. Không đổi endpoint/driver/default device và không restart Mimi PID 20108.
+
+
+## P4-E real CoreAudio watcher registration smoke test - 31/10/2026
+
+Sau khi harden COM interface, đã tạo harness tạm ngoài repository tại C:\Temp\MimiComWatcherSmoke, load assembly Release của Mimi.Audio và khởi tạo watcher nội bộ bằng reflection. Trên Windows host Yami, RegisterEndpointNotificationCallback thành công (IsMonitoringAvailable=True); UnregisterEndpointNotificationCallback và dispose enumerator hoàn tất không exception. Lặp **20 chu kỳ** khởi tạo/đăng ký/hủy đăng ký; cả 20/20 đều thành công, mỗi watcher được gọi Dispose hai lần để xác nhận idempotency.
+
+Đây là smoke test COM/CoreAudio thật cho vòng đời register/unregister, mạnh hơn test metadata/fault injection trước đó. Tuy nhiên harness không chờ hoặc xác minh callback do Windows phát ra khi endpoint đổi, không tháo/cắm endpoint và không thử tình huống endpoint-less. Không thay đổi endpoint, driver hay default device; Mimi PID 20108 không bị restart. P4-E vẫn **BLOCKED** cho acceptance mất output vật lý và callback thực tế.
