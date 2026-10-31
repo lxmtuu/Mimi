@@ -153,3 +153,15 @@ Các capture loopback số là phép đo callback/buffer trong đường âm tha
 ### Giới hạn an toàn trong lượt này
 
 Không disable endpoint/driver, không đổi default audio role, không đổi profile người dùng, không đóng Mimi và không sửa code. P4-E chỉ có thể được nghiệm thu sau khi có một lần chạy app-level trên môi trường không còn render endpoint và xác minh lại trạng thái endpoint được phục hồi đầy đủ.
+
+### Kiểm tra khả năng dựng môi trường cô lập cho P4-E — 31/10/2026
+
+Đã kiểm tra host Yami trước khi thực hiện bất kỳ thay đổi audio nào:
+
+- Host là Windows 10 Home Single Language, build 26300, Acer Nitro ANV15-41.
+- Hypervisor được báo hiện diện, nhưng WindowsSandbox.exe không tồn tại; các công cụ/cmdlet quản lý Hyper-V, VirtualBox và VMware không có trong PATH/session.
+- Truy vấn Windows Optional Features cần elevation; phiên remote hiện tại không có quyền admin để kiểm tra/bật feature.
+- Hệ thống có nhiều render endpoint vật lý và ảo (Realtek, AMD/NVIDIA HDMI, VB-Audio, AudioRelay). Vì vậy việc disable hàng loạt endpoint/driver trên host sẽ ảnh hưởng âm thanh hệ thống và không phải một phép thử cô lập.
+- Mimi PID 20108 vẫn Responding; không thay đổi default endpoint, không disable/remove thiết bị, không đổi environment variable của tiến trình hiện tại và không restart ứng dụng.
+
+Kết luận: chưa có Windows VM/Sandbox độc lập khả dụng trên host này. Không thể chứng minh P4-E bằng cách giả lập mất toàn bộ endpoint trên máy đang sử dụng mà không gây rủi ro cho audio của người dùng. P4-E tiếp tục BLOCKED. Đường kiểm thử an toàn tiếp theo là chạy acceptance trong một Windows VM/PC phụ có snapshot/rollback, hoặc bổ sung một output-factory seam có thể inject backend failure trong integration tests (ghi rõ đây là kiểm thử fault-injection, không thay thế CoreAudio acceptance thật).
