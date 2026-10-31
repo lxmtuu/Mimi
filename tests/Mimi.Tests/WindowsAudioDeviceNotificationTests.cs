@@ -1,4 +1,5 @@
 using System.Reflection;
+using System.Runtime.InteropServices;
 using Mimi.Services;
 using NAudio.CoreAudioApi;
 using NAudio.Wave;
@@ -7,6 +8,19 @@ namespace Mimi.Tests;
 
 public sealed class WindowsAudioDeviceNotificationTests
 {
+    [Fact]
+    public void NotificationClient_UsesExplicitComInterfaceWithoutAutoClassInterface()
+    {
+        var type = typeof(AudioDeviceNotificationClient);
+
+        Assert.True(type.IsDefined(typeof(ComVisibleAttribute), inherit: false));
+        var classInterface = type.GetCustomAttribute<ClassInterfaceAttribute>();
+        Assert.NotNull(classInterface);
+        Assert.Equal(ClassInterfaceType.None, classInterface!.Value);
+        Assert.Contains(typeof(NAudio.CoreAudioApi.Interfaces.IMMNotificationClient),
+            type.GetInterfaces());
+    }
+
     [Fact]
     public void NotificationClient_ForwardsRelevantRenderChanges_AndIgnoresOtherRoles()
     {

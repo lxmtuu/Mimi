@@ -259,3 +259,12 @@ Rà soát vòng đời COM watcher và timer/service đã phát hiện một đi
 Bổ sung test AudioService_IgnoresQueuedDeviceNotificationsAfterDispose: sau Dispose hai lần, phát 100 notification giả qua handler nội bộ và chờ qua debounce window; xác nhận không tạo output mới và output hiện hữu chỉ Dispose một lần. Kết quả watcher test: **3/3 PASS**.
 
 Giới hạn: đây là kiểm tra concurrency/lifecycle ở managed boundary với callback giả lập; không giả lập race bên trong COM runtime, không xác minh UnregisterEndpointNotificationCallback trên CoreAudio thật và không tháo endpoint vật lý. P4-E vẫn **BLOCKED** cho acceptance endpoint-less thật. Không thay đổi endpoint/driver/default device và không restart Mimi đang chạy.
+
+
+## P4-E COM callable-wrapper contract hardening - 31/10/2026
+
+Rà soát thêm hình dạng COM của `AudioDeviceNotificationClient`. Class đã được đánh dấu `[ComVisible(true)]` và triển khai `IMMNotificationClient`, nhưng chưa tắt auto-generated class interface. Đã thêm `[ClassInterface(ClassInterfaceType.None)]` để COM chỉ nhìn thấy interface được triển khai tường minh, tránh expose class interface tự sinh không cần thiết.
+
+Bổ sung regression test kiểm tra metadata reflection: class COM-visible, class interface là `None`, và `IMMNotificationClient` vẫn được implement. Full test suite: **109 passed, 0 failed, 0 skipped**. Full Release solution build: **0 warnings, 0 errors**; `git diff --check` PASS. Build/test output được cô lập dưới `C:\Temp\MimiWatcherLifecycleTest\`.
+
+Giới hạn bằng chứng: test xác minh metadata/managed adapter, không tạo COM callable wrapper thực tế, không gọi `RegisterEndpointNotificationCallback` / `UnregisterEndpointNotificationCallback` trên CoreAudio và không rút endpoint vật lý. P4-E vẫn **BLOCKED** cho acceptance CoreAudio thật. Không đổi endpoint/driver/default device và không restart Mimi PID 20108.

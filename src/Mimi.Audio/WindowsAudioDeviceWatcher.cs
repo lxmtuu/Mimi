@@ -175,6 +175,7 @@ internal sealed class WindowsAudioDeviceWatcher : IDisposable
 /// CoreAudio reliably; application code should use the watcher above.
 /// </summary>
 [ComVisible(true)]
+[ClassInterface(ClassInterfaceType.None)]
 public sealed class AudioDeviceNotificationClient : IMMNotificationClient
 {
     private readonly Action<AudioDeviceChangedEventArgs> onChanged;

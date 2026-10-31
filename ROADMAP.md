@@ -644,3 +644,6 @@ P4-E watcher notification/debounce verification (31/10/2026): thêm WindowsAudio
 
 
 P4-E watcher lifecycle/disposal review (31/10/2026): cờ disposed của WindowsAudioDeviceWatcher chuyển sang volatile; Dispose dùng Interlocked.Exchange để bảo đảm unregister/dispose enumerator chỉ chạy một lần kể cả khi Dispose đồng thời. Thêm test phát 100 notification muộn sau AudioService.Dispose hai lần, xác nhận không tạo output mới và output cũ chỉ dispose một lần. Watcher tests **3/3 PASS**. Đây là managed concurrency/fault-injection, không xác nhận COM unregister/callback race trên CoreAudio thật; P4-E tiếp tục **BLOCKED**.
+
+
+**P4-E COM interop contract hardening (31/10/2026):** thêm `[ClassInterface(ClassInterfaceType.None)]` cho `AudioDeviceNotificationClient` để COM callable wrapper không expose auto-generated class interface; interface tường minh `IMMNotificationClient` vẫn được triển khai. Regression test xác minh metadata COM qua reflection. Full suite **109/109 PASS**, Release solution build **0 warnings / 0 errors**, `git diff --check` PASS. Đây chưa phải kiểm tra đăng ký/hủy đăng ký COM thực tế với CoreAudio; P4-E vẫn **BLOCKED** chờ Windows VM/PC phụ có thể kiểm thử endpoint an toàn. Chi tiết trong [Phase 4 closeout](docs/acceptance/PHASE-4-CLOSEOUT.md).
