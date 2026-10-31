@@ -25,6 +25,24 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
+      - name: Validate PowerShell tools syntax
+        shell: powershell
+        run: |
+          $failed = $false
+          Get-ChildItem -Path tools -Filter *.ps1 | ForEach-Object {
+            $tokens = $null
+            $parseErrors = $null
+            [void][System.Management.Automation.Language.Parser]::ParseFile(
+              $_.FullName,
+              [ref]$tokens,
+              [ref]$parseErrors)
+            foreach ($parseError in $parseErrors) {
+              $failed = $true
+              Write-Host "::error file=tools/$($_.Name),line=$($parseError.Extent.StartLineNumber),col=$($parseError.Extent.StartColumnNumber)::$($parseError.Message)"
+            }
+          }
+          if ($failed) { exit 1 }
+
       - name: Restore packages
         run: dotnet restore Mimi.sln
 

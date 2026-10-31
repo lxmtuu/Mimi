@@ -19,6 +19,8 @@ Phase 5 hoặc nghĩ tới phát hành cộng đồng.
 | [`PHASE-4-CLOSEOUT.md`](PHASE-4-CLOSEOUT.md) | Bảng đối chiếu trạng thái/bằng chứng Phase 4 tại `b0cd13a` và danh sách quyết định còn thiếu trước P4-H |
 | [`../../tools/Analyze-LoopbackCsv.ps1`](../../tools/Analyze-LoopbackCsv.ps1) | Phân tích CSV loopback: phân bố khoảng callback, tín hiệu, chuỗi im lặng và các khoảng lớn nhất |
 | [`../../tools/Inspect-SmtcSession.ps1`](../../tools/Inspect-SmtcSession.ps1) | Chẩn đoán GSMTC chỉ-đọc cho A7/A8/A9: lấy mẫu metadata, trạng thái, cờ điều khiển và timeline Windows nhận được mà không gửi lệnh phát/seek |
+| [`../../tools/Invoke-SmtcSessionCommand.ps1`](../../tools/Invoke-SmtcSessionCommand.ps1) | Harness gửi lệnh GSMTC tới đúng session `Mimi.App` và kiểm tra trạng thái sau lệnh, gồm Seek/FastForward/Rewind/Shuffle/Repeat; chỉ là bằng chứng đường lệnh, không thay thế thẻ Quick Settings trực quan |
+| [`../../tools/Get-RenderEndpointInventory.ps1`](../../tools/Get-RenderEndpointInventory.ps1) | Kiểm kê chỉ-đọc các render endpoint CoreAudio và default theo role; dùng làm tiền điều kiện độc lập cho lượt P4-E trong VM/PC phụ với `-ExpectedActiveCount 0` |
 
 ## Thứ tự phiên khuyến nghị
 
@@ -276,6 +278,52 @@ thị của bề mặt shell thay vì bằng chứng app thiếu timeline. Nếu
 toàn 0 với `LastUpdatedTime` năm 1601, mới điều tra đường xuất bản timeline
 và cảnh báo SMTC đầu tiên trong log. Probe không tự biến A7 trực quan, A8
 seek trên thẻ hoặc A9 ±10 giây thành `PASS`.
+
+## Gửi lệnh GSMTC khi Quick Settings không hiện đủ nút
+
+Khi thẻ không hiện FastForward/Rewind/Shuffle/Repeat, harness sau gửi các
+lệnh GSMTC tương ứng tới đúng session `Mimi.App`, ghi snapshot trước/sau và
+chờ trạng thái được Windows xuất bản lại khớp kỳ vọng:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass `
+  -File .\tools\Invoke-SmtcSessionCommand.ps1 `
+  -Command ShuffleOn,RepeatList,RepeatTrack,RepeatNone,ShuffleOff `
+  -JsonPath .\artifacts\acceptance\gsmtc-modes.json
+```
+
+Seek và tua ±10 giây dễ diễn giải nhất khi bài đang Pause ở vị trí còn đủ
+xa hai đầu:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass `
+  -File .\tools\Invoke-SmtcSessionCommand.ps1 `
+  -Command FastForward,Rewind,Seek `
+  -SeekPositionSeconds 15 `
+  -JsonPath .\artifacts\acceptance\gsmtc-seek.json
+```
+
+Kết quả đạt chỉ đóng phần **đường lệnh GSMTC và đồng bộ trạng thái**. Thẻ
+không vẽ timeline hoặc nút vẫn phải ghi `BLOCKED/N/A` ở tiêu chí trực quan
+cho tới khi có bề mặt shell khác hoặc waiver của chủ dự án.
+
+## Kiểm tra tiền điều kiện zero-output
+
+Trong VM/PC phụ có snapshot, sau khi gỡ virtual sound card hoặc tắt audio
+controller của chính môi trường thử nghiệm, chạy kiểm kê chỉ-đọc này trước
+khi mở Mimi:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass `
+  -File .\tools\Get-RenderEndpointInventory.ps1 `
+  -ExpectedActiveCount 0 `
+  -JsonPath .\artifacts\acceptance\zero-output-before.json
+```
+
+Chỉ tiếp tục khi script thoát thành công và báo `ActiveCount = 0`. Sau khi
+khôi phục endpoint, chạy lại không kèm `-ExpectedActiveCount 0` để lưu bằng
+chứng endpoint đã quay lại. Không dùng quy trình này để tắt toàn bộ endpoint
+trên máy chính đang sử dụng.
 
 ## Phân tích nhanh CSV loopback
 

@@ -217,6 +217,43 @@ Diễn giải tối thiểu:
 | `IsPlaybackPositionEnabled = True` | Windows ghi nhận phiên hỗ trợ đổi vị trí, nhưng **không** biến A8 kéo-trên-thẻ thành `PASS` nếu thẻ không cho kéo |
 | `IsFastForwardEnabled`/`IsRewindEnabled = True` | Chỉ chứng minh khả năng đã được quảng bá; A9 ±10 giây vẫn cần một thao tác vận hành thật từ bề mặt/thiết bị hỗ trợ |
 
+#### Kiểm tra đường lệnh GSMTC bằng harness (bổ sung, không thay thế thẻ)
+
+Khi Quick Settings không vẽ đủ điều khiển, dùng harness gửi lệnh tới đúng
+session `Mimi.App` để tách lỗi đường lệnh của app khỏi giới hạn hiển thị
+của shell. Chạy trong Windows PowerShell 5.1 từ thư mục gốc repo.
+
+Kiểm tra chiều GSMTC → Mimi đối với Shuffle/Repeat:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass `
+  -File .\tools\Invoke-SmtcSessionCommand.ps1 `
+  -Command ShuffleOn,RepeatList,RepeatTrack,RepeatNone,ShuffleOff `
+  -JsonPath .\artifacts\acceptance\gsmtc-modes.json
+```
+
+Sau đó đổi Shuffle/Repeat trong Mimi và chạy `-Command Snapshot` hoặc probe
+chỉ-đọc để xác nhận chiều app → GSMTC. Với seek/FastForward/Rewind, Pause
+bài fixture ở vị trí còn cách hai đầu ít nhất khoảng 12 giây rồi chạy:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass `
+  -File .\tools\Invoke-SmtcSessionCommand.ps1 `
+  -Command FastForward,Rewind,Seek `
+  -SeekPositionSeconds 15 `
+  -JsonPath .\artifacts\acceptance\gsmtc-seek.json
+```
+
+- [ ] Mọi lệnh trong JSON có `CommandAccepted = True` và
+  `VerificationStatus = Pass`.
+- [ ] Trạng thái Shuffle/Repeat trong Mimi khớp lệnh GSMTC vừa gửi; đổi
+  trong Mimi cũng làm GSMTC đổi theo.
+- [ ] FastForward/Rewind thay đổi vị trí khoảng +10/-10 giây; Seek tới vị
+  trí yêu cầu trong sai số của harness.
+- [ ] Nếu harness đạt nhưng thẻ vẫn không hiện điều khiển, ghi đường lệnh
+  GSMTC là đạt và giữ riêng phần hiển thị/thao tác trực tiếp trên thẻ là
+  `BLOCKED/N/A`; không tự nâng toàn bộ A7–A11 thành `PASS`.
+
 ### P4-B — Taskbar thumbnail và progress
 
 - [ ] **B1 Nút theo trạng thái:** thumbnail hiện Previous, Next và chỉ hiện
@@ -346,8 +383,25 @@ tab Playback và chọn Disable. Hãy chắc chắn biết cách bật lại
 #### 2.4 Không còn output khả dụng
 
 Chỉ thực hiện khi chắc chắn khôi phục được endpoint, đặc biệt trên máy đang
-điều khiển từ xa. Disable/rút mọi render endpoint khả dụng trong lúc có bài
-đang nạp, sau đó:
+điều khiển từ xa. Cách ưu tiên là dùng VM hoặc PC phụ có snapshot/rollback:
+chạy baseline khi guest còn virtual sound card, tắt guest, gỡ sound card
+ảo hoặc tắt audio controller của chính guest/máy phụ, rồi bật lại. Không
+tắt toàn bộ endpoint trên máy chính đang sử dụng chỉ để đạt hạng mục này.
+
+Trước khi mở Mimi trong môi trường endpoint-less, xác minh độc lập bằng
+script chỉ-đọc; chỉ tiếp tục khi lệnh thoát thành công:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass `
+  -File .\tools\Get-RenderEndpointInventory.ps1 `
+  -ExpectedActiveCount 0 `
+  -JsonPath .\artifacts\acceptance\zero-output-before.json
+```
+
+Nếu script vẫn báo endpoint Active (ví dụ Remote Audio của phiên remote),
+tiền điều kiện chưa đạt. Sau khi khôi phục sound card/endpoint, chạy lại
+script không kèm `-ExpectedActiveCount 0` và lưu JSON đối chiếu. Khi tiền
+điều kiện đã đạt, mở Mimi với bài đang nạp, sau đó:
 
 1. Quan sát nhãn chuyển thành không có output.
 2. Bấm Play một lần.
