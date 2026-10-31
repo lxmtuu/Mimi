@@ -92,6 +92,60 @@ public sealed class WindowsAudioDeviceNotificationTests
         }
     }
 
+    [Fact]
+    public void AudioService_IgnoresQueuedDeviceNotificationsAfterDispose()
+    {
+        var first = new CountingWavePlayer();
+        var factoryCalls = 0;
+        var path = Path.Combine(Path.GetTempPath(), $"mimi-watcher-dispose-{Guid.NewGuid():N}.wav");
+
+        try
+        {
+            WriteSilentWaveFile(path);
+            var audio = new AudioService(
+                AudioOutputBackendPreference.ForceWasapiShared,
+                _ =>
+                {
+                    factoryCalls++;
+                    return first;
+                },
+                () => throw new InvalidOperationException("WaveOut must not be used."),
+                useDeviceWatcher: false);
+
+            audio.Load(path);
+            Assert.Equal(1, factoryCalls);
+
+            var handler = typeof(AudioService).GetMethod(
+                "AudioDeviceWatcher_Changed",
+                BindingFlags.Instance | BindingFlags.NonPublic);
+            Assert.NotNull(handler);
+
+            audio.Dispose();
+            audio.Dispose();
+
+            for (var i = 0; i < 100; i++)
+            {
+                handler!.Invoke(audio, new object?[]
+                {
+                    null,
+                    new AudioDeviceChangedEventArgs(
+                        AudioDeviceChangeKind.DefaultChanged,
+                        $"late-default-{i}")
+                });
+            }
+
+            Thread.Sleep(400);
+
+            Assert.Equal(1, factoryCalls);
+            Assert.Equal(1, first.DisposeCount);
+        }
+        finally
+        {
+            if (File.Exists(path))
+                File.Delete(path);
+        }
+    }
+
     private static void WriteSilentWaveFile(string path)
     {
         const int sampleRate = 44100;

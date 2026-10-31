@@ -250,3 +250,12 @@ Evidence boundary: this confirms the real AudioService + ViewModel + WPF Dispatc
 Kết quả: targeted tests 2/2 PASS; full suite 107 passed / 0 failed / 0 skipped. Test debounce gọi handler nội bộ bằng reflection và dùng fake IWavePlayer; test callback gọi trực tiếp adapter, không đăng ký COM với CoreAudio thật. Do đó chúng xác nhận mapping + logic debounce/cleanup ở mức unit/integration có fault injection, không chứng minh Windows thực sự phát callback qua COM hoặc việc rút/cắm endpoint vật lý. P4-E vẫn BLOCKED cho tới khi có acceptance an toàn trên Windows VM/PC phụ hoặc host thử nghiệm có rollback.
 
 Không disable endpoint/driver, không đổi default device, không restart Mimi PID 20108. Các test/build output được tách khỏi output đang chạy.
+
+
+## P4-E watcher lifecycle/disposal review — 31/10/2026
+
+Rà soát vòng đời COM watcher và timer/service đã phát hiện một điểm cải thiện an toàn: cờ disposed của WindowsAudioDeviceWatcher trước đây là bool thường và Dispose không được bảo vệ khỏi hai lời gọi đồng thời. Đã chuyển cờ sang volatile và dùng Interlocked.Exchange để chỉ một luồng thực hiện unregister/dispose enumerator; callback đang chạy hoặc callback đến muộn quan sát được trạng thái disposed và không phát event mới.
+
+Bổ sung test AudioService_IgnoresQueuedDeviceNotificationsAfterDispose: sau Dispose hai lần, phát 100 notification giả qua handler nội bộ và chờ qua debounce window; xác nhận không tạo output mới và output hiện hữu chỉ Dispose một lần. Kết quả watcher test: **3/3 PASS**.
+
+Giới hạn: đây là kiểm tra concurrency/lifecycle ở managed boundary với callback giả lập; không giả lập race bên trong COM runtime, không xác minh UnregisterEndpointNotificationCallback trên CoreAudio thật và không tháo endpoint vật lý. P4-E vẫn **BLOCKED** cho acceptance endpoint-less thật. Không thay đổi endpoint/driver/default device và không restart Mimi đang chạy.

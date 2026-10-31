@@ -44,7 +44,8 @@ internal sealed class WindowsAudioDeviceWatcher : IDisposable
 {
     private readonly MMDeviceEnumerator enumerator;
     private readonly AudioDeviceNotificationClient notificationClient;
-    private bool disposed;
+    private volatile bool disposed;
+    private int disposeState;
 
     public WindowsAudioDeviceWatcher()
     {
@@ -121,7 +122,9 @@ internal sealed class WindowsAudioDeviceWatcher : IDisposable
 
     public void Dispose()
     {
-        if (disposed) return;
+        if (Interlocked.Exchange(ref disposeState, 1) != 0)
+            return;
+
         disposed = true;
 
         if (IsMonitoringAvailable)

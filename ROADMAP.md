@@ -641,3 +641,6 @@ Rà soát tĩnh toàn bộ 11 file (~1.016 dòng) tại commit đổi tên `a685
 
 
 P4-E watcher notification/debounce verification (31/10/2026): thêm WindowsAudioDeviceNotificationTests kiểm tra callback adapter (Capture bị bỏ qua; Render Console/Multimedia, Added/Removed/StateChanged được map đúng) và burst 5 DefaultChanged trong 200 ms chỉ tạo một output rebuild; output cũ dispose đúng một lần. Targeted 2/2 PASS, full suite 107/107 PASS. Phạm vi test dùng callback trực tiếp, reflection gọi handler AudioService và fake output; chưa xác nhận đăng ký/nhận callback COM thực tế từ CoreAudio hoặc rút endpoint vật lý. Vì vậy P4-E tiếp tục BLOCKED; không thay đổi endpoint/driver/default device và không restart Mimi đang chạy. Chi tiết trong docs/acceptance/PHASE-4-CLOSEOUT.md.
+
+
+P4-E watcher lifecycle/disposal review (31/10/2026): cờ disposed của WindowsAudioDeviceWatcher chuyển sang volatile; Dispose dùng Interlocked.Exchange để bảo đảm unregister/dispose enumerator chỉ chạy một lần kể cả khi Dispose đồng thời. Thêm test phát 100 notification muộn sau AudioService.Dispose hai lần, xác nhận không tạo output mới và output cũ chỉ dispose một lần. Watcher tests **3/3 PASS**. Đây là managed concurrency/fault-injection, không xác nhận COM unregister/callback race trên CoreAudio thật; P4-E tiếp tục **BLOCKED**.
