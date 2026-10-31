@@ -196,3 +196,24 @@ Kết quả:
 - Không thao tác với endpoint/driver hoặc default audio device.
 
 Đây là kiểm thử WPF ViewModel với fake audio player và integration test có fault injection ở tầng AudioService. Nó xác minh ứng xử ứng dụng/UI khi exception được ném ra, nhưng không thay thế nghiệm thu Windows CoreAudio thật khi không có render endpoint. Vì vậy P4-E vẫn **BLOCKED**, không được đánh dấu PASS cho đến khi chạy trên Windows VM hoặc máy phụ có thể cô lập endpoint an toàn.
+
+
+## P4-E/P4-F playback interruption and explicit recovery test - 31/10/2026
+
+Added `tests/Mimi.Tests/AudioServiceDeviceRecoveryTests.cs`. The test uses a fake `IWavePlayer` that consumes the real `IWaveProvider` supplied by `AudioService`, so the underlying `AudioFileReader` advances as it would while an output device is consuming audio.
+
+Scenario and assertions:
+1. Load a 10-second WAV fixture through the real `AudioService` using forced WASAPI factory injection (WaveOut fallback deliberately disabled).
+2. Seek to 2 seconds, start playback, and have the fake output consume 1 second of provider data. Verify the reader position reaches approximately 3 seconds.
+3. Raise NAudio's `PlaybackStopped` callback with `COMException` HRESULT `0x88890004` (`AUDCLNT_E_DEVICE_INVALIDATED`), representing an invalidated render endpoint.
+4. After the debounced recovery attempt, the injected WASAPI factory reports that the endpoint is still disconnected. Verify output status becomes unavailable, playback stays stopped, the interruption event is raised, and the reader position is retained within 60 ms.
+5. Call `Play()` explicitly after the factory makes a replacement output available. Verify output status returns to WASAPI shared, playback starts only after that explicit action, and another 500 ms of provider consumption advances from the retained position.
+
+Results:
+- Targeted recovery test: **1 passed, 0 failed**.
+- Full test suite: **104 passed, 0 failed, 0 skipped**.
+- Full Release solution build: **0 warnings, 0 errors**.
+- `git diff --check`: PASS.
+- All build outputs were directed to `C:\Temp\MimiP4DeviceRecoveryTest\` and `C:\Temp\MimiP4DeviceRecoveryBuild\`; the running Mimi process was not restarted and no physical audio endpoint or driver was changed.
+
+Evidence boundary: this is an integration test of the real `AudioService` and reader/provider path using deterministic fake output objects and the Windows device-invalidated HRESULT. It does not unplug a physical endpoint, exercise the COM `WindowsAudioDeviceWatcher` notification callback, or establish acoustic output. Therefore P4-E remains **BLOCKED** for real endpoint-less Windows CoreAudio acceptance. This test supports the engine's interruption/position-retention/explicit-retry behavior but is not a substitute for physical device-loss acceptance.
