@@ -306,3 +306,62 @@ Acceptance interpretation:
 - P4-E (zero render endpoints) remains BLOCKED; this test changes the default endpoint to another available endpoint and does not remove all outputs.
 
 No code or audio-device configuration was changed during this verification.
+
+## Tổng hợp kiểm tra Phase 4 và khảo sát VM — 31/10/2026
+
+### Trạng thái nhánh và phạm vi cập nhật
+
+Lượt tổng hợp được thực hiện trên worktree `Mimi-p4-retest-2137840`, branch `arena/cdda374d-mimi-phase4-acceptance`, HEAD trước cập nhật `02d086c` (`docs: record live audio endpoint switch acceptance`). Working tree ban đầu sạch; branch hiển thị `ahead 14` so với upstream tracking branch. Không checkout/reset/rebase, không sửa source code, không thay đổi cấu hình Windows/audio, không restart Mimi. Phần dưới chỉ bổ sung hồ sơ và kết quả kiểm chứng đã có.
+
+### Kết quả nghiệm thu tổng hợp
+
+| Hạng mục | Trạng thái | Kết luận |
+|---|---|---|
+| P4-A — SMTC/Quick Settings | `PARTIAL` | Metadata, cover, đồng bộ, điều khiển Previous/Next và natural-end queue đã có bằng chứng; timeline GSMTC tiến triển nhưng Quick Settings không hiển thị progress/time/seek và không có FastForward/Rewind/Shuffle/Repeat trên thẻ được quan sát. |
+| P4-B — Taskbar | `PASS` | Theo xác nhận nghiệm thu trực tiếp của chủ dự án; chi tiết tiểu mục chưa được ghi riêng. |
+| P4-C — Media keys/keyboard | `PASS` | Theo xác nhận nghiệm thu trực tiếp của chủ dự án; chi tiết tiểu mục chưa được ghi riêng. |
+| P4-D — Device loss | `PASS` | Theo xác nhận của chủ dự án và bằng chứng interruption/rebuild; không đồng nhất với zero-output. |
+| P4-E — No Output | `BLOCKED` | Fault-injection và WPF/AudioService integration tests đạt; chưa có acceptance khi Windows CoreAudio thật sự không còn render endpoint. |
+| P4-F — Reconnect/recovery | `PASS` | Rebuild sau endpoint change, giữ vị trí và chỉ resume sau thao tác Play tường minh đã được xác nhận. |
+| P4-G — WASAPI/WaveOut A/B | `PARTIAL` | Loopback callback/buffer metrics có thể so sánh; chưa đo được acoustic latency đáng tin cậy. |
+| P4-H — Closeout decision | `OPEN` | Chưa có waiver/quyết định đóng Phase và checkpoint tích hợp cuối. |
+
+### No Output — điều tra host và khôi phục endpoint
+
+- Snapshot ban đầu `C:\Users\Public\Mimi-NoOutput-RenderSnapshot.json` ghi nhận 15 render endpoints active; tất cả 15 được snapshot với trạng thái ban đầu enabled.
+- Một lần thử `Disable-PnpDevice` trên 15 instance đã trả về; kiểm tra sau đó thấy PnP Status `Error` nhưng registry `MMDevices\Audio\Render` vẫn giữ `DeviceState=1`. Âm thanh vẫn hoạt động và người dùng xác nhận vẫn nghe qua Headphones Realtek. Vì vậy lần thử này **không chứng minh** hệ thống đã mất render output.
+- Đã restore bằng `Enable-PnpDevice`; lệnh hoàn tất exit code 0, kiểm tra xác nhận `RESTORED_OK=15/15`, registry DeviceState=1, PnP status OK và Core Audio báo 15 active render endpoints. Không còn thiết bị nào trong snapshot bị bỏ quên.
+- NAudio Core Audio enumeration sau khôi phục: Active 15, Disabled 1, NotPresent 14, Unplugged 0. Endpoint Disabled duy nhất được nhận diện là `Internal AUX Jack (DroidCam Audio)`; đây là trạng thái quan sát sẵn có, không phải thiết bị bị disable trong lần thử vừa nêu. Default render lúc kiểm tra là `Speakers (Realtek(R) Audio)`.
+- Không tiếp tục disable endpoint/driver trên host. P4-E vẫn `BLOCKED` vì chưa chạy app-level trên Windows thực sự không có render endpoint.
+
+### Kiểm chứng mã và test
+
+- Code review `AudioService` xác nhận đường xử lý no-output giữ track đã decode ở trạng thái pause; `Play()` thử tạo output lại và báo `AudioOutputUnavailableException` khi không thể mở backend. Đây là review logic, không phải CoreAudio acceptance.
+- Đã có output-factory fault-injection integration tests, WPF/STA ViewModel test, integrated AudioService + ViewModel interruption test, notification mapping/debounce tests, watcher lifecycle/concurrency tests, COM interface contract test và real CoreAudio register/unregister smoke test 20/20. Các test này tăng độ tin cậy ở service/UI/COM lifecycle nhưng không thay thế endpoint-less acceptance hoặc callback do Windows phát ra khi rút thiết bị.
+- Full Release test chạy trong lượt tổng hợp gần nhất: **110 passed, 0 failed, 0 skipped**, exit code 0. Lần đầu chạy vào output mặc định bị khóa bởi Mimi process đang chạy; rerun với `OutDir=C:\Temp\MimiP4ReleaseFinalTest\` thành công. Không đóng Mimi để giải phóng khóa.
+- Không có source changes trong lượt tổng hợp này.
+
+### WASAPI / WaveOut — D-03
+
+Các capture loopback trước đó cho thấy callback gap P99 xấp xỉ 63,8–64,2 ms ở cả hai backend, với một số max gap/zero-sample riêng lẻ. Đây là metric loopback/callback, không phải thời gian từ lệnh Play tới âm thanh vật lý. Các phép đo Microphone Array trước đây không nhất quán và có false negative dù người dùng nghe thấy âm thanh; không sử dụng chúng để kết luận latency hoặc lấy trung bình thành một con số. Giữ kiến trúc tạm thời **WASAPI Shared mặc định + WaveOut fallback**; D-03 vẫn `PARTIAL`, chưa tuyên bố backend nào có acoustic latency tốt hơn.
+
+### Khảo sát môi trường Windows VM nhẹ trên Yami
+
+Chỉ thực hiện truy vấn đọc; không cài phần mềm, bật/tắt Optional Feature, thay đổi VBS/BIOS/BCD, tạo VM hoặc thay đổi WSL/Docker.
+
+- Thiết bị: Acer Nitro ANV15-41; CPU AMD Ryzen 5 7535HS, 6 cores/12 logical processors; RAM vật lý khoảng 14 GiB; ổ C còn khoảng 48,6 GiB.
+- Build hệ điều hành là 26300. Các truy vấn `Get-ComputerInfo`/WMI có nhãn product không nhất quán (một lần trả Windows 10 Home Single Language dù phiên trước ghi Windows 11 Home Single Language); nên dùng Settings/About hoặc `winver` để xác minh nhãn edition trước khi quyết định cài hypervisor. Không dùng nhãn product bất nhất này làm kết luận tương thích.
+- Firmware virtualization được báo `True`; WMI `VMMonitorModeExtensions` và `SecondLevelAddressTranslationExtensions` trả `False`, trong khi `systeminfo` báo hypervisor đã được phát hiện. Đây là tín hiệu mâu thuẫn, cần xác minh thêm thay vì khẳng định nested virtualization/SLAT khả dụng.
+- `VirtualMachinePlatform` Enabled; `HypervisorPlatform` Disabled; `Microsoft-Windows-Subsystem-Linux` optional feature Disabled. `wsl --status` báo default version 2; `wsl --list --verbose` liệt kê `docker-desktop` và `Ubuntu`, cả hai Stopped. `vmcompute`, `hns`, `WslService` đang chạy tại thời điểm kiểm tra. VBS status 2 và security services `{2,5}` đang chạy.
+- Không tìm thấy cài đặt VirtualBox/VMware trong uninstall registry hoặc các executable path đã kiểm tra. Chưa có bằng chứng Windows Sandbox khả dụng.
+- 48,6 GiB trống là tương đối chật cho một Windows guest dynamic disk cộng update/snapshot; không tạo VM hoặc tải ISO ở bước này.
+
+**Khuyến nghị:** giữ nguyên host; trước khi triển khai lựa chọn VM tại chỗ, cần xác minh edition/virtualization compatibility và ước lượng dung lượng guest thực tế. Không bật Windows Hypervisor Platform hoặc cài VirtualBox chỉ dựa trên các thông tin hiện có; các thay đổi đó có thể ảnh hưởng hypervisor/WSL/Docker và cần sự đồng ý riêng của chủ dự án. Nếu không đủ dung lượng, chuyển sang PC phụ/cloud VM. VM test nếu được tạo chỉ được ghi là VM integration/fault acceptance; không thay thế nghiệm thu thiết bị vật lý.
+
+### Quyết định còn mở
+
+1. P4-E: cần Windows VM/PC phụ có snapshot hoặc host thử nghiệm riêng để xác minh zero render endpoints, UI/queue giữ nguyên, trạng thái unavailable và phục hồi endpoint.
+2. P4-G/D-03: cần acoustic onset measurement đồng bộ, lặp lại đáng tin cậy hoặc quyết định rõ giữ cấu hình tạm thời mà không tuyên bố latency đã nghiệm thu.
+3. P4-A/P4-H: chủ dự án quyết định waiver cho giới hạn bề mặt Quick Settings và quyết định đóng Phase; không tự động nâng BLOCKED/PARTIAL thành PASS.
+
+**Kết luận:** Phase 4 chưa đóng. Hạng mục P4-E `BLOCKED`, P4-G `PARTIAL`, P4-H `OPEN`; không ghi waiver và không đổi trạng thái chỉ vì các test fault-injection đã đạt.
