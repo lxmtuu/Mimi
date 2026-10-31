@@ -653,3 +653,7 @@ P4-E watcher lifecycle/disposal review (31/10/2026): cờ disposed của Windows
 
 
 **P4-E concurrent COM watcher disposal stress (31/10/2026):** 100 lần đăng ký watcher CoreAudio thật; mỗi watcher nhận 16 Dispose đồng thời — **1.600/1.600 lời gọi không exception**. Re-run toàn bộ suite **109/109 PASS**, Release solution build **0 warning / 0 error**, diff-check PASS. Stress test không kích hoạt callback do Windows gửi khi endpoint đổi; chưa kiểm tra endpoint-less, P4-E vẫn **BLOCKED**. Mimi PID 20108 không restart; không đổi endpoint/driver/default device. Chi tiết trong [Phase 4 closeout](docs/acceptance/PHASE-4-CLOSEOUT.md).
+
+## P4-E notification subscriber exception boundary - 31/10/2026
+
+Added a regression test that creates the production WindowsAudioDeviceWatcher, attaches a deliberately throwing Changed subscriber, and invokes the notification client adapter. The exception is contained at the watcher notification boundary and does not escape the callback adapter. The test does not claim Windows emitted a real endpoint notification; it validates exception containment after the adapter is invoked. Full test suite: 110 passed, 0 failed, 0 skipped. Release solution build: 0 warnings, 0 errors. `git diff --check` passed. No endpoint, driver, default-device, or running Mimi process changes. P4-E remains BLOCKED pending a controlled real endpoint notification and endpoint-less acceptance.

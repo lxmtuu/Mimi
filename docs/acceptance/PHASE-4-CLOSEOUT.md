@@ -284,3 +284,7 @@ Mở rộng smoke harness ngoài repository để kiểm tra tranh chấp Dispos
 Sau stress test, chạy lại toàn bộ test suite: **109 passed, 0 failed, 0 skipped**; Release solution build: **0 warnings, 0 errors**; `git diff --check` PASS. Output cô lập tại C:\Temp\MimiWatcherFinalTest và C:\Temp\MimiWatcherFinalBuild. Mimi PID 20108 vẫn Responding; không thay đổi endpoint/driver/default audio device, không restart app.
 
 Giới hạn: test stress chủ động gọi Dispose đồng thời, không đồng thời kích hoạt callback COM do Windows phát ra. Chưa xác minh callback vật lý khi endpoint đổi/mất và chưa làm endpoint-less test. P4-E vẫn **BLOCKED**.
+
+## P4-E notification subscriber exception boundary - 31/10/2026
+
+Added a regression test that creates the production WindowsAudioDeviceWatcher, attaches a deliberately throwing Changed subscriber, and invokes the notification client adapter. The exception is contained at the watcher notification boundary and does not escape the callback adapter. The test does not claim Windows emitted a real endpoint notification; it validates exception containment after the adapter is invoked. Full test suite: 110 passed, 0 failed, 0 skipped. Release solution build: 0 warnings, 0 errors. `git diff --check` passed. No endpoint, driver, default-device, or running Mimi process changes. P4-E remains BLOCKED pending a controlled real endpoint notification and endpoint-less acceptance.

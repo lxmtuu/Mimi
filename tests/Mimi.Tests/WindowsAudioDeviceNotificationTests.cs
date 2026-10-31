@@ -9,6 +9,22 @@ namespace Mimi.Tests;
 public sealed class WindowsAudioDeviceNotificationTests
 {
     [Fact]
+    public void WindowsWatcher_ContainsSubscriberExceptionsAtNotificationBoundary()
+    {
+        using var watcher = new WindowsAudioDeviceWatcher();
+        var field = typeof(WindowsAudioDeviceWatcher).GetField(
+            "notificationClient",
+            BindingFlags.Instance | BindingFlags.NonPublic);
+        Assert.NotNull(field);
+        var client = Assert.IsType<AudioDeviceNotificationClient>(field!.GetValue(watcher));
+        watcher.Changed += (_, _) => throw new InvalidOperationException("subscriber failure");
+
+        var exception = Record.Exception(() => client.OnDeviceAdded("test-device"));
+
+        Assert.Null(exception);
+    }
+
+    [Fact]
     public void NotificationClient_UsesExplicitComInterfaceWithoutAutoClassInterface()
     {
         var type = typeof(AudioDeviceNotificationClient);
