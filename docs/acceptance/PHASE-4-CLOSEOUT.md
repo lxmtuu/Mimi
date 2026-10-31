@@ -126,3 +126,30 @@ Thứ tự quan sát thực tế là Cyan → Amber → Magenta → Cyan do th�
 - Không thay đổi trạng thái P4-A (các điều khiển Quick Settings không hiển thị vẫn BLOCKED/N/A), P4-E (BLOCKED), P4-G/D-03 (PARTIAL), hoặc P4-H (OPEN).
 - Không tuyên bố xác nhận chất lượng âm thanh đầu ra trực tiếp từ telemetry. Repeat One đặc biệt vẫn cần kiểm tra nghe/loopback nếu tiêu chí nghiệm thu yêu cầu xác nhận không chồng luồng âm thanh.
 - Phase 4 vẫn chưa đóng; không tạo waiver và không đánh dấu Phase 4 DONE.
+
+## Bổ sung rà soát P4-E và xác minh build — 31/10/2026
+
+### Rà soát đường đi xử lý khi không có output (code review, không phải acceptance)
+
+Đã đọc lại implementation tại checkpoint 2137840:
+
+1. AudioService.Load() giải mã file trước, giữ reader/visualizer đã load ở trạng thái pause và gọi TryCreateOutputLocked(). Nếu Windows không có output dùng được, lỗi output không bị biến thành lỗi file nhạc.
+2. TryCreateOutputLocked() thử WASAPI Shared; ở chế độ Automatic, nếu WASAPI không mở được thì thử WaveOut. Chỉ khi các backend cho phép đều không mở được mới đặt AudioOutputStatus.Unavailable và trả false.
+3. Play() thử tạo output lại; nếu vẫn không thành công thì ném AudioOutputUnavailableException mang trạng thái unavailable.
+4. MainWindowViewModel.TryPlayTrack() bắt riêng exception này. Với file đã load, view model giữ CurrentTrack/queue occurrence, để bài ở trạng thái pause, không đánh dấu track corrupt/missing và hiển thị thông báo output.
+
+Đây là đánh giá luồng code, **không** chứng minh hành vi trên Windows khi CoreAudio thật sự không còn render endpoint. Bộ unit tests hiện có kiểm tra kiểu trạng thái/exception/parser, nhưng chưa có integration test cho AudioService + Windows CoreAudio trong điều kiện không output. Vì vậy P4-E tiếp tục là **BLOCKED**, không nâng trạng thái.
+
+### Xác minh tự động bổ sung
+
+- dotnet test tests/Mimi.Tests/Mimi.Tests.csproj -c Release --no-restore: **100 passed, 0 failed, 0 skipped**.
+- dotnet build Mimi.sln -c Release --no-restore -p:OutDir=C:\Temp\MimiBuildCheck\: **Build succeeded, 0 warnings, 0 errors**. Output được tách khỏi thư mục chạy app vì Mimi PID 20108 đang giữ lock các DLL trong Release output mặc định; không đóng hoặc khởi động lại tiến trình Mimi.
+- Git diff của tài liệu được kiểm tra bằng git diff --check; không sửa source code.
+
+### P4-G/D-03 — kết luận không thay đổi
+
+Các capture loopback số là phép đo callback/buffer trong đường âm thanh số, không phải latency từ lệnh Play đến âm thanh vật lý. Các lần đo qua Microphone Array có kết quả không nhất quán (có lần không phát hiện tone dù người dùng nghe được, có lần onset 387 ms/2370 ms); các con số này không đủ làm phép so sánh latency WASAPI–WaveOut. Không suy diễn hoặc lấy trung bình các lần mic không hợp lệ để tạo một con số latency. P4-G/D-03 vẫn **PARTIAL**; cần một phương pháp đo acoustic onset đồng bộ và lặp lại đáng tin cậy, hoặc quyết định giữ kiến trúc tạm thời mà không tuyên bố latency đã nghiệm thu.
+
+### Giới hạn an toàn trong lượt này
+
+Không disable endpoint/driver, không đổi default audio role, không đổi profile người dùng, không đóng Mimi và không sửa code. P4-E chỉ có thể được nghiệm thu sau khi có một lần chạy app-level trên môi trường không còn render endpoint và xác minh lại trạng thái endpoint được phục hồi đầy đủ.
