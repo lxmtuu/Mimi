@@ -11,6 +11,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Mimi.Core\Mimi.Core.csproj" />
+    <ProjectReference Include="..\..\src\Mimi.Audio\Mimi.Audio.csproj" />
     <ProjectReference Include="..\..\src\Mimi.Library\Mimi.Library.csproj" />
     <ProjectReference Include="..\..\src\Mimi.Visualizer\Mimi.Visualizer.csproj" />
   </ItemGroup>

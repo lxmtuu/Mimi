@@ -27,6 +27,8 @@ public sealed class AudioService : IAudioPlayer
 
     private readonly object gate = new();
     private readonly AudioOutputBackendPreference backendPreference;
+    private readonly Func<MMDevice?, IWavePlayer> wasapiOutputFactory;
+    private readonly Func<IWavePlayer> waveOutOutputFactory;
     private readonly SynchronizationContext? synchronizationContext;
     private readonly WindowsAudioDeviceWatcher? deviceWatcher;
     private readonly System.Threading.Timer deviceChangeTimer;
@@ -49,8 +51,27 @@ public sealed class AudioService : IAudioPlayer
     private volatile bool disposed;
 
     public AudioService()
+        : this(
+            ReadBackendPreference(),
+            CreateWasapiOutput,
+            CreateWaveOutOutput,
+            useDeviceWatcher: true)
     {
-        backendPreference = ReadBackendPreference();
+    }
+
+    // Internal dependency seam for deterministic no-output integration tests.
+    // Production always uses the public parameterless constructor above.
+    internal AudioService(
+        AudioOutputBackendPreference backendPreference,
+        Func<MMDevice?, IWavePlayer> wasapiOutputFactory,
+        Func<IWavePlayer> waveOutOutputFactory,
+        bool useDeviceWatcher)
+    {
+        this.backendPreference = backendPreference;
+        this.wasapiOutputFactory = wasapiOutputFactory ??
+            throw new ArgumentNullException(nameof(wasapiOutputFactory));
+        this.waveOutOutputFactory = waveOutOutputFactory ??
+            throw new ArgumentNullException(nameof(waveOutOutputFactory));
         synchronizationContext = SynchronizationContext.Current;
         deviceChangeTimer = new System.Threading.Timer(
             DeviceChangeTimerElapsed,
@@ -59,19 +80,22 @@ public sealed class AudioService : IAudioPlayer
             Timeout.Infinite);
 
         WindowsAudioDeviceWatcher? watcher = null;
-        try
+        if (useDeviceWatcher)
         {
-            watcher = new WindowsAudioDeviceWatcher();
-            watcher.Changed += AudioDeviceWatcher_Changed;
-        }
-        catch (Exception ex)
-        {
-            Log.Warning(
-                ex,
-                "Could not initialize Windows audio-device monitoring; " +
-                "playback will use the output available when a song starts");
-            watcher?.Dispose();
-            watcher = null;
+            try
+            {
+                watcher = new WindowsAudioDeviceWatcher();
+                watcher.Changed += AudioDeviceWatcher_Changed;
+            }
+            catch (Exception ex)
+            {
+                Log.Warning(
+                    ex,
+                    "Could not initialize Windows audio-device monitoring; " +
+                    "playback will use the output available when a song starts");
+                watcher?.Dispose();
+                watcher = null;
+            }
         }
 
         deviceWatcher = watcher;
@@ -532,20 +556,13 @@ public sealed class AudioService : IAudioPlayer
 
                 if (backendPreference != AudioOutputBackendPreference.ForceWaveOut)
                 {
-                    candidate = new WasapiOut(
-                        device,
-                        AudioClientShareMode.Shared,
-                        useEventSync: true,
-                        WasapiLatencyMilliseconds);
+                    candidate = wasapiOutputFactory(device);
                 }
             }
             else if (backendPreference != AudioOutputBackendPreference.ForceWaveOut &&
                      deviceWatcher is null)
             {
-                candidate = new WasapiOut(
-                    AudioClientShareMode.Shared,
-                    useEventSync: true,
-                    WasapiLatencyMilliseconds);
+                candidate = wasapiOutputFactory(null);
             }
 
             if (candidate is not null)
@@ -626,11 +643,7 @@ public sealed class AudioService : IAudioPlayer
             IWavePlayer? fallbackCandidate = null;
             try
             {
-                fallbackCandidate = new WaveOutEvent
-                {
-                    DesiredLatency = WaveOutLatencyMilliseconds,
-                    NumberOfBuffers = 3
-                };
+                fallbackCandidate = waveOutOutputFactory();
                 fallbackCandidate.Init(volumeProvider);
                 fallbackCandidate.PlaybackStopped += Output_PlaybackStopped;
 
@@ -1069,6 +1082,24 @@ public sealed class AudioService : IAudioPlayer
             return null;
         }
     }
+
+    private static IWavePlayer CreateWasapiOutput(MMDevice? device) =>
+        device is null
+            ? new WasapiOut(
+                AudioClientShareMode.Shared,
+                useEventSync: true,
+                WasapiLatencyMilliseconds)
+            : new WasapiOut(
+                device,
+                AudioClientShareMode.Shared,
+                useEventSync: true,
+                WasapiLatencyMilliseconds);
+
+    private static IWavePlayer CreateWaveOutOutput() => new WaveOutEvent
+    {
+        DesiredLatency = WaveOutLatencyMilliseconds,
+        NumberOfBuffers = 3
+    };
 
     private static AudioOutputBackendPreference ReadBackendPreference()
     {

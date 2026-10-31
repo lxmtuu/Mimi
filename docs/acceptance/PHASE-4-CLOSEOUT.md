@@ -165,3 +165,13 @@ Không disable endpoint/driver, không đổi default audio role, không đổi 
 - Mimi PID 20108 vẫn Responding; không thay đổi default endpoint, không disable/remove thiết bị, không đổi environment variable của tiến trình hiện tại và không restart ứng dụng.
 
 Kết luận: chưa có Windows VM/Sandbox độc lập khả dụng trên host này. Không thể chứng minh P4-E bằng cách giả lập mất toàn bộ endpoint trên máy đang sử dụng mà không gây rủi ro cho audio của người dùng. P4-E tiếp tục BLOCKED. Đường kiểm thử an toàn tiếp theo là chạy acceptance trong một Windows VM/PC phụ có snapshot/rollback, hoặc bổ sung một output-factory seam có thể inject backend failure trong integration tests (ghi rõ đây là kiểm thử fault-injection, không thay thế CoreAudio acceptance thật).
+
+## Cập nhật fault-injection P4-E - 31/10/2026
+
+Đã bổ sung seam nội bộ cho `AudioService` để inject hai factory tạo output. Constructor production không đổi cách sử dụng: vẫn đọc `MIMI_AUDIO_OUTPUT`, khởi tạo Windows device watcher và dùng các factory NAudio mặc định. Constructor seam chỉ internal, cho phép test tắt watcher và mô phỏng lỗi backend mà không thay đổi endpoint/driver trên host.
+
+Hai integration tests mới gọi trực tiếp `AudioService` thật và dùng WAV PCM tổng hợp ngắn:
+- **Forced WASAPI:** factory WASAPI luôn ném lỗi; xác nhận WaveOut không được gọi, `Load` vẫn giữ duration/reader, output status là unavailable, `Play` ném `AudioOutputUnavailableException` và track vẫn ở trạng thái pause.
+- **Automatic:** mô phỏng cả WASAPI lẫn WaveOut đều không mở được; xác nhận cả hai factory được thử, trạng thái unavailable được báo, track vẫn được decode/giữ lại và `Play` ném exception chuyên biệt.
+
+Kết quả chạy `dotnet test tests/Mimi.Tests/Mimi.Tests.csproj -c Release --no-restore`: **102 passed, 0 failed, 0 skipped** (bao gồm 2 test mới). Đây là **integration test có fault injection** qua ranh giới AudioService/output factory, không phải mô phỏng đầy đủ Windows CoreAudio và cũng chưa kiểm tra UI/MainWindowViewModel trên máy thật. Do chưa có môi trường Windows thực sự không có render endpoint, P4-E vẫn **BLOCKED**; không được nâng thành PASS. Không disable endpoint/driver, không đổi default device/profile và không restart Mimi đang chạy.
