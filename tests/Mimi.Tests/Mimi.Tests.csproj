@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net8.0-windows</TargetFramework>
+    <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
+    <UseWPF>true</UseWPF>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>
@@ -12,10 +13,12 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Mimi.Core\Mimi.Core.csproj" />
     <ProjectReference Include="..\..\src\Mimi.Audio\Mimi.Audio.csproj" />
+    <ProjectReference Include="..\..\src\Mimi.App\Mimi.App.csproj" />
     <ProjectReference Include="..\..\src\Mimi.Library\Mimi.Library.csproj" />
     <ProjectReference Include="..\..\src\Mimi.Visualizer\Mimi.Visualizer.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Using Include="Xunit" />
+    <Using Include="System.IO" />
   </ItemGroup>
 </Project>

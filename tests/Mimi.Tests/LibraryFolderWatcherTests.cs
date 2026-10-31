@@ -30,7 +30,7 @@ public sealed class LibraryFolderWatcherTests : IDisposable
 
         Assert.Equal([recreated], changes.ChangedFilePaths);
         Assert.Equal([removed], changes.DeletedFilePaths);
-        Assert.Equal([root, directory], changes.DirectoriesToRescan);
+        Assert.Equal(new[] { root, directory }, changes.DirectoriesToRescan);
         Assert.True(changes.BufferOverflowed);
         Assert.False(buffer.Drain().HasChanges);
     }

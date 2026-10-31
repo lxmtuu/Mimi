@@ -175,3 +175,24 @@ Hai integration tests mới gọi trực tiếp `AudioService` thật và dùng 
 - **Automatic:** mô phỏng cả WASAPI lẫn WaveOut đều không mở được; xác nhận cả hai factory được thử, trạng thái unavailable được báo, track vẫn được decode/giữ lại và `Play` ném exception chuyên biệt.
 
 Kết quả chạy `dotnet test tests/Mimi.Tests/Mimi.Tests.csproj -c Release --no-restore`: **102 passed, 0 failed, 0 skipped** (bao gồm 2 test mới). Đây là **integration test có fault injection** qua ranh giới AudioService/output factory, không phải mô phỏng đầy đủ Windows CoreAudio và cũng chưa kiểm tra UI/MainWindowViewModel trên máy thật. Do chưa có môi trường Windows thực sự không có render endpoint, P4-E vẫn **BLOCKED**; không được nâng thành PASS. Không disable endpoint/driver, không đổi default device/profile và không restart Mimi đang chạy.
+
+
+## Cập nhật kiểm thử MainWindowViewModel P4-E - 31/10/2026
+
+Đã bổ sung WPF/STA test harness vào `Mimi.Tests` (target Windows 10.0.19041 + `UseWPF`) và tham chiếu trực tiếp `Mimi.App`. Bài test gọi command public `PlayTrackCommand` của `MainWindowViewModel` trên STA thread thật, dùng fake service/player và không mở dialog hệ thống hoặc ghi vào thư mục dữ liệu người dùng.
+
+Kịch bản kiểm thử:
+1. Fake player nhận `Load` thành công nhưng `Play` ném `AudioOutputUnavailableException`.
+2. Xác nhận `CurrentTrack` và `SelectedTrack` vẫn là Cyan; Magenta vẫn ở Upcoming, không bị queue skip.
+3. Track không bị đánh dấu playback error, `HasError` hoặc `IsMissing`; trạng thái UI là paused và output label/notice đúng.
+4. Xác nhận cảnh báo có tiêu đề `Audio output` và thông báo cho biết bài hát đã được load.
+5. Phát sự kiện output trở lại; WPF Dispatcher xử lý cập nhật trạng thái; thông báo chuyển thành hướng dẫn nhấn Play.
+6. Play lại thành công; trạng thái playing được cập nhật, notice được xóa và Upcoming vẫn giữ Magenta.
+
+Kết quả:
+- `dotnet test tests/Mimi.Tests/Mimi.Tests.csproj -c Release --no-restore -p:OutDir=C:\Temp\MimiP4ViewModelTest\`: **103 passed, 0 failed, 0 skipped**.
+- `dotnet build Mimi.sln -c Release --no-restore -p:OutDir=C:\Temp\MimiP4ViewModelBuild\`: **0 warnings, 0 errors**.
+- Build/test dùng output directory tách biệt vì Mimi PID 20108 đang giữ khóa các DLL trong App output; không restart/đóng ứng dụng.
+- Không thao tác với endpoint/driver hoặc default audio device.
+
+Đây là kiểm thử WPF ViewModel với fake audio player và integration test có fault injection ở tầng AudioService. Nó xác minh ứng xử ứng dụng/UI khi exception được ném ra, nhưng không thay thế nghiệm thu Windows CoreAudio thật khi không có render endpoint. Vì vậy P4-E vẫn **BLOCKED**, không được đánh dấu PASS cho đến khi chạy trên Windows VM hoặc máy phụ có thể cô lập endpoint an toàn.
