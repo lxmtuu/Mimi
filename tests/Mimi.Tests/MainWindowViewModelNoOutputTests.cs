@@ -1,9 +1,13 @@
+using System.IO;
+using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading;
 using System.Windows.Threading;
 using Mimi.Core.Playback;
 using Mimi.Models;
 using Mimi.Services;
 using Mimi.ViewModels;
+using NAudio.Wave;
 
 namespace Mimi.Tests;
 
@@ -106,6 +110,144 @@ public sealed class MainWindowViewModelNoOutputTests
         });
     }
 
+    [Fact]
+    public void RealAudioService_DeviceInvalidation_PreservesQueueSessionAndResumesThroughViewModel()
+    {
+        RunOnSta(() =>
+        {
+            WithSilentWaveFile(path =>
+            {
+                var firstOutput = new RecoveryWavePlayer();
+                var recoveredOutput = new RecoveryWavePlayer();
+                var factoryCalls = 0;
+                using var audio = new AudioService(
+                    AudioOutputBackendPreference.ForceWasapiShared,
+                    _ =>
+                    {
+                        factoryCalls++;
+                        return factoryCalls switch
+                        {
+                            1 => firstOutput,
+                            2 => throw new IOException("Simulated endpoint disconnect."),
+                            3 => recoveredOutput,
+                            _ => throw new InvalidOperationException("Unexpected output retry.")
+                        };
+                    },
+                    () => throw new InvalidOperationException("WaveOut fallback must stay disabled."),
+                    useDeviceWatcher: false);
+
+                var userData = new FakeUserDataService();
+                var dialogs = new FakeDialogService();
+                var viewModel = new MainWindowViewModel(
+                    audio, new FakeLibraryService(), new FakeLibraryCatalog(), userData, dialogs);
+
+                try
+                {
+                    viewModel.InitializationTask.GetAwaiter().GetResult();
+                    var cyan = new TrackItemViewModel(new Track
+                    {
+                        FilePath = path, MetadataTitle = "Cyan Signal",
+                        Duration = TimeSpan.FromSeconds(10)
+                    }, isFavorite: false);
+                    var magenta = new TrackItemViewModel(new Track
+                    {
+                        FilePath = path + ".magenta", MetadataTitle = "Magenta Signal",
+                        Duration = TimeSpan.FromSeconds(10)
+                    }, isFavorite: false);
+                    viewModel.Tracks.Add(cyan);
+                    viewModel.Tracks.Add(magenta);
+
+                    viewModel.PlayTrackCommand.Execute(cyan);
+                    Assert.Same(cyan, viewModel.CurrentTrack);
+                    Assert.True(viewModel.IsPlaying);
+                    firstOutput.AdvanceBy(TimeSpan.FromSeconds(1));
+                    var retainedPosition = audio.CurrentTime;
+                    Assert.InRange(Math.Abs(retainedPosition.TotalSeconds - 1), 0, 0.06);
+
+                    firstOutput.RaiseStopped(new COMException(
+                        "Simulated endpoint invalidation.", unchecked((int)0x88890004)));
+
+                    Assert.True(SpinWait.SpinUntil(
+                        () => !audio.OutputStatus.IsAvailable && !audio.IsPlaying,
+                        TimeSpan.FromSeconds(5)),
+                        "AudioService did not report the simulated device loss.");
+
+                    Dispatcher.CurrentDispatcher.Invoke(
+                        DispatcherPriority.ApplicationIdle, new Action(() => { }));
+
+                    Assert.Same(cyan, viewModel.CurrentTrack);
+                    Assert.False(viewModel.IsPlaying);
+                    Assert.False(cyan.HasPlaybackError);
+                    Assert.False(cyan.Track.HasError);
+                    Assert.False(cyan.Track.IsMissing);
+                    Assert.Single(viewModel.UpcomingQueueItems);
+                    Assert.Same(magenta, viewModel.UpcomingQueueItems[0].Track);
+                    Assert.Equal("No audio output available", viewModel.AudioOutputLabel);
+                    Assert.Contains("playback is paused", viewModel.AudioOutputNotice,
+                        StringComparison.OrdinalIgnoreCase);
+
+                    var saved = userData.LastSavedSettings?.PlaybackSession;
+                    Assert.NotNull(saved);
+                    Assert.Equal(path, saved!.CurrentTrackPath);
+                    Assert.InRange(Math.Abs(saved.PositionSeconds - retainedPosition.TotalSeconds), 0, 0.06);
+                    Assert.Contains(path + ".magenta", saved.UpcomingTrackPaths);
+
+                    viewModel.PlayPauseCommand.Execute(null);
+
+                    Assert.Equal(3, factoryCalls);
+                    Assert.True(audio.OutputStatus.IsAvailable);
+                    Assert.True(viewModel.IsPlaying);
+                    Assert.Same(cyan, viewModel.CurrentTrack);
+                    Assert.Empty(viewModel.AudioOutputNotice);
+                    Assert.Single(viewModel.UpcomingQueueItems);
+                    Assert.Same(magenta, viewModel.UpcomingQueueItems[0].Track);
+                    Assert.Equal(PlaybackState.Playing, recoveredOutput.PlaybackState);
+                    Assert.InRange(Math.Abs((audio.CurrentTime - retainedPosition).TotalMilliseconds), 0, 60);
+                }
+                finally
+                {
+                    viewModel.Dispose();
+                }
+            }, 10000);
+        });
+    }
+
+    private static void WithSilentWaveFile(Action<string> action, int durationMilliseconds)
+    {
+        var path = Path.Combine(Path.GetTempPath(), $"mimi-vm-recovery-{Guid.NewGuid():N}.wav");
+        try
+        {
+            const int sampleRate = 44100;
+            const short channels = 1;
+            const short bitsPerSample = 16;
+            var sampleCount = sampleRate * durationMilliseconds / 1000;
+            var dataLength = sampleCount * channels * bitsPerSample / 8;
+            using var stream = File.Create(path);
+            using var writer = new BinaryWriter(stream, Encoding.ASCII);
+            writer.Write(Encoding.ASCII.GetBytes("RIFF"));
+            writer.Write(36 + dataLength);
+            writer.Write(Encoding.ASCII.GetBytes("WAVE"));
+            writer.Write(Encoding.ASCII.GetBytes("fmt "));
+            writer.Write(16);
+            writer.Write((short)1);
+            writer.Write(channels);
+            writer.Write(sampleRate);
+            writer.Write(sampleRate * channels * bitsPerSample / 8);
+            writer.Write((short)(channels * bitsPerSample / 8));
+            writer.Write(bitsPerSample);
+            writer.Write(Encoding.ASCII.GetBytes("data"));
+            writer.Write(dataLength);
+            writer.Write(new byte[dataLength]);
+            writer.Dispose();
+            stream.Dispose();
+            action(path);
+        }
+        finally
+        {
+            if (File.Exists(path)) File.Delete(path);
+        }
+    }
+
     private static void RunOnSta(Action action)
     {
         Exception? failure = null;
@@ -128,6 +270,45 @@ public sealed class MainWindowViewModelNoOutputTests
         if (failure is not null)
             throw new Xunit.Sdk.XunitException(
                 $"STA/WPF test failed: {failure}");
+    }
+
+    private sealed class RecoveryWavePlayer : IWavePlayer
+    {
+        private IWaveProvider? provider;
+        public event EventHandler<StoppedEventArgs>? PlaybackStopped;
+        public float Volume { get; set; } = 1f;
+        public PlaybackState PlaybackState { get; private set; } = PlaybackState.Stopped;
+        public WaveFormat OutputWaveFormat =>
+            provider?.WaveFormat ?? WaveFormat.CreateIeeeFloatWaveFormat(44100, 1);
+        public void Init(IWaveProvider waveProvider) =>
+            provider = waveProvider ?? throw new ArgumentNullException(nameof(waveProvider));
+        public void Play() => PlaybackState = PlaybackState.Playing;
+        public void Pause() => PlaybackState = PlaybackState.Paused;
+        public void Stop() => PlaybackState = PlaybackState.Stopped;
+        public void AdvanceBy(TimeSpan duration)
+        {
+            if (provider is null) throw new InvalidOperationException("Output is not initialized.");
+            var remaining = (long)Math.Round(
+                provider.WaveFormat.AverageBytesPerSecond * duration.TotalSeconds);
+            var buffer = new byte[Math.Min(8192, provider.WaveFormat.AverageBytesPerSecond)];
+            while (remaining > 0)
+            {
+                var read = provider.Read(buffer, 0, (int)Math.Min(buffer.Length, remaining));
+                if (read <= 0) break;
+                remaining -= read;
+            }
+        }
+        public void RaiseStopped(Exception exception)
+        {
+            PlaybackState = PlaybackState.Stopped;
+            PlaybackStopped?.Invoke(this, new StoppedEventArgs(exception));
+        }
+        public void Dispose()
+        {
+            PlaybackState = PlaybackState.Stopped;
+            provider = null;
+            PlaybackStopped = null;
+        }
     }
 
     private sealed class FakeAudioPlayer : IAudioPlayer

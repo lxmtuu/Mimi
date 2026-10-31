@@ -217,3 +217,24 @@ Results:
 - All build outputs were directed to `C:\Temp\MimiP4DeviceRecoveryTest\` and `C:\Temp\MimiP4DeviceRecoveryBuild\`; the running Mimi process was not restarted and no physical audio endpoint or driver was changed.
 
 Evidence boundary: this is an integration test of the real `AudioService` and reader/provider path using deterministic fake output objects and the Windows device-invalidated HRESULT. It does not unplug a physical endpoint, exercise the COM `WindowsAudioDeviceWatcher` notification callback, or establish acoustic output. Therefore P4-E remains **BLOCKED** for real endpoint-less Windows CoreAudio acceptance. This test supports the engine's interruption/position-retention/explicit-retry behavior but is not a substitute for physical device-loss acceptance.
+
+
+## Integrated AudioService + MainWindowViewModel interruption test - 31/10/2026
+
+Added an STA/WPF integration test to `tests/Mimi.Tests/MainWindowViewModelNoOutputTests.cs`. Unlike the earlier ViewModel-only test, this test wires the real `AudioService` into the real `MainWindowViewModel`, with only the low-level `IWavePlayer` output factory replaced by deterministic fakes. The fake output consumes the real audio provider so the real reader position advances.
+
+Scenario and assertions:
+1. Load and play a generated 10-second Cyan WAV through the ViewModel; Magenta remains the next queue item.
+2. Consume one second from the real provider, then raise NAudio `PlaybackStopped` with `AUDCLNT_E_DEVICE_INVALIDATED (0x88890004)`.
+3. Let AudioService's debounced rebuild fail once to represent the endpoint remaining disconnected. Pump the WPF Dispatcher and verify Cyan remains CurrentTrack, Magenta remains Upcoming, playback is paused, the UI output label/notice report the interruption, and Cyan is not marked missing or corrupt.
+4. Verify the interruption event causes `PlaybackSession` to be saved with Cyan's path, retained position (within 60 ms), and Magenta in UpcomingTrackPaths.
+5. Invoke the public ViewModel Play command after the injected factory supplies a replacement output. Verify the third factory call succeeds, playback resumes from the retained position, the notice clears, and the queue remains unchanged.
+
+Results on the isolated retest worktree:
+- Targeted integrated test: **1 passed, 0 failed**.
+- Full test suite: **105 passed, 0 failed, 0 skipped**.
+- Full Release solution build: **0 warnings, 0 errors**.
+- Build/test outputs were isolated under `C:\\Temp\\MimiP4IntegratedRecoveryTest\\`, `C:\\Temp\\MimiP4IntegratedRecoveryFullTest\\`, and `C:\\Temp\\MimiP4IntegratedRecoveryBuild\\`.
+- No physical endpoint/driver/default-device changes; running Mimi process was not restarted.
+
+Evidence boundary: this confirms the real AudioService + ViewModel + WPF Dispatcher + in-memory settings persistence path under injected device-loss conditions. It still does not exercise the real COM `WindowsAudioDeviceWatcher` callback, unplug a physical endpoint, or prove acoustic output. P4-E therefore remains **BLOCKED** pending safe real CoreAudio endpoint-less acceptance.
