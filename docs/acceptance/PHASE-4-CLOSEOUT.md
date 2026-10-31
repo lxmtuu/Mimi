@@ -238,3 +238,15 @@ Results on the isolated retest worktree:
 - No physical endpoint/driver/default-device changes; running Mimi process was not restarted.
 
 Evidence boundary: this confirms the real AudioService + ViewModel + WPF Dispatcher + in-memory settings persistence path under injected device-loss conditions. It still does not exercise the real COM `WindowsAudioDeviceWatcher` callback, unplug a physical endpoint, or prove acoustic output. P4-E therefore remains **BLOCKED** pending safe real CoreAudio endpoint-less acceptance.
+
+
+## P4-E watcher notification/debounce verification — 31/10/2026
+
+Đã bổ sung WindowsAudioDeviceNotificationTests để kiểm tra an toàn hai phần còn thiếu ở tầng watcher/service:
+
+- Gọi trực tiếp COM callback adapter AudioDeviceNotificationClient và xác nhận Capture bị bỏ qua; Render/Console và Render/Multimedia được chuyển tiếp; DeviceAdded/Removed/StateChanged giữ đúng loại sự kiện, device ID và state.
+- Phát một burst gồm 5 sự kiện DefaultChanged cách nhau 40 ms vào handler của AudioService; xác nhận timer debounce chỉ tạo đúng một output replacement sau burst, output cũ được dispose đúng một lần và không có lần khởi tạo output lặp sau 500 ms yên tĩnh.
+
+Kết quả: targeted tests 2/2 PASS; full suite 107 passed / 0 failed / 0 skipped. Test debounce gọi handler nội bộ bằng reflection và dùng fake IWavePlayer; test callback gọi trực tiếp adapter, không đăng ký COM với CoreAudio thật. Do đó chúng xác nhận mapping + logic debounce/cleanup ở mức unit/integration có fault injection, không chứng minh Windows thực sự phát callback qua COM hoặc việc rút/cắm endpoint vật lý. P4-E vẫn BLOCKED cho tới khi có acceptance an toàn trên Windows VM/PC phụ hoặc host thử nghiệm có rollback.
+
+Không disable endpoint/driver, không đổi default device, không restart Mimi PID 20108. Các test/build output được tách khỏi output đang chạy.
