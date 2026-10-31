@@ -99,3 +99,30 @@ từng byte với ZIP fixture đã phát hành trước đó.
 
 Cho tới khi các quyết định trên được ghi, trạng thái đúng vẫn là **Phase 4
 chưa đóng**.
+
+
+## Retest Queue/Shuffle/Repeat trên Windows thật — 31/10/2026
+
+Checkpoint kiểm thử: `2137840` (fix stale playback end notifications), chạy trên máy Windows Yami bằng build Release đang cài trong worktree retest. Sau khi hoàn tất retest, checkout tài liệu được đặt trên nhánh tích hợp dựa trên `origin/arena/cdda374d-mimi`; không sửa mã nguồn trong lượt cập nhật hồ sơ này.
+
+| Hạng mục | Kết quả | Bằng chứng / giới hạn |
+|---|---|---|
+| Repeat One | `PASS — telemetry/state` | `RepeatMode=One`, Cyan Signal vẫn là CurrentTrack sau nhiều lần kết thúc tự nhiên; Position reset về đầu bài. Chưa xác nhận trực tiếp không có âm thanh chồng luồng bằng nghe/loopback. |
+| Repeat All | `PASS — runtime/state` | Quan sát chu trình tự nhiên: Cyan (08:12:11) → Amber (08:12:27) → Magenta (08:12:59) → Cyan (08:13:31). Sau khi quay lại Cyan, Upcoming được tạo lại (2 bài). |
+| Shuffle bật/tắt | `PASS — runtime/state` | UI Automation bật và tắt Shuffle; `ShuffleEnabled` được lưu tương ứng `true/false`. |
+| Shuffle reorder | `PASS — runtime/state` | Khi bật Shuffle, Up Next là Magenta → Amber; khi tắt, thứ tự nguồn được khôi phục là Amber → Magenta. Đây là xác nhận thao tác và sắp xếp queue, không phải thống kê chất lượng ngẫu nhiên qua nhiều chu kỳ. |
+| Unit tests | `PASS` | `dotnet test tests/Mimi.Tests/Mimi.Tests.csproj -c Release --no-restore`: 100 passed, 0 failed, 0 skipped. |
+| Working tree / process | `PASS` | Checkout retest `2137840` sạch; Mimi PID 20108 vẫn Responding tại lần kiểm tra cuối. |
+
+### Cách chạy Repeat All
+
+Bộ fixture Acceptance S1 có ba MP3 Cyan, Magenta, Amber, mỗi bài khoảng 30 giây. Đã cô lập queue kiểm thử khỏi bài cũ `merrygoround.mp3`, đưa Cyan làm bài hiện tại, để bài phát và đọc trạng thái persisted trong `%LOCALAPPDATA%\\Mimi\\settings.json`. Dữ liệu hiển thị cho thấy ba fixture lần lượt trở thành CurrentTrack, queue giảm về 0 rồi được tạo lại khi chu kỳ mới bắt đầu.
+
+Thứ tự quan sát thực tế là Cyan → Amber → Magenta → Cyan do thứ tự nguồn hiển thị trong thư viện tại phiên thử; tiêu chí Repeat All được xác nhận là mọi fixture trong context được phát hết một lượt và queue quay vòng về một bài khác, không yêu cầu thứ tự tên file cụ thể.
+
+### Kết luận cập nhật
+
+- Có thể nâng bằng chứng vận hành Shuffle/Repeat từ phần còn thiếu trong closeout lên `PASS` ở phạm vi runtime/state nêu trên.
+- Không thay đổi trạng thái P4-A (các điều khiển Quick Settings không hiển thị vẫn BLOCKED/N/A), P4-E (BLOCKED), P4-G/D-03 (PARTIAL), hoặc P4-H (OPEN).
+- Không tuyên bố xác nhận chất lượng âm thanh đầu ra trực tiếp từ telemetry. Repeat One đặc biệt vẫn cần kiểm tra nghe/loopback nếu tiêu chí nghiệm thu yêu cầu xác nhận không chồng luồng âm thanh.
+- Phase 4 vẫn chưa đóng; không tạo waiver và không đánh dấu Phase 4 DONE.
