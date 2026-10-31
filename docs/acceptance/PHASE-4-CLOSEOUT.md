@@ -288,3 +288,21 @@ Giới hạn: test stress chủ động gọi Dispose đồng thời, không đ�
 ## P4-E notification subscriber exception boundary - 31/10/2026
 
 Added a regression test that creates the production WindowsAudioDeviceWatcher, attaches a deliberately throwing Changed subscriber, and invokes the notification client adapter. The exception is contained at the watcher notification boundary and does not escape the callback adapter. The test does not claim Windows emitted a real endpoint notification; it validates exception containment after the adapter is invoked. Full test suite: 110 passed, 0 failed, 0 skipped. Release solution build: 0 warnings, 0 errors. `git diff --check` passed. No endpoint, driver, default-device, or running Mimi process changes. P4-E remains BLOCKED pending a controlled real endpoint notification and endpoint-less acceptance.
+
+## Real default-output switch while playing - 31/10/2026
+
+A live Windows-host switch was performed while a fixture track was playing. Mimi's production log at 14:49:52.243 +07:00 records:
+
+- WASAPI Shared opened successfully on Speakers (Realtek(R) Audio).
+- Audio output rebuilt after a device change from Headphones (A303 Headset) to Speakers (Realtek(R) Audio).
+- WasPlaying=true at rebuild time.
+
+The user confirmed audible playback stopped at the switch and they had to press Play to continue. Code review of AudioService.RebuildOutputAfterDeviceChange confirms this is intentional: on a default-endpoint change, Mimi restores the reader position but leaves the rebuilt stream paused and asks for explicit Play. This avoids unexpectedly routing audio to speakers when headphones are disconnected or the Windows default changes.
+
+Acceptance interpretation:
+- Real CoreAudio default-endpoint notification and WASAPI rebuild while previously playing: PASS.
+- Safe pause after endpoint change and explicit user-controlled resume: PASS by observed user confirmation.
+- Seamless/automatic playback continuity across endpoint changes: NOT A REQUIREMENT of the current safety design; no claim of uninterrupted audio.
+- P4-E (zero render endpoints) remains BLOCKED; this test changes the default endpoint to another available endpoint and does not remove all outputs.
+
+No code or audio-device configuration was changed during this verification.
