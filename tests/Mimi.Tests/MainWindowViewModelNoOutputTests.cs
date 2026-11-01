@@ -18,6 +18,7 @@ using NAudio.Wave;
 
 namespace Mimi.Tests;
 
+[Collection("Item click behavior")]
 public sealed class MainWindowViewModelNoOutputTests
 {
     [Fact]
@@ -255,6 +256,14 @@ public sealed class MainWindowViewModelNoOutputTests
 
                 var container = Assert.IsType<ListViewItem>(
                     listView.ItemContainerGenerator.ContainerFromIndex(1));
+                Assert.Same(
+                    second,
+                    listView.ItemContainerGenerator.ItemFromContainer(
+                        container));
+                Assert.Same(
+                    viewModel.PlayTrackCommand,
+                    ItemClickCommandBehavior.GetCommand(listView));
+                Assert.True(viewModel.PlayTrackCommand.CanExecute(second));
 
                 // The completed click must still activate playback even if
                 // an element in the row consumes the bubbling MouseUp.

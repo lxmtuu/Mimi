@@ -6,6 +6,14 @@ using Mimi.Behaviors;
 
 namespace Mimi.Tests;
 
+[CollectionDefinition(
+    "Item click behavior",
+    DisableParallelization = true)]
+public sealed class ItemClickBehaviorCollection
+{
+}
+
+[Collection("Item click behavior")]
 public sealed class ItemClickCommandBehaviorTests
 {
     [Fact]
