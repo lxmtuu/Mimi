@@ -2,6 +2,10 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
+using System.Windows.Data;
 using System.Windows.Threading;
 using Mimi.Core.Playback;
 using Mimi.Localization;
@@ -275,6 +279,96 @@ public sealed class MainWindowViewModelNoOutputTests
             {
                 if (!loadTracksGate.Task.IsCompleted)
                     loadTracksGate.SetResult([]);
+                viewModel.Dispose();
+            }
+        });
+    }
+
+    [Fact]
+    public void Initialization_WhenTrackListViewIsBound_LoadsStoredTracks()
+    {
+        RunOnSta(() =>
+        {
+            SynchronizationContext.SetSynchronizationContext(
+                new DispatcherSynchronizationContext(
+                    Dispatcher.CurrentDispatcher));
+
+            var loadTracksGate =
+                new TaskCompletionSource<IReadOnlyList<Track>>();
+            var dialogs = new FakeDialogService();
+            var viewModel = new MainWindowViewModel(
+                new FakeAudioPlayer
+                {
+                    OutputStatus = new AudioOutputStatus(
+                        isAvailable: true,
+                        AudioOutputKind.WasapiShared,
+                        "Test Speakers",
+                        "Audio output is ready.")
+                },
+                new FakeLibraryService(),
+                new FakeLibraryCatalog
+                {
+                    LoadTracksGate = loadTracksGate
+                },
+                new FakeUserDataService(),
+                dialogs);
+
+            Window? window = null;
+            try
+            {
+                Assert.False(viewModel.InitializationTask.IsCompleted);
+
+                // This host is the missing condition from the ViewModel-only
+                // startup test: a real Selector consumes TracksView and its
+                // currency state while AddTracksToCollection mutates Tracks.
+                var listView = new ListView
+                {
+                    DataContext = viewModel,
+                    ItemsSource = viewModel.TracksView,
+                    SelectionMode = SelectionMode.Extended
+                };
+                listView.SetBinding(
+                    Selector.SelectedItemProperty,
+                    new Binding(nameof(MainWindowViewModel.SelectedTrack))
+                    {
+                        Mode = BindingMode.TwoWay
+                    });
+                window = new Window
+                {
+                    Width = 600,
+                    Height = 400,
+                    Content = listView
+                };
+                window.Show();
+                window.UpdateLayout();
+
+                loadTracksGate.SetResult(
+                [
+                    new Track
+                    {
+                        FilePath = @"C:\fixtures\cyan.wav",
+                        MetadataTitle = "Cyan Signal",
+                        Duration = TimeSpan.FromSeconds(30)
+                    },
+                    new Track
+                    {
+                        FilePath = @"C:\fixtures\magenta.wav",
+                        MetadataTitle = "Magenta Signal",
+                        Duration = TimeSpan.FromSeconds(30)
+                    }
+                ]);
+                PumpDispatcherUntilCompleted(viewModel.InitializationTask);
+                window.UpdateLayout();
+
+                Assert.Equal(2, viewModel.Tracks.Count);
+                Assert.Equal(2, listView.Items.Count);
+                Assert.Empty(dialogs.Warnings);
+            }
+            finally
+            {
+                if (!loadTracksGate.Task.IsCompleted)
+                    loadTracksGate.SetResult([]);
+                window?.Close();
                 viewModel.Dispose();
             }
         });

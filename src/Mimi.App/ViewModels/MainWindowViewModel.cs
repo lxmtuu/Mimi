@@ -1530,39 +1530,38 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
             StringComparer.OrdinalIgnoreCase);
         var changedTracks = new List<Track>();
 
-        // A bulk restore/scan can add many rows at once. Defer the default
-        // CollectionView refresh so startup does not re-filter/re-sort and
-        // regenerate containers after every single added track; besides
-        // being wasted UI-thread work, that churn can make the very first
-        // click land while the visible rows are still being rebuilt.
-        using (TracksView.DeferRefresh())
+        // Do not wrap these ObservableCollection mutations in
+        // TracksView.DeferRefresh(). WPF reserves a deferred refresh for
+        // changing the view's sort/filter/group descriptions and forbids
+        // changing or inspecting the view's contents while that defer is
+        // active. A bound ListView does exactly that when items are added,
+        // which otherwise aborts bulk library loading with an
+        // InvalidOperationException.
+        foreach (var track in additions)
         {
-            foreach (var track in additions)
+            if (existingByPath.TryGetValue(
+                    track.FilePath,
+                    out var existingItem))
             {
-                if (existingByPath.TryGetValue(
-                        track.FilePath,
-                        out var existingItem))
+                if (!ReferenceEquals(existingItem.Track, track))
                 {
-                    if (!ReferenceEquals(existingItem.Track, track))
-                    {
-                        existingItem.UpdateMetadata(track);
-                        changedTracks.Add(existingItem.Track);
-                    }
-
-                    continue;
+                    existingItem.UpdateMetadata(track);
+                    changedTracks.Add(existingItem.Track);
                 }
 
-                var item = new TrackItemViewModel(
-                    track,
-                    favorites.Contains(track.FilePath),
-                    Loc);
-                if (item.IsFavorite)
-                    favorites.Add(track.FilePath);
-
-                Tracks.Add(item);
-                existingByPath[track.FilePath] = item;
-                changedTracks.Add(track);
+                continue;
             }
+
+            var item = new TrackItemViewModel(
+                track,
+                favorites.Contains(track.FilePath),
+                Loc);
+            if (item.IsFavorite)
+                favorites.Add(track.FilePath);
+
+            Tracks.Add(item);
+            existingByPath[track.FilePath] = item;
+            changedTracks.Add(track);
         }
 
         RefreshFilterOptions();
