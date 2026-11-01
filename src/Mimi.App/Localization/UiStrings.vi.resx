@@ -9,12 +9,29 @@
   <data name="App_StartupFailed" xml:space="preserve"><value>Mimi không thể khởi động. Chi tiết đã được ghi vào nhật ký trong %LocalAppData%\Mimi\logs.</value></data>
   <data name="App_Tagline" xml:space="preserve"><value>TRÌNH PHÁT CỤC BỘ  |  ÂM NHẠC CỦA BẠN, THẾ GIỚI CỦA BẠN</value></data>
   <data name="App_UnexpectedProblem" xml:space="preserve"><value>Mimi gặp sự cố không mong muốn nhưng sẽ cố tiếp tục chạy. Chi tiết đã được ghi vào nhật ký trong %LocalAppData%\Mimi\logs.</value></data>
+  <data name="Audio_CannotPlaySongNoOutput" xml:space="preserve"><value>Mimi không thể phát bài này vì không có đầu ra âm thanh khả dụng.&#10;&#10;{0}</value></data>
   <data name="Audio_CannotStartPlayback" xml:space="preserve"><value>Mimi không thể bắt đầu phát vì không có đầu ra âm thanh khả dụng.&#10;&#10;{0}</value></data>
+  <data name="Audio_MessageCheckedWhenPlaybackStarts" xml:space="preserve"><value>Đầu ra âm thanh sẽ được kiểm tra khi bắt đầu phát.</value></data>
+  <data name="Audio_MessageNoOutputAvailable" xml:space="preserve"><value>Không có đầu ra âm thanh.</value></data>
+  <data name="Audio_MessageNoOutputPressPlay" xml:space="preserve"><value>Không có đầu ra âm thanh. Hãy kết nối hoặc bật thiết bị đầu ra, rồi nhấn Phát.</value></data>
+  <data name="Audio_MessageOutputUnavailable" xml:space="preserve"><value>Đầu ra âm thanh không khả dụng.</value></data>
+  <data name="Audio_MessagePlaybackInterruptedOutputChanged" xml:space="preserve"><value>Phát nhạc đã tạm dừng vì đầu ra âm thanh thay đổi hoặc dừng. Đầu ra hiện tại: {0}. Nhấn Phát để tiếp tục.</value></data>
+  <data name="Audio_MessagePlaybackInterruptedOutputUnavailable" xml:space="preserve"><value>Đầu ra âm thanh đã không còn khả dụng, nên phát nhạc tạm dừng. Hãy kết nối thiết bị đầu ra, rồi nhấn Phát.</value></data>
+  <data name="Audio_MessageReady" xml:space="preserve"><value>Đầu ra âm thanh đã sẵn sàng.</value></data>
+  <data name="Audio_MessageWasapiForcedReady" xml:space="preserve"><value>Đầu ra WASAPI shared đã sẵn sàng (được ép bởi MIMI_AUDIO_OUTPUT cho chẩn đoán).</value></data>
+  <data name="Audio_MessageWasapiReady" xml:space="preserve"><value>Đầu ra WASAPI shared đã sẵn sàng.</value></data>
+  <data name="Audio_MessageWasapiUnavailableFallbackDisabled" xml:space="preserve"><value>Đầu ra WASAPI shared không khả dụng, và MIMI_AUDIO_OUTPUT tắt WaveOut dự phòng cho chẩn đoán.</value></data>
+  <data name="Audio_MessageWaveOutFallbackReady" xml:space="preserve"><value>WASAPI không khả dụng, nên Mimi đang dùng WaveOut dự phòng.</value></data>
+  <data name="Audio_MessageWaveOutForcedReady" xml:space="preserve"><value>Đầu ra WaveOut đã sẵn sàng (được ép bởi MIMI_AUDIO_OUTPUT cho chẩn đoán).</value></data>
+  <data name="Audio_MessageWindowsDefaultAvailable" xml:space="preserve"><value>Đầu ra mặc định của Windows đang khả dụng.</value></data>
   <data name="Audio_NoOutput" xml:space="preserve"><value>Không có đầu ra âm thanh</value></data>
+  <data name="Audio_NoOutputDevice" xml:space="preserve"><value>Không có thiết bị đầu ra</value></data>
   <data name="Audio_OutputReady" xml:space="preserve"><value>Đầu ra âm thanh đã sẵn sàng: {0}. Nhấn Phát để tiếp tục.</value></data>
+  <data name="Audio_SongLoadedNoOutput" xml:space="preserve"><value>Bài này đã được nạp, nhưng Mimi không thể bắt đầu vì không có đầu ra âm thanh khả dụng.&#10;&#10;{0}</value></data>
   <data name="Audio_WasapiShared" xml:space="preserve"><value>WASAPI shared · {0}</value></data>
   <data name="Audio_WaveOutDiagnostic" xml:space="preserve"><value>WaveOut diagnostic · {0}</value></data>
   <data name="Audio_WaveOutFallback" xml:space="preserve"><value>WaveOut dự phòng · {0}</value></data>
+  <data name="Audio_WindowsAudioOutput" xml:space="preserve"><value>Đầu ra âm thanh Windows</value></data>
   <data name="Audio_WindowsDefault" xml:space="preserve"><value>Mặc định Windows · {0}</value></data>
   <data name="Audio_WindowsDefaultOutput" xml:space="preserve"><value>Đầu ra mặc định của Windows</value></data>
   <data name="Common_Cancel" xml:space="preserve"><value>Huỷ</value></data>
@@ -33,6 +50,14 @@
   <data name="Dialog_ChooseMusicFiles" xml:space="preserve"><value>Chọn file nhạc</value></data>
   <data name="Dialog_ChooseMusicFolder" xml:space="preserve"><value>Chọn thư mục chứa nhạc của bạn</value></data>
   <data name="Dialog_LibraryWarning" xml:space="preserve"><value>Cảnh báo thư viện</value></data>
+  <data name="Filter_AllAlbums" xml:space="preserve"><value>Tất cả album</value></data>
+  <data name="Filter_AllArtists" xml:space="preserve"><value>Tất cả nghệ sĩ</value></data>
+  <data name="Filter_AllFormats" xml:space="preserve"><value>Tất cả định dạng</value></data>
+  <data name="Filter_AllGenres" xml:space="preserve"><value>Tất cả thể loại</value></data>
+  <data name="Filter_AllStates" xml:space="preserve"><value>Tất cả trạng thái</value></data>
+  <data name="Filter_HasError" xml:space="preserve"><value>Có lỗi</value></data>
+  <data name="Filter_Missing" xml:space="preserve"><value>Thiếu file</value></data>
+  <data name="Filter_Ready" xml:space="preserve"><value>Sẵn sàng</value></data>
   <data name="Footer_EarlyBuild" xml:space="preserve"><value>MIMI  |  BẢN PHÁT TRIỂN SỚM</value></data>
   <data name="Footer_PersonalMusicSpace" xml:space="preserve"><value>Không gian âm nhạc cá nhân</value></data>
   <data name="Home_AddFirstSongs" xml:space="preserve"><value>Thêm những bài hát đầu tiên</value></data>
@@ -46,6 +71,10 @@
   <data name="Library_AddToQueue" xml:space="preserve"><value>Thêm vào hàng đợi</value></data>
   <data name="Library_CancelScanAutomation" xml:space="preserve"><value>Huỷ quét thư viện</value></data>
   <data name="Library_ClearFiltersAutomation" xml:space="preserve"><value>Xoá tìm kiếm, bộ lọc và sắp xếp</value></data>
+  <data name="Library_CouldNotRemoveSong" xml:space="preserve"><value>Không thể xoá bài này khỏi thư viện.&#10;&#10;{0}</value></data>
+  <data name="Library_CouldNotRestore" xml:space="preserve"><value>Không thể khôi phục thư viện của bạn.&#10;&#10;{0}</value></data>
+  <data name="Library_CouldNotSave" xml:space="preserve"><value>Không thể lưu thư viện của bạn.&#10;&#10;{0}</value></data>
+  <data name="Library_CouldNotSaveFavorites" xml:space="preserve"><value>Không thể lưu mục yêu thích.&#10;&#10;{0}</value></data>
   <data name="Library_CoverHeader" xml:space="preserve"><value>BÌA</value></data>
   <data name="Library_DownButton" xml:space="preserve"><value>↓ Xuống</value></data>
   <data name="Library_FavoriteSelected" xml:space="preserve"><value>♥ Yêu thích mục đã chọn</value></data>
@@ -66,6 +95,7 @@
   <data name="Library_RemoveSelectedSongs" xml:space="preserve"><value>Xoá các bài đã chọn khỏi thư viện</value></data>
   <data name="Library_SearchSongs" xml:space="preserve"><value>Tìm kiếm bài hát</value></data>
   <data name="Library_SelectedCount" xml:space="preserve"><value>Đã chọn {0}</value></data>
+  <data name="Library_SkippedDirectories" xml:space="preserve"><value>{0} thư mục không đọc được và đã bị bỏ qua.</value></data>
   <data name="Library_SortAlbumHeader" xml:space="preserve"><value>ALBUM</value></data>
   <data name="Library_SortArtistHeader" xml:space="preserve"><value>NGHỆ SĨ</value></data>
   <data name="Library_SortByAlbum" xml:space="preserve"><value>Sắp xếp theo album</value></data>
@@ -83,6 +113,10 @@
   <data name="Library_ToggleFavoritesSelected" xml:space="preserve"><value>Bật/tắt yêu thích cho các bài đã chọn</value></data>
   <data name="Library_TrackList" xml:space="preserve"><value>Danh sách bài hát</value></data>
   <data name="Library_UpButton" xml:space="preserve"><value>↑ Lên</value></data>
+  <data name="Metadata_LocalMusicSuffix" xml:space="preserve"><value>{0}  •  Nhạc cục bộ</value></data>
+  <data name="Metadata_UnknownAlbum" xml:space="preserve"><value>Album không rõ</value></data>
+  <data name="Metadata_UnknownArtist" xml:space="preserve"><value>Nghệ sĩ không rõ</value></data>
+  <data name="Metadata_UnknownGenre" xml:space="preserve"><value>Thể loại không rõ</value></data>
   <data name="Nav_AddMusicFiles" xml:space="preserve"><value>Thêm file nhạc</value></data>
   <data name="Nav_BetaDescription" xml:space="preserve"><value>Bước đầu tiên hướng tới vũ trụ âm nhạc anime của riêng bạn.</value></data>
   <data name="Nav_Favorites" xml:space="preserve"><value>Yêu thích</value></data>
@@ -99,13 +133,22 @@
   <data name="NowPlaying_Title" xml:space="preserve"><value>ĐANG PHÁT</value></data>
   <data name="NowPlaying_UpNext" xml:space="preserve"><value>SẮP PHÁT</value></data>
   <data name="NowPlaying_VolumeHeader" xml:space="preserve"><value>ÂM LƯỢNG</value></data>
+  <data name="OpenWith_CouldNotOpenPaths" xml:space="preserve"><value>Không thể mở các đường dẫn đó bằng Mimi.&#10;&#10;{0}</value></data>
+  <data name="OpenWith_FilesNotFound" xml:space="preserve"><value>Không tìm thấy file được mở.</value></data>
+  <data name="OpenWith_NoneOpenedSongsCouldBePlayed" xml:space="preserve"><value>Không bài nào được mở có thể phát.</value></data>
+  <data name="OpenWith_Title" xml:space="preserve"><value>Mở bằng Mimi</value></data>
+  <data name="OpenWith_UnsupportedFileTypes" xml:space="preserve"><value>Mimi không hỗ trợ loại file được mở.</value></data>
   <data name="Playback_Back10Seconds" xml:space="preserve"><value>Lùi 10 giây</value></data>
+  <data name="Playback_CouldNotPlayFile" xml:space="preserve"><value>Không thể phát file này.&#10;&#10;{0}</value></data>
   <data name="Playback_CycleRepeatMode" xml:space="preserve"><value>Chuyển chế độ lặp</value></data>
+  <data name="Playback_ErrorTitle" xml:space="preserve"><value>Lỗi phát nhạc</value></data>
   <data name="Playback_Forward10Seconds" xml:space="preserve"><value>Tới 10 giây</value></data>
   <data name="Playback_Mute" xml:space="preserve"><value>Tắt tiếng</value></data>
   <data name="Playback_Muted" xml:space="preserve"><value>Đã tắt tiếng</value></data>
   <data name="Playback_MuteOrUnmute" xml:space="preserve"><value>Tắt tiếng hoặc bật tiếng</value></data>
   <data name="Playback_NextTrack" xml:space="preserve"><value>Bài tiếp</value></data>
+  <data name="Playback_NoneInQueue" xml:space="preserve"><value>Không bài nào trong hàng đợi này phát được.</value></data>
+  <data name="Playback_NonePreviousInQueue" xml:space="preserve"><value>Không bài trước nào trong hàng đợi này phát được.</value></data>
   <data name="Playback_PlayOrPause" xml:space="preserve"><value>Phát hoặc tạm dừng</value></data>
   <data name="Playback_PreviousTrack" xml:space="preserve"><value>Bài trước</value></data>
   <data name="Playback_RepeatAll" xml:space="preserve"><value>Lặp tất cả</value></data>
@@ -117,10 +160,16 @@
   <data name="Playback_ShuffleOnStatus" xml:space="preserve"><value>Ngẫu nhiên bật</value></data>
   <data name="Playback_ToggleShuffle" xml:space="preserve"><value>Bật/tắt phát ngẫu nhiên</value></data>
   <data name="Playback_Unmute" xml:space="preserve"><value>Bật tiếng</value></data>
+  <data name="Playlist_AddSkippedMultiple" xml:space="preserve"><value>Đã thêm {0} bài vào &quot;{1}&quot;; {2} bài bị bỏ qua vì đã có trong danh sách hoặc chưa được lưu.</value></data>
+  <data name="Playlist_AddSkippedSingle" xml:space="preserve"><value>Không thể thêm &quot;{0}&quot;. Bài có thể đã có trong danh sách phát hoặc chưa được lưu vào catalog.</value></data>
   <data name="Playlist_AddToPlaylist" xml:space="preserve"><value>Thêm vào danh sách phát</value></data>
   <data name="Playlist_CatalogUnavailable" xml:space="preserve"><value>Danh sách phát không khả dụng vì không mở được catalog thư viện SQLite. Mimi hiện đang dùng phương án JSON cũ dự phòng.</value></data>
+  <data name="Playlist_CouldNotAddSelected" xml:space="preserve"><value>Không thể thêm bài đã chọn vào danh sách phát.&#10;&#10;{0}</value></data>
   <data name="Playlist_CouldNotCreate" xml:space="preserve"><value>Không thể tạo danh sách phát đó.&#10;&#10;{0}</value></data>
   <data name="Playlist_CouldNotDelete" xml:space="preserve"><value>Không thể xoá danh sách phát đó.&#10;&#10;{0}</value></data>
+  <data name="Playlist_CouldNotOpen" xml:space="preserve"><value>Không thể mở danh sách phát đó.&#10;&#10;{0}</value></data>
+  <data name="Playlist_CouldNotRearrange" xml:space="preserve"><value>Không thể sắp xếp lại danh sách phát đó.&#10;&#10;{0}</value></data>
+  <data name="Playlist_CouldNotRemoveSong" xml:space="preserve"><value>Không thể xoá bài đó khỏi danh sách phát.&#10;&#10;{0}</value></data>
   <data name="Playlist_CouldNotRename" xml:space="preserve"><value>Không thể đổi tên danh sách phát đó.&#10;&#10;{0}</value></data>
   <data name="Playlist_Count" xml:space="preserve"><value>{0} bài</value></data>
   <data name="Playlist_DeleteConfirm" xml:space="preserve"><value>Xoá danh sách phát &quot;{0}&quot;?&#10;&#10;Các bài hát sẽ vẫn ở trong thư viện của bạn.</value></data>
@@ -132,6 +181,7 @@
   <data name="Playlist_List" xml:space="preserve"><value>Danh sách phát</value></data>
   <data name="Playlist_MoveDown" xml:space="preserve"><value>Di chuyển xuống trong danh sách phát</value></data>
   <data name="Playlist_MoveUp" xml:space="preserve"><value>Di chuyển lên trong danh sách phát</value></data>
+  <data name="Playlist_NameCannotBeEmpty" xml:space="preserve"><value>Tên danh sách phát không được để trống.</value></data>
   <data name="Playlist_NamePrompt" xml:space="preserve"><value>Đặt tên cho danh sách phát mới:</value></data>
   <data name="Playlist_New" xml:space="preserve"><value>Danh sách phát mới</value></data>
   <data name="Playlist_Play" xml:space="preserve"><value>Phát danh sách phát</value></data>
@@ -187,6 +237,7 @@
   <data name="Settings_DataDiagnosticsSection" xml:space="preserve"><value>DỮ LIỆU &amp; CHẨN ĐOÁN</value></data>
   <data name="Settings_DataFolder" xml:space="preserve"><value>Thư mục dữ liệu</value></data>
   <data name="Settings_DefaultsSection" xml:space="preserve"><value>MẶC ĐỊNH</value></data>
+  <data name="Settings_FolderPathCouldNotBeUsed" xml:space="preserve"><value>Không thể dùng đường dẫn thư mục đó.</value></data>
   <data name="Settings_KeyboardShortcutsSection" xml:space="preserve"><value>PHÍM TẮT</value></data>
   <data name="Settings_Language" xml:space="preserve"><value>Ngôn ngữ giao diện</value></data>
   <data name="Settings_LanguageDescription" xml:space="preserve"><value>Thay đổi áp dụng ngay. Mimi sẽ tiếp tục mở rộng phần đã dịch trong Phase 5.</value></data>

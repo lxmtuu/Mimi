@@ -1,5 +1,28 @@
 namespace Mimi.Services;
 
+/// <summary>
+/// Stable identifier for an audio-output status message. The UI layer maps
+/// these values to localized text, while <see cref="AudioOutputStatus.Message"/>
+/// remains available as an English diagnostic/fallback string.
+/// </summary>
+public enum AudioOutputMessageKind
+{
+    Custom,
+    Ready,
+    NoOutputAvailable,
+    WasapiReady,
+    WasapiForcedReady,
+    WaveOutFallbackReady,
+    WaveOutForcedReady,
+    WasapiUnavailableFallbackDisabled,
+    NoOutputPressPlay,
+    PlaybackInterruptedOutputChanged,
+    PlaybackInterruptedOutputUnavailable,
+    CheckedWhenPlaybackStarts,
+    WindowsDefaultAvailable,
+    OutputUnavailable
+}
+
 /// <summary>Identifies the output technology currently used by the player.</summary>
 public enum AudioOutputKind
 {
@@ -81,7 +104,8 @@ public readonly record struct AudioOutputStatus
         bool isAvailable,
         AudioOutputKind kind,
         string? deviceName,
-        string? message)
+        string? message,
+        AudioOutputMessageKind messageKind = AudioOutputMessageKind.Custom)
     {
         IsAvailable = isAvailable;
         Kind = isAvailable ? kind : AudioOutputKind.None;
@@ -91,6 +115,12 @@ public readonly record struct AudioOutputStatus
         Message = string.IsNullOrWhiteSpace(message)
             ? isAvailable ? "Audio output is ready." : "No audio output is available."
             : message.Trim();
+        MessageKind = messageKind == AudioOutputMessageKind.Custom &&
+                      string.IsNullOrWhiteSpace(message)
+            ? isAvailable
+                ? AudioOutputMessageKind.Ready
+                : AudioOutputMessageKind.NoOutputAvailable
+            : messageKind;
     }
 
     public bool IsAvailable { get; }
@@ -101,8 +131,12 @@ public readonly record struct AudioOutputStatus
 
     public string Message { get; }
 
-    public static AudioOutputStatus Unavailable(string? message = null) =>
-        new(false, AudioOutputKind.None, null, message);
+    public AudioOutputMessageKind MessageKind { get; }
+
+    public static AudioOutputStatus Unavailable(
+        string? message = null,
+        AudioOutputMessageKind messageKind = AudioOutputMessageKind.Custom) =>
+        new(false, AudioOutputKind.None, null, message, messageKind);
 }
 
 /// <summary>Raised when the usable output device or output technology changes.</summary>
@@ -142,14 +176,18 @@ public sealed class AudioOutputUnavailableException : InvalidOperationException
             innerException)
     {
         Status = status.IsAvailable
-            ? AudioOutputStatus.Unavailable(Message)
+            ? AudioOutputStatus.Unavailable(
+                Message,
+                AudioOutputMessageKind.OutputUnavailable)
             : status;
     }
 
     public AudioOutputUnavailableException()
         : base("The audio output is unavailable.")
     {
-        Status = AudioOutputStatus.Unavailable(Message);
+        Status = AudioOutputStatus.Unavailable(
+            Message,
+            AudioOutputMessageKind.OutputUnavailable);
     }
 
     public AudioOutputUnavailableException(string message)

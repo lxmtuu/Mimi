@@ -9,12 +9,29 @@
   <data name="App_StartupFailed" xml:space="preserve"><value>Mimi couldn't start. Details were written to the log in %LocalAppData%\Mimi\logs.</value></data>
   <data name="App_Tagline" xml:space="preserve"><value>LOCAL PLAYER  |  YOUR MUSIC, YOUR WORLD</value></data>
   <data name="App_UnexpectedProblem" xml:space="preserve"><value>Mimi hit an unexpected problem, but it will try to keep running. Details were written to the log in %LocalAppData%\Mimi\logs.</value></data>
+  <data name="Audio_CannotPlaySongNoOutput" xml:space="preserve"><value>Mimi can't play this song because no usable audio output is available.&#10;&#10;{0}</value></data>
   <data name="Audio_CannotStartPlayback" xml:space="preserve"><value>Mimi can't start playback because no usable audio output is available.&#10;&#10;{0}</value></data>
+  <data name="Audio_MessageCheckedWhenPlaybackStarts" xml:space="preserve"><value>Audio output will be checked when playback starts.</value></data>
+  <data name="Audio_MessageNoOutputAvailable" xml:space="preserve"><value>No audio output is available.</value></data>
+  <data name="Audio_MessageNoOutputPressPlay" xml:space="preserve"><value>No audio output is available. Connect or enable an output device, then press Play.</value></data>
+  <data name="Audio_MessageOutputUnavailable" xml:space="preserve"><value>The audio output is unavailable.</value></data>
+  <data name="Audio_MessagePlaybackInterruptedOutputChanged" xml:space="preserve"><value>Playback was paused because the audio output changed or stopped. Current output: {0}. Press Play to continue.</value></data>
+  <data name="Audio_MessagePlaybackInterruptedOutputUnavailable" xml:space="preserve"><value>The audio output became unavailable, so playback is paused. Connect an output device, then press Play.</value></data>
+  <data name="Audio_MessageReady" xml:space="preserve"><value>Audio output is ready.</value></data>
+  <data name="Audio_MessageWasapiForcedReady" xml:space="preserve"><value>WASAPI shared output is ready (forced by MIMI_AUDIO_OUTPUT for diagnostics).</value></data>
+  <data name="Audio_MessageWasapiReady" xml:space="preserve"><value>WASAPI shared output is ready.</value></data>
+  <data name="Audio_MessageWasapiUnavailableFallbackDisabled" xml:space="preserve"><value>WASAPI shared output is unavailable, and MIMI_AUDIO_OUTPUT disables the WaveOut fallback for diagnostics.</value></data>
+  <data name="Audio_MessageWaveOutFallbackReady" xml:space="preserve"><value>WASAPI was unavailable, so Mimi is using the WaveOut fallback.</value></data>
+  <data name="Audio_MessageWaveOutForcedReady" xml:space="preserve"><value>WaveOut output is ready (forced by MIMI_AUDIO_OUTPUT for diagnostics).</value></data>
+  <data name="Audio_MessageWindowsDefaultAvailable" xml:space="preserve"><value>Windows default output is available.</value></data>
   <data name="Audio_NoOutput" xml:space="preserve"><value>No audio output available</value></data>
+  <data name="Audio_NoOutputDevice" xml:space="preserve"><value>No output device</value></data>
   <data name="Audio_OutputReady" xml:space="preserve"><value>Audio output is ready: {0}. Press Play to continue.</value></data>
+  <data name="Audio_SongLoadedNoOutput" xml:space="preserve"><value>This song is loaded, but Mimi can't start it because no usable audio output is available.&#10;&#10;{0}</value></data>
   <data name="Audio_WasapiShared" xml:space="preserve"><value>WASAPI shared · {0}</value></data>
   <data name="Audio_WaveOutDiagnostic" xml:space="preserve"><value>WaveOut diagnostic · {0}</value></data>
   <data name="Audio_WaveOutFallback" xml:space="preserve"><value>WaveOut fallback · {0}</value></data>
+  <data name="Audio_WindowsAudioOutput" xml:space="preserve"><value>Windows audio output</value></data>
   <data name="Audio_WindowsDefault" xml:space="preserve"><value>Windows default · {0}</value></data>
   <data name="Audio_WindowsDefaultOutput" xml:space="preserve"><value>Windows default output</value></data>
   <data name="Common_Cancel" xml:space="preserve"><value>Cancel</value></data>
@@ -33,6 +50,14 @@
   <data name="Dialog_ChooseMusicFiles" xml:space="preserve"><value>Choose music files</value></data>
   <data name="Dialog_ChooseMusicFolder" xml:space="preserve"><value>Choose a folder containing your music</value></data>
   <data name="Dialog_LibraryWarning" xml:space="preserve"><value>Library warning</value></data>
+  <data name="Filter_AllAlbums" xml:space="preserve"><value>All albums</value></data>
+  <data name="Filter_AllArtists" xml:space="preserve"><value>All artists</value></data>
+  <data name="Filter_AllFormats" xml:space="preserve"><value>All formats</value></data>
+  <data name="Filter_AllGenres" xml:space="preserve"><value>All genres</value></data>
+  <data name="Filter_AllStates" xml:space="preserve"><value>All states</value></data>
+  <data name="Filter_HasError" xml:space="preserve"><value>Has error</value></data>
+  <data name="Filter_Missing" xml:space="preserve"><value>Missing</value></data>
+  <data name="Filter_Ready" xml:space="preserve"><value>Ready</value></data>
   <data name="Footer_EarlyBuild" xml:space="preserve"><value>MIMI  |  EARLY DEVELOPMENT BUILD</value></data>
   <data name="Footer_PersonalMusicSpace" xml:space="preserve"><value>A personal music space</value></data>
   <data name="Home_AddFirstSongs" xml:space="preserve"><value>Add your first songs</value></data>
@@ -46,6 +71,10 @@
   <data name="Library_AddToQueue" xml:space="preserve"><value>Add to queue</value></data>
   <data name="Library_CancelScanAutomation" xml:space="preserve"><value>Cancel library scan</value></data>
   <data name="Library_ClearFiltersAutomation" xml:space="preserve"><value>Clear search, filters, and sorting</value></data>
+  <data name="Library_CouldNotRemoveSong" xml:space="preserve"><value>Couldn't remove this song from the library.&#10;&#10;{0}</value></data>
+  <data name="Library_CouldNotRestore" xml:space="preserve"><value>Couldn't restore your library.&#10;&#10;{0}</value></data>
+  <data name="Library_CouldNotSave" xml:space="preserve"><value>Couldn't save your library.&#10;&#10;{0}</value></data>
+  <data name="Library_CouldNotSaveFavorites" xml:space="preserve"><value>Couldn't save favorites.&#10;&#10;{0}</value></data>
   <data name="Library_CoverHeader" xml:space="preserve"><value>COVER</value></data>
   <data name="Library_DownButton" xml:space="preserve"><value>↓ Down</value></data>
   <data name="Library_FavoriteSelected" xml:space="preserve"><value>♥ Favorite selected</value></data>
@@ -66,6 +95,7 @@
   <data name="Library_RemoveSelectedSongs" xml:space="preserve"><value>Remove selected songs from library</value></data>
   <data name="Library_SearchSongs" xml:space="preserve"><value>Search songs</value></data>
   <data name="Library_SelectedCount" xml:space="preserve"><value>{0} selected</value></data>
+  <data name="Library_SkippedDirectories" xml:space="preserve"><value>{0} folder(s) could not be read and were skipped.</value></data>
   <data name="Library_SortAlbumHeader" xml:space="preserve"><value>ALBUM</value></data>
   <data name="Library_SortArtistHeader" xml:space="preserve"><value>ARTIST</value></data>
   <data name="Library_SortByAlbum" xml:space="preserve"><value>Sort by album</value></data>
@@ -83,6 +113,10 @@
   <data name="Library_ToggleFavoritesSelected" xml:space="preserve"><value>Toggle favorites for selected songs</value></data>
   <data name="Library_TrackList" xml:space="preserve"><value>Track list</value></data>
   <data name="Library_UpButton" xml:space="preserve"><value>↑ Up</value></data>
+  <data name="Metadata_LocalMusicSuffix" xml:space="preserve"><value>{0}  •  Local music</value></data>
+  <data name="Metadata_UnknownAlbum" xml:space="preserve"><value>Unknown album</value></data>
+  <data name="Metadata_UnknownArtist" xml:space="preserve"><value>Unknown artist</value></data>
+  <data name="Metadata_UnknownGenre" xml:space="preserve"><value>Unknown genre</value></data>
   <data name="Nav_AddMusicFiles" xml:space="preserve"><value>Add music files</value></data>
   <data name="Nav_BetaDescription" xml:space="preserve"><value>The first step toward your own anime music universe.</value></data>
   <data name="Nav_Favorites" xml:space="preserve"><value>Favorites</value></data>
@@ -99,13 +133,22 @@
   <data name="NowPlaying_Title" xml:space="preserve"><value>NOW PLAYING</value></data>
   <data name="NowPlaying_UpNext" xml:space="preserve"><value>UP NEXT</value></data>
   <data name="NowPlaying_VolumeHeader" xml:space="preserve"><value>VOLUME</value></data>
+  <data name="OpenWith_CouldNotOpenPaths" xml:space="preserve"><value>Couldn't open those paths with Mimi.&#10;&#10;{0}</value></data>
+  <data name="OpenWith_FilesNotFound" xml:space="preserve"><value>The opened file(s) could not be found.</value></data>
+  <data name="OpenWith_NoneOpenedSongsCouldBePlayed" xml:space="preserve"><value>None of the opened songs could be played.</value></data>
+  <data name="OpenWith_Title" xml:space="preserve"><value>Open with Mimi</value></data>
+  <data name="OpenWith_UnsupportedFileTypes" xml:space="preserve"><value>Mimi doesn't support the opened file type(s).</value></data>
   <data name="Playback_Back10Seconds" xml:space="preserve"><value>Back 10 seconds</value></data>
+  <data name="Playback_CouldNotPlayFile" xml:space="preserve"><value>Couldn't play this file.&#10;&#10;{0}</value></data>
   <data name="Playback_CycleRepeatMode" xml:space="preserve"><value>Cycle repeat mode</value></data>
+  <data name="Playback_ErrorTitle" xml:space="preserve"><value>Playback error</value></data>
   <data name="Playback_Forward10Seconds" xml:space="preserve"><value>Forward 10 seconds</value></data>
   <data name="Playback_Mute" xml:space="preserve"><value>Mute</value></data>
   <data name="Playback_Muted" xml:space="preserve"><value>Muted</value></data>
   <data name="Playback_MuteOrUnmute" xml:space="preserve"><value>Mute or unmute</value></data>
   <data name="Playback_NextTrack" xml:space="preserve"><value>Next track</value></data>
+  <data name="Playback_NoneInQueue" xml:space="preserve"><value>None of the songs in this queue could be played.</value></data>
+  <data name="Playback_NonePreviousInQueue" xml:space="preserve"><value>None of the previous songs in this queue could be played.</value></data>
   <data name="Playback_PlayOrPause" xml:space="preserve"><value>Play or pause</value></data>
   <data name="Playback_PreviousTrack" xml:space="preserve"><value>Previous track</value></data>
   <data name="Playback_RepeatAll" xml:space="preserve"><value>Repeat All</value></data>
@@ -117,10 +160,16 @@
   <data name="Playback_ShuffleOnStatus" xml:space="preserve"><value>Shuffle on</value></data>
   <data name="Playback_ToggleShuffle" xml:space="preserve"><value>Toggle shuffle</value></data>
   <data name="Playback_Unmute" xml:space="preserve"><value>Unmute</value></data>
+  <data name="Playlist_AddSkippedMultiple" xml:space="preserve"><value>{0} song(s) were added to &quot;{1}&quot;; {2} were skipped because they were already there or not saved yet.</value></data>
+  <data name="Playlist_AddSkippedSingle" xml:space="preserve"><value>&quot;{0}&quot; could not be added. It may already be in the playlist or may not be saved in the catalog yet.</value></data>
   <data name="Playlist_AddToPlaylist" xml:space="preserve"><value>Add to playlist</value></data>
   <data name="Playlist_CatalogUnavailable" xml:space="preserve"><value>Playlists are unavailable because the SQLite library catalog could not be opened. Mimi is currently using the legacy JSON fallback.</value></data>
+  <data name="Playlist_CouldNotAddSelected" xml:space="preserve"><value>Couldn't add the selected song(s) to the playlist.&#10;&#10;{0}</value></data>
   <data name="Playlist_CouldNotCreate" xml:space="preserve"><value>Couldn't create that playlist.&#10;&#10;{0}</value></data>
   <data name="Playlist_CouldNotDelete" xml:space="preserve"><value>Couldn't delete that playlist.&#10;&#10;{0}</value></data>
+  <data name="Playlist_CouldNotOpen" xml:space="preserve"><value>Couldn't open that playlist.&#10;&#10;{0}</value></data>
+  <data name="Playlist_CouldNotRearrange" xml:space="preserve"><value>Couldn't rearrange that playlist.&#10;&#10;{0}</value></data>
+  <data name="Playlist_CouldNotRemoveSong" xml:space="preserve"><value>Couldn't remove that song from the playlist.&#10;&#10;{0}</value></data>
   <data name="Playlist_CouldNotRename" xml:space="preserve"><value>Couldn't rename that playlist.&#10;&#10;{0}</value></data>
   <data name="Playlist_Count" xml:space="preserve"><value>{0} song(s)</value></data>
   <data name="Playlist_DeleteConfirm" xml:space="preserve"><value>Delete playlist &quot;{0}&quot;?&#10;&#10;The songs will stay in your library.</value></data>
@@ -132,6 +181,7 @@
   <data name="Playlist_List" xml:space="preserve"><value>Playlists</value></data>
   <data name="Playlist_MoveDown" xml:space="preserve"><value>Move down in playlist</value></data>
   <data name="Playlist_MoveUp" xml:space="preserve"><value>Move up in playlist</value></data>
+  <data name="Playlist_NameCannotBeEmpty" xml:space="preserve"><value>Playlist name cannot be empty.</value></data>
   <data name="Playlist_NamePrompt" xml:space="preserve"><value>Name your new playlist:</value></data>
   <data name="Playlist_New" xml:space="preserve"><value>New playlist</value></data>
   <data name="Playlist_Play" xml:space="preserve"><value>Play playlist</value></data>
@@ -187,6 +237,7 @@
   <data name="Settings_DataDiagnosticsSection" xml:space="preserve"><value>DATA &amp; DIAGNOSTICS</value></data>
   <data name="Settings_DataFolder" xml:space="preserve"><value>Data folder</value></data>
   <data name="Settings_DefaultsSection" xml:space="preserve"><value>DEFAULTS</value></data>
+  <data name="Settings_FolderPathCouldNotBeUsed" xml:space="preserve"><value>That folder path could not be used.</value></data>
   <data name="Settings_KeyboardShortcutsSection" xml:space="preserve"><value>KEYBOARD SHORTCUTS</value></data>
   <data name="Settings_Language" xml:space="preserve"><value>Interface language</value></data>
   <data name="Settings_LanguageDescription" xml:space="preserve"><value>Changes apply immediately. Mimi will keep expanding translated areas as Phase 5 continues.</value></data>

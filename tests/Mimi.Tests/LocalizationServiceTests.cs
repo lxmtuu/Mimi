@@ -40,6 +40,30 @@ public sealed class LocalizationServiceTests
         Assert.Equal(
             "Xoá hàng đợi sắp phát",
             service.GetString("Queue_ClearUpcoming", "vi-VN"));
+        Assert.Equal(
+            "All artists",
+            service.GetString("Filter_AllArtists", "en-US"));
+        Assert.Equal(
+            "Tất cả nghệ sĩ",
+            service.GetString("Filter_AllArtists", "vi-VN"));
+        Assert.Equal(
+            "Unknown genre",
+            service.GetString("Metadata_UnknownGenre", "en-US"));
+        Assert.Equal(
+            "Thể loại không rõ",
+            service.GetString("Metadata_UnknownGenre", "vi-VN"));
+        Assert.Equal(
+            "Playback error",
+            service.GetString("Playback_ErrorTitle", "en-US"));
+        Assert.Equal(
+            "Lỗi phát nhạc",
+            service.GetString("Playback_ErrorTitle", "vi-VN"));
+        Assert.Equal(
+            "No audio output is available. Connect or enable an output device, then press Play.",
+            service.GetString("Audio_MessageNoOutputPressPlay", "en-US"));
+        Assert.Equal(
+            "Không có đầu ra âm thanh. Hãy kết nối hoặc bật thiết bị đầu ra, rồi nhấn Phát.",
+            service.GetString("Audio_MessageNoOutputPressPlay", "vi-VN"));
     }
 
     [Fact]
@@ -97,6 +121,10 @@ public sealed class LocalizationServiceTests
 
             Assert.Equal("3 bài", playlist.CountLabel);
             Assert.Equal("Thêm vào yêu thích", track.FavoriteToolTip);
+            Assert.Equal("Nghệ sĩ không rõ", track.Artist);
+            Assert.Equal("Album không rõ", track.Album);
+            Assert.Equal("Thể loại không rõ", track.Genre);
+            Assert.Equal("MP3  •  Nhạc cục bộ", track.Subtitle);
 
             track.IsFavorite = true;
             Assert.Equal("Xoá khỏi yêu thích", track.FavoriteToolTip);
@@ -104,6 +132,10 @@ public sealed class LocalizationServiceTests
             service.SetLanguage(UiLanguages.English);
             Assert.Equal("3 song(s)", playlist.CountLabel);
             Assert.Equal("Remove from favorites", track.FavoriteToolTip);
+            Assert.Equal("Unknown artist", track.Artist);
+            Assert.Equal("Unknown album", track.Album);
+            Assert.Equal("Unknown genre", track.Genre);
+            Assert.Equal("MP3  •  Local music", track.Subtitle);
         }
         finally
         {

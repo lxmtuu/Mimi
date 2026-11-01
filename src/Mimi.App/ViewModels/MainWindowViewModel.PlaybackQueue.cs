@@ -168,23 +168,24 @@ public sealed partial class MainWindowViewModel
         bool playbackInterrupted = false)
     {
         lastAudioOutputStatus = status;
+        var deviceName = GetLocalizedAudioDeviceName(status);
         AudioOutputLabel = status switch
         {
             { IsAvailable: false } => Loc["Audio_NoOutput"],
             { Kind: AudioOutputKind.WasapiShared } =>
-                Loc.Format("Audio_WasapiShared", status.DeviceName),
+                Loc.Format("Audio_WasapiShared", deviceName),
             { Kind: AudioOutputKind.WaveOutFallback } =>
-                Loc.Format("Audio_WaveOutFallback", status.DeviceName),
+                Loc.Format("Audio_WaveOutFallback", deviceName),
             { Kind: AudioOutputKind.WaveOutForced } =>
-                Loc.Format("Audio_WaveOutDiagnostic", status.DeviceName),
+                Loc.Format("Audio_WaveOutDiagnostic", deviceName),
             { Kind: AudioOutputKind.None, DeviceName: "Windows default output" } =>
                 Loc["Audio_WindowsDefaultOutput"],
-            _ => Loc.Format("Audio_WindowsDefault", status.DeviceName)
+            _ => Loc.Format("Audio_WindowsDefault", deviceName)
         };
 
         if (playbackInterrupted || !status.IsAvailable)
         {
-            AudioOutputNotice = status.Message;
+            AudioOutputNotice = GetLocalizedAudioOutputMessage(status);
         }
         else if (CurrentTrack is null)
         {
@@ -195,9 +196,51 @@ public sealed partial class MainWindowViewModel
         {
             AudioOutputNotice = Loc.Format(
                 "Audio_OutputReady",
-                status.DeviceName);
+                deviceName);
         }
     }
+
+    private string GetLocalizedAudioOutputMessage(AudioOutputStatus status) =>
+        status.MessageKind switch
+        {
+            AudioOutputMessageKind.Ready => Loc["Audio_MessageReady"],
+            AudioOutputMessageKind.NoOutputAvailable =>
+                Loc["Audio_MessageNoOutputAvailable"],
+            AudioOutputMessageKind.WasapiReady =>
+                Loc["Audio_MessageWasapiReady"],
+            AudioOutputMessageKind.WasapiForcedReady =>
+                Loc["Audio_MessageWasapiForcedReady"],
+            AudioOutputMessageKind.WaveOutFallbackReady =>
+                Loc["Audio_MessageWaveOutFallbackReady"],
+            AudioOutputMessageKind.WaveOutForcedReady =>
+                Loc["Audio_MessageWaveOutForcedReady"],
+            AudioOutputMessageKind.WasapiUnavailableFallbackDisabled =>
+                Loc["Audio_MessageWasapiUnavailableFallbackDisabled"],
+            AudioOutputMessageKind.NoOutputPressPlay =>
+                Loc["Audio_MessageNoOutputPressPlay"],
+            AudioOutputMessageKind.PlaybackInterruptedOutputChanged =>
+                Loc.Format(
+                    "Audio_MessagePlaybackInterruptedOutputChanged",
+                    GetLocalizedAudioDeviceName(status)),
+            AudioOutputMessageKind.PlaybackInterruptedOutputUnavailable =>
+                Loc["Audio_MessagePlaybackInterruptedOutputUnavailable"],
+            AudioOutputMessageKind.CheckedWhenPlaybackStarts =>
+                Loc["Audio_MessageCheckedWhenPlaybackStarts"],
+            AudioOutputMessageKind.WindowsDefaultAvailable =>
+                Loc["Audio_MessageWindowsDefaultAvailable"],
+            AudioOutputMessageKind.OutputUnavailable =>
+                Loc["Audio_MessageOutputUnavailable"],
+            _ => status.Message
+        };
+
+    private string GetLocalizedAudioDeviceName(AudioOutputStatus status) =>
+        status.DeviceName switch
+        {
+            "Windows audio output" => Loc["Audio_WindowsAudioOutput"],
+            "Windows default output" => Loc["Audio_WindowsDefaultOutput"],
+            "No output device" => Loc["Audio_NoOutputDevice"],
+            _ => status.DeviceName
+        };
 
     private void ShowAudioOutputUnavailable(
         AudioOutputUnavailableException ex)
@@ -210,7 +253,9 @@ public sealed partial class MainWindowViewModel
             ex,
             "Playback could not start because no usable audio output is available");
         dialogService.ShowWarning(
-            Loc.Format("Audio_CannotStartPlayback", ex.Message),
+            Loc.Format(
+                "Audio_CannotStartPlayback",
+                GetLocalizedAudioOutputMessage(ex.Status)),
             Loc["Settings_AudioOutput"]);
     }
 
@@ -419,8 +464,8 @@ public sealed partial class MainWindowViewModel
         if (showErrors)
         {
             dialogService.ShowWarning(
-                "None of the songs in this queue could be played.",
-                "Playback error");
+                Loc["Playback_NoneInQueue"],
+                Loc["Playback_ErrorTitle"]);
         }
 
         return false;
@@ -475,8 +520,8 @@ public sealed partial class MainWindowViewModel
         RefreshUpcomingQueue();
         RefreshPlaybackState();
         dialogService.ShowWarning(
-            "None of the previous songs in this queue could be played.",
-            "Playback error");
+            Loc["Playback_NonePreviousInQueue"],
+            Loc["Playback_ErrorTitle"]);
         return false;
     }
 

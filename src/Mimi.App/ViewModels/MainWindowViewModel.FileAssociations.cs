@@ -240,7 +240,9 @@ public sealed partial class MainWindowViewModel
             if (skippedDirectories > 0 && !disposed)
             {
                 dialogService.ShowInformation(
-                    $"{skippedDirectories} folder(s) could not be read and were skipped.");
+                    Loc.Format(
+                        "Library_SkippedDirectories",
+                        skippedDirectories));
             }
 
             if (supportedFiles.Length > 0)
@@ -266,17 +268,17 @@ public sealed partial class MainWindowViewModel
                 if (!played && !disposed)
                 {
                     dialogService.ShowWarning(
-                        "None of the opened songs could be played.",
-                        "Playback error");
+                        Loc["OpenWith_NoneOpenedSongsCouldBePlayed"],
+                        Loc["Playback_ErrorTitle"]);
                 }
             }
             else if (folders.Length == 0 && !disposed)
             {
                 dialogService.ShowWarning(
                     unsupportedCount > 0
-                        ? "Mimi doesn't support the opened file type(s)."
-                        : "The opened file(s) could not be found.",
-                    "Open with Mimi");
+                        ? Loc["OpenWith_UnsupportedFileTypes"]
+                        : Loc["OpenWith_FilesNotFound"],
+                    Loc["OpenWith_Title"]);
             }
 
             Log.Information(
@@ -297,8 +299,8 @@ public sealed partial class MainWindowViewModel
             if (!disposed)
             {
                 dialogService.ShowWarning(
-                    $"Couldn't open those paths with Mimi.\n\n{ex.Message}",
-                    "Open with Mimi");
+                    Loc.Format("OpenWith_CouldNotOpenPaths", ex.Message),
+                    Loc["OpenWith_Title"]);
             }
         }
         finally

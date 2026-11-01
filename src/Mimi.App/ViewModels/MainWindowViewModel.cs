@@ -65,14 +65,26 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     };
     private readonly CancellationTokenSource lifetimeCancellation = new();
 
-    private const string AllArtistsFilter = "All artists";
-    private const string AllAlbumsFilter = "All albums";
-    private const string AllGenresFilter = "All genres";
-    private const string AllFormatsFilter = "All formats";
-    private const string AllPlaybackStatesFilter = "All states";
-    private const string ReadyPlaybackStateFilter = "Ready";
-    private const string ErrorPlaybackStateFilter = "Has error";
-    private const string MissingPlaybackStateFilter = "Missing";
+    // English values are retained only as pre-localization initial values.
+    // Runtime comparisons and persisted selections use the localized
+    // properties below; settings restore translates known EN/VI values.
+    private const string EnglishAllArtistsFilter = "All artists";
+    private const string EnglishAllAlbumsFilter = "All albums";
+    private const string EnglishAllGenresFilter = "All genres";
+    private const string EnglishAllFormatsFilter = "All formats";
+    private const string EnglishAllPlaybackStatesFilter = "All states";
+    private const string EnglishReadyPlaybackStateFilter = "Ready";
+    private const string EnglishErrorPlaybackStateFilter = "Has error";
+    private const string EnglishMissingPlaybackStateFilter = "Missing";
+
+    private string AllArtistsFilter => Loc["Filter_AllArtists"];
+    private string AllAlbumsFilter => Loc["Filter_AllAlbums"];
+    private string AllGenresFilter => Loc["Filter_AllGenres"];
+    private string AllFormatsFilter => Loc["Filter_AllFormats"];
+    private string AllPlaybackStatesFilter => Loc["Filter_AllStates"];
+    private string ReadyPlaybackStateFilter => Loc["Filter_Ready"];
+    private string ErrorPlaybackStateFilter => Loc["Filter_HasError"];
+    private string MissingPlaybackStateFilter => Loc["Filter_Missing"];
 
     private AppSettings settings = new();
     private HashSet<string> favorites = new(StringComparer.OrdinalIgnoreCase);
@@ -181,23 +193,24 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasActiveAdvancedFilters))]
-    private string selectedArtistFilter = AllArtistsFilter;
+    private string selectedArtistFilter = EnglishAllArtistsFilter;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasActiveAdvancedFilters))]
-    private string selectedAlbumFilter = AllAlbumsFilter;
+    private string selectedAlbumFilter = EnglishAllAlbumsFilter;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasActiveAdvancedFilters))]
-    private string selectedGenreFilter = AllGenresFilter;
+    private string selectedGenreFilter = EnglishAllGenresFilter;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasActiveAdvancedFilters))]
-    private string selectedFormatFilter = AllFormatsFilter;
+    private string selectedFormatFilter = EnglishAllFormatsFilter;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasActiveAdvancedFilters))]
-    private string selectedPlaybackStateFilter = AllPlaybackStatesFilter;
+    private string selectedPlaybackStateFilter =
+        EnglishAllPlaybackStatesFilter;
 
     public MainWindowViewModel(
         IAudioPlayer audioPlayer,
@@ -263,23 +276,23 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     public ObservableCollection<TrackItemViewModel> SelectedTracks { get; } = [];
 
     public ObservableCollection<string> ArtistFilterOptions { get; } =
-        [AllArtistsFilter];
+        [EnglishAllArtistsFilter];
 
     public ObservableCollection<string> AlbumFilterOptions { get; } =
-        [AllAlbumsFilter];
+        [EnglishAllAlbumsFilter];
 
     public ObservableCollection<string> GenreFilterOptions { get; } =
-        [AllGenresFilter];
+        [EnglishAllGenresFilter];
 
     public ObservableCollection<string> FormatFilterOptions { get; } =
-        [AllFormatsFilter];
+        [EnglishAllFormatsFilter];
 
-    public IReadOnlyList<string> PlaybackStateFilterOptions { get; } =
+    public ObservableCollection<string> PlaybackStateFilterOptions { get; } =
     [
-        AllPlaybackStatesFilter,
-        ReadyPlaybackStateFilter,
-        ErrorPlaybackStateFilter,
-        MissingPlaybackStateFilter
+        EnglishAllPlaybackStatesFilter,
+        EnglishReadyPlaybackStateFilter,
+        EnglishErrorPlaybackStateFilter,
+        EnglishMissingPlaybackStateFilter
     ];
 
     public ICollectionView TracksView { get; }
@@ -547,10 +560,10 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
             lifetimeCancellation.IsCancellationRequested)
         {
         }
-        catch (ArgumentException ex)
+        catch (ArgumentException)
         {
             dialogService.ShowWarning(
-                ex.Message,
+                Loc["Playlist_NameCannotBeEmpty"],
                 Loc["Section_PlaylistFallback"]);
         }
         catch (Exception ex)
@@ -598,10 +611,10 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
             lifetimeCancellation.IsCancellationRequested)
         {
         }
-        catch (ArgumentException ex)
+        catch (ArgumentException)
         {
             dialogService.ShowWarning(
-                ex.Message,
+                Loc["Playlist_NameCannotBeEmpty"],
                 Loc["Section_PlaylistFallback"]);
         }
         catch (Exception ex)
@@ -811,7 +824,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         if (result?.SkippedDirectories > 0)
         {
             dialogService.ShowInformation(
-                $"{result.SkippedDirectories} folder(s) could not be read and were skipped.");
+                Loc.Format("Library_SkippedDirectories", result.SkippedDirectories));
         }
     }
 
@@ -838,7 +851,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         if (skippedDirectories > 0)
         {
             dialogService.ShowInformation(
-                $"{skippedDirectories} folder(s) could not be read and were skipped.");
+                Loc.Format("Library_SkippedDirectories", skippedDirectories));
         }
     }
 
@@ -918,7 +931,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
                 SetFavorite(track, !newValue);
                 Log.Warning(ex, "Could not save favorite for {FilePath}", track.FilePath);
                 dialogService.ShowWarning(
-                    $"Couldn't save favorites.\n\n{ex.Message}",
+                    Loc.Format("Library_CouldNotSaveFavorites", ex.Message),
                     "Mimi");
             }
         }
@@ -968,7 +981,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
 
                 Log.Warning(ex, "Could not save favorites for selected tracks");
                 dialogService.ShowWarning(
-                    $"Couldn't save favorites.\n\n{ex.Message}",
+                    Loc.Format("Library_CouldNotSaveFavorites", ex.Message),
                     "Mimi");
             }
         }
@@ -1009,8 +1022,8 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
             {
                 Log.Warning(ex, "Could not remove {FilePath} from catalog", track.FilePath);
                 dialogService.ShowWarning(
-                    $"Couldn't remove this song from the library.\n\n{ex.Message}",
-                    "Library warning");
+                    Loc.Format("Library_CouldNotRemoveSong", ex.Message),
+                    Loc["Dialog_LibraryWarning"]);
                 return;
             }
         }
@@ -1143,8 +1156,8 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
                     fallbackException,
                     "JSON library fallback also failed during startup");
                 dialogService.ShowWarning(
-                    $"Couldn't restore your library.\n\n{fallbackException.Message}",
-                    "Library warning");
+                    Loc.Format("Library_CouldNotRestore", fallbackException.Message),
+                    Loc["Dialog_LibraryWarning"]);
             }
         }
     }
@@ -1255,8 +1268,8 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         {
             Log.Warning(ex, "Could not read the legacy JSON library for import");
             dialogService.ShowWarning(
-                $"Couldn't restore your library.\n\n{ex.Message}",
-                "Library warning");
+                Loc.Format("Library_CouldNotRestore", ex.Message),
+                Loc["Dialog_LibraryWarning"]);
             return;
         }
 
@@ -1500,8 +1513,8 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         {
             Log.Warning(ex, "Could not save tracks to the SQLite catalog");
             dialogService.ShowWarning(
-                $"Couldn't save your library.\n\n{ex.Message}",
-                "Library warning");
+                Loc.Format("Library_CouldNotSave", ex.Message),
+                Loc["Dialog_LibraryWarning"]);
         }
     }
 
@@ -1644,28 +1657,85 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
             : [];
     }
 
+    private string TranslateKnownFilterValue(
+        string? value,
+        params string[] resourceKeys)
+    {
+        if (string.IsNullOrWhiteSpace(value)) return value ?? string.Empty;
+
+        foreach (var resourceKey in resourceKeys)
+        {
+            if (string.Equals(
+                    value,
+                    Loc.GetString(resourceKey, "en-US"),
+                    StringComparison.Ordinal) ||
+                string.Equals(
+                    value,
+                    Loc.GetString(resourceKey, "vi-VN"),
+                    StringComparison.Ordinal))
+            {
+                return Loc[resourceKey];
+            }
+        }
+
+        return value;
+    }
+
+    private void RefreshPlaybackStateFilterOptions()
+    {
+        var selectedValue = TranslateKnownFilterValue(
+            SelectedPlaybackStateFilter,
+            "Filter_AllStates",
+            "Filter_Ready",
+            "Filter_HasError",
+            "Filter_Missing");
+
+        PlaybackStateFilterOptions.Clear();
+        PlaybackStateFilterOptions.Add(AllPlaybackStatesFilter);
+        PlaybackStateFilterOptions.Add(ReadyPlaybackStateFilter);
+        PlaybackStateFilterOptions.Add(ErrorPlaybackStateFilter);
+        PlaybackStateFilterOptions.Add(MissingPlaybackStateFilter);
+
+        SelectedPlaybackStateFilter =
+            PlaybackStateFilterOptions.Contains(selectedValue)
+                ? selectedValue
+                : AllPlaybackStatesFilter;
+        OnPropertyChanged(nameof(HasActiveAdvancedFilters));
+    }
+
     private void RefreshFilterOptions()
     {
         SelectedArtistFilter = RebuildFilterOptions(
             ArtistFilterOptions,
             Tracks.Select(track => track.Artist),
             AllArtistsFilter,
-            SelectedArtistFilter);
+            TranslateKnownFilterValue(
+                SelectedArtistFilter,
+                "Filter_AllArtists",
+                "Metadata_UnknownArtist"));
         SelectedAlbumFilter = RebuildFilterOptions(
             AlbumFilterOptions,
             Tracks.Select(track => track.Album),
             AllAlbumsFilter,
-            SelectedAlbumFilter);
+            TranslateKnownFilterValue(
+                SelectedAlbumFilter,
+                "Filter_AllAlbums",
+                "Metadata_UnknownAlbum"));
         SelectedGenreFilter = RebuildFilterOptions(
             GenreFilterOptions,
             Tracks.Select(track => track.Genre),
             AllGenresFilter,
-            SelectedGenreFilter);
+            TranslateKnownFilterValue(
+                SelectedGenreFilter,
+                "Filter_AllGenres",
+                "Metadata_UnknownGenre"));
         SelectedFormatFilter = RebuildFilterOptions(
             FormatFilterOptions,
             Tracks.Select(track => track.Format),
             AllFormatsFilter,
-            SelectedFormatFilter);
+            TranslateKnownFilterValue(
+                SelectedFormatFilter,
+                "Filter_AllFormats"));
     }
 
     private static string RebuildFilterOptions(
@@ -1710,14 +1780,31 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
             return false;
         }
 
-        return SelectedPlaybackStateFilter switch
+        if (string.Equals(
+                SelectedPlaybackStateFilter,
+                ReadyPlaybackStateFilter,
+                StringComparison.Ordinal))
         {
-            ReadyPlaybackStateFilter =>
-                !track.Track.HasError && !track.Track.IsMissing,
-            ErrorPlaybackStateFilter => track.Track.HasError,
-            MissingPlaybackStateFilter => track.Track.IsMissing,
-            _ => true
-        };
+            return !track.Track.HasError && !track.Track.IsMissing;
+        }
+
+        if (string.Equals(
+                SelectedPlaybackStateFilter,
+                ErrorPlaybackStateFilter,
+                StringComparison.Ordinal))
+        {
+            return track.Track.HasError;
+        }
+
+        if (string.Equals(
+                SelectedPlaybackStateFilter,
+                MissingPlaybackStateFilter,
+                StringComparison.Ordinal))
+        {
+            return track.Track.IsMissing;
+        }
+
+        return true;
     }
 
     private static bool MatchesFilterValue(
@@ -1984,8 +2071,8 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
             if (SelectedPlaylist?.Id == playlist.Id)
                 ActiveView = LibraryViewMode.Library;
             dialogService.ShowWarning(
-                $"Couldn't open that playlist.\n\n{ex.Message}",
-                "Playlist");
+                Loc.Format("Playlist_CouldNotOpen", ex.Message),
+                Loc["Section_PlaylistFallback"]);
         }
     }
 
@@ -2078,12 +2165,14 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
             if (skippedCount > 0)
             {
                 var message = distinctTracks.Length == 1
-                    ? $"\"{distinctTracks[0].Title}\" could not be added. " +
-                      "It may already be in the playlist or may not be " +
-                      "saved in the catalog yet."
-                    : $"{addedPaths.Count} song(s) were added to " +
-                      $"\"{playlist.Name}\"; {skippedCount} were skipped " +
-                      "because they were already there or not saved yet.";
+                    ? Loc.Format(
+                        "Playlist_AddSkippedSingle",
+                        distinctTracks[0].Title)
+                    : Loc.Format(
+                        "Playlist_AddSkippedMultiple",
+                        addedPaths.Count,
+                        playlist.Name,
+                        skippedCount);
                 dialogService.ShowInformation(message);
 
                 if (addedPaths.Count == 0)
@@ -2108,8 +2197,8 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
                 "Could not add selected tracks to playlist {PlaylistId}",
                 playlist.Id);
             dialogService.ShowWarning(
-                $"Couldn't add the selected song(s) to the playlist.\n\n{ex.Message}",
-                "Playlist");
+                Loc.Format("Playlist_CouldNotAddSelected", ex.Message),
+                Loc["Section_PlaylistFallback"]);
         }
     }
 
@@ -2185,8 +2274,8 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
                 track.FilePath,
                 playlist.Id);
             dialogService.ShowWarning(
-                $"Couldn't remove that song from the playlist.\n\n{ex.Message}",
-                "Playlist");
+                Loc.Format("Playlist_CouldNotRemoveSong", ex.Message),
+                Loc["Section_PlaylistFallback"]);
         }
     }
 
@@ -2242,8 +2331,8 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
                 track.FilePath,
                 playlist.Id);
             dialogService.ShowWarning(
-                $"Couldn't rearrange that playlist.\n\n{ex.Message}",
-                "Playlist");
+                Loc.Format("Playlist_CouldNotRearrange", ex.Message),
+                Loc["Section_PlaylistFallback"]);
         }
     }
 
@@ -2294,9 +2383,10 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
                 if (showError)
                 {
                     dialogService.ShowWarning(
-                        "Mimi can't play this song because no usable audio " +
-                        $"output is available.\n\n{ex.Message}",
-                        "Audio output");
+                        Loc.Format(
+                            "Audio_CannotPlaySongNoOutput",
+                            GetLocalizedAudioOutputMessage(ex.Status)),
+                        Loc["Settings_AudioOutput"]);
                 }
 
                 return false;
@@ -2321,9 +2411,10 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
             if (showError)
             {
                 dialogService.ShowWarning(
-                    "This song is loaded, but Mimi can't start it because " +
-                    $"no usable audio output is available.\n\n{ex.Message}",
-                    "Audio output");
+                    Loc.Format(
+                        "Audio_SongLoadedNoOutput",
+                        GetLocalizedAudioOutputMessage(ex.Status)),
+                    Loc["Settings_AudioOutput"]);
             }
 
             return true;
@@ -2350,8 +2441,8 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
             if (showError)
             {
                 dialogService.ShowWarning(
-                    $"Couldn't play this file.\n\n{ex.Message}",
-                    "Playback error");
+                    Loc.Format("Playback_CouldNotPlayFile", ex.Message),
+                    Loc["Playback_ErrorTitle"]);
             }
 
             return false;
@@ -2587,8 +2678,8 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         {
             Log.Warning(ex, "Could not restore the saved library");
             dialogService.ShowWarning(
-                $"Couldn't restore your library.\n\n{ex.Message}",
-                "Library warning");
+                Loc.Format("Library_CouldNotRestore", ex.Message),
+                Loc["Dialog_LibraryWarning"]);
             return false;
         }
     }
@@ -2605,8 +2696,8 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         {
             Log.Warning(ex, "Could not save the library");
             dialogService.ShowWarning(
-                $"Couldn't save your library.\n\n{ex.Message}",
-                "Library warning");
+                Loc.Format("Library_CouldNotSave", ex.Message),
+                Loc["Dialog_LibraryWarning"]);
         }
     }
 
@@ -2636,7 +2727,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         {
             Log.Warning(ex, "Could not save favorites");
             dialogService.ShowWarning(
-                $"Couldn't save favorites.\n\n{ex.Message}",
+                Loc.Format("Library_CouldNotSaveFavorites", ex.Message),
                 "Mimi");
         }
     }

@@ -17,6 +17,9 @@ public sealed class AudioOutputStatusTests
         Assert.Equal(AudioOutputKind.None, status.Kind);
         Assert.Equal("No output device", status.DeviceName);
         Assert.Equal("No audio output is available.", status.Message);
+        Assert.Equal(
+            AudioOutputMessageKind.NoOutputAvailable,
+            status.MessageKind);
     }
 
     [Fact]
@@ -32,6 +35,7 @@ public sealed class AudioOutputStatusTests
         Assert.Equal(AudioOutputKind.WasapiShared, status.Kind);
         Assert.Equal("Headphones", status.DeviceName);
         Assert.Equal("Ready.", status.Message);
+        Assert.Equal(AudioOutputMessageKind.Custom, status.MessageKind);
     }
 
     [Fact]
@@ -92,5 +96,21 @@ public sealed class AudioOutputStatusTests
         Assert.False(exception.Status.IsAvailable);
         Assert.Equal(AudioOutputKind.None, exception.Status.Kind);
         Assert.Equal("The audio output is unavailable.", exception.Message);
+        Assert.Equal(
+            AudioOutputMessageKind.OutputUnavailable,
+            exception.Status.MessageKind);
+    }
+
+    [Fact]
+    public void UnavailableStatus_PreservesExplicitMessageKind()
+    {
+        var status = AudioOutputStatus.Unavailable(
+            "No audio output is available. Connect or enable an output " +
+            "device, then press Play.",
+            AudioOutputMessageKind.NoOutputPressPlay);
+
+        Assert.Equal(
+            AudioOutputMessageKind.NoOutputPressPlay,
+            status.MessageKind);
     }
 }

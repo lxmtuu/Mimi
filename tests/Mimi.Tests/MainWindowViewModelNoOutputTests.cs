@@ -4,6 +4,7 @@ using System.Text;
 using System.Threading;
 using System.Windows.Threading;
 using Mimi.Core.Playback;
+using Mimi.Localization;
 using Mimi.Models;
 using Mimi.Services;
 using Mimi.ViewModels;
@@ -102,6 +103,73 @@ public sealed class MainWindowViewModelNoOutputTests
                 Assert.Single(viewModel.UpcomingQueueItems);
                 Assert.Same(second, viewModel.UpcomingQueueItems[0].Track);
                 Assert.Equal(2, audio.PlayCalls);
+            }
+            finally
+            {
+                viewModel.Dispose();
+            }
+        });
+    }
+
+    [Fact]
+    public void LanguageSwitch_LocalizesFilterOptionsAndPreservesKnownSelections()
+    {
+        RunOnSta(() =>
+        {
+            var localization = new LocalizationService();
+            var audio = new FakeAudioPlayer
+            {
+                OutputStatus = new AudioOutputStatus(
+                    true,
+                    AudioOutputKind.WasapiShared,
+                    "Test Speakers",
+                    "Audio output is ready.")
+            };
+            var viewModel = new MainWindowViewModel(
+                audio,
+                new FakeLibraryService(),
+                new FakeLibraryCatalog(),
+                new FakeUserDataService(),
+                new FakeDialogService(),
+                localizationService: localization);
+
+            try
+            {
+                viewModel.InitializationTask.GetAwaiter().GetResult();
+                viewModel.UiLanguage = UiLanguages.English;
+                var track = new TrackItemViewModel(
+                    new Track
+                    {
+                        FilePath = @"C:\fixtures\unknown.mp3",
+                        MetadataTitle = "Unknown metadata",
+                        Duration = TimeSpan.FromSeconds(30)
+                    },
+                    isFavorite: false,
+                    localization);
+                viewModel.Tracks.Add(track);
+
+                viewModel.UiLanguage = UiLanguages.Vietnamese;
+
+                Assert.Contains("Tất cả nghệ sĩ", viewModel.ArtistFilterOptions);
+                Assert.Contains("Nghệ sĩ không rõ", viewModel.ArtistFilterOptions);
+                Assert.Equal(
+                    ["Tất cả trạng thái", "Sẵn sàng", "Có lỗi", "Thiếu file"],
+                    viewModel.PlaybackStateFilterOptions);
+
+                viewModel.SelectedArtistFilter = "Nghệ sĩ không rõ";
+                viewModel.SelectedPlaybackStateFilter = "Có lỗi";
+                Assert.True(viewModel.HasActiveAdvancedFilters);
+
+                viewModel.UiLanguage = UiLanguages.English;
+
+                Assert.Contains("All artists", viewModel.ArtistFilterOptions);
+                Assert.Contains("Unknown artist", viewModel.ArtistFilterOptions);
+                Assert.Equal(
+                    ["All states", "Ready", "Has error", "Missing"],
+                    viewModel.PlaybackStateFilterOptions);
+                Assert.Equal("Unknown artist", viewModel.SelectedArtistFilter);
+                Assert.Equal("Has error", viewModel.SelectedPlaybackStateFilter);
+                Assert.True(viewModel.HasActiveAdvancedFilters);
             }
             finally
             {

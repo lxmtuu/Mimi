@@ -31,11 +31,11 @@ public sealed partial class TrackItemViewModel : ObservableObject
     public string Title => Track.Title;
 
     public string Artist => string.IsNullOrWhiteSpace(Track.Artist)
-        ? "Unknown artist"
+        ? loc["Metadata_UnknownArtist"]
         : Track.Artist;
 
     public string Album => string.IsNullOrWhiteSpace(Track.Album)
-        ? "Unknown album"
+        ? loc["Metadata_UnknownAlbum"]
         : Track.Album;
 
     public string AlbumArtist => string.IsNullOrWhiteSpace(Track.AlbumArtist)
@@ -43,7 +43,7 @@ public sealed partial class TrackItemViewModel : ObservableObject
         : Track.AlbumArtist;
 
     public string Genre => string.IsNullOrWhiteSpace(Track.Genre)
-        ? "Unknown genre"
+        ? loc["Metadata_UnknownGenre"]
         : Track.Genre;
 
     public string YearLabel => Track.Year?.ToString() ?? string.Empty;
@@ -82,7 +82,7 @@ public sealed partial class TrackItemViewModel : ObservableObject
 
             return parts.Count > 1
                 ? string.Join("  •  ", parts)
-                : $"{Format}  •  Local music";
+                : loc.Format("Metadata_LocalMusicSuffix", Format);
         }
     }
 
@@ -121,8 +121,15 @@ public sealed partial class TrackItemViewModel : ObservableObject
 
     public string PlaybackStatus => HasPlaybackError ? "⚠" : string.Empty;
 
-    internal void RefreshLocalizedLabels() =>
+    internal void RefreshLocalizedLabels()
+    {
+        OnPropertyChanged(nameof(Artist));
+        OnPropertyChanged(nameof(Album));
+        OnPropertyChanged(nameof(AlbumArtist));
+        OnPropertyChanged(nameof(Genre));
+        OnPropertyChanged(nameof(Subtitle));
         OnPropertyChanged(nameof(FavoriteToolTip));
+    }
 
     public void UpdateMetadata(Track updated)
     {

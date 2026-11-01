@@ -584,7 +584,10 @@ public sealed class AudioService : IAudioPlayer
                     deviceName,
                     backendPreference == AudioOutputBackendPreference.ForceWasapiShared
                         ? $"WASAPI shared output is ready (forced by {BackendPreferenceEnvironmentVariable} for diagnostics)."
-                        : "WASAPI shared output is ready.");
+                        : "WASAPI shared output is ready.",
+                    backendPreference == AudioOutputBackendPreference.ForceWasapiShared
+                        ? AudioOutputMessageKind.WasapiForcedReady
+                        : AudioOutputMessageKind.WasapiReady);
                 statusChanged = UpdateOutputStatusLocked(status);
 
                 if (previousStatus.Kind != status.Kind ||
@@ -661,7 +664,10 @@ public sealed class AudioService : IAudioPlayer
                     deviceName,
                     backendPreference == AudioOutputBackendPreference.ForceWaveOut
                         ? $"WaveOut output is ready (forced by {BackendPreferenceEnvironmentVariable} for diagnostics)."
-                        : "WASAPI was unavailable, so Mimi is using the WaveOut fallback.");
+                        : "WASAPI was unavailable, so Mimi is using the WaveOut fallback.",
+                    backendPreference == AudioOutputBackendPreference.ForceWaveOut
+                        ? AudioOutputMessageKind.WaveOutForcedReady
+                        : AudioOutputMessageKind.WaveOutFallbackReady);
                 statusChanged = UpdateOutputStatusLocked(status);
 
                 if (previousStatus.Kind != status.Kind)
@@ -699,7 +705,10 @@ public sealed class AudioService : IAudioPlayer
             backendPreference == AudioOutputBackendPreference.ForceWasapiShared
                 ? $"WASAPI shared output is unavailable, and {BackendPreferenceEnvironmentVariable} disables the WaveOut fallback for diagnostics."
                 : "No audio output is available. Connect or enable an output " +
-                  "device, then press Play.");
+                  "device, then press Play.",
+            backendPreference == AudioOutputBackendPreference.ForceWasapiShared
+                ? AudioOutputMessageKind.WasapiUnavailableFallbackDisabled
+                : AudioOutputMessageKind.NoOutputPressPlay);
         statusChanged = UpdateOutputStatusLocked(unavailableStatus);
 
         if (previousStatus.IsAvailable)
@@ -873,11 +882,15 @@ public sealed class AudioService : IAudioPlayer
                           $"Current output: {outputStatus.DeviceName}. Press Play to continue."
                         : "The audio output became unavailable, so playback is paused. " +
                           "Connect an output device, then press Play.";
+                    var messageKind = created
+                        ? AudioOutputMessageKind.PlaybackInterruptedOutputChanged
+                        : AudioOutputMessageKind.PlaybackInterruptedOutputUnavailable;
                     var interruptedStatus = new AudioOutputStatus(
                         outputStatus.IsAvailable,
                         outputStatus.Kind,
                         outputStatus.DeviceName,
-                        message);
+                        message,
+                        messageKind);
                     statusChanged = UpdateOutputStatusLocked(
                         interruptedStatus,
                         playbackInterrupted: true,
@@ -909,7 +922,8 @@ public sealed class AudioService : IAudioPlayer
                 true,
                 AudioOutputKind.None,
                 "Windows default output",
-                "Audio output will be checked when playback starts.");
+                "Audio output will be checked when playback starts.",
+                AudioOutputMessageKind.CheckedWhenPlaybackStarts);
         }
 
         if (deviceWatcher.TryGetDefaultRenderDevice(out var device))
@@ -920,7 +934,8 @@ public sealed class AudioService : IAudioPlayer
                     true,
                     AudioOutputKind.None,
                     GetDeviceName(device),
-                    "Windows default output is available.");
+                    "Windows default output is available.",
+                    AudioOutputMessageKind.WindowsDefaultAvailable);
             }
             finally
             {
@@ -930,7 +945,8 @@ public sealed class AudioService : IAudioPlayer
 
         return AudioOutputStatus.Unavailable(
             "No audio output is available. Connect or enable an output " +
-            "device, then press Play.");
+            "device, then press Play.",
+            AudioOutputMessageKind.NoOutputPressPlay);
     }
 
     private bool TryGetDefaultDeviceId(out string? deviceId)

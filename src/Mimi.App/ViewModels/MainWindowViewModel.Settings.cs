@@ -113,6 +113,8 @@ public sealed partial class MainWindowViewModel
         OnPropertyChanged(nameof(QueueStatusLabel));
         OnPropertyChanged(nameof(OpenWithMimiStatusLabel));
         NotifySortLabelsChanged();
+        RefreshPlaybackStateFilterOptions();
+        RefreshFilterOptions();
 
         if (lastAudioOutputStatus is { } audioOutputStatus)
             RefreshAudioOutputStatus(audioOutputStatus);
@@ -126,6 +128,10 @@ public sealed partial class MainWindowViewModel
         {
             NowPlayingTitle = Loc["NowPlaying_ChooseSong"];
             NowPlayingSubtitle = Loc["NowPlaying_NextFavoriteWaiting"];
+        }
+        else
+        {
+            NowPlayingSubtitle = CurrentTrack.Subtitle;
         }
 
         UpdateTrackCount();
@@ -390,23 +396,39 @@ public sealed partial class MainWindowViewModel
 
             SelectedArtistFilter = GetValidFilter(
                 ArtistFilterOptions,
-                saved.ArtistFilter,
+                TranslateKnownFilterValue(
+                    saved.ArtistFilter,
+                    "Filter_AllArtists",
+                    "Metadata_UnknownArtist"),
                 AllArtistsFilter);
             SelectedAlbumFilter = GetValidFilter(
                 AlbumFilterOptions,
-                saved.AlbumFilter,
+                TranslateKnownFilterValue(
+                    saved.AlbumFilter,
+                    "Filter_AllAlbums",
+                    "Metadata_UnknownAlbum"),
                 AllAlbumsFilter);
             SelectedGenreFilter = GetValidFilter(
                 GenreFilterOptions,
-                saved.GenreFilter,
+                TranslateKnownFilterValue(
+                    saved.GenreFilter,
+                    "Filter_AllGenres",
+                    "Metadata_UnknownGenre"),
                 AllGenresFilter);
             SelectedFormatFilter = GetValidFilter(
                 FormatFilterOptions,
-                saved.FormatFilter,
+                TranslateKnownFilterValue(
+                    saved.FormatFilter,
+                    "Filter_AllFormats"),
                 AllFormatsFilter);
             SelectedPlaybackStateFilter = GetValidFilter(
                 PlaybackStateFilterOptions,
-                saved.PlaybackStateFilter,
+                TranslateKnownFilterValue(
+                    saved.PlaybackStateFilter,
+                    "Filter_AllStates",
+                    "Filter_Ready",
+                    "Filter_HasError",
+                    "Filter_Missing"),
                 AllPlaybackStatesFilter);
 
             // Search intentionally resets custom sorting while typing, so

@@ -75,8 +75,8 @@ public sealed partial class MainWindowViewModel
         if (folder is null)
         {
             dialogService.ShowWarning(
-                "That folder path could not be used.",
-                "Settings");
+                Loc["Settings_FolderPathCouldNotBeUsed"],
+                Loc["Settings_Title"]);
             return;
         }
 
@@ -101,7 +101,9 @@ public sealed partial class MainWindowViewModel
         if (result?.SkippedDirectories > 0)
         {
             dialogService.ShowInformation(
-                $"{result.SkippedDirectories} folder(s) could not be read and were skipped.");
+                Loc.Format(
+                    "Library_SkippedDirectories",
+                    result.SkippedDirectories));
         }
     }
 
