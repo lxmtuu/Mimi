@@ -897,8 +897,19 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     [RelayCommand]
     private void PlayTrack(TrackItemViewModel? track)
     {
-        if (track is not null)
-            TryPlayTrackFromCurrentView(track, showError: true);
+        if (track is null) return;
+
+        if (ReferenceEquals(track, CurrentTrack))
+        {
+            // Single-click activation also lands here when the user clicks
+            // the row that is already loaded. That must never restart the
+            // song from zero; resume it when paused instead.
+            SelectedTrack = track;
+            ResumePlayback();
+            return;
+        }
+
+        TryPlayTrackFromCurrentView(track, showError: true);
     }
 
     [RelayCommand]

@@ -113,6 +113,73 @@ public sealed class MainWindowViewModelNoOutputTests
     }
 
     [Fact]
+    public void PlayTrack_WhenTrackIsAlreadyCurrent_DoesNotReloadAndResumesWhenPaused()
+    {
+        RunOnSta(() =>
+        {
+            var audio = new FakeAudioPlayer
+            {
+                OutputStatus = new AudioOutputStatus(
+                    isAvailable: true,
+                    AudioOutputKind.WasapiShared,
+                    "Test Speakers",
+                    "Audio output is ready.")
+            };
+            var viewModel = new MainWindowViewModel(
+                audio,
+                new FakeLibraryService(),
+                new FakeLibraryCatalog(),
+                new FakeUserDataService(),
+                new FakeDialogService());
+
+            try
+            {
+                viewModel.InitializationTask.GetAwaiter().GetResult();
+
+                var track = new TrackItemViewModel(
+                    new Track
+                    {
+                        FilePath = @"C:\fixtures\cyan.wav",
+                        MetadataTitle = "Cyan Signal",
+                        Duration = TimeSpan.FromSeconds(30)
+                    },
+                    isFavorite: false);
+                viewModel.Tracks.Add(track);
+
+                viewModel.PlayTrackCommand.Execute(track);
+
+                Assert.Equal(1, audio.LoadCalls);
+                Assert.Equal(1, audio.PlayCalls);
+                Assert.Same(track, viewModel.CurrentTrack);
+                Assert.True(viewModel.IsPlaying);
+
+                // Clicking the currently playing row must not restart it.
+                viewModel.PlayTrackCommand.Execute(track);
+
+                Assert.Equal(1, audio.LoadCalls);
+                Assert.Equal(1, audio.PlayCalls);
+                Assert.True(viewModel.IsPlaying);
+
+                viewModel.PausePlaybackCommand.Execute(null);
+                Assert.False(viewModel.IsPlaying);
+
+                // Clicking the paused current row resumes without reloading.
+                viewModel.PlayTrackCommand.Execute(track);
+
+                Assert.Equal(1, audio.LoadCalls);
+                Assert.Equal(2, audio.PlayCalls);
+                Assert.True(viewModel.IsPlaying);
+                Assert.Same(track, viewModel.CurrentTrack);
+                Assert.Same(track, viewModel.SelectedTrack);
+            }
+            finally
+            {
+                viewModel.Dispose();
+            }
+        });
+    }
+
+    [Fact]
     public void ThemePreference_AppliesLoadedThemeNormalizesAndPersistsChanges()
     {
         RunOnSta(() =>

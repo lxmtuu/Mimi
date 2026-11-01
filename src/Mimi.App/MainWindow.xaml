@@ -482,12 +482,13 @@
                               Background="Transparent" BorderThickness="0"
                               Foreground="{StaticResource TextStrongBrush}" AutomationProperties.Name="{Binding Loc[Library_TrackList]}"
                               behaviors:SelectedItemsBehavior.SelectedItems="{Binding SelectedTracks}"
+                              behaviors:ItemClickCommandBehavior.Command="{Binding PlayTrackCommand}"
                               behaviors:PlaylistReorderBehavior.MoveCommand="{Binding MovePlaylistTrackCommand}"
                               behaviors:PlaylistReorderBehavior.IsReorderEnabled="{Binding IsPlaylistReorderEnabled}">
                         <ListView.InputBindings>
                             <KeyBinding Key="Delete" Command="{Binding RemoveSelectedTrackCommand}"/>
-                            <MouseBinding MouseAction="LeftDoubleClick" Command="{Binding PlayTrackCommand}"
-                                          CommandParameter="{Binding SelectedTrack}"/>
+                            <KeyBinding Key="Return" Command="{Binding PlayTrackCommand}"
+                                        CommandParameter="{Binding SelectedTrack}"/>
                         </ListView.InputBindings>
                         <ListView.ContextMenu>
                             <ContextMenu>
@@ -531,6 +532,10 @@
                             </ContextMenu>
                         </ListView.ContextMenu>
                         <ListView.Resources>
+                            <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="{DynamicResource SelectedBackgroundColor}"/>
+                            <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" Color="{DynamicResource TextStrongColor}"/>
+                            <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey}" Color="{DynamicResource SelectedBackgroundColor}"/>
+                            <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightTextBrushKey}" Color="{DynamicResource TextStrongColor}"/>
                             <Style TargetType="{x:Type GridViewColumnHeader}">
                                 <Setter Property="Background" Value="{StaticResource HeaderBackgroundBrush}"/>
                                 <Setter Property="Foreground" Value="{StaticResource AccentBrush}"/>
@@ -1065,12 +1070,13 @@
                                           BorderThickness="1" Foreground="{StaticResource TextStrongBrush}"
                                           ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                                           AutomationProperties.Name="{Binding Loc[Queue_ListAutomation]}"
+                                          behaviors:ItemClickCommandBehavior.Command="{Binding PlayQueueItemCommand}"
                                           behaviors:PlaylistReorderBehavior.MoveCommand="{Binding MoveQueueItemCommand}"
                                           behaviors:PlaylistReorderBehavior.IsReorderEnabled="True">
                                     <ListView.InputBindings>
-                                        <MouseBinding MouseAction="LeftDoubleClick"
-                                                      Command="{Binding PlayQueueItemCommand}"
-                                                      CommandParameter="{Binding SelectedQueueItem}"/>
+                                        <KeyBinding Key="Return"
+                                                    Command="{Binding PlayQueueItemCommand}"
+                                                    CommandParameter="{Binding SelectedQueueItem}"/>
                                     </ListView.InputBindings>
                                     <ListView.ContextMenu>
                                         <ContextMenu>
@@ -1089,6 +1095,12 @@
                                                       Command="{Binding PlacementTarget.DataContext.ClearUpcomingQueueCommand, RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"/>
                                         </ContextMenu>
                                     </ListView.ContextMenu>
+                                    <ListView.Resources>
+                                        <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="{DynamicResource SelectedBackgroundColor}"/>
+                                        <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" Color="{DynamicResource TextStrongColor}"/>
+                                        <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey}" Color="{DynamicResource SelectedBackgroundColor}"/>
+                                        <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightTextBrushKey}" Color="{DynamicResource TextStrongColor}"/>
+                                    </ListView.Resources>
                                     <ListView.ItemContainerStyle>
                                         <Style TargetType="{x:Type ListViewItem}">
                                             <Setter Property="Padding" Value="6,4"/>

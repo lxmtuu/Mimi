@@ -552,7 +552,13 @@ public sealed partial class MainWindowViewModel
     [RelayCommand]
     private void PlayQueueItem(PlaybackQueueItemViewModel? item)
     {
-        if (item is null || ReferenceEquals(item, playbackQueue.Current)) return;
+        if (item is null) return;
+
+        if (ReferenceEquals(item, playbackQueue.Current))
+        {
+            ResumePlayback();
+            return;
+        }
 
         TryPlayTrack(
             item.Track,

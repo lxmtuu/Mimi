@@ -45,8 +45,9 @@ A Windows desktop music-player foundation built with C# / WPF / .NET 8 and NAudi
   selected song(s) from the track list's **Add to playlist** menu, remove
   songs, and reorder them by dragging or with the Up/Down actions
 - An **Up Next** playback queue with drag reordering, Up/Down buttons,
-  Play-next / Add-to-queue actions for selected songs, double-click to play
-  a queued song immediately, item removal, and Clear upcoming
+  Play-next / Add-to-queue actions for selected songs, item removal, and
+  Clear upcoming. Clicking any song in the track list or the queue plays it
+  immediately (Ctrl/Shift-click still only extends the selection)
 - Windows media integration through System Media Transport Controls:
   song metadata, cover art, playback state, timeline seeking, shuffle /
   repeat, hardware media keys, and the Windows volume/media flyout.
@@ -266,7 +267,7 @@ Release vừa build ở bước 3, dùng:
 Khi cửa sổ Mimi mở, bạn có thể chọn **Add music files**, **Scan a folder**,
 hoặc kéo-thả file/thư mục nhạc từ Explorer vào cửa sổ. Trong lúc quét, thanh
 tiến độ và nút **Cancel** xuất hiện ở khu vực tiêu đề thư viện. Sau đó hãy
-double-click một bài để phát, thử tìm bài tiếng Việt bằng từ khóa không dấu,
+bấm chuột vào một bài để phát ngay, thử tìm bài tiếng Việt bằng từ khóa không dấu,
 bấm tiêu đề cột để sắp xếp, dùng hàng **Filters** để lọc theo
 nghệ sĩ/album/thể loại/định dạng/trạng thái phát, giữ `Ctrl`/`Shift` để chọn
 nhiều bài cho các thao tác favorites/xóa/thêm vào playlist, mở **Recently
