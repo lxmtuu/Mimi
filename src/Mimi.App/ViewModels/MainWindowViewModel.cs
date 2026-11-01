@@ -2356,10 +2356,12 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         Action? onPlaybackStarted = null)
     {
         var loaded = false;
+        var switchStarted = Stopwatch.GetTimestamp();
         try
         {
             audioPlayer.Load(track.FilePath);
             loaded = true;
+            var afterLoad = Stopwatch.GetTimestamp();
 
             // Only adopt the track as current once it actually loaded, so a
             // broken file never leaves playback state pointing at it.
@@ -2370,15 +2372,53 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
             NowPlayingSubtitle = track.Subtitle;
             CurrentCoverArtPath = track.CoverArtPath;
             SetProgressPercent(0);
+            var beforePlay = Stopwatch.GetTimestamp();
             audioPlayer.Play();
             track.HasPlaybackError = false;
             track.Track.HasError = false;
             track.Track.IsMissing = false;
             SelectedTrack = track;
+            var beforeQueueContext = Stopwatch.GetTimestamp();
             onPlaybackStarted?.Invoke();
+            var afterQueueContext = Stopwatch.GetTimestamp();
             RefreshPlaybackState();
             SaveSettings();
+            var afterFinalize = Stopwatch.GetTimestamp();
             _ = RecordPlaybackStartedAsync(track);
+
+            var totalElapsed = Stopwatch.GetElapsedTime(
+                switchStarted,
+                afterFinalize);
+            if (totalElapsed.TotalMilliseconds >= 75)
+            {
+                Log.Information(
+                    "Track switch timing for {FilePath}: total={TotalMs:F1}ms; " +
+                    "load={LoadMs:F1}ms; adopt={AdoptMs:F1}ms; " +
+                    "playAndSelect={PlayAndSelectMs:F1}ms; " +
+                    "queueContext={QueueContextMs:F1}ms; " +
+                    "refreshSave={RefreshSaveMs:F1}ms; tracks={TrackCount}; " +
+                    "queueSource={QueueSourceCount}; upcoming={UpcomingCount}",
+                    track.FilePath,
+                    totalElapsed.TotalMilliseconds,
+                    Stopwatch.GetElapsedTime(switchStarted, afterLoad)
+                        .TotalMilliseconds,
+                    Stopwatch.GetElapsedTime(afterLoad, beforePlay)
+                        .TotalMilliseconds,
+                    Stopwatch.GetElapsedTime(beforePlay, beforeQueueContext)
+                        .TotalMilliseconds,
+                    Stopwatch.GetElapsedTime(
+                            beforeQueueContext,
+                            afterQueueContext)
+                        .TotalMilliseconds,
+                    Stopwatch.GetElapsedTime(
+                            afterQueueContext,
+                            afterFinalize)
+                        .TotalMilliseconds,
+                    Tracks.Count,
+                    playbackQueue.SourceItems.Count,
+                    UpcomingQueueItems.Count);
+            }
+
             return true;
         }
         catch (AudioOutputUnavailableException ex)

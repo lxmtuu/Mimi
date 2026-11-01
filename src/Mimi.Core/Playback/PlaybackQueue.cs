@@ -68,14 +68,18 @@ public sealed class PlaybackQueue<T> where T : class
         ArgumentNullException.ThrowIfNull(current);
 
         sourceItems.Clear();
+        var seen = new HashSet<T>(ReferenceEqualityComparer.Instance);
+        var currentIndex = -1;
         foreach (var item in items)
         {
             ArgumentNullException.ThrowIfNull(item);
-            if (IndexOfReference(sourceItems, item) < 0)
-                sourceItems.Add(item);
+            if (!seen.Add(item)) continue;
+
+            if (ReferenceEquals(item, current))
+                currentIndex = sourceItems.Count;
+            sourceItems.Add(item);
         }
 
-        var currentIndex = IndexOfReference(sourceItems, current);
         if (currentIndex < 0)
         {
             sourceItems.Add(current);
@@ -115,10 +119,11 @@ public sealed class PlaybackQueue<T> where T : class
         ArgumentNullException.ThrowIfNull(upcomingItems);
 
         sourceItems.Clear();
+        var seen = new HashSet<T>(ReferenceEqualityComparer.Instance);
         foreach (var item in source)
         {
             ArgumentNullException.ThrowIfNull(item);
-            if (IndexOfReference(sourceItems, item) < 0)
+            if (seen.Add(item))
                 sourceItems.Add(item);
         }
 

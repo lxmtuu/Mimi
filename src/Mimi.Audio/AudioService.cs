@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Mimi.Core.Playback;
 using NAudio;
@@ -38,7 +39,10 @@ public sealed class AudioService : IAudioPlayer
     private volatile string? outputDeviceId;
     private AudioFileReader? reader;
     private VisualizerSampleProvider? visualizer;
+    private SwitchableSampleProvider? switchableSource;
     private VolumeSampleProvider? volumeProvider;
+    private string? loadedPath;
+    private PlaybackStoppedSubscription? playbackStoppedSubscription;
     private float volume = 0.7f;
     private AudioOutputStatus outputStatus;
     private volatile bool hasAvailableOutput;
@@ -180,20 +184,66 @@ public sealed class AudioService : IAudioPlayer
     private void AdvancePlaybackGenerationLocked() =>
         playbackGeneration = unchecked(playbackGeneration + 1);
 
+    private sealed class PlaybackStoppedSubscription(IWavePlayer player)
+    {
+        public IWavePlayer Player { get; } = player;
+
+        public EventHandler<StoppedEventArgs>? Handler { get; set; }
+    }
+
     public void Load(string path)
     {
         AudioOutputStatusChangedEventArgs? statusChanged = null;
+        var loadStarted = Stopwatch.GetTimestamp();
+        var decodeElapsed = TimeSpan.Zero;
+        var transitionElapsed = TimeSpan.Zero;
+        var outputCreateElapsed = TimeSpan.Zero;
+        var reusedOutput = false;
 
         lock (gate)
         {
             ThrowIfDisposedLocked();
             AdvancePlaybackGenerationLocked();
-            DisposeLoadedTrackLocked();
+
+            // Opening/decoding the next file does not require the current
+            // reader. For a different path, build the candidate chain while
+            // the old track is still intact, then stop/swap only at the
+            // last moment. A failed candidate still ends in the historical
+            // "no track loaded" state via the catch block below.
+            var buildBeforeStoppingCurrent = reader is not null &&
+                !string.Equals(
+                    loadedPath,
+                    path,
+                    StringComparison.OrdinalIgnoreCase);
 
             AudioFileReader? newReader = null;
             VisualizerSampleProvider? newVisualizer = null;
             try
             {
+                if (!buildBeforeStoppingCurrent)
+                {
+                    var transitionStarted = Stopwatch.GetTimestamp();
+                    if (reader is not null &&
+                        TryStopOutputForTrackSwapLocked())
+                    {
+                        // Retain output/switchable/volume as a same-format
+                        // reuse candidate while releasing the old reader
+                        // before reopening the same path.
+                        switchableSource?.ClearSource();
+                        DisposeTrackChainLocked(reader, visualizer);
+                        reader = null;
+                        visualizer = null;
+                        loadedPath = null;
+                    }
+                    else
+                    {
+                        DisposeLoadedTrackLocked();
+                    }
+                    transitionElapsed +=
+                        Stopwatch.GetElapsedTime(transitionStarted);
+                }
+
+                var decodeStarted = Stopwatch.GetTimestamp();
                 newReader = new AudioFileReader(path);
 
                 // Keep the reader at unity gain and apply volume AFTER the
@@ -207,45 +257,92 @@ public sealed class AudioService : IAudioPlayer
                 // render endpoints. Mono files are therefore up-mixed after
                 // the visualizer tap; stereo and multichannel files retain
                 // their decoded layout for the Windows audio engine.
-                ISampleProvider outputSource =
+                ISampleProvider newOutputSource =
                     newVisualizer.WaveFormat.Channels == 1
                         ? newVisualizer.ToStereo()
                         : newVisualizer;
-                var newVolumeProvider = new VolumeSampleProvider(outputSource)
+                decodeElapsed = Stopwatch.GetElapsedTime(decodeStarted);
+
+                reusedOutput = CanReuseOutputLocked(newOutputSource.WaveFormat);
+                var transitionStarted = Stopwatch.GetTimestamp();
+                if (reusedOutput && buildBeforeStoppingCurrent)
                 {
-                    Volume = volume
-                };
+                    reusedOutput = TryStopOutputForTrackSwapLocked();
+                }
 
-                reader = newReader;
-                visualizer = newVisualizer;
-                volumeProvider = newVolumeProvider;
-                newReader = null;
-                newVisualizer = null;
+                if (reusedOutput)
+                {
+                    var oldReader = reader;
+                    var oldVisualizer = visualizer;
 
-                // A missing output must not turn a successfully decoded
-                // file into a track error. The reader remains loaded and
-                // paused; Play reports the output problem distinctly.
-                TryCreateOutputLocked(out statusChanged);
+                    switchableSource!.SetSource(newOutputSource);
+                    reader = newReader;
+                    visualizer = newVisualizer;
+                    loadedPath = path;
+                    newReader = null;
+                    newVisualizer = null;
+
+                    DisposeTrackChainLocked(oldReader, oldVisualizer);
+                    transitionElapsed +=
+                        Stopwatch.GetElapsedTime(transitionStarted);
+                }
+                else
+                {
+                    DisposeLoadedTrackLocked();
+
+                    reader = newReader;
+                    visualizer = newVisualizer;
+                    loadedPath = path;
+                    newReader = null;
+                    newVisualizer = null;
+                    switchableSource = new SwitchableSampleProvider(newOutputSource);
+                    volumeProvider = new VolumeSampleProvider(switchableSource)
+                    {
+                        Volume = volume
+                    };
+                    transitionElapsed +=
+                        Stopwatch.GetElapsedTime(transitionStarted);
+
+                    // A missing output must not turn a successfully decoded
+                    // file into a track error. The reader remains loaded and
+                    // paused; Play reports the output problem distinctly.
+                    var outputCreateStarted = Stopwatch.GetTimestamp();
+                    TryCreateOutputLocked(out statusChanged);
+                    outputCreateElapsed =
+                        Stopwatch.GetElapsedTime(outputCreateStarted);
+                }
             }
             catch
             {
-                if (reader is not null || visualizer is not null ||
-                    volumeProvider is not null)
-                {
-                    DisposeLoadedTrackLocked();
-                }
-
-                newVisualizer?.Dispose();
-                newReader?.Dispose();
+                DisposeLoadedTrackLocked();
+                DisposeTrackChainLocked(newReader, newVisualizer);
                 throw;
             }
+        }
+
+        var totalElapsed = Stopwatch.GetElapsedTime(loadStarted);
+        if (totalElapsed.TotalMilliseconds >= 50)
+        {
+            Log.Information(
+                "Audio load timing for {FilePath}: total={TotalMs:F1}ms; " +
+                "decode={DecodeMs:F1}ms; transition={TransitionMs:F1}ms; " +
+                "outputCreate={OutputCreateMs:F1}ms; reusedOutput={ReusedOutput}",
+                path,
+                totalElapsed.TotalMilliseconds,
+                decodeElapsed.TotalMilliseconds,
+                transitionElapsed.TotalMilliseconds,
+                outputCreateElapsed.TotalMilliseconds,
+                reusedOutput);
         }
 
         RaiseOutputStatusChanged(statusChanged);
         PlaybackChanged?.Invoke(this, EventArgs.Empty);
     }
 
-    private void Output_PlaybackStopped(object? sender, StoppedEventArgs e)
+    private void Output_PlaybackStopped(
+        object? sender,
+        StoppedEventArgs e,
+        PlaybackStoppedSubscription subscription)
     {
         var endedNaturally = false;
         var endedGeneration = 0L;
@@ -256,8 +353,15 @@ public sealed class AudioService : IAudioPlayer
 
         lock (gate)
         {
-            if (disposed || !ReferenceEquals(sender, output))
+            // A stopped callback can be queued before a same-output track
+            // swap replaces the subscription. The captured subscription
+            // makes that stale callback distinguishable even though the
+            // IWavePlayer instance is intentionally reused.
+            if (disposed || !ReferenceEquals(sender, output) ||
+                !ReferenceEquals(subscription, playbackStoppedSubscription))
+            {
                 return;
+            }
 
             if (e.Exception is not null)
             {
@@ -307,6 +411,81 @@ public sealed class AudioService : IAudioPlayer
                 playbackInterrupted: playbackInterrupted);
         }
     }
+
+    private bool CanReuseOutputLocked(WaveFormat newFormat)
+    {
+        var source = switchableSource;
+        return output is not null &&
+               source is not null &&
+               volumeProvider is not null &&
+               !outputBroken &&
+               outputStatus.IsAvailable &&
+               WaveFormatsMatch(source.WaveFormat, newFormat);
+    }
+
+    private bool TryStopOutputForTrackSwapLocked()
+    {
+        if (output is null || switchableSource is null ||
+            volumeProvider is null)
+        {
+            return false;
+        }
+
+        UnsubscribePlaybackStoppedLocked(output);
+        try
+        {
+            output.Stop();
+            return true;
+        }
+        catch (Exception ex)
+        {
+            outputBroken = true;
+            Log.Warning(
+                ex,
+                "Audio output could not stop cleanly for a track swap on {DeviceName}; rebuilding it",
+                outputStatus.DeviceName);
+            return false;
+        }
+        finally
+        {
+            if (!disposed && output is not null)
+                SubscribePlaybackStoppedLocked(output);
+        }
+    }
+
+    private void SubscribePlaybackStoppedLocked(IWavePlayer player)
+    {
+        UnsubscribePlaybackStoppedLocked(player);
+
+        var subscription = new PlaybackStoppedSubscription(player);
+        subscription.Handler = (sender, e) =>
+            Output_PlaybackStopped(sender, e, subscription);
+        playbackStoppedSubscription = subscription;
+        player.PlaybackStopped += subscription.Handler;
+    }
+
+    private void UnsubscribePlaybackStoppedLocked(IWavePlayer player)
+    {
+        var subscription = playbackStoppedSubscription;
+        if (subscription is null ||
+            !ReferenceEquals(subscription.Player, player))
+        {
+            return;
+        }
+
+        if (subscription.Handler is not null)
+            player.PlaybackStopped -= subscription.Handler;
+
+        playbackStoppedSubscription = null;
+    }
+
+    private static bool WaveFormatsMatch(WaveFormat left, WaveFormat right) =>
+        left.Encoding == right.Encoding &&
+        left.SampleRate == right.SampleRate &&
+        left.Channels == right.Channels &&
+        left.BitsPerSample == right.BitsPerSample &&
+        left.BlockAlign == right.BlockAlign &&
+        left.AverageBytesPerSecond == right.AverageBytesPerSecond;
 
     public void Play()
     {
@@ -432,7 +611,7 @@ public sealed class AudioService : IAudioPlayer
                 // mistaken for a track ending naturally (which would
                 // auto-advance to the next song), even when NAudio posts
                 // its stopped callback asynchronously.
-                output.PlaybackStopped -= Output_PlaybackStopped;
+                UnsubscribePlaybackStoppedLocked(output);
                 try
                 {
                     output.Stop();
@@ -449,7 +628,7 @@ public sealed class AudioService : IAudioPlayer
                 finally
                 {
                     if (!disposed && output is not null)
-                        output.PlaybackStopped += Output_PlaybackStopped;
+                        SubscribePlaybackStoppedLocked(output);
                 }
             }
 
@@ -568,7 +747,7 @@ public sealed class AudioService : IAudioPlayer
             if (candidate is not null)
             {
                 candidate.Init(volumeProvider);
-                candidate.PlaybackStopped += Output_PlaybackStopped;
+                SubscribePlaybackStoppedLocked(candidate);
 
                 output = candidate;
                 candidate = null;
@@ -634,7 +813,7 @@ public sealed class AudioService : IAudioPlayer
         {
             if (candidate is not null)
             {
-                candidate.PlaybackStopped -= Output_PlaybackStopped;
+                UnsubscribePlaybackStoppedLocked(candidate);
                 TryDisposeOutput(candidate);
             }
 
@@ -648,7 +827,7 @@ public sealed class AudioService : IAudioPlayer
             {
                 fallbackCandidate = waveOutOutputFactory();
                 fallbackCandidate.Init(volumeProvider);
-                fallbackCandidate.PlaybackStopped += Output_PlaybackStopped;
+                SubscribePlaybackStoppedLocked(fallbackCandidate);
 
                 output = fallbackCandidate;
                 fallbackCandidate = null;
@@ -690,7 +869,7 @@ public sealed class AudioService : IAudioPlayer
             {
                 if (fallbackCandidate is not null)
                 {
-                    fallbackCandidate.PlaybackStopped -= Output_PlaybackStopped;
+                    UnsubscribePlaybackStoppedLocked(fallbackCandidate);
                     TryDisposeOutput(fallbackCandidate);
                 }
             }
@@ -995,26 +1174,36 @@ public sealed class AudioService : IAudioPlayer
     {
         DisposeOutputLocked();
 
+        switchableSource?.ClearSource();
+        switchableSource = null;
+        DisposeTrackChainLocked(reader, visualizer);
+        reader = null;
+        visualizer = null;
+        volumeProvider = null;
+        loadedPath = null;
+    }
+
+    private static void DisposeTrackChainLocked(
+        AudioFileReader? chainReader,
+        VisualizerSampleProvider? chainVisualizer)
+    {
         try
         {
-            visualizer?.Dispose();
+            chainVisualizer?.Dispose();
         }
         catch (Exception ex)
         {
             Log.Debug(ex, "Could not dispose the visualizer sample provider");
         }
-        visualizer = null;
 
         try
         {
-            reader?.Dispose();
+            chainReader?.Dispose();
         }
         catch (Exception ex)
         {
             Log.Debug(ex, "Could not dispose the audio file reader");
         }
-        reader = null;
-        volumeProvider = null;
     }
 
     private void DisposeOutputLocked()
@@ -1028,7 +1217,7 @@ public sealed class AudioService : IAudioPlayer
 
         if (oldOutput is not null)
         {
-            oldOutput.PlaybackStopped -= Output_PlaybackStopped;
+            UnsubscribePlaybackStoppedLocked(oldOutput);
             TryDisposeOutput(oldOutput);
         }
 

@@ -103,9 +103,110 @@ public sealed class AudioServiceDeviceRecoveryTests
         }, durationMilliseconds: 10000);
     }
 
+    [Fact]
+    public void Load_WhenNextTrackHasSameFormat_ReusesExistingOutput()
+    {
+        WithWaveFile(firstPath =>
+            WithWaveFile(secondPath =>
+            {
+                var output = new FakeWavePlayer();
+                var factoryCalls = 0;
+
+                using var audio = new AudioService(
+                    AudioOutputBackendPreference.ForceWasapiShared,
+                    _ =>
+                    {
+                        factoryCalls++;
+                        return factoryCalls == 1
+                            ? output
+                            : throw new InvalidOperationException(
+                                "The same-format track switch recreated the output.");
+                    },
+                    () => throw new InvalidOperationException(
+                        "WaveOut fallback must remain disabled in forced WASAPI mode."),
+                    useDeviceWatcher: false);
+
+                audio.Load(firstPath);
+                audio.Play();
+                output.AdvanceBy(TimeSpan.FromSeconds(1));
+                Assert.InRange(
+                    Math.Abs((audio.CurrentTime - TimeSpan.FromSeconds(1)).TotalMilliseconds),
+                    0,
+                    60);
+
+                audio.Load(secondPath);
+
+                Assert.Equal(1, factoryCalls);
+                Assert.Equal(1, output.InitCount);
+                Assert.Equal(0, output.DisposeCount);
+                Assert.Equal(1, output.StopCount);
+                Assert.Equal(PlaybackState.Stopped, output.PlaybackState);
+                Assert.Equal(TimeSpan.Zero, audio.CurrentTime);
+
+                audio.Play();
+                output.AdvanceBy(TimeSpan.FromMilliseconds(500));
+
+                Assert.True(audio.IsPlaying);
+                Assert.InRange(
+                    Math.Abs((audio.CurrentTime - TimeSpan.FromMilliseconds(500)).TotalMilliseconds),
+                    0,
+                    60);
+            }, durationMilliseconds: 10000),
+            durationMilliseconds: 10000);
+    }
+
+    [Fact]
+    public void Load_WhenNextTrackFormatChanges_RebuildsOutput()
+    {
+        WithWaveFile(firstPath =>
+            WithWaveFile(secondPath =>
+            {
+                var firstOutput = new FakeWavePlayer();
+                var secondOutput = new FakeWavePlayer();
+                var factoryCalls = 0;
+
+                using var audio = new AudioService(
+                    AudioOutputBackendPreference.ForceWasapiShared,
+                    _ =>
+                    {
+                        factoryCalls++;
+                        return factoryCalls switch
+                        {
+                            1 => firstOutput,
+                            2 => secondOutput,
+                            _ => throw new InvalidOperationException(
+                                "Unexpected extra output factory call.")
+                        };
+                    },
+                    () => throw new InvalidOperationException(
+                        "WaveOut fallback must remain disabled in forced WASAPI mode."),
+                    useDeviceWatcher: false);
+
+                audio.Load(firstPath);
+                audio.Play();
+
+                audio.Load(secondPath);
+
+                Assert.Equal(2, factoryCalls);
+                Assert.Equal(1, firstOutput.DisposeCount);
+                Assert.Equal(1, secondOutput.InitCount);
+                Assert.Equal(48000, secondOutput.OutputWaveFormat.SampleRate);
+
+                audio.Play();
+                secondOutput.AdvanceBy(TimeSpan.FromMilliseconds(500));
+                Assert.True(audio.IsPlaying);
+                Assert.InRange(
+                    Math.Abs((audio.CurrentTime - TimeSpan.FromMilliseconds(500)).TotalMilliseconds),
+                    0,
+                    60);
+            }, durationMilliseconds: 10000, sampleRate: 48000),
+            durationMilliseconds: 10000);
+    }
+
     private static void WithWaveFile(
         Action<string> action,
-        int durationMilliseconds)
+        int durationMilliseconds,
+        int sampleRate = 44100)
     {
         var path = Path.Combine(
             Path.GetTempPath(),
@@ -113,7 +214,7 @@ public sealed class AudioServiceDeviceRecoveryTests
 
         try
         {
-            WriteSilentWaveFile(path, sampleRate: 44100, durationMilliseconds);
+            WriteSilentWaveFile(path, sampleRate, durationMilliseconds);
             action(path);
         }
         finally
@@ -164,15 +265,25 @@ public sealed class AudioServiceDeviceRecoveryTests
         public PlaybackState PlaybackState { get; private set; } = PlaybackState.Stopped;
         public WaveFormat OutputWaveFormat =>
             provider?.WaveFormat ?? WaveFormat.CreateIeeeFloatWaveFormat(44100, 1);
+        public int InitCount { get; private set; }
+        public int StopCount { get; private set; }
+        public int DisposeCount { get; private set; }
 
-        public void Init(IWaveProvider waveProvider) =>
+        public void Init(IWaveProvider waveProvider)
+        {
+            InitCount++;
             provider = waveProvider ?? throw new ArgumentNullException(nameof(waveProvider));
+        }
 
         public void Play() => PlaybackState = PlaybackState.Playing;
 
         public void Pause() => PlaybackState = PlaybackState.Paused;
 
-        public void Stop() => PlaybackState = PlaybackState.Stopped;
+        public void Stop()
+        {
+            StopCount++;
+            PlaybackState = PlaybackState.Stopped;
+        }
 
         public void AdvanceBy(TimeSpan duration)
         {
@@ -202,6 +313,7 @@ public sealed class AudioServiceDeviceRecoveryTests
 
         public void Dispose()
         {
+            DisposeCount++;
             PlaybackState = PlaybackState.Stopped;
             provider = null;
             PlaybackStopped = null;
