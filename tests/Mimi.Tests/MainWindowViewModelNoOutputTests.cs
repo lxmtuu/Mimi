@@ -180,6 +180,107 @@ public sealed class MainWindowViewModelNoOutputTests
     }
 
     [Fact]
+    public void PlaybackStartedBeforeStartupRestore_IsNotOverwrittenBySavedSession()
+    {
+        RunOnSta(() =>
+        {
+            SynchronizationContext.SetSynchronizationContext(
+                new DispatcherSynchronizationContext(
+                    Dispatcher.CurrentDispatcher));
+
+            const string savedPath = @"C:\fixtures\saved.wav";
+            const string chosenPath = @"C:\fixtures\chosen.wav";
+            var loadTracksGate =
+                new TaskCompletionSource<IReadOnlyList<Track>>();
+            var audio = new FakeAudioPlayer
+            {
+                OutputStatus = new AudioOutputStatus(
+                    isAvailable: true,
+                    AudioOutputKind.WasapiShared,
+                    "Test Speakers",
+                    "Audio output is ready.")
+            };
+            var userData = new FakeUserDataService
+            {
+                InitialSettings = new AppSettings
+                {
+                    LibraryView = new LibraryViewSettings
+                    {
+                        SelectedTrackPath = savedPath
+                    },
+                    PlaybackSession = new PlaybackSessionSettings
+                    {
+                        CurrentTrackPath = savedPath,
+                        PositionSeconds = 5,
+                        QueueTrackPaths = [savedPath, chosenPath],
+                        UpcomingTrackPaths = [savedPath, chosenPath]
+                    }
+                }
+            };
+            var catalog = new FakeLibraryCatalog
+            {
+                LoadTracksGate = loadTracksGate
+            };
+            var viewModel = new MainWindowViewModel(
+                audio,
+                new FakeLibraryService(),
+                catalog,
+                userData,
+                new FakeDialogService());
+
+            try
+            {
+                Assert.False(viewModel.InitializationTask.IsCompleted);
+
+                var chosen = new TrackItemViewModel(
+                    new Track
+                    {
+                        FilePath = chosenPath,
+                        MetadataTitle = "Chosen first click",
+                        Duration = TimeSpan.FromSeconds(30)
+                    },
+                    isFavorite: false);
+                viewModel.Tracks.Add(chosen);
+
+                // Simulate the user winning the race against asynchronous
+                // startup restore and starting a track first.
+                viewModel.PlayTrackCommand.Execute(chosen);
+                Assert.Same(chosen, viewModel.CurrentTrack);
+                Assert.True(viewModel.IsPlaying);
+
+                loadTracksGate.SetResult(
+                [
+                    new Track
+                    {
+                        FilePath = chosenPath,
+                        MetadataTitle = "Chosen first click",
+                        Duration = TimeSpan.FromSeconds(30)
+                    },
+                    new Track
+                    {
+                        FilePath = savedPath,
+                        MetadataTitle = "Previously saved session",
+                        Duration = TimeSpan.FromSeconds(30)
+                    }
+                ]);
+                PumpDispatcherUntilCompleted(viewModel.InitializationTask);
+
+                Assert.Equal(1, audio.LoadCalls);
+                Assert.Equal(1, audio.PlayCalls);
+                Assert.Same(chosen, viewModel.CurrentTrack);
+                Assert.Same(chosen, viewModel.SelectedTrack);
+                Assert.True(viewModel.IsPlaying);
+            }
+            finally
+            {
+                if (!loadTracksGate.Task.IsCompleted)
+                    loadTracksGate.SetResult([]);
+                viewModel.Dispose();
+            }
+        });
+    }
+
+    [Fact]
     public void ThemePreference_AppliesLoadedThemeNormalizesAndPersistsChanges()
     {
         RunOnSta(() =>
@@ -467,6 +568,20 @@ public sealed class MainWindowViewModelNoOutputTests
                 $"STA/WPF test failed: {failure}");
     }
 
+    private static void PumpDispatcherUntilCompleted(Task task)
+    {
+        while (!task.IsCompleted)
+        {
+            var frame = new DispatcherFrame();
+            Dispatcher.CurrentDispatcher.BeginInvoke(
+                DispatcherPriority.Background,
+                new Action(() => frame.Continue = false));
+            Dispatcher.PushFrame(frame);
+        }
+
+        task.GetAwaiter().GetResult();
+    }
+
     private sealed class RecoveryWavePlayer : IWavePlayer
     {
         private IWaveProvider? provider;
@@ -611,9 +726,17 @@ public sealed class MainWindowViewModelNoOutputTests
 
     private sealed class FakeLibraryCatalog : ILibraryCatalog
     {
+        public IReadOnlyList<Track> StoredTracks { get; init; } = [];
+
+        public TaskCompletionSource<IReadOnlyList<Track>>? LoadTracksGate
+        {
+            get;
+            init;
+        }
+
         public Task InitializeAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;
         public Task<IReadOnlyList<Track>> LoadTracksAsync(CancellationToken cancellationToken = default) =>
-            Task.FromResult<IReadOnlyList<Track>>([]);
+            LoadTracksGate?.Task ?? Task.FromResult(StoredTracks);
         public Task<IReadOnlyList<Track>> SearchTracksAsync(string query, CancellationToken cancellationToken = default) =>
             Task.FromResult<IReadOnlyList<Track>>([]);
         public Task UpsertTracksAsync(IEnumerable<Track> tracks, CancellationToken cancellationToken = default) => Task.CompletedTask;

@@ -1113,22 +1113,65 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         if (libraryInitialized) return;
         libraryInitialized = true;
 
+        var initializationStarted = Stopwatch.GetTimestamp();
         try
         {
             await libraryCatalog.InitializeAsync(lifetimeCancellation.Token);
             catalogAvailable = true;
+            var catalogInitialized = Stopwatch.GetTimestamp();
 
             var storedTracks = await libraryCatalog.LoadTracksAsync(
                 lifetimeCancellation.Token);
+            var tracksLoaded = Stopwatch.GetTimestamp();
             if (storedTracks.Count > 0)
             {
                 favorites = storedTracks
                     .Where(track => track.IsFavorite)
                     .Select(track => track.FilePath)
                     .ToHashSet(StringComparer.OrdinalIgnoreCase);
-                AddTracksToCollection(storedTracks);
+
+                // Load playlists before publishing the tracks. Publishing
+                // tracks first and then awaiting would let the user click a
+                // visible row while startup restore was still pending; the
+                // later restore could replace that first choice with the
+                // saved paused session. Adding the tracks and restoring in
+                // the same dispatcher turn closes that window.
                 await RefreshPlaylistsAsync();
+                var playlistsLoaded = Stopwatch.GetTimestamp();
+                AddTracksToCollection(storedTracks);
+                var tracksAdded = Stopwatch.GetTimestamp();
                 RestorePersistedState();
+                var restored = Stopwatch.GetTimestamp();
+
+                // One line per launch makes a slow or seemingly unresponsive
+                // first click diagnosable without turning on verbose logs.
+                Log.Information(
+                    "Library startup timing: total={TotalMs:0}ms " +
+                    "catalog={CatalogMs:0}ms loadTracks={LoadTracksMs:0}ms " +
+                    "playlists={PlaylistsMs:0}ms addTracks={AddTracksMs:0}ms " +
+                    "restore={RestoreMs:0}ms tracks={TrackCount} " +
+                    "playlists={PlaylistCount}",
+                    Stopwatch.GetElapsedTime(
+                        initializationStarted,
+                        restored).TotalMilliseconds,
+                    Stopwatch.GetElapsedTime(
+                        initializationStarted,
+                        catalogInitialized).TotalMilliseconds,
+                    Stopwatch.GetElapsedTime(
+                        catalogInitialized,
+                        tracksLoaded).TotalMilliseconds,
+                    Stopwatch.GetElapsedTime(
+                        tracksLoaded,
+                        playlistsLoaded).TotalMilliseconds,
+                    Stopwatch.GetElapsedTime(
+                        playlistsLoaded,
+                        tracksAdded).TotalMilliseconds,
+                    Stopwatch.GetElapsedTime(
+                        tracksAdded,
+                        restored).TotalMilliseconds,
+                    Tracks.Count,
+                    Playlists.Count);
+
                 QueueLegacyCoverArtUpgrade();
                 if (!string.IsNullOrWhiteSpace(SearchText))
                     QueueCatalogSearch(SearchText);
@@ -1192,6 +1235,22 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     {
         var optimizer = coverArtOptimizer;
         if (optimizer is null) return;
+
+        // This maintenance decode/resize work is not needed for the first
+        // interaction. Let startup settle and give the user's first track
+        // choice the CPU/disk instead of starting image work in the same
+        // moment the library appears.
+        try
+        {
+            await Task.Delay(
+                TimeSpan.FromSeconds(3),
+                lifetimeCancellation.Token);
+        }
+        catch (OperationCanceledException) when (
+            lifetimeCancellation.IsCancellationRequested)
+        {
+            return;
+        }
 
         var legacyPaths = Tracks
             .Select(track => track.CoverArtPath)
@@ -1471,29 +1530,39 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
             StringComparer.OrdinalIgnoreCase);
         var changedTracks = new List<Track>();
 
-        foreach (var track in additions)
+        // A bulk restore/scan can add many rows at once. Defer the default
+        // CollectionView refresh so startup does not re-filter/re-sort and
+        // regenerate containers after every single added track; besides
+        // being wasted UI-thread work, that churn can make the very first
+        // click land while the visible rows are still being rebuilt.
+        using (TracksView.DeferRefresh())
         {
-            if (existingByPath.TryGetValue(track.FilePath, out var existingItem))
+            foreach (var track in additions)
             {
-                if (!ReferenceEquals(existingItem.Track, track))
+                if (existingByPath.TryGetValue(
+                        track.FilePath,
+                        out var existingItem))
                 {
-                    existingItem.UpdateMetadata(track);
-                    changedTracks.Add(existingItem.Track);
+                    if (!ReferenceEquals(existingItem.Track, track))
+                    {
+                        existingItem.UpdateMetadata(track);
+                        changedTracks.Add(existingItem.Track);
+                    }
+
+                    continue;
                 }
 
-                continue;
+                var item = new TrackItemViewModel(
+                    track,
+                    favorites.Contains(track.FilePath),
+                    Loc);
+                if (item.IsFavorite)
+                    favorites.Add(track.FilePath);
+
+                Tracks.Add(item);
+                existingByPath[track.FilePath] = item;
+                changedTracks.Add(track);
             }
-
-            var item = new TrackItemViewModel(
-                track,
-                favorites.Contains(track.FilePath),
-                Loc);
-            if (item.IsFavorite)
-                favorites.Add(track.FilePath);
-
-            Tracks.Add(item);
-            existingByPath[track.FilePath] = item;
-            changedTracks.Add(track);
         }
 
         RefreshFilterOptions();

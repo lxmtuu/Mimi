@@ -486,7 +486,10 @@ public sealed partial class MainWindowViewModel
             NotifySortLabelsChanged();
             ConfigureTracksView();
 
-            SelectedTrack = Tracks.FirstOrDefault(track => string.Equals(
+            // If the user has already selected a row before this startup
+            // restore gets to run, keep that newer selection instead of
+            // snapping back to the selection saved by the previous session.
+            SelectedTrack ??= Tracks.FirstOrDefault(track => string.Equals(
                 track.FilePath,
                 saved.SelectedTrackPath,
                 StringComparison.OrdinalIgnoreCase));
@@ -511,6 +514,20 @@ public sealed partial class MainWindowViewModel
         playbackSessionRestoreAttempted = true;
 
         if (!RestorePlaybackSession) return;
+
+        // A track can already be current here only when the user started
+        // playback while asynchronous library initialization was still in
+        // flight (for example, a very fast first click after the window
+        // appeared). That explicit choice is newer than the saved session,
+        // so restoring must not load/pause the old track over it.
+        if (CurrentTrack is not null)
+        {
+            Log.Information(
+                "Skipped saved playback-session restore because playback " +
+                "was already started during startup for {FilePath}",
+                CurrentTrack.FilePath);
+            return;
+        }
 
         var session = settings.PlaybackSession;
         if (string.IsNullOrWhiteSpace(session?.CurrentTrackPath)) return;

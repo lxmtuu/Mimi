@@ -18,7 +18,14 @@ namespace Mimi.Behaviors;
 public static class ItemClickCommandBehavior
 {
     private static ItemsControl? pressControl;
-    private static DependencyObject? pressContainer;
+
+    // Track the item view model rather than the visual container. During
+    // startup the track view can refresh between mouse-down and mouse-up,
+    // which may recycle or recreate the ListViewItem even though the user
+    // never left the row. The item identity remains stable across that
+    // container churn, while still preventing activation when the pointer
+    // is released over a different row.
+    private static object? pressItem;
     private static Point pressPoint;
 
     public static readonly DependencyProperty CommandProperty =
@@ -53,7 +60,7 @@ public static class ItemClickCommandBehavior
         else if (ReferenceEquals(pressControl, itemsControl))
         {
             pressControl = null;
-            pressContainer = null;
+            pressItem = null;
         }
     }
 
@@ -62,7 +69,7 @@ public static class ItemClickCommandBehavior
         MouseButtonEventArgs e)
     {
         pressControl = null;
-        pressContainer = null;
+        pressItem = null;
 
         if (sender is not ItemsControl itemsControl) return;
         if (Keyboard.Modifiers != ModifierKeys.None) return;
@@ -70,16 +77,16 @@ public static class ItemClickCommandBehavior
         if (FindAncestor<ButtonBase>(source) is not null) return;
 
         var container = ItemsControl.ContainerFromElement(itemsControl, source);
-        if (container is null) return;
+        if (container is not FrameworkElement { DataContext: { } item }) return;
 
         pressControl = itemsControl;
-        pressContainer = container;
+        pressItem = item;
         pressPoint = e.GetPosition(null);
     }
 
     private static void OnPreviewMouseMove(object sender, MouseEventArgs e)
     {
-        if (pressContainer is null ||
+        if (pressItem is null ||
             !ReferenceEquals(sender, pressControl) ||
             e.LeftButton != MouseButtonState.Pressed)
         {
@@ -89,34 +96,34 @@ public static class ItemClickCommandBehavior
         if (IsBeyondDragThreshold(e.GetPosition(null)))
         {
             pressControl = null;
-            pressContainer = null;
+            pressItem = null;
         }
     }
 
     private static void OnMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
     {
-        var container = pressContainer;
+        var item = pressItem;
         var belongsToPress = ReferenceEquals(sender, pressControl);
         pressControl = null;
-        pressContainer = null;
+        pressItem = null;
 
-        if (!belongsToPress || container is null) return;
+        if (!belongsToPress || item is null) return;
         if (sender is not ItemsControl itemsControl) return;
         if (Keyboard.Modifiers != ModifierKeys.None) return;
         if (IsBeyondDragThreshold(e.GetPosition(null))) return;
         if (e.OriginalSource is not DependencyObject source) return;
         if (FindAncestor<ButtonBase>(source) is not null) return;
-        if (!ReferenceEquals(
-                ItemsControl.ContainerFromElement(itemsControl, source),
-                container))
-        {
-            return;
-        }
+
+        var releaseContainer = ItemsControl.ContainerFromElement(
+            itemsControl,
+            source);
+        var releaseItem =
+            (releaseContainer as FrameworkElement)?.DataContext;
+        if (!ReferenceEquals(releaseItem, item)) return;
 
         var command = GetCommand(itemsControl);
-        var parameter = (container as FrameworkElement)?.DataContext;
-        if (command?.CanExecute(parameter) == true)
-            command.Execute(parameter);
+        if (command?.CanExecute(item) == true)
+            command.Execute(item);
     }
 
     private static bool IsBeyondDragThreshold(Point position) =>
