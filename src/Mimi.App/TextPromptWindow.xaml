@@ -3,7 +3,8 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Mimi" Width="440" Height="215"
         ResizeMode="NoResize" WindowStartupLocation="CenterOwner"
-        Background="{StaticResource BgBrush}" Foreground="#F3F7FF">
+        Background="{StaticResource BgBrush}" Foreground="#F3F7FF"
+        FontFamily="{StaticResource MimiUiFontFamily}">
     <Grid Margin="22">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>

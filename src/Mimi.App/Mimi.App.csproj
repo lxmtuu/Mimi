@@ -30,6 +30,17 @@
     <PackageReference Include="Serilog.Sinks.File" Version="6.0.0" />
   </ItemGroup>
 
+  <!-- Be Vietnam Pro is loaded from the application assembly so Vietnamese
+       text renders consistently on machines that do not have the family
+       installed. The OFL license must travel with published builds. -->
+  <ItemGroup>
+    <Resource Include="Assets\Fonts\BeVietnamPro-*.ttf" />
+    <None Update="Assets\Fonts\OFL.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </None>
+  </ItemGroup>
+
   <!-- SkiaSharp 4 exposes large native PDBs as runtime assets and the
        cross-platform library reference also resolves non-Windows assets.
        Remove them after package-asset resolution so the generated deps

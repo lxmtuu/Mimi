@@ -6,6 +6,7 @@
         Title="Mimi" Height="820" Width="1320" MinHeight="620" MinWidth="960"
         WindowStartupLocation="CenterScreen" Background="{StaticResource BgBrush}"
         Foreground="#F3F7FF"
+        FontFamily="{StaticResource MimiUiFontFamily}"
         behaviors:WindowPlacementBehavior.Placement="{Binding WindowPlacement, Mode=TwoWay}"
         behaviors:WindowPlacementBehavior.IsEnabled="{Binding RestoreWindowPlacement}">
     <Window.Resources>

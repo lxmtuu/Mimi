@@ -10,7 +10,8 @@
         ShowInTaskbar="False"
         Topmost="True"
         Background="{StaticResource BgBrush}"
-        Foreground="#F3F7FF">
+        Foreground="#F3F7FF"
+        FontFamily="{StaticResource MimiUiFontFamily}">
     <Grid>
         <Grid.Background>
             <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
