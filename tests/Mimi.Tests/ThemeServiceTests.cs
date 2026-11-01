@@ -1,6 +1,7 @@
 using System.Reflection;
 using System.Threading;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Markup;
 using System.Windows.Media;
 using Mimi.Controls;
@@ -57,6 +58,12 @@ public sealed class ThemeServiceTests
             var mono = BuiltInThemes.GetOrDefault(BuiltInThemes.MonoFocusId);
             var brush = Assert.IsType<SolidColorBrush>(
                 resources[ThemeService.BrushResourceKey(ThemeTokens.Accent)]);
+            // Application.Resources supplies this ownership context in the
+            // running app; a standalone dictionary has no dynamic-resource
+            // listener until a FrameworkElement owns it.
+            var host = new Grid { Resources = resources };
+            Assert.Same(resources, host.Resources);
+            host.Background = brush;
             ThemeService.Apply(neon, resources);
 
             Assert.Equal(
@@ -81,6 +88,9 @@ public sealed class ThemeServiceTests
             var brush = Assert.IsType<SolidColorBrush>(
                 brushes[ThemeService.BrushResourceKey(ThemeTokens.Accent)]);
             resources.MergedDictionaries.Add(brushes);
+            var host = new Grid { Resources = resources };
+            Assert.Same(resources, host.Resources);
+            host.Background = brush;
 
             ThemeService.Apply(BuiltInThemes.Default, resources);
             Assert.Equal(
