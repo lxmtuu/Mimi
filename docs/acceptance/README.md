@@ -16,7 +16,7 @@ Phase 5 hoặc nghĩ tới phát hành cộng đồng.
 |---|---|
 | [`WINDOWS-ACCEPTANCE-CHECKLIST.md`](WINDOWS-ACCEPTANCE-CHECKLIST.md) | Checklist từng phiên kiểm tra, thao tác, kết quả kỳ vọng và tiêu chí Pass/Fail |
 | [`RESULT-TEMPLATE.md`](RESULT-TEMPLATE.md) | Mẫu báo cáo ngắn để sao chép cho mỗi đợt kiểm tra |
-| [`PHASE-4-CLOSEOUT.md`](PHASE-4-CLOSEOUT.md) | Bảng đối chiếu trạng thái/bằng chứng Phase 4 tại `b0cd13a` và danh sách quyết định còn thiếu trước P4-H |
+| [`PHASE-4-CLOSEOUT.md`](PHASE-4-CLOSEOUT.md) | Bảng đối chiếu trạng thái/bằng chứng Phase 4 tại `b0cd13a` và quyết định đóng Phase 4 theo waiver ngày 01/11/2026 |
 | [`../../tools/Analyze-LoopbackCsv.ps1`](../../tools/Analyze-LoopbackCsv.ps1) | Phân tích CSV loopback: phân bố khoảng callback, tín hiệu, chuỗi im lặng và các khoảng lớn nhất |
 | [`../../tools/Inspect-SmtcSession.ps1`](../../tools/Inspect-SmtcSession.ps1) | Chẩn đoán GSMTC chỉ-đọc cho A7/A8/A9: lấy mẫu metadata, trạng thái, cờ điều khiển và timeline Windows nhận được mà không gửi lệnh phát/seek |
 | [`../../tools/Invoke-SmtcSessionCommand.ps1`](../../tools/Invoke-SmtcSessionCommand.ps1) | Harness gửi lệnh GSMTC tới đúng session `Mimi.App` và kiểm tra trạng thái sau lệnh, gồm Seek/FastForward/Rewind/Shuffle/Repeat; chỉ là bằng chứng đường lệnh, không thay thế thẻ Quick Settings trực quan |
@@ -261,7 +261,7 @@ dài hạn hay latency âm học đầu-cuối.
   kiểm tra app-level.
 - P4-G: `PARTIAL`; D-03 vẫn tạm thời: WASAPI Shared mặc định, WaveOut
   fallback.
-- P4-H: còn mở chờ quyết định waiver/đóng phase và checkpoint tích hợp;
+- P4-H: đã hoàn tất quyết định đóng Phase 4 theo waiver ngày 01/11/2026; checkpoint tích hợp vẫn là quyết định riêng;
   bảng tổng hợp hiện hành nằm tại
   [`PHASE-4-CLOSEOUT.md`](PHASE-4-CLOSEOUT.md).
 

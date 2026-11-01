@@ -1,3 +1,4 @@
+using Mimi.Localization;
 using Mimi.Models;
 using Mimi.Services;
 
@@ -97,7 +98,7 @@ public sealed class UserDataServiceTests : IDisposable
     }
 
     [Fact]
-    public void Version3SettingsRoundTrip()
+    public void Version4SettingsRoundTrip()
     {
         var expected = new AppSettings
         {
@@ -106,6 +107,7 @@ public sealed class UserDataServiceTests : IDisposable
             ShuffleEnabled = true,
             RepeatMode = "All",
             VisualizerMode = "TwinWave",
+            UiLanguage = "vi",
             RestorePlaybackSession = false,
             RestoreLibraryView = false,
             RestoreWindowPlacement = false,
@@ -158,6 +160,7 @@ public sealed class UserDataServiceTests : IDisposable
         Assert.True(loaded.ShuffleEnabled);
         Assert.Equal("All", loaded.RepeatMode);
         Assert.Equal("TwinWave", loaded.VisualizerMode);
+        Assert.Equal(UiLanguages.Vietnamese, loaded.UiLanguage);
         Assert.False(loaded.RestorePlaybackSession);
         Assert.False(loaded.RestoreLibraryView);
         Assert.False(loaded.RestoreWindowPlacement);
@@ -199,6 +202,7 @@ public sealed class UserDataServiceTests : IDisposable
         Assert.False(loaded.ShuffleEnabled);
         Assert.Equal("Off", loaded.RepeatMode);
         Assert.Equal("NeonSpectrum", loaded.VisualizerMode);
+        Assert.Equal(UiLanguages.System, loaded.UiLanguage);
         Assert.True(loaded.RestorePlaybackSession);
         Assert.True(loaded.RestoreLibraryView);
         Assert.True(loaded.RestoreWindowPlacement);
@@ -211,6 +215,20 @@ public sealed class UserDataServiceTests : IDisposable
     }
 
     [Fact]
+    public void Version3SettingsMigrateToVersion4WithLanguageDefault()
+    {
+        File.WriteAllText(
+            Path.Combine(dataDirectory, "settings.json"),
+            "{\"Version\":3,\"Volume\":0.5}");
+
+        var loaded = service.LoadSettings();
+
+        Assert.Equal(4, loaded.Version);
+        Assert.Equal(0.5, loaded.Volume);
+        Assert.Equal(UiLanguages.System, loaded.UiLanguage);
+    }
+
+    [Fact]
     public void InvalidVersion3SettingsAreNormalized()
     {
         File.WriteAllText(
@@ -220,6 +238,7 @@ public sealed class UserDataServiceTests : IDisposable
               "Version": 99,
               "Volume": -4,
               "VisualizerMode": " ",
+              "UiLanguage": "fr-FR",
               "WatchedFolders": [" C:\\Music ", "c:\\music", "", null],
               "LibraryView": {
                 "ActiveView": null,
@@ -252,6 +271,7 @@ public sealed class UserDataServiceTests : IDisposable
         Assert.Equal(AppSettings.CurrentVersion, loaded.Version);
         Assert.Equal(0, loaded.Volume);
         Assert.Equal("NeonSpectrum", loaded.VisualizerMode);
+        Assert.Equal(UiLanguages.System, loaded.UiLanguage);
         Assert.Equal([@"C:\Music"], loaded.WatchedFolders);
         Assert.Equal("Library", loaded.LibraryView.ActiveView);
         Assert.Null(loaded.LibraryView.SelectedPlaylistId);

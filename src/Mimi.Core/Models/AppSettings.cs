@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using Mimi.Localization;
 
 namespace Mimi.Models;
 
@@ -8,12 +9,12 @@ namespace Mimi.Models;
 /// visualizer mode, startup-restore preferences, library-view state, window
 /// placement, watched library folders, and the paused session. Version 3
 /// adds mute/shuffle/repeat preferences and the paused playback queue.
-/// Unknown string values are tolerated
+/// Version 4 adds the interface-language preference. Unknown string values are tolerated
 /// here and interpreted defensively by the app layer.
 /// </summary>
 public sealed class AppSettings
 {
-    public const int CurrentVersion = 3;
+    public const int CurrentVersion = 4;
 
     public int Version { get; set; } = CurrentVersion;
 
@@ -26,6 +27,8 @@ public sealed class AppSettings
     public string RepeatMode { get; set; } = "Off";
 
     public string VisualizerMode { get; set; } = "NeonSpectrum";
+
+    public string UiLanguage { get; set; } = UiLanguages.Default;
 
     public bool RestorePlaybackSession { get; set; } = true;
 
@@ -56,6 +59,7 @@ public sealed class AppSettings
             ? Math.Clamp(Volume, 0, 1)
             : 0.7;
         VisualizerMode = Clean(VisualizerMode, "NeonSpectrum", 64);
+        UiLanguage = UiLanguages.Normalize(UiLanguage);
         RepeatMode = Clean(RepeatMode, "Off", 32);
         WatchedFolders = (WatchedFolders ?? [])
             .Select(CleanNullablePath)

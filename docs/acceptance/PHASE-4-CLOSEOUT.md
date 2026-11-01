@@ -365,3 +365,16 @@ Chỉ thực hiện truy vấn đọc; không cài phần mềm, bật/tắt Opt
 3. P4-A/P4-H: chủ dự án quyết định waiver cho giới hạn bề mặt Quick Settings và quyết định đóng Phase; không tự động nâng BLOCKED/PARTIAL thành PASS.
 
 **Kết luận:** Phase 4 chưa đóng. Hạng mục P4-E `BLOCKED`, P4-G `PARTIAL`, P4-H `OPEN`; không ghi waiver và không đổi trạng thái chỉ vì các test fault-injection đã đạt.
+
+## Quyết định đóng Phase 4 theo waiver và mở Phase 5 — 01/11/2026
+
+Chủ dự án đã quyết định chuyển sang Phase 5 và chọn song ngữ VI/EN làm lát triển khai đầu tiên. Quyết định này đóng Phase 4 ở mức hồ sơ theo cơ chế **waiver-based closure**, đồng thời giữ nguyên toàn bộ ranh giới bằng chứng đã ghi ở các mục trên:
+
+| Cổng | Trạng thái giữ nguyên khi đóng | Cách xử lý trong waiver |
+|---|---|---|
+| P4-A — SMTC/Quick Settings | `PARTIAL` | Chấp nhận hoãn phần thẻ không hiển thị progress/time/seek và FastForward/Rewind/Shuffle/Repeat; không ghi các tiểu mục `BLOCKED/N/A` thành `PASS`. Harness GSMTC đã có vẫn dùng để kiểm tra đường lệnh khi chạy được trên Windows. |
+| P4-E — Không còn output | `BLOCKED` | Chấp nhận hoãn acceptance zero-render-endpoint thật cho VM/PC phụ có snapshot; fault-injection và integration tests vẫn chỉ là bằng chứng tầng service/UI. |
+| P4-G / D-03 | `PARTIAL` | Giữ WASAPI Shared mặc định + WaveOut fallback như kiến trúc tạm thời; không tuyên bố acoustic latency đã nghiệm thu và không chốt backend thắng/thua từ loopback hoặc phép đo mic không nhất quán. |
+| P4-H — Chốt hồ sơ | Hoàn tất cho quyết định đóng phase | Quyết định được ghi tại mục này và `ROADMAP.md`. PR/review/merge/tag/checkpoint tích hợp vẫn là quyết định riêng, chưa được thực hiện bởi waiver này. |
+
+Phase 5 được mở trên cùng working branch với lát P5-L1: settings schema v4 cho `UiLanguage`, chuẩn hoá `system`/`en-US`/`vi-VN`, `LocalizationService` dùng `.resx`, thẻ chọn ngôn ngữ trong Settings và dịch shell/navigation cùng một số nhãn chính. Lát này chưa tuyên bố toàn bộ UI đã song ngữ, chưa đóng gói Be Vietnam Pro và vẫn cần nghiệm thu runtime trên Windows thật.

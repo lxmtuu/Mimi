@@ -12,6 +12,7 @@ using Mimi.Behaviors;
 using Mimi.Controls;
 using Mimi.Core.Playback;
 using Mimi.Core.Text;
+using Mimi.Localization;
 using Mimi.Models;
 using Mimi.Services;
 using Serilog;
@@ -55,6 +56,8 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     private readonly ILibraryFolderWatcher? libraryFolderWatcher;
     private readonly IFileAssociationService? fileAssociationService;
     private readonly Dispatcher uiDispatcher = Dispatcher.CurrentDispatcher;
+
+    public LocalizationService Loc { get; }
     private readonly PlaybackEndCoordinator playbackEndCoordinator = new();
     private readonly DispatcherTimer positionTimer = new()
     {
@@ -204,7 +207,8 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         IDialogService dialogService,
         ICoverArtOptimizer? coverArtOptimizer = null,
         ILibraryFolderWatcher? libraryFolderWatcher = null,
-        IFileAssociationService? fileAssociationService = null)
+        IFileAssociationService? fileAssociationService = null,
+        LocalizationService? localizationService = null)
     {
         this.audioPlayer = audioPlayer;
         this.libraryService = libraryService;
@@ -214,6 +218,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         this.coverArtOptimizer = coverArtOptimizer;
         this.libraryFolderWatcher = libraryFolderWatcher;
         this.fileAssociationService = fileAssociationService;
+        Loc = localizationService ?? new LocalizationService();
 
         TracksView = CollectionViewSource.GetDefaultView(Tracks);
         TracksView.Filter = FilterTrack;
@@ -339,10 +344,11 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
 
     public string SectionTitle => ActiveView switch
     {
-        LibraryViewMode.Favorites => "Your favorites",
-        LibraryViewMode.Recent => "Recently played",
-        LibraryViewMode.Playlist => SelectedPlaylist?.Name ?? "Playlist",
-        _ => "Your library"
+        LibraryViewMode.Favorites => Loc["Section_YourFavorites"],
+        LibraryViewMode.Recent => Loc["Section_RecentlyPlayed"],
+        LibraryViewMode.Playlist =>
+            SelectedPlaylist?.Name ?? Loc["Section_PlaylistFallback"],
+        _ => Loc["Section_YourLibrary"]
     };
 
     public Func<VisualizerFrame> VisualizerFrameProvider =>
@@ -1008,8 +1014,8 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
             CurrentTrack = null;
             currentPlayHistoryId = null;
             CurrentCoverArtPath = null;
-            NowPlayingTitle = "Choose a song";
-            NowPlayingSubtitle = "Your next favorite is waiting";
+            NowPlayingTitle = Loc["NowPlaying_ChooseSong"];
+            NowPlayingSubtitle = Loc["NowPlaying_NextFavoriteWaiting"];
             SetProgressPercent(0);
             RefreshPlaybackState();
         }
@@ -1579,27 +1585,34 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
 
         if (normalizedSearchQuery.Length > 0)
         {
-            TrackCountLabel = $"{visibleCount} search result(s)";
+            TrackCountLabel = Loc.Format(
+                "TrackCount_SearchResults",
+                visibleCount);
             return;
         }
 
         if (HasActiveAdvancedFilters)
         {
-            TrackCountLabel = $"{visibleCount} filtered song(s)";
+            TrackCountLabel = Loc.Format(
+                "TrackCount_FilteredSongs",
+                visibleCount);
             return;
         }
 
         TrackCountLabel = ActiveView switch
         {
-            LibraryViewMode.Favorites =>
-                $"{visibleCount} favorite song(s)",
-            LibraryViewMode.Recent =>
-                $"{visibleCount} recently played song(s)",
-            LibraryViewMode.Playlist =>
-                $"{visibleCount} song(s) in this playlist",
+            LibraryViewMode.Favorites => Loc.Format(
+                "TrackCount_Favorites",
+                visibleCount),
+            LibraryViewMode.Recent => Loc.Format(
+                "TrackCount_RecentlyPlayed",
+                visibleCount),
+            LibraryViewMode.Playlist => Loc.Format(
+                "TrackCount_Playlist",
+                visibleCount),
             _ => Tracks.Count == 0
-                ? "No songs yet - add some music to begin"
-                : $"{Tracks.Count} song(s) in your library"
+                ? Loc["TrackCount_NoSongs"]
+                : Loc.Format("TrackCount_Library", Tracks.Count)
         };
     }
 

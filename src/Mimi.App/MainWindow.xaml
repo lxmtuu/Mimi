@@ -162,7 +162,7 @@
                     <TextBlock Text="MUSIC UNIVERSE" FontSize="10" Foreground="#9FB2C8"/>
                 </StackPanel>
             </StackPanel>
-            <TextBlock Text="LOCAL PLAYER  |  YOUR MUSIC, YOUR WORLD" Foreground="#9FB2C8"
+            <TextBlock Text="{Binding Loc[App_Tagline]}" Foreground="#9FB2C8"
                        VerticalAlignment="Center" HorizontalAlignment="Right"/>
         </DockPanel>
 
@@ -176,62 +176,62 @@
             <Border Grid.Column="0" Background="{StaticResource PanelBrush}" CornerRadius="18" Padding="12" Margin="0,0,14,0">
                 <DockPanel>
                     <StackPanel DockPanel.Dock="Top">
-                        <TextBlock Text="YOUR SPACE" Foreground="#9FB2C8" FontSize="11" Margin="8,10,0,14"/>
+                        <TextBlock Text="{Binding Loc[Nav_YourSpace]}" Foreground="#9FB2C8" FontSize="11" Margin="8,10,0,14"/>
                         <Button Command="{Binding ShowHomeCommand}" HorizontalContentAlignment="Left"
                                 Background="#203A48" AutomationProperties.Name="Home">
                             <StackPanel Orientation="Horizontal">
                                 <Path Data="{StaticResource HomeIconGeometry}" Style="{StaticResource IconPathStyle}"/>
-                                <TextBlock Text="Home" Margin="10,0,0,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="{Binding Loc[Nav_Home]}" Margin="10,0,0,0" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
                         <Button Command="{Binding ShowLibraryCommand}" HorizontalContentAlignment="Left"
                                 AutomationProperties.Name="My library">
                             <StackPanel Orientation="Horizontal">
                                 <Path Data="{StaticResource MusicIconGeometry}" Style="{StaticResource IconPathStyle}"/>
-                                <TextBlock Text="My Library" Margin="10,0,0,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="{Binding Loc[Nav_MyLibrary]}" Margin="10,0,0,0" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
                         <Button Command="{Binding ToggleFavoritesViewCommand}" HorizontalContentAlignment="Left"
                                 AutomationProperties.Name="Favorites">
                             <StackPanel Orientation="Horizontal">
                                 <Path Data="{StaticResource HeartIconGeometry}" Style="{StaticResource IconPathStyle}"/>
-                                <TextBlock Text="Favorites" Margin="10,0,0,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="{Binding Loc[Nav_Favorites]}" Margin="10,0,0,0" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
                         <Button Command="{Binding ShowRecentCommand}" HorizontalContentAlignment="Left"
                                 AutomationProperties.Name="Recently played">
                             <StackPanel Orientation="Horizontal">
                                 <Path Data="{StaticResource HistoryIconGeometry}" Style="{StaticResource IconPathStyle}"/>
-                                <TextBlock Text="Recently played" Margin="10,0,0,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="{Binding Loc[Nav_RecentlyPlayed]}" Margin="10,0,0,0" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
                         <Button Command="{Binding AddFilesCommand}" HorizontalContentAlignment="Left"
                                 AutomationProperties.Name="Add music files">
                             <StackPanel Orientation="Horizontal">
                                 <Path Data="{StaticResource PlusIconGeometry}" Style="{StaticResource IconPathStyle}"/>
-                                <TextBlock Text="Add music files" Margin="10,0,0,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="{Binding Loc[Nav_AddMusicFiles]}" Margin="10,0,0,0" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
                         <Button Command="{Binding AddFolderCommand}" HorizontalContentAlignment="Left"
                                 AutomationProperties.Name="Scan a folder">
                             <StackPanel Orientation="Horizontal">
                                 <Path Data="{StaticResource FolderIconGeometry}" Style="{StaticResource IconPathStyle}"/>
-                                <TextBlock Text="Scan a folder" Margin="10,0,0,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="{Binding Loc[Nav_ScanFolder]}" Margin="10,0,0,0" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
                         <Button Command="{Binding OpenSettingsCommand}" HorizontalContentAlignment="Left"
                                 AutomationProperties.Name="Settings">
                             <StackPanel Orientation="Horizontal">
                                 <Path Data="{StaticResource SettingsIconGeometry}" Style="{StaticResource IconPathStyle}"/>
-                                <TextBlock Text="Settings" Margin="10,0,0,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="{Binding Loc[Nav_Settings]}" Margin="10,0,0,0" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
 
                         <DockPanel Margin="8,26,2,8">
-                            <TextBlock Text="PLAYLISTS" Foreground="#9FB2C8" FontSize="11"
+                            <TextBlock Text="{Binding Loc[Nav_Playlists]}" Foreground="#9FB2C8" FontSize="11"
                                        VerticalAlignment="Center"/>
                             <Button Command="{Binding CreatePlaylistCommand}" DockPanel.Dock="Right"
-                                    Padding="8,3" Margin="8,0,0,0" ToolTip="New playlist"
+                                    Padding="8,3" Margin="8,0,0,0" ToolTip="{Binding Loc[Playlist_New]}"
                                     AutomationProperties.Name="New playlist">
                                 <Path Data="{StaticResource PlusIconGeometry}"
                                       Style="{StaticResource IconPathStyle}"/>
@@ -239,13 +239,13 @@
                         </DockPanel>
                         <UniformGrid Columns="3" Margin="2,0,2,4"
                                      IsEnabled="{Binding HasSelectedPlaylist}">
-                            <Button Content="Play" Command="{Binding PlaySelectedPlaylistCommand}"
+                            <Button Content="{Binding Loc[Common_Play]}" Command="{Binding PlaySelectedPlaylistCommand}"
                                     Padding="6,6" FontSize="11"
                                     AutomationProperties.Name="Play selected playlist"/>
-                            <Button Content="Rename" Command="{Binding RenameSelectedPlaylistCommand}"
+                            <Button Content="{Binding Loc[Common_Rename]}" Command="{Binding RenameSelectedPlaylistCommand}"
                                     Padding="6,6" FontSize="11"
                                     AutomationProperties.Name="Rename selected playlist"/>
-                            <Button Content="Delete" Command="{Binding DeleteSelectedPlaylistCommand}"
+                            <Button Content="{Binding Loc[Common_Delete]}" Command="{Binding DeleteSelectedPlaylistCommand}"
                                     Padding="6,6" FontSize="11"
                                     AutomationProperties.Name="Delete selected playlist"/>
                         </UniformGrid>
@@ -313,7 +313,7 @@
                                 </Style>
                             </ListBox.ItemContainerStyle>
                         </ListBox>
-                        <TextBlock Text="No playlists yet. Use + to create your first mix."
+                        <TextBlock Text="{Binding Loc[Playlist_Empty]}"
                                    Foreground="#9FB2C8" FontSize="11" TextWrapping="Wrap"
                                    Margin="10,8" IsHitTestVisible="False">
                             <TextBlock.Style>
@@ -672,8 +672,8 @@
                     <StackPanel Margin="0,0,6,0">
                         <DockPanel>
                             <StackPanel DockPanel.Dock="Left">
-                                <TextBlock Text="Settings" FontSize="23" FontWeight="Bold"/>
-                                <TextBlock Text="Changes save automatically to settings.json."
+                                <TextBlock Text="{Binding Loc[Settings_Title]}" FontSize="23" FontWeight="Bold"/>
+                                <TextBlock Text="{Binding Loc[Settings_AutoSaveNote]}"
                                            Foreground="#9FB2C8" FontSize="12" Margin="0,5,0,0"/>
                             </StackPanel>
                             <Button Command="{Binding CloseSettingsCommand}" DockPanel.Dock="Right"
@@ -683,10 +683,27 @@
 
                         <Border Background="#172638" CornerRadius="12" Padding="14" Margin="0,18,0,0">
                             <StackPanel>
-                                <TextBlock Text="PLAYBACK &amp; SESSION" Foreground="{StaticResource AccentBrush}"
+                                <TextBlock Text="{Binding Loc[Settings_LanguageSection]}" Foreground="{StaticResource AccentBrush}"
+                                           FontSize="11" FontWeight="Bold"/>
+                                <TextBlock Text="{Binding Loc[Settings_Language]}" Margin="0,14,0,6"/>
+                                <ComboBox SelectedValue="{Binding UiLanguage, Mode=TwoWay}"
+                                          SelectedValuePath="Tag"
+                                          AutomationProperties.Name="Interface language">
+                                    <ComboBoxItem Tag="system" Content="{Binding DataContext.Loc[Language_System], RelativeSource={RelativeSource AncestorType={x:Type ComboBox}}}"/>
+                                    <ComboBoxItem Tag="en-US" Content="English"/>
+                                    <ComboBoxItem Tag="vi-VN" Content="Tiếng Việt"/>
+                                </ComboBox>
+                                <TextBlock Text="{Binding Loc[Settings_LanguageDescription]}"
+                                           Foreground="#9FB2C8" FontSize="11" TextWrapping="Wrap" Margin="0,8,0,0"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Background="#172638" CornerRadius="12" Padding="14" Margin="0,14,0,0">
+                            <StackPanel>
+                                <TextBlock Text="{Binding Loc[Settings_PlaybackSessionSection]}" Foreground="{StaticResource AccentBrush}"
                                            FontSize="11" FontWeight="Bold"/>
                                 <DockPanel Margin="0,14,0,4">
-                                    <TextBlock Text="Volume" DockPanel.Dock="Left"/>
+                                    <TextBlock Text="{Binding Loc[Settings_Volume]}" DockPanel.Dock="Left"/>
                                     <TextBlock Text="{Binding EffectiveVolumePercentLabel}" Foreground="#9FB2C8"
                                                DockPanel.Dock="Right"/>
                                 </DockPanel>
@@ -719,7 +736,7 @@
 
                         <Border Background="#172638" CornerRadius="12" Padding="14" Margin="0,14,0,0">
                             <StackPanel>
-                                <TextBlock Text="KEYBOARD SHORTCUTS" Foreground="{StaticResource AccentBrush}"
+                                <TextBlock Text="{Binding Loc[Settings_KeyboardShortcutsSection]}" Foreground="{StaticResource AccentBrush}"
                                            FontSize="11" FontWeight="Bold"/>
                                 <Grid Margin="0,10,0,0">
                                     <Grid.ColumnDefinitions>
@@ -766,7 +783,7 @@
 
                         <Border Background="#172638" CornerRadius="12" Padding="14" Margin="0,14,0,0">
                             <StackPanel>
-                                <TextBlock Text="STARTUP &amp; LIBRARY" Foreground="{StaticResource AccentBrush}"
+                                <TextBlock Text="{Binding Loc[Settings_StartupLibrarySection]}" Foreground="{StaticResource AccentBrush}"
                                            FontSize="11" FontWeight="Bold"/>
                                 <CheckBox IsChecked="{Binding RestoreLibraryView, Mode=TwoWay}"
                                           Content="Restore the last library view"
@@ -849,7 +866,7 @@
                         <Border Background="#172638" CornerRadius="12" Padding="14" Margin="0,14,0,0">
                             <StackPanel>
                                 <DockPanel>
-                                    <TextBlock Text="STAGE ENGINE" Foreground="{StaticResource PinkBrush}"
+                                    <TextBlock Text="{Binding Loc[Settings_StageEngineSection]}" Foreground="{StaticResource PinkBrush}"
                                                FontSize="11" FontWeight="Bold" DockPanel.Dock="Left"/>
                                     <TextBlock Text="{Binding VisualizerMetricsLabel}" Foreground="#9FB2C8"
                                                FontSize="10" DockPanel.Dock="Right"/>
@@ -872,7 +889,7 @@
 
                         <Border Background="#172638" CornerRadius="12" Padding="14" Margin="0,14,0,0">
                             <StackPanel>
-                                <TextBlock Text="DATA &amp; DIAGNOSTICS" Foreground="{StaticResource AccentBrush}"
+                                <TextBlock Text="{Binding Loc[Settings_DataDiagnosticsSection]}" Foreground="{StaticResource AccentBrush}"
                                            FontSize="11" FontWeight="Bold"/>
                                 <TextBlock Text="{Binding AppVersionLabel}" FontWeight="SemiBold" Margin="0,12,0,8"/>
                                 <TextBlock Text="Data folder" Foreground="#9FB2C8" FontSize="10"/>
@@ -894,11 +911,11 @@
 
                         <Border Background="#172638" CornerRadius="12" Padding="14" Margin="0,14,0,6">
                             <StackPanel>
-                                <TextBlock Text="DEFAULTS" Foreground="{StaticResource PinkBrush}"
+                                <TextBlock Text="{Binding Loc[Settings_DefaultsSection]}" Foreground="{StaticResource PinkBrush}"
                                            FontSize="11" FontWeight="Bold"/>
                                 <TextBlock Text="Reset preferences without deleting your library, playlists, favorites, or listening history."
                                            Foreground="#9FB2C8" FontSize="11" TextWrapping="Wrap" Margin="0,8,0,8"/>
-                                <Button Content="Reset settings…" Command="{Binding ResetSettingsCommand}"
+                                <Button Content="{Binding Loc[Settings_ResetSettings]}" Command="{Binding ResetSettingsCommand}"
                                         Background="#5A2A3D" HorizontalAlignment="Left"
                                         Padding="12,8" FontSize="11"
                                         AutomationProperties.Name="Reset settings to defaults"/>
@@ -911,7 +928,7 @@
             <Border Grid.Column="2" Background="{StaticResource PanelBrush}" CornerRadius="18" Padding="16">
                 <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                     <StackPanel>
-                        <TextBlock Text="NOW PLAYING" Foreground="#9FB2C8" FontSize="11"/>
+                        <TextBlock Text="{Binding Loc[NowPlaying_Title]}" Foreground="#9FB2C8" FontSize="11"/>
                         <Border Height="210" Margin="0,14,0,16" CornerRadius="16" ClipToBounds="True">
                             <Grid>
                                 <Grid.Background>
@@ -1033,7 +1050,7 @@
                         <Border Background="#172638" CornerRadius="10" Padding="10" Margin="0,18,0,0">
                             <StackPanel>
                                 <DockPanel>
-                                    <TextBlock Text="UP NEXT" Foreground="{StaticResource AccentBrush}"
+                                    <TextBlock Text="{Binding Loc[NowPlaying_UpNext]}" Foreground="{StaticResource AccentBrush}"
                                                FontSize="10" FontWeight="Bold" DockPanel.Dock="Left"/>
                                     <TextBlock Text="{Binding QueueCountLabel}" Foreground="#9FB2C8"
                                                FontSize="10" DockPanel.Dock="Right"/>

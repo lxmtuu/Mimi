@@ -13,7 +13,8 @@
     <Product>Mimi</Product>
     <Title>Mimi</Title>
     <Description>Mimi - a personal desktop music player.</Description>
-    <Version>0.5.0</Version>
+    <Version>0.6.0</Version>
+    <NeutralLanguage>en-US</NeutralLanguage>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon>Assets\mimi.ico</ApplicationIcon>
   </PropertyGroup>

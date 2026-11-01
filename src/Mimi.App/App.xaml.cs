@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Windows;
 using System.Windows.Threading;
 using Microsoft.Extensions.DependencyInjection;
+using Mimi.Localization;
 using Mimi.Services;
 using Mimi.ViewModels;
 using Serilog;
@@ -128,6 +129,7 @@ public partial class App : Application
         services.AddSingleton<ILibraryFolderWatcher, FileSystemLibraryFolderWatcher>();
         services.AddSingleton<IFileAssociationService, WindowsFileAssociationService>();
         services.AddSingleton<IDialogService, WpfDialogService>();
+        services.AddSingleton<LocalizationService>();
         services.AddSingleton<MainWindowViewModel>();
         services.AddSingleton<MainWindow>();
         return services;

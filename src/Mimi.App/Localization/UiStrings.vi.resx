@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="App_Tagline" xml:space="preserve"><value>TRÌNH PHÁT CỤC BỘ  |  ÂM NHẠC CỦA BẠN, THẾ GIỚI CỦA BẠN</value></data>
+  <data name="Common_Delete" xml:space="preserve"><value>Xoá</value></data>
+  <data name="Common_Play" xml:space="preserve"><value>Phát</value></data>
+  <data name="Common_Rename" xml:space="preserve"><value>Đổi tên</value></data>
+  <data name="Language_System" xml:space="preserve"><value>Dùng ngôn ngữ hệ thống</value></data>
+  <data name="Nav_AddMusicFiles" xml:space="preserve"><value>Thêm file nhạc</value></data>
+  <data name="Nav_Favorites" xml:space="preserve"><value>Yêu thích</value></data>
+  <data name="Nav_Home" xml:space="preserve"><value>Trang chủ</value></data>
+  <data name="Nav_MyLibrary" xml:space="preserve"><value>Thư viện của tôi</value></data>
+  <data name="Nav_Playlists" xml:space="preserve"><value>DANH SÁCH PHÁT</value></data>
+  <data name="Nav_RecentlyPlayed" xml:space="preserve"><value>Đã nghe gần đây</value></data>
+  <data name="Nav_ScanFolder" xml:space="preserve"><value>Quét thư mục</value></data>
+  <data name="Nav_Settings" xml:space="preserve"><value>Cài đặt</value></data>
+  <data name="Nav_YourSpace" xml:space="preserve"><value>KHÔNG GIAN CỦA BẠN</value></data>
+  <data name="NowPlaying_ChooseSong" xml:space="preserve"><value>Chọn một bài hát</value></data>
+  <data name="NowPlaying_NextFavoriteWaiting" xml:space="preserve"><value>Bài yêu thích tiếp theo đang chờ bạn</value></data>
+  <data name="NowPlaying_Title" xml:space="preserve"><value>ĐANG PHÁT</value></data>
+  <data name="NowPlaying_UpNext" xml:space="preserve"><value>SẮP PHÁT</value></data>
+  <data name="Playlist_Empty" xml:space="preserve"><value>Chưa có danh sách phát nào. Dùng + để tạo bản phối đầu tiên.</value></data>
+  <data name="Playlist_New" xml:space="preserve"><value>Danh sách phát mới</value></data>
+  <data name="Section_PlaylistFallback" xml:space="preserve"><value>Danh sách phát</value></data>
+  <data name="Section_RecentlyPlayed" xml:space="preserve"><value>Đã nghe gần đây</value></data>
+  <data name="Section_YourFavorites" xml:space="preserve"><value>Bài yêu thích của bạn</value></data>
+  <data name="Section_YourLibrary" xml:space="preserve"><value>Thư viện của bạn</value></data>
+  <data name="Settings_AutoSaveNote" xml:space="preserve"><value>Thay đổi được lưu tự động vào settings.json.</value></data>
+  <data name="Settings_DataDiagnosticsSection" xml:space="preserve"><value>DỮ LIỆU &amp; CHẨN ĐOÁN</value></data>
+  <data name="Settings_DefaultsSection" xml:space="preserve"><value>MẶC ĐỊNH</value></data>
+  <data name="Settings_KeyboardShortcutsSection" xml:space="preserve"><value>PHÍM TẮT</value></data>
+  <data name="Settings_Language" xml:space="preserve"><value>Ngôn ngữ giao diện</value></data>
+  <data name="Settings_LanguageDescription" xml:space="preserve"><value>Thay đổi áp dụng ngay. Mimi sẽ tiếp tục mở rộng phần đã dịch trong Phase 5.</value></data>
+  <data name="Settings_LanguageSection" xml:space="preserve"><value>NGÔN NGỮ</value></data>
+  <data name="Settings_PlaybackSessionSection" xml:space="preserve"><value>PHÁT NHẠC &amp; PHIÊN</value></data>
+  <data name="Settings_ResetSettings" xml:space="preserve"><value>Đặt lại cài đặt…</value></data>
+  <data name="Settings_StageEngineSection" xml:space="preserve"><value>STAGE ENGINE</value></data>
+  <data name="Settings_StartupLibrarySection" xml:space="preserve"><value>KHỞI ĐỘNG &amp; THƯ VIỆN</value></data>
+  <data name="Settings_Title" xml:space="preserve"><value>Cài đặt</value></data>
+  <data name="Settings_Volume" xml:space="preserve"><value>Âm lượng</value></data>
+  <data name="TrackCount_Favorites" xml:space="preserve"><value>{0} bài yêu thích</value></data>
+  <data name="TrackCount_FilteredSongs" xml:space="preserve"><value>{0} bài sau lọc</value></data>
+  <data name="TrackCount_Library" xml:space="preserve"><value>{0} bài trong thư viện của bạn</value></data>
+  <data name="TrackCount_NoSongs" xml:space="preserve"><value>Chưa có bài hát nào - hãy thêm nhạc để bắt đầu</value></data>
+  <data name="TrackCount_Playlist" xml:space="preserve"><value>{0} bài trong danh sách phát này</value></data>
+  <data name="TrackCount_RecentlyPlayed" xml:space="preserve"><value>{0} bài đã nghe gần đây</value></data>
+  <data name="TrackCount_SearchResults" xml:space="preserve"><value>{0} kết quả tìm kiếm</value></data>
+</root>

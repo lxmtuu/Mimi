@@ -73,10 +73,11 @@ A Windows desktop music-player foundation built with C# / WPF / .NET 8 and NAudi
   music app
 - Library tracks, favorites, playback errors, and play history are restored
   from the SQLite catalog at `%LocalAppData%\Mimi\library.db` (schema v1,
-  WAL + transactions); version 3 `settings.json` atomically stores volume,
-  mute, shuffle, repeat, preferences, the library-view/window state, and
-  the paused session including its queue. Older settings versions migrate
-  with defaults for the new playback options. On first use, an
+  WAL + transactions); version 4 `settings.json` atomically stores volume,
+  mute, shuffle, repeat, the interface-language preference, other
+  preferences, the library-view/window state, and the paused session
+  including its queue. Older settings versions migrate with defaults for
+  the new playback and language options. On first use, an
   existing legacy `library.json` / `favorites.json` pair is imported only
   when the catalog is empty, then archived as `.bak` files. If SQLite cannot
   be opened, Mimi falls back to the legacy JSON library instead of failing
@@ -90,7 +91,8 @@ A Windows desktop music-player foundation built with C# / WPF / .NET 8 and NAudi
   and fading out while paused or stopped
 - Modular MVVM architecture with dependency injection and automated tests;
   Windows Release builds and unit tests are verified by GitHub Actions.
-  Phase 4 (`v0.5.0`) is **code complete — acceptance pending**: the queue /
+  Phase 5 (`v0.6.0`) is now in development after Phase 4 (`v0.5.0`) was
+  closed by owner waiver with accepted limitations. Phase 4 delivered the queue /
   playback-mode, Windows media-control/keyboard, WASAPI output-device,
   and diagnostic backend-override slices are implemented. Automated
   restore/build/test has also passed on a real Windows machine at
@@ -135,7 +137,8 @@ A Windows desktop music-player foundation built with C# / WPF / .NET 8 and NAudi
   taskbar, media-key/keyboard, device-disconnect, and reconnect gates
   recorded in `ROADMAP.md` (`b0cd13a`), while app-level no-output
   remains blocked, D-03 remains provisional after longer loopback
-  A/B runs, and the P4-H closeout decision remains open. Their
+  A/B runs. The project owner closed Phase 4 by waiver on 2026-11-01
+  without upgrading those unresolved gates to PASS. Their
   repeatable manual procedures, result template, loopback CSV analyzer,
   read-only GSMTC timeline probe, and current reconciliation matrix
   live in the [Windows Acceptance Kit](docs/acceptance/README.md)

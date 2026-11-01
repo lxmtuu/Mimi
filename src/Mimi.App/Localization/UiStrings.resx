@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="App_Tagline" xml:space="preserve"><value>LOCAL PLAYER  |  YOUR MUSIC, YOUR WORLD</value></data>
+  <data name="Common_Delete" xml:space="preserve"><value>Delete</value></data>
+  <data name="Common_Play" xml:space="preserve"><value>Play</value></data>
+  <data name="Common_Rename" xml:space="preserve"><value>Rename</value></data>
+  <data name="Language_System" xml:space="preserve"><value>Use system language</value></data>
+  <data name="Nav_AddMusicFiles" xml:space="preserve"><value>Add music files</value></data>
+  <data name="Nav_Favorites" xml:space="preserve"><value>Favorites</value></data>
+  <data name="Nav_Home" xml:space="preserve"><value>Home</value></data>
+  <data name="Nav_MyLibrary" xml:space="preserve"><value>My Library</value></data>
+  <data name="Nav_Playlists" xml:space="preserve"><value>PLAYLISTS</value></data>
+  <data name="Nav_RecentlyPlayed" xml:space="preserve"><value>Recently played</value></data>
+  <data name="Nav_ScanFolder" xml:space="preserve"><value>Scan a folder</value></data>
+  <data name="Nav_Settings" xml:space="preserve"><value>Settings</value></data>
+  <data name="Nav_YourSpace" xml:space="preserve"><value>YOUR SPACE</value></data>
+  <data name="NowPlaying_ChooseSong" xml:space="preserve"><value>Choose a song</value></data>
+  <data name="NowPlaying_NextFavoriteWaiting" xml:space="preserve"><value>Your next favorite is waiting</value></data>
+  <data name="NowPlaying_Title" xml:space="preserve"><value>NOW PLAYING</value></data>
+  <data name="NowPlaying_UpNext" xml:space="preserve"><value>UP NEXT</value></data>
+  <data name="Playlist_Empty" xml:space="preserve"><value>No playlists yet. Use + to create your first mix.</value></data>
+  <data name="Playlist_New" xml:space="preserve"><value>New playlist</value></data>
+  <data name="Section_PlaylistFallback" xml:space="preserve"><value>Playlist</value></data>
+  <data name="Section_RecentlyPlayed" xml:space="preserve"><value>Recently played</value></data>
+  <data name="Section_YourFavorites" xml:space="preserve"><value>Your favorites</value></data>
+  <data name="Section_YourLibrary" xml:space="preserve"><value>Your library</value></data>
+  <data name="Settings_AutoSaveNote" xml:space="preserve"><value>Changes save automatically to settings.json.</value></data>
+  <data name="Settings_DataDiagnosticsSection" xml:space="preserve"><value>DATA &amp; DIAGNOSTICS</value></data>
+  <data name="Settings_DefaultsSection" xml:space="preserve"><value>DEFAULTS</value></data>
+  <data name="Settings_KeyboardShortcutsSection" xml:space="preserve"><value>KEYBOARD SHORTCUTS</value></data>
+  <data name="Settings_Language" xml:space="preserve"><value>Interface language</value></data>
+  <data name="Settings_LanguageDescription" xml:space="preserve"><value>Changes apply immediately. Mimi will keep expanding translated areas as Phase 5 continues.</value></data>
+  <data name="Settings_LanguageSection" xml:space="preserve"><value>LANGUAGE</value></data>
+  <data name="Settings_PlaybackSessionSection" xml:space="preserve"><value>PLAYBACK &amp; SESSION</value></data>
+  <data name="Settings_ResetSettings" xml:space="preserve"><value>Reset settings…</value></data>
+  <data name="Settings_StageEngineSection" xml:space="preserve"><value>STAGE ENGINE</value></data>
+  <data name="Settings_StartupLibrarySection" xml:space="preserve"><value>STARTUP &amp; LIBRARY</value></data>
+  <data name="Settings_Title" xml:space="preserve"><value>Settings</value></data>
+  <data name="Settings_Volume" xml:space="preserve"><value>Volume</value></data>
+  <data name="TrackCount_Favorites" xml:space="preserve"><value>{0} favorite song(s)</value></data>
+  <data name="TrackCount_FilteredSongs" xml:space="preserve"><value>{0} filtered song(s)</value></data>
+  <data name="TrackCount_Library" xml:space="preserve"><value>{0} song(s) in your library</value></data>
+  <data name="TrackCount_NoSongs" xml:space="preserve"><value>No songs yet - add some music to begin</value></data>
+  <data name="TrackCount_Playlist" xml:space="preserve"><value>{0} song(s) in this playlist</value></data>
+  <data name="TrackCount_RecentlyPlayed" xml:space="preserve"><value>{0} recently played song(s)</value></data>
+  <data name="TrackCount_SearchResults" xml:space="preserve"><value>{0} search result(s)</value></data>
+</root>

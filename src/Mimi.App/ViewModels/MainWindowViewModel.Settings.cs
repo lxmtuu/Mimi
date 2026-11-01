@@ -4,6 +4,7 @@ using System.IO;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mimi.Controls;
+using Mimi.Localization;
 using Mimi.Models;
 using Serilog;
 
@@ -26,6 +27,9 @@ public sealed partial class MainWindowViewModel
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsLibraryContentVisible))]
     private bool isSettingsOpen;
+
+    [ObservableProperty]
+    private string uiLanguage = UiLanguages.System;
 
     [ObservableProperty]
     private bool restorePlaybackSession = true;
@@ -51,12 +55,15 @@ public sealed partial class MainWindowViewModel
     public string LogDirectory => Path.Combine(DataDirectory, "logs");
 
     public string AppVersionLabel =>
-        $"Mimi {GetType().Assembly.GetName().Version?.ToString(3) ?? "0.5.0"}";
+        $"Mimi {GetType().Assembly.GetName().Version?.ToString(3) ?? "0.6.0"}";
 
     private void ApplyLoadedSettings()
     {
         Volume = settings.Volume;
         ApplyPlaybackPreferenceSettings();
+        UiLanguage = settings.UiLanguage;
+        Loc.SetLanguage(UiLanguage);
+        RefreshLocalizedChrome();
 
         if (Enum.TryParse<VisualizerDisplayMode>(
                 settings.VisualizerMode,
@@ -76,6 +83,34 @@ public sealed partial class MainWindowViewModel
             WatchedFolders.Add(folder);
         SelectedWatchedFolder = WatchedFolders.FirstOrDefault();
         WindowPlacement = settings.WindowPlacement;
+    }
+
+    partial void OnUiLanguageChanged(string value)
+    {
+        var normalized = UiLanguages.Normalize(value);
+        if (!string.Equals(value, normalized, StringComparison.Ordinal))
+        {
+            UiLanguage = normalized;
+            return;
+        }
+
+        Loc.SetLanguage(normalized);
+        RefreshLocalizedChrome();
+        if (settingsLoaded && !isRestoringSettings)
+            SaveSettings(force: true);
+    }
+
+    private void RefreshLocalizedChrome()
+    {
+        OnPropertyChanged(nameof(SectionTitle));
+
+        if (CurrentTrack is null)
+        {
+            NowPlayingTitle = Loc["NowPlaying_ChooseSong"];
+            NowPlayingSubtitle = Loc["NowPlaying_NextFavoriteWaiting"];
+        }
+
+        UpdateTrackCount();
     }
 
     partial void OnRestorePlaybackSessionChanged(bool value)
@@ -230,6 +265,7 @@ public sealed partial class MainWindowViewModel
         settings.ShuffleEnabled = IsShuffleEnabled;
         settings.RepeatMode = RepeatMode.ToString();
         settings.VisualizerMode = VisualizerMode.ToString();
+        settings.UiLanguage = UiLanguages.Normalize(UiLanguage);
         settings.RestorePlaybackSession = RestorePlaybackSession;
         settings.RestoreLibraryView = RestoreLibraryView;
         settings.RestoreWindowPlacement = RestoreWindowPlacement;
