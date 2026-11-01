@@ -30,8 +30,22 @@ public static class ItemClickCommandBehavior
     private static object? pressItem;
     private static Point pressPoint;
 
+    private static readonly MouseButtonEventHandler PreviewMouseDownHandler =
+        OnPreviewMouseDown;
+
+    private static readonly MouseEventHandler PreviewMouseMoveHandler =
+        OnPreviewMouseMove;
+
     private static readonly MouseButtonEventHandler MouseUpHandler =
         OnMouseUp;
+
+    // One-time diagnostics for the "first click after startup does nothing"
+    // report: each distinct rejection reason is logged once per run so a
+    // user-supplied log can pinpoint which half of the click was lost
+    // without flooding the file on every drag or outside release.
+    private static bool firstPressLogged;
+    private static bool noRecordedPressLogged;
+    private static bool dragThresholdLogged;
 
     public static readonly DependencyProperty CommandProperty =
         DependencyProperty.RegisterAttached(
@@ -52,23 +66,35 @@ public static class ItemClickCommandBehavior
     {
         if (dependencyObject is not ItemsControl itemsControl) return;
 
-        itemsControl.PreviewMouseLeftButtonDown -= OnPreviewMouseLeftButtonDown;
-        itemsControl.PreviewMouseMove -= OnPreviewMouseMove;
+        itemsControl.RemoveHandler(
+            Mouse.PreviewMouseDownEvent,
+            PreviewMouseDownHandler);
+        itemsControl.RemoveHandler(
+            Mouse.PreviewMouseMoveEvent,
+            PreviewMouseMoveHandler);
         itemsControl.RemoveHandler(Mouse.MouseUpEvent, MouseUpHandler);
 
         if (e.NewValue is ICommand)
         {
-            itemsControl.PreviewMouseLeftButtonDown += OnPreviewMouseLeftButtonDown;
-            itemsControl.PreviewMouseMove += OnPreviewMouseMove;
-
-            // MouseLeftButtonUp is a Direct event that WPF re-raises while
-            // the underlying bubbling Mouse.MouseUp event travels from the
-            // row to the ItemsControl. If an element in the row/template
-            // marks Mouse.MouseUp handled, an ordinary MouseLeftButtonUp
-            // handler on the parent can be skipped even though the row was
-            // selected. Listening to the underlying bubbling event with
-            // handledEventsToo makes click completion observable in that
-            // case as well, while preserving the normal bubble order.
+            // The button-specific PreviewMouseLeftButtonDown and
+            // MouseLeftButtonUp events are Direct events that WPF re-raises
+            // while the underlying tunneling PreviewMouseDown and bubbling
+            // MouseUp events travel through the ItemsControl. If another
+            // element marks one of those underlying events handled before
+            // it reaches this control, an ordinary handler for the Direct
+            // event can be skipped, losing one half of an otherwise
+            // ordinary click (observed for the very first click after the
+            // window opens). Listening to the underlying events with
+            // handledEventsToo makes both halves of the click observable
+            // while preserving the normal route order.
+            itemsControl.AddHandler(
+                Mouse.PreviewMouseDownEvent,
+                PreviewMouseDownHandler,
+                handledEventsToo: true);
+            itemsControl.AddHandler(
+                Mouse.PreviewMouseMoveEvent,
+                PreviewMouseMoveHandler,
+                handledEventsToo: true);
             itemsControl.AddHandler(
                 Mouse.MouseUpEvent,
                 MouseUpHandler,
@@ -81,10 +107,12 @@ public static class ItemClickCommandBehavior
         }
     }
 
-    private static void OnPreviewMouseLeftButtonDown(
+    private static void OnPreviewMouseDown(
         object sender,
         MouseButtonEventArgs e)
     {
+        if (e.ChangedButton != MouseButton.Left) return;
+
         pressControl = null;
         pressItem = null;
 
@@ -99,6 +127,14 @@ public static class ItemClickCommandBehavior
         pressControl = itemsControl;
         pressItem = item;
         pressPoint = e.GetPosition(null);
+
+        if (!firstPressLogged)
+        {
+            firstPressLogged = true;
+            Log.Information(
+                "First item press recorded after startup: itemType={ItemType}",
+                item.GetType().Name);
+        }
     }
 
     private static void OnPreviewMouseMove(object sender, MouseEventArgs e)
@@ -114,6 +150,14 @@ public static class ItemClickCommandBehavior
         {
             pressControl = null;
             pressItem = null;
+
+            if (!dragThresholdLogged)
+            {
+                dragThresholdLogged = true;
+                Log.Information(
+                    "Item click was not activated because pointer movement " +
+                    "exceeded the drag threshold (first occurrence)");
+            }
         }
     }
 
@@ -126,8 +170,26 @@ public static class ItemClickCommandBehavior
         pressControl = null;
         pressItem = null;
 
-        if (!belongsToPress || item is null) return;
         if (sender is not ItemsControl itemsControl) return;
+        if (!belongsToPress || item is null)
+        {
+            // A release over a row without a recorded press means the press
+            // half of the click never reached this behavior (or began
+            // outside the list). Log the first occurrence so startup-first-
+            // click reports can distinguish a lost press from a lost
+            // release or a rejected command.
+            if (!noRecordedPressLogged &&
+                e.OriginalSource is DependencyObject unpressedSource &&
+                GetItemFromSource(itemsControl, unpressedSource) is not null)
+            {
+                noRecordedPressLogged = true;
+                Log.Information(
+                    "Item click was not activated because no matching press " +
+                    "was recorded for this control (first occurrence)");
+            }
+
+            return;
+        }
         if (Keyboard.Modifiers != ModifierKeys.None) return;
         if (IsBeyondDragThreshold(e.GetPosition(null))) return;
         if (e.OriginalSource is not DependencyObject source) return;

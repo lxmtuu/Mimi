@@ -103,6 +103,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     private long? currentPlayHistoryId;
     private bool changingProgress;
     private bool userSeeking;
+    private bool firstTrackSwitchLogged;
     private bool settingsLoaded;
     private bool catalogAvailable;
     private bool libraryInitialized;
@@ -2485,6 +2486,16 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
                     Tracks.Count,
                     playbackQueue.SourceItems.Count,
                     UpcomingQueueItems.Count);
+            }
+
+            if (!firstTrackSwitchLogged)
+            {
+                firstTrackSwitchLogged = true;
+                Log.Information(
+                    "First track switch after startup completed for " +
+                    "{FilePath} in {TotalMs:F1}ms",
+                    track.FilePath,
+                    totalElapsed.TotalMilliseconds);
             }
 
             return true;

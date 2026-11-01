@@ -148,6 +148,55 @@ public sealed class ItemClickCommandBehaviorTests
     }
 
     [Fact]
+    public void ClickStillActivatesWhenAncestorHandlesPreviewMouseDown()
+    {
+        RunOnSta(() =>
+        {
+            var cyan = "Cyan";
+            var magenta = "Magenta";
+            var command = new RecordingCommand();
+            var listView = new ListView
+            {
+                ItemsSource = new[] { cyan, magenta }
+            };
+            ItemClickCommandBehavior.SetCommand(listView, command);
+
+            var window = new Window
+            {
+                Width = 400,
+                Height = 300,
+                Content = listView
+            };
+
+            try
+            {
+                window.Show();
+                window.UpdateLayout();
+
+                // An ancestor marking the tunneling press handled (as can
+                // happen while a freshly shown window activates) must not
+                // hide the press half of the click from the behavior.
+                window.AddHandler(
+                    Mouse.PreviewMouseDownEvent,
+                    new MouseButtonEventHandler((_, args) => args.Handled = true));
+
+                var container = Assert.IsType<ListViewItem>(
+                    listView.ItemContainerGenerator.ContainerFromIndex(1));
+                container.RaiseEvent(NewMouseButtonEvent(
+                    Mouse.PreviewMouseDownEvent));
+                container.RaiseEvent(NewMouseButtonEvent(
+                    Mouse.MouseUpEvent));
+
+                Assert.Equal(new object?[] { magenta }, command.Parameters);
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
+    [Fact]
     public void ClickSurvivesContainerRefreshBetweenPressAndRelease()
     {
         RunOnSta(() =>
