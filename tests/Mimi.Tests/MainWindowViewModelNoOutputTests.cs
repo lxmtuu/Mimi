@@ -7,6 +7,7 @@ using Mimi.Core.Playback;
 using Mimi.Localization;
 using Mimi.Models;
 using Mimi.Services;
+using Mimi.Theming;
 using Mimi.ViewModels;
 using NAudio.Wave;
 
@@ -103,6 +104,65 @@ public sealed class MainWindowViewModelNoOutputTests
                 Assert.Single(viewModel.UpcomingQueueItems);
                 Assert.Same(second, viewModel.UpcomingQueueItems[0].Track);
                 Assert.Equal(2, audio.PlayCalls);
+            }
+            finally
+            {
+                viewModel.Dispose();
+            }
+        });
+    }
+
+    [Fact]
+    public void ThemePreference_AppliesLoadedThemeNormalizesAndPersistsChanges()
+    {
+        RunOnSta(() =>
+        {
+            var themeService = new ThemeService();
+            var userData = new FakeUserDataService
+            {
+                InitialSettings = new AppSettings
+                {
+                    UiTheme = " Sakura_Dream "
+                }
+            };
+            var viewModel = new MainWindowViewModel(
+                new FakeAudioPlayer
+                {
+                    OutputStatus = new AudioOutputStatus(
+                        true,
+                        AudioOutputKind.WasapiShared,
+                        "Test Speakers",
+                        "Audio output is ready.")
+                },
+                new FakeLibraryService(),
+                new FakeLibraryCatalog(),
+                userData,
+                new FakeDialogService(),
+                themeService: themeService);
+
+            try
+            {
+                viewModel.InitializationTask.GetAwaiter().GetResult();
+
+                Assert.Equal(BuiltInThemes.SakuraDreamId, viewModel.UiTheme);
+                Assert.Equal(
+                    BuiltInThemes.SakuraDreamId,
+                    themeService.CurrentThemeId);
+
+                viewModel.UiTheme = "theme-that-does-not-exist";
+
+                Assert.Equal(BuiltInThemes.DefaultId, viewModel.UiTheme);
+                Assert.Equal(BuiltInThemes.DefaultId, themeService.CurrentThemeId);
+                Assert.Equal(
+                    BuiltInThemes.DefaultId,
+                    userData.LastSavedSettings?.UiTheme);
+
+                viewModel.UiTheme = BuiltInThemes.MonoFocusId;
+
+                Assert.Equal(BuiltInThemes.MonoFocusId, themeService.CurrentThemeId);
+                Assert.Equal(
+                    BuiltInThemes.MonoFocusId,
+                    userData.LastSavedSettings?.UiTheme);
             }
             finally
             {
@@ -517,8 +577,9 @@ public sealed class MainWindowViewModelNoOutputTests
             $"mimi-viewmodel-test-{Guid.NewGuid():N}");
 
         public AppSettings? LastSavedSettings { get; private set; }
+        public AppSettings InitialSettings { get; init; } = new();
         public void MigrateLegacyDataIfNeeded() { }
-        public AppSettings LoadSettings() => new();
+        public AppSettings LoadSettings() => InitialSettings;
         public void SaveSettings(AppSettings settings) => LastSavedSettings = settings;
         public IReadOnlyList<string> LoadLibraryPaths() => [];
         public void SaveLibraryPaths(IEnumerable<string> paths) { }

@@ -59,6 +59,18 @@ public sealed class LocalizationServiceTests
             "Lỗi phát nhạc",
             service.GetString("Playback_ErrorTitle", "vi-VN"));
         Assert.Equal(
+            "Interface theme",
+            service.GetString("Settings_Theme", "en-US"));
+        Assert.Equal(
+            "Chủ đề giao diện",
+            service.GetString("Settings_Theme", "vi-VN"));
+        Assert.Equal(
+            "Sakura Dream",
+            service.GetString("Theme_SakuraDream", "en-US"));
+        Assert.Equal(
+            "Giấc mơ Sakura",
+            service.GetString("Theme_SakuraDream", "vi-VN"));
+        Assert.Equal(
             "No audio output is available. Connect or enable an output device, then press Play.",
             service.GetString("Audio_MessageNoOutputPressPlay", "en-US"));
         Assert.Equal(

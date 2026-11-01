@@ -55,6 +55,11 @@ public partial class App : Application
             }
 
             serviceProvider = BuildServices().BuildServiceProvider();
+            // Publish a safe default palette before the first window asks
+            // for shared brushes; the view model immediately reapplies the
+            // persisted theme while its constructor loads settings.
+            serviceProvider.GetRequiredService<ThemeService>()
+                .ApplyDefault();
             mainWindowViewModel =
                 serviceProvider.GetRequiredService<MainWindowViewModel>();
             var mainWindow = serviceProvider.GetRequiredService<MainWindow>();
@@ -130,6 +135,7 @@ public partial class App : Application
         services.AddSingleton<IFileAssociationService, WindowsFileAssociationService>();
         services.AddSingleton<IDialogService, WpfDialogService>();
         services.AddSingleton<LocalizationService>();
+        services.AddSingleton<ThemeService>();
         services.AddSingleton<MainWindowViewModel>();
         services.AddSingleton<MainWindow>();
         return services;

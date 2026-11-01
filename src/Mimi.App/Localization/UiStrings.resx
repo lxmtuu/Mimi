@@ -226,6 +226,7 @@
   <data name="Section_YourLibrary" xml:space="preserve"><value>Your library</value></data>
   <data name="Settings_AddWatchedFolder" xml:space="preserve"><value>Add watched folder…</value></data>
   <data name="Settings_AddWatchedFolderAutomation" xml:space="preserve"><value>Add a watched music folder</value></data>
+  <data name="Settings_AppearanceSection" xml:space="preserve"><value>APPEARANCE &amp; LANGUAGE</value></data>
   <data name="Settings_AudioOutput" xml:space="preserve"><value>Audio output</value></data>
   <data name="Settings_AudioOutputDescription" xml:space="preserve"><value>Mimi follows Windows' default output through WASAPI shared mode (WaveOut is only a fallback). If that device changes or disappears during playback, Mimi pauses instead of moving sound unexpectedly; press Play to continue on the new output.</value></data>
   <data name="Settings_AutoSaveNote" xml:space="preserve"><value>Changes save automatically to settings.json.</value></data>
@@ -275,6 +276,8 @@
   <data name="Settings_StageEngineSection" xml:space="preserve"><value>STAGE ENGINE</value></data>
   <data name="Settings_StartupLibrarySection" xml:space="preserve"><value>STARTUP &amp; LIBRARY</value></data>
   <data name="Settings_StillLoading" xml:space="preserve"><value>Mimi is still loading your library. Try again in a moment.</value></data>
+  <data name="Settings_Theme" xml:space="preserve"><value>Interface theme</value></data>
+  <data name="Settings_ThemeDescription" xml:space="preserve"><value>Changes apply immediately and are restored the next time Mimi opens.</value></data>
   <data name="Settings_Title" xml:space="preserve"><value>Settings</value></data>
   <data name="Settings_VisualizerRestored" xml:space="preserve"><value>Your visualizer choice is restored on the next launch.</value></data>
   <data name="Settings_Volume" xml:space="preserve"><value>Volume</value></data>
@@ -308,6 +311,10 @@
   <data name="Stage_ModeTwinWaveAutomation" xml:space="preserve"><value>Twin Wave visualizer mode</value></data>
   <data name="Stage_Open" xml:space="preserve"><value>Open Stage (F11)</value></data>
   <data name="Stage_OpenAutomation" xml:space="preserve"><value>Open or close fullscreen Stage</value></data>
+  <data name="Theme_MidnightLive" xml:space="preserve"><value>Midnight Live</value></data>
+  <data name="Theme_MonoFocus" xml:space="preserve"><value>Mono Focus</value></data>
+  <data name="Theme_NeonStage" xml:space="preserve"><value>Neon Stage</value></data>
+  <data name="Theme_SakuraDream" xml:space="preserve"><value>Sakura Dream</value></data>
   <data name="TrackCount_Favorites" xml:space="preserve"><value>{0} favorite song(s)</value></data>
   <data name="TrackCount_FilteredSongs" xml:space="preserve"><value>{0} filtered song(s)</value></data>
   <data name="TrackCount_Library" xml:space="preserve"><value>{0} song(s) in your library</value></data>

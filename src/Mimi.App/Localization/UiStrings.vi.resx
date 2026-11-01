@@ -226,6 +226,7 @@
   <data name="Section_YourLibrary" xml:space="preserve"><value>Thư viện của bạn</value></data>
   <data name="Settings_AddWatchedFolder" xml:space="preserve"><value>Thêm thư mục theo dõi…</value></data>
   <data name="Settings_AddWatchedFolderAutomation" xml:space="preserve"><value>Thêm thư mục nhạc được theo dõi</value></data>
+  <data name="Settings_AppearanceSection" xml:space="preserve"><value>GIAO DIỆN &amp; NGÔN NGỮ</value></data>
   <data name="Settings_AudioOutput" xml:space="preserve"><value>Đầu ra âm thanh</value></data>
   <data name="Settings_AudioOutputDescription" xml:space="preserve"><value>Mimi dùng đầu ra mặc định của Windows qua WASAPI shared (WaveOut chỉ là phương án dự phòng). Nếu thiết bị đó thay đổi hoặc biến mất trong khi phát, Mimi sẽ tạm dừng thay vì chuyển âm thanh bất ngờ; nhấn Phát để tiếp tục trên đầu ra mới.</value></data>
   <data name="Settings_AutoSaveNote" xml:space="preserve"><value>Thay đổi được lưu tự động vào settings.json.</value></data>
@@ -275,6 +276,8 @@
   <data name="Settings_StageEngineSection" xml:space="preserve"><value>STAGE ENGINE</value></data>
   <data name="Settings_StartupLibrarySection" xml:space="preserve"><value>KHỞI ĐỘNG &amp; THƯ VIỆN</value></data>
   <data name="Settings_StillLoading" xml:space="preserve"><value>Mimi vẫn đang tải thư viện của bạn. Hãy thử lại sau ít giây.</value></data>
+  <data name="Settings_Theme" xml:space="preserve"><value>Chủ đề giao diện</value></data>
+  <data name="Settings_ThemeDescription" xml:space="preserve"><value>Thay đổi áp dụng ngay và sẽ được khôi phục vào lần mở Mimi tiếp theo.</value></data>
   <data name="Settings_Title" xml:space="preserve"><value>Cài đặt</value></data>
   <data name="Settings_VisualizerRestored" xml:space="preserve"><value>Lựa chọn visualizer sẽ được khôi phục ở lần mở tiếp theo.</value></data>
   <data name="Settings_Volume" xml:space="preserve"><value>Âm lượng</value></data>
@@ -308,6 +311,10 @@
   <data name="Stage_ModeTwinWaveAutomation" xml:space="preserve"><value>Chế độ visualizer Sóng đôi</value></data>
   <data name="Stage_Open" xml:space="preserve"><value>Mở Stage (F11)</value></data>
   <data name="Stage_OpenAutomation" xml:space="preserve"><value>Mở hoặc đóng Stage toàn màn hình</value></data>
+  <data name="Theme_MidnightLive" xml:space="preserve"><value>Live nửa đêm</value></data>
+  <data name="Theme_MonoFocus" xml:space="preserve"><value>Tập trung đơn sắc</value></data>
+  <data name="Theme_NeonStage" xml:space="preserve"><value>Sân khấu Neon</value></data>
+  <data name="Theme_SakuraDream" xml:space="preserve"><value>Giấc mơ Sakura</value></data>
   <data name="TrackCount_Favorites" xml:space="preserve"><value>{0} bài yêu thích</value></data>
   <data name="TrackCount_FilteredSongs" xml:space="preserve"><value>{0} bài sau lọc</value></data>
   <data name="TrackCount_Library" xml:space="preserve"><value>{0} bài trong thư viện của bạn</value></data>

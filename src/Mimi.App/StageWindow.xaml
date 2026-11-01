@@ -9,19 +9,16 @@
         WindowStartupLocation="CenterOwner"
         ShowInTaskbar="False"
         Topmost="True"
-        Background="{StaticResource BgBrush}"
-        Foreground="#F3F7FF"
+        Background="{StaticResource AppBackgroundBrush}"
+        Foreground="{StaticResource TextPrimaryBrush}"
         FontFamily="{StaticResource MimiUiFontFamily}">
-    <Grid>
-        <Grid.Background>
-            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                <GradientStop Color="#0B202B" Offset="0"/>
-                <GradientStop Color="#171A2A" Offset="0.55"/>
-                <GradientStop Color="#0B101B" Offset="1"/>
-            </LinearGradientBrush>
-        </Grid.Background>
+    <Grid Background="{StaticResource StageGradientBrush}">
 
         <controls:VisualizerView x:Name="StageVisualizer"
+                                  PrimaryColor="{DynamicResource AccentColor}"
+                                  SecondaryColor="{DynamicResource AccentSecondaryColor}"
+                                  PeakColor="{DynamicResource AccentHotColor}"
+                                  BaselineColor="{DynamicResource TextMutedColor}"
                                   Margin="36"
                                   IsHitTestVisible="False"/>
 
@@ -30,7 +27,7 @@
                 MaxWidth="760"
                 Padding="28,16"
                 CornerRadius="18"
-                Background="#590B101B"
+                Background="{StaticResource StageOverlayBrush}"
                 IsHitTestVisible="False">
             <StackPanel>
                 <TextBlock x:Name="StageTitle"
@@ -42,7 +39,7 @@
                 <TextBlock x:Name="StageSubtitle"
                            Text="{Binding Loc[NowPlaying_NextFavoriteWaiting]}"
                            Margin="0,8,0,0"
-                           Foreground="#B7C9DB"
+                           Foreground="{StaticResource TextSecondaryBrush}"
                            FontSize="15"
                            TextAlignment="Center"
                            TextTrimming="CharacterEllipsis"/>
@@ -54,14 +51,14 @@
                    HorizontalAlignment="Right"
                    VerticalAlignment="Top"
                    Margin="0,24,28,0"
-                   Foreground="#8296AE"
+                   Foreground="{StaticResource TextFaintBrush}"
                    FontSize="12"
                    IsHitTestVisible="False"/>
         <TextBlock Text="{Binding Loc[Stage_Hint]}"
                    HorizontalAlignment="Center"
                    VerticalAlignment="Bottom"
                    Margin="0,0,0,24"
-                   Foreground="#8296AE"
+                   Foreground="{StaticResource TextFaintBrush}"
                    FontSize="12"
                    IsHitTestVisible="False"/>
     </Grid>

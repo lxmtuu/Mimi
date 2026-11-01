@@ -4,8 +4,8 @@
         xmlns:controls="clr-namespace:Mimi.Controls"
         xmlns:behaviors="clr-namespace:Mimi.Behaviors"
         Title="Mimi" Height="820" Width="1320" MinHeight="620" MinWidth="960"
-        WindowStartupLocation="CenterScreen" Background="{StaticResource BgBrush}"
-        Foreground="#F3F7FF"
+        WindowStartupLocation="CenterScreen" Background="{StaticResource AppBackgroundBrush}"
+        Foreground="{StaticResource TextPrimaryBrush}"
         FontFamily="{StaticResource MimiUiFontFamily}"
         behaviors:WindowPlacementBehavior.Placement="{Binding WindowPlacement, Mode=TwoWay}"
         behaviors:WindowPlacementBehavior.IsEnabled="{Binding RestoreWindowPlacement}">
@@ -25,22 +25,22 @@
         <StreamGeometry x:Key="PauseIconGeometry">M7,5 H10.5 V19 H7 Z M13.5,5 H17 V19 H13.5 Z</StreamGeometry>
         <DrawingImage x:Key="TaskbarPreviousImage">
             <DrawingImage.Drawing>
-                <GeometryDrawing Brush="#F3F7FF" Geometry="{StaticResource PreviousIconGeometry}"/>
+                <GeometryDrawing Brush="{StaticResource TextPrimaryBrush}" Geometry="{StaticResource PreviousIconGeometry}"/>
             </DrawingImage.Drawing>
         </DrawingImage>
         <DrawingImage x:Key="TaskbarPlayImage">
             <DrawingImage.Drawing>
-                <GeometryDrawing Brush="#F3F7FF" Geometry="{StaticResource PlayIconGeometry}"/>
+                <GeometryDrawing Brush="{StaticResource TextPrimaryBrush}" Geometry="{StaticResource PlayIconGeometry}"/>
             </DrawingImage.Drawing>
         </DrawingImage>
         <DrawingImage x:Key="TaskbarPauseImage">
             <DrawingImage.Drawing>
-                <GeometryDrawing Brush="#F3F7FF" Geometry="{StaticResource PauseIconGeometry}"/>
+                <GeometryDrawing Brush="{StaticResource TextPrimaryBrush}" Geometry="{StaticResource PauseIconGeometry}"/>
             </DrawingImage.Drawing>
         </DrawingImage>
         <DrawingImage x:Key="TaskbarNextImage">
             <DrawingImage.Drawing>
-                <GeometryDrawing Brush="#F3F7FF" Geometry="{StaticResource NextIconGeometry}"/>
+                <GeometryDrawing Brush="{StaticResource TextPrimaryBrush}" Geometry="{StaticResource NextIconGeometry}"/>
             </DrawingImage.Drawing>
         </DrawingImage>
         <StreamGeometry x:Key="ExpandIconGeometry">M4,9 V4 H9 V6.5 H6.5 V9 Z M15,4 H20 V9 H17.5 V6.5 H15 Z M4,15 H6.5 V17.5 H9 V20 H4 Z M17.5,15 H20 V20 H15 V17.5 H17.5 Z</StreamGeometry>
@@ -57,14 +57,14 @@
             <Setter Property="Padding" Value="6,6"/>
             <Setter Property="Margin" Value="2"/>
             <Setter Property="FontSize" Value="11"/>
-            <Setter Property="Background" Value="#203044"/>
-            <Setter Property="Foreground" Value="#F3F7FF"/>
+            <Setter Property="Background" Value="{StaticResource ControlBackgroundBrush}"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
         </Style>
         <Style x:Key="SpectrumModeButtonStyle" TargetType="{x:Type Button}" BasedOn="{StaticResource ModeButtonBaseStyle}">
             <Style.Triggers>
                 <DataTrigger Binding="{Binding VisualizerMode}" Value="{x:Static controls:VisualizerDisplayMode.NeonSpectrum}">
                     <Setter Property="Background" Value="{StaticResource AccentBrush}"/>
-                    <Setter Property="Foreground" Value="#07151B"/>
+                    <Setter Property="Foreground" Value="{StaticResource OnAccentBrush}"/>
                     <Setter Property="FontWeight" Value="Bold"/>
                 </DataTrigger>
             </Style.Triggers>
@@ -73,7 +73,7 @@
             <Style.Triggers>
                 <DataTrigger Binding="{Binding VisualizerMode}" Value="{x:Static controls:VisualizerDisplayMode.TwinWave}">
                     <Setter Property="Background" Value="{StaticResource AccentBrush}"/>
-                    <Setter Property="Foreground" Value="#07151B"/>
+                    <Setter Property="Foreground" Value="{StaticResource OnAccentBrush}"/>
                     <Setter Property="FontWeight" Value="Bold"/>
                 </DataTrigger>
             </Style.Triggers>
@@ -82,7 +82,7 @@
             <Style.Triggers>
                 <DataTrigger Binding="{Binding VisualizerMode}" Value="{x:Static controls:VisualizerDisplayMode.HaloCircle}">
                     <Setter Property="Background" Value="{StaticResource AccentBrush}"/>
-                    <Setter Property="Foreground" Value="#07151B"/>
+                    <Setter Property="Foreground" Value="{StaticResource OnAccentBrush}"/>
                     <Setter Property="FontWeight" Value="Bold"/>
                 </DataTrigger>
             </Style.Triggers>
@@ -92,17 +92,17 @@
             <Setter Property="Padding" Value="6,2"/>
             <Setter Property="Margin" Value="0"/>
             <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="#9FB2C8"/>
+            <Setter Property="Foreground" Value="{StaticResource TextMutedBrush}"/>
             <Style.Triggers>
                 <DataTrigger Binding="{Binding IsFavorite}" Value="True">
-                    <Setter Property="Foreground" Value="{StaticResource PinkBrush}"/>
+                    <Setter Property="Foreground" Value="{StaticResource AccentSecondaryBrush}"/>
                 </DataTrigger>
             </Style.Triggers>
         </Style>
 
         <Style x:Key="ColumnHeaderButtonStyle" TargetType="{x:Type Button}" BasedOn="{StaticResource {x:Type Button}}">
             <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="#47E6D0"/>
+            <Setter Property="Foreground" Value="{StaticResource AccentBrush}"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Padding" Value="2"/>
             <Setter Property="Margin" Value="0"/>
@@ -155,15 +155,15 @@
         <DockPanel Grid.Row="0" Margin="6,2,6,18">
             <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
                 <Border Width="42" Height="42" CornerRadius="14" Background="{StaticResource AccentBrush}">
-                    <TextBlock Text="M" Foreground="#07151B" FontSize="25" FontWeight="Bold"
+                    <TextBlock Text="M" Foreground="{StaticResource OnAccentBrush}" FontSize="25" FontWeight="Bold"
                                HorizontalAlignment="Center" VerticalAlignment="Center"/>
                 </Border>
                 <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
                     <TextBlock Text="MIMI" FontSize="18" FontWeight="Bold"/>
-                    <TextBlock Text="{Binding Loc[App_MusicUniverse]}" FontSize="10" Foreground="#9FB2C8"/>
+                    <TextBlock Text="{Binding Loc[App_MusicUniverse]}" FontSize="10" Foreground="{StaticResource TextMutedBrush}"/>
                 </StackPanel>
             </StackPanel>
-            <TextBlock Text="{Binding Loc[App_Tagline]}" Foreground="#9FB2C8"
+            <TextBlock Text="{Binding Loc[App_Tagline]}" Foreground="{StaticResource TextMutedBrush}"
                        VerticalAlignment="Center" HorizontalAlignment="Right"/>
         </DockPanel>
 
@@ -174,12 +174,12 @@
                 <ColumnDefinition Width="270" MinWidth="250"/>
             </Grid.ColumnDefinitions>
 
-            <Border Grid.Column="0" Background="{StaticResource PanelBrush}" CornerRadius="18" Padding="12" Margin="0,0,14,0">
+            <Border Grid.Column="0" Background="{StaticResource PanelBackgroundBrush}" CornerRadius="18" Padding="12" Margin="0,0,14,0">
                 <DockPanel>
                     <StackPanel DockPanel.Dock="Top">
-                        <TextBlock Text="{Binding Loc[Nav_YourSpace]}" Foreground="#9FB2C8" FontSize="11" Margin="8,10,0,14"/>
+                        <TextBlock Text="{Binding Loc[Nav_YourSpace]}" Foreground="{StaticResource TextMutedBrush}" FontSize="11" Margin="8,10,0,14"/>
                         <Button Command="{Binding ShowHomeCommand}" HorizontalContentAlignment="Left"
-                                Background="#203A48" AutomationProperties.Name="{Binding Loc[Nav_Home]}">
+                                Background="{StaticResource SelectedBackgroundBrush}" AutomationProperties.Name="{Binding Loc[Nav_Home]}">
                             <StackPanel Orientation="Horizontal">
                                 <Path Data="{StaticResource HomeIconGeometry}" Style="{StaticResource IconPathStyle}"/>
                                 <TextBlock Text="{Binding Loc[Nav_Home]}" Margin="10,0,0,0" VerticalAlignment="Center"/>
@@ -229,7 +229,7 @@
                         </Button>
 
                         <DockPanel Margin="8,26,2,8">
-                            <TextBlock Text="{Binding Loc[Nav_Playlists]}" Foreground="#9FB2C8" FontSize="11"
+                            <TextBlock Text="{Binding Loc[Nav_Playlists]}" Foreground="{StaticResource TextMutedBrush}" FontSize="11"
                                        VerticalAlignment="Center"/>
                             <Button Command="{Binding CreatePlaylistCommand}" DockPanel.Dock="Right"
                                     Padding="8,3" Margin="8,0,0,0" ToolTip="{Binding Loc[Playlist_New]}"
@@ -251,10 +251,10 @@
                                     AutomationProperties.Name="{Binding Loc[Playlist_DeleteSelected]}"/>
                         </UniformGrid>
                     </StackPanel>
-                    <Border DockPanel.Dock="Bottom" Background="#172638" CornerRadius="12" Padding="12" Margin="2,14,2,2">
+                    <Border DockPanel.Dock="Bottom" Background="{StaticResource RaisedBackgroundBrush}" CornerRadius="12" Padding="12" Margin="2,14,2,2">
                         <StackPanel>
                             <TextBlock Text="MIMI BETA" Foreground="{StaticResource AccentBrush}" FontWeight="Bold"/>
-                            <TextBlock Text="{Binding Loc[Nav_BetaDescription]}" TextWrapping="Wrap" Foreground="#AEC2D6" FontSize="11" Margin="0,6,0,0"/>
+                            <TextBlock Text="{Binding Loc[Nav_BetaDescription]}" TextWrapping="Wrap" Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" Margin="0,6,0,0"/>
                         </StackPanel>
                     </Border>
 
@@ -262,7 +262,7 @@
                         <ListBox ItemsSource="{Binding Playlists}"
                                  SelectedItem="{Binding SelectedPlaylist, Mode=TwoWay}"
                                  Background="Transparent" BorderThickness="0"
-                                 Foreground="#EAF2FC"
+                                 Foreground="{StaticResource TextStrongBrush}"
                                  ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                                  AutomationProperties.Name="{Binding Loc[Playlist_List]}">
                             <ListBox.ItemTemplate>
@@ -279,12 +279,12 @@
                                             </Grid.ColumnDefinitions>
                                             <Path Data="{StaticResource PlaylistIconGeometry}"
                                                   Style="{StaticResource IconPathStyle}"
-                                                  Fill="#B7C9DB" VerticalAlignment="Center"/>
+                                                  Fill="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center"/>
                                             <StackPanel Grid.Column="1" Margin="8,0,0,0" MinWidth="0">
                                                 <TextBlock Text="{Binding Name}" FontWeight="SemiBold"
                                                            TextTrimming="CharacterEllipsis"/>
                                                 <TextBlock Text="{Binding CountLabel}" FontSize="10"
-                                                           Foreground="#9FB2C8"/>
+                                                           Foreground="{StaticResource TextMutedBrush}"/>
                                             </StackPanel>
                                         </Grid>
                                         <Button Grid.Column="1" Padding="7,4" Margin="6,0,0,0"
@@ -303,19 +303,19 @@
                                     <Setter Property="Padding" Value="5"/>
                                     <Setter Property="Margin" Value="1"/>
                                     <Setter Property="Background" Value="Transparent"/>
-                                    <Setter Property="Foreground" Value="#EAF2FC"/>
+                                    <Setter Property="Foreground" Value="{StaticResource TextStrongBrush}"/>
                                     <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
                                     <Setter Property="FocusVisualStyle" Value="{StaticResource MimiFocusVisualStyle}"/>
                                     <Style.Triggers>
                                         <Trigger Property="IsSelected" Value="True">
-                                            <Setter Property="Background" Value="#203A48"/>
+                                            <Setter Property="Background" Value="{StaticResource SelectedBackgroundBrush}"/>
                                         </Trigger>
                                     </Style.Triggers>
                                 </Style>
                             </ListBox.ItemContainerStyle>
                         </ListBox>
                         <TextBlock Text="{Binding Loc[Playlist_Empty]}"
-                                   Foreground="#9FB2C8" FontSize="11" TextWrapping="Wrap"
+                                   Foreground="{StaticResource TextMutedBrush}" FontSize="11" TextWrapping="Wrap"
                                    Margin="10,8" IsHitTestVisible="False">
                             <TextBlock.Style>
                                 <Style TargetType="{x:Type TextBlock}">
@@ -340,22 +340,16 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
-                <Border Grid.Row="0" CornerRadius="20" Padding="24" Margin="0,0,0,16" ClipToBounds="True">
-                    <Border.Background>
-                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                            <GradientStop Color="#183E4D" Offset="0"/>
-                            <GradientStop Color="#252542" Offset="0.55"/>
-                            <GradientStop Color="#171A2A" Offset="1"/>
-                        </LinearGradientBrush>
-                    </Border.Background>
+                <Border Grid.Row="0" CornerRadius="20" Padding="24" Margin="0,0,0,16" ClipToBounds="True"
+                        Background="{StaticResource HeroGradientBrush}">
                     <Grid>
                         <StackPanel VerticalAlignment="Center" MaxWidth="360" HorizontalAlignment="Left">
                             <TextBlock Text="{Binding Loc[Home_Welcome]}" Foreground="{StaticResource AccentBrush}" FontSize="11"/>
                             <TextBlock Text="{Binding Loc[Home_HeroTitle]}" FontSize="30" FontWeight="Bold" Margin="0,12,0,8"/>
                             <TextBlock Text="{Binding Loc[Home_HeroDescription]}"
-                                       Foreground="#B7C9DB" TextWrapping="Wrap" FontSize="13" Margin="0,0,0,14"/>
+                                       Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" FontSize="13" Margin="0,0,0,14"/>
                             <Button Command="{Binding AddFilesCommand}" HorizontalAlignment="Left"
-                                    Background="{StaticResource AccentBrush}" Foreground="#07151B"
+                                    Background="{StaticResource AccentBrush}" Foreground="{StaticResource OnAccentBrush}"
                                     FontWeight="Bold" AutomationProperties.Name="{Binding Loc[Home_AddFirstSongs]}">
                                 <StackPanel Orientation="Horizontal">
                                     <Path Data="{StaticResource PlusIconGeometry}" Style="{StaticResource IconPathStyle}"/>
@@ -364,11 +358,11 @@
                             </Button>
                         </StackPanel>
                         <Canvas HorizontalAlignment="Right" Width="145" Margin="0,0,8,0" IsHitTestVisible="False">
-                            <Ellipse Width="130" Height="130" Stroke="#6547E6D0" StrokeThickness="1" Canvas.Left="7" Canvas.Top="8"/>
-                            <Ellipse Width="100" Height="100" Stroke="#8847E6D0" StrokeThickness="2" Canvas.Left="22" Canvas.Top="23"/>
-                            <Ellipse Width="68" Height="68" Fill="#2247E6D0" Stroke="#FF47E6D0" StrokeThickness="1.5" Canvas.Left="38" Canvas.Top="39"/>
+                            <Ellipse Width="130" Height="130" Stroke="{StaticResource AccentDecorMediumBrush}" StrokeThickness="1" Canvas.Left="7" Canvas.Top="8"/>
+                            <Ellipse Width="100" Height="100" Stroke="{StaticResource AccentDecorStrongBrush}" StrokeThickness="2" Canvas.Left="22" Canvas.Top="23"/>
+                            <Ellipse Width="68" Height="68" Fill="{StaticResource AccentDecorSoftBrush}" Stroke="{StaticResource AccentBrush}" StrokeThickness="1.5" Canvas.Left="38" Canvas.Top="39"/>
                             <TextBlock Text="♫" FontSize="38" Foreground="{StaticResource AccentBrush}" Canvas.Left="55" Canvas.Top="48"/>
-                            <Ellipse Width="8" Height="8" Fill="{StaticResource PinkBrush}" Canvas.Left="3" Canvas.Top="34"/>
+                            <Ellipse Width="8" Height="8" Fill="{StaticResource AccentSecondaryBrush}" Canvas.Left="3" Canvas.Top="34"/>
                             <Ellipse Width="6" Height="6" Fill="{StaticResource AccentBrush}" Canvas.Left="119" Canvas.Top="110"/>
                         </Canvas>
                     </Grid>
@@ -377,11 +371,11 @@
                 <DockPanel Grid.Row="1" Margin="2,0,2,12">
                     <StackPanel DockPanel.Dock="Left">
                         <TextBlock Text="{Binding SectionTitle}" FontSize="21" FontWeight="Bold"/>
-                        <TextBlock Text="{Binding TrackCountLabel}" Foreground="#9FB2C8" FontSize="12" Margin="0,4,0,0"/>
+                        <TextBlock Text="{Binding TrackCountLabel}" Foreground="{StaticResource TextMutedBrush}" FontSize="12" Margin="0,4,0,0"/>
                         <StackPanel Margin="0,8,16,0" Width="330"
                                     Visibility="{Binding IsScanning, Converter={StaticResource BooleanToVisibilityConverter}}">
                             <DockPanel LastChildFill="False">
-                                <TextBlock Text="{Binding ScanStatusLabel}" Foreground="#B7C7DA" FontSize="11"
+                                <TextBlock Text="{Binding ScanStatusLabel}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="11"
                                            TextTrimming="CharacterEllipsis" MaxWidth="250"/>
                                 <Button Content="{Binding Loc[Common_Cancel]}" Command="{Binding CancelScanCommand}" DockPanel.Dock="Right"
                                         Padding="8,3" Margin="8,0,0,0" FontSize="11"
@@ -390,7 +384,7 @@
                             <ProgressBar Minimum="0" Maximum="100" Height="5" Margin="0,6,0,0"
                                          Value="{Binding ScanProgressPercent, Mode=OneWay}"/>
                         </StackPanel>
-                        <TextBlock Text="{Binding SearchStatusLabel}" Foreground="#B7C7DA"
+                        <TextBlock Text="{Binding SearchStatusLabel}" Foreground="{StaticResource TextSecondaryBrush}"
                                    FontSize="11" MinHeight="15" Margin="0,5,16,0"
                                    AutomationProperties.LiveSetting="Polite"/>
                         <WrapPanel Margin="0,4,12,0"
@@ -409,54 +403,54 @@
                                     AutomationProperties.Name="{Binding Loc[Playlist_RemoveSelectedSong]}"/>
                         </WrapPanel>
                         <TextBlock Text="{Binding Loc[Playlist_DragRearrange]}"
-                                   Foreground="#94A9C2" FontSize="10"
+                                   Foreground="{StaticResource TextFaintBrush}" FontSize="10"
                                    Visibility="{Binding IsPlaylistReorderEnabled, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                     </StackPanel>
                     <TextBox x:Name="SearchTextBox"
                              Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
                              Width="190" MinWidth="140" Height="34" VerticalContentAlignment="Center"
-                             Background="#172638" Foreground="White" BorderThickness="0" Padding="10,0"
+                             Background="{StaticResource RaisedBackgroundBrush}" Foreground="{StaticResource TextPrimaryBrush}" BorderThickness="0" Padding="10,0"
                              ToolTip="{Binding Loc[Library_SearchSongs]}" AutomationProperties.Name="{Binding Loc[Library_SearchSongs]}"/>
                 </DockPanel>
 
                 <WrapPanel Grid.Row="2" Margin="2,0,2,10" VerticalAlignment="Center">
-                    <TextBlock Text="{Binding Loc[Library_Filters]}" Foreground="#9FB2C8" FontSize="11"
+                    <TextBlock Text="{Binding Loc[Library_Filters]}" Foreground="{StaticResource TextMutedBrush}" FontSize="11"
                                FontWeight="SemiBold" VerticalAlignment="Center"
                                Margin="0,0,8,4"/>
                     <ComboBox ItemsSource="{Binding ArtistFilterOptions}"
                               SelectedItem="{Binding SelectedArtistFilter, Mode=TwoWay}"
                               Width="132" Height="30" Margin="0,0,6,4" Padding="6,2"
-                              Background="#172638" Foreground="White" BorderThickness="0"
+                              Background="{StaticResource RaisedBackgroundBrush}" Foreground="{StaticResource TextPrimaryBrush}" BorderThickness="0"
                               ToolTip="{Binding Loc[Library_FilterByArtist]}"
                               AutomationProperties.Name="{Binding Loc[Library_FilterByArtist]}"/>
                     <ComboBox ItemsSource="{Binding AlbumFilterOptions}"
                               SelectedItem="{Binding SelectedAlbumFilter, Mode=TwoWay}"
                               Width="132" Height="30" Margin="0,0,6,4" Padding="6,2"
-                              Background="#172638" Foreground="White" BorderThickness="0"
+                              Background="{StaticResource RaisedBackgroundBrush}" Foreground="{StaticResource TextPrimaryBrush}" BorderThickness="0"
                               ToolTip="{Binding Loc[Library_FilterByAlbum]}"
                               AutomationProperties.Name="{Binding Loc[Library_FilterByAlbum]}"/>
                     <ComboBox ItemsSource="{Binding GenreFilterOptions}"
                               SelectedItem="{Binding SelectedGenreFilter, Mode=TwoWay}"
                               Width="118" Height="30" Margin="0,0,6,4" Padding="6,2"
-                              Background="#172638" Foreground="White" BorderThickness="0"
+                              Background="{StaticResource RaisedBackgroundBrush}" Foreground="{StaticResource TextPrimaryBrush}" BorderThickness="0"
                               ToolTip="{Binding Loc[Library_FilterByGenre]}"
                               AutomationProperties.Name="{Binding Loc[Library_FilterByGenre]}"/>
                     <ComboBox ItemsSource="{Binding FormatFilterOptions}"
                               SelectedItem="{Binding SelectedFormatFilter, Mode=TwoWay}"
                               Width="108" Height="30" Margin="0,0,6,4" Padding="6,2"
-                              Background="#172638" Foreground="White" BorderThickness="0"
+                              Background="{StaticResource RaisedBackgroundBrush}" Foreground="{StaticResource TextPrimaryBrush}" BorderThickness="0"
                               ToolTip="{Binding Loc[Library_FilterByFormat]}"
                               AutomationProperties.Name="{Binding Loc[Library_FilterByFormat]}"/>
                     <ComboBox ItemsSource="{Binding PlaybackStateFilterOptions}"
                               SelectedItem="{Binding SelectedPlaybackStateFilter, Mode=TwoWay}"
                               Width="112" Height="30" Margin="0,0,6,4" Padding="6,2"
-                              Background="#172638" Foreground="White" BorderThickness="0"
+                              Background="{StaticResource RaisedBackgroundBrush}" Foreground="{StaticResource TextPrimaryBrush}" BorderThickness="0"
                               ToolTip="{Binding Loc[Library_FilterByPlaybackState]}"
                               AutomationProperties.Name="{Binding Loc[Library_FilterByPlaybackState]}"/>
                     <Button Content="{Binding Loc[Common_Clear]}" Command="{Binding ClearLibraryFiltersCommand}"
                             Padding="9,5" Margin="0,0,10,4" FontSize="11"
                             AutomationProperties.Name="{Binding Loc[Library_ClearFiltersAutomation]}"/>
-                    <TextBlock Text="{Binding SelectedTracksCountLabel}" Foreground="#B7C9DB"
+                    <TextBlock Text="{Binding SelectedTracksCountLabel}" Foreground="{StaticResource TextSecondaryBrush}"
                                FontSize="11" VerticalAlignment="Center" Margin="2,0,6,4"
                                Visibility="{Binding HasSelectedTracks, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                     <Button Content="{Binding Loc[Library_PlayNext]}"
@@ -481,12 +475,12 @@
                             AutomationProperties.Name="{Binding Loc[Library_RemoveSelectedSongs]}"/>
                 </WrapPanel>
 
-                <Border Grid.Row="3" Background="{StaticResource PanelBrush}" CornerRadius="16" Padding="8">
+                <Border Grid.Row="3" Background="{StaticResource PanelBackgroundBrush}" CornerRadius="16" Padding="8">
                     <ListView x:Name="TrackList" ItemsSource="{Binding TracksView}"
                               SelectedItem="{Binding SelectedTrack, Mode=TwoWay}"
                               SelectionMode="Extended"
                               Background="Transparent" BorderThickness="0"
-                              Foreground="#EAF2FC" AutomationProperties.Name="{Binding Loc[Library_TrackList]}"
+                              Foreground="{StaticResource TextStrongBrush}" AutomationProperties.Name="{Binding Loc[Library_TrackList]}"
                               behaviors:SelectedItemsBehavior.SelectedItems="{Binding SelectedTracks}"
                               behaviors:PlaylistReorderBehavior.MoveCommand="{Binding MovePlaylistTrackCommand}"
                               behaviors:PlaylistReorderBehavior.IsReorderEnabled="{Binding IsPlaylistReorderEnabled}">
@@ -538,8 +532,8 @@
                         </ListView.ContextMenu>
                         <ListView.Resources>
                             <Style TargetType="{x:Type GridViewColumnHeader}">
-                                <Setter Property="Background" Value="#1A2A3D"/>
-                                <Setter Property="Foreground" Value="#47E6D0"/>
+                                <Setter Property="Background" Value="{StaticResource HeaderBackgroundBrush}"/>
+                                <Setter Property="Foreground" Value="{StaticResource AccentBrush}"/>
                                 <Setter Property="BorderThickness" Value="0"/>
                                 <Setter Property="Padding" Value="10,9"/>
                                 <Setter Property="FontWeight" Value="SemiBold"/>
@@ -639,7 +633,7 @@
                                 <GridViewColumn Header="" Width="36">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
-                                            <TextBlock Text="{Binding PlaybackStatus}" Foreground="#FFB020"
+                                            <TextBlock Text="{Binding PlaybackStatus}" Foreground="{StaticResource WarningBrush}"
                                                        ToolTip="{Binding DataContext.Loc[Library_FileCouldNotBePlayed], RelativeSource={RelativeSource AncestorType={x:Type ListView}}}"/>
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
@@ -651,7 +645,7 @@
                                 <Setter Property="Padding" Value="8"/>
                                 <Setter Property="Margin" Value="0,2"/>
                                 <Setter Property="Background" Value="Transparent"/>
-                                <Setter Property="Foreground" Value="#EAF2FC"/>
+                                <Setter Property="Foreground" Value="{StaticResource TextStrongBrush}"/>
                                 <Setter Property="FocusVisualStyle" Value="{StaticResource MimiFocusVisualStyle}"/>
                             </Style>
                         </ListView.ItemContainerStyle>
@@ -659,7 +653,7 @@
                 </Border>
             </Grid>
 
-            <Border Grid.Column="1" Background="{StaticResource PanelBrush}" CornerRadius="18"
+            <Border Grid.Column="1" Background="{StaticResource PanelBackgroundBrush}" CornerRadius="18"
                     Padding="20" Margin="0,0,14,0"
                     Visibility="{Binding IsSettingsOpen, Converter={StaticResource BooleanToVisibilityConverter}}">
                 <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
@@ -668,16 +662,16 @@
                             <StackPanel DockPanel.Dock="Left">
                                 <TextBlock Text="{Binding Loc[Settings_Title]}" FontSize="23" FontWeight="Bold"/>
                                 <TextBlock Text="{Binding Loc[Settings_AutoSaveNote]}"
-                                           Foreground="#9FB2C8" FontSize="12" Margin="0,5,0,0"/>
+                                           Foreground="{StaticResource TextMutedBrush}" FontSize="12" Margin="0,5,0,0"/>
                             </StackPanel>
                             <Button Command="{Binding CloseSettingsCommand}" DockPanel.Dock="Right"
                                     Content="✕" Padding="10,7" FontSize="14"
                                     AutomationProperties.Name="{Binding Loc[Settings_Close]}"/>
                         </DockPanel>
 
-                        <Border Background="#172638" CornerRadius="12" Padding="14" Margin="0,18,0,0">
+                        <Border Background="{StaticResource RaisedBackgroundBrush}" CornerRadius="12" Padding="14" Margin="0,18,0,0">
                             <StackPanel>
-                                <TextBlock Text="{Binding Loc[Settings_LanguageSection]}" Foreground="{StaticResource AccentBrush}"
+                                <TextBlock Text="{Binding Loc[Settings_AppearanceSection]}" Foreground="{StaticResource AccentBrush}"
                                            FontSize="11" FontWeight="Bold"/>
                                 <TextBlock Text="{Binding Loc[Settings_Language]}" Margin="0,14,0,6"/>
                                 <ComboBox SelectedValue="{Binding UiLanguage, Mode=TwoWay}"
@@ -688,17 +682,33 @@
                                     <ComboBoxItem Tag="vi-VN" Content="Tiếng Việt"/>
                                 </ComboBox>
                                 <TextBlock Text="{Binding Loc[Settings_LanguageDescription]}"
-                                           Foreground="#9FB2C8" FontSize="11" TextWrapping="Wrap" Margin="0,8,0,0"/>
+                                           Foreground="{StaticResource TextMutedBrush}" FontSize="11" TextWrapping="Wrap" Margin="0,8,0,0"/>
+                                <TextBlock Text="{Binding Loc[Settings_Theme]}" Margin="0,18,0,6"/>
+                                <ComboBox SelectedValue="{Binding UiTheme, Mode=TwoWay}"
+                                          SelectedValuePath="Tag"
+                                          AutomationProperties.Name="{Binding Loc[Settings_Theme]}">
+                                    <ComboBoxItem Tag="neon-stage" Content="{Binding DataContext.Loc[Theme_NeonStage], RelativeSource={RelativeSource AncestorType={x:Type ComboBox}}}"/>
+                                    <ComboBoxItem Tag="sakura-dream" Content="{Binding DataContext.Loc[Theme_SakuraDream], RelativeSource={RelativeSource AncestorType={x:Type ComboBox}}}"/>
+                                    <ComboBoxItem Tag="midnight-live" Content="{Binding DataContext.Loc[Theme_MidnightLive], RelativeSource={RelativeSource AncestorType={x:Type ComboBox}}}"/>
+                                    <ComboBoxItem Tag="mono-focus" Content="{Binding DataContext.Loc[Theme_MonoFocus], RelativeSource={RelativeSource AncestorType={x:Type ComboBox}}}"/>
+                                </ComboBox>
+                                <StackPanel Orientation="Horizontal" Margin="0,10,0,0" IsHitTestVisible="False">
+                                    <Ellipse Width="12" Height="12" Fill="{StaticResource AccentBrush}"/>
+                                    <Ellipse Width="12" Height="12" Fill="{StaticResource AccentSecondaryBrush}" Margin="6,0,0,0"/>
+                                    <Ellipse Width="12" Height="12" Fill="{StaticResource AccentHotBrush}" Margin="6,0,0,0"/>
+                                </StackPanel>
+                                <TextBlock Text="{Binding Loc[Settings_ThemeDescription]}"
+                                           Foreground="{StaticResource TextMutedBrush}" FontSize="11" TextWrapping="Wrap" Margin="0,8,0,0"/>
                             </StackPanel>
                         </Border>
 
-                        <Border Background="#172638" CornerRadius="12" Padding="14" Margin="0,14,0,0">
+                        <Border Background="{StaticResource RaisedBackgroundBrush}" CornerRadius="12" Padding="14" Margin="0,14,0,0">
                             <StackPanel>
                                 <TextBlock Text="{Binding Loc[Settings_PlaybackSessionSection]}" Foreground="{StaticResource AccentBrush}"
                                            FontSize="11" FontWeight="Bold"/>
                                 <DockPanel Margin="0,14,0,4">
                                     <TextBlock Text="{Binding Loc[Settings_Volume]}" DockPanel.Dock="Left"/>
-                                    <TextBlock Text="{Binding EffectiveVolumePercentLabel}" Foreground="#9FB2C8"
+                                    <TextBlock Text="{Binding EffectiveVolumePercentLabel}" Foreground="{StaticResource TextMutedBrush}"
                                                DockPanel.Dock="Right"/>
                                 </DockPanel>
                                 <Slider Minimum="0" Maximum="1"
@@ -708,27 +718,27 @@
                                           Content="{Binding Loc[Settings_RestorePreviousSession]}"
                                           AutomationProperties.Name="{Binding Loc[Settings_RestorePlaybackSessionAutomation]}"/>
                                 <TextBlock Text="{Binding Loc[Settings_RestoreSessionDescription]}"
-                                           Foreground="#9FB2C8" FontSize="11" TextWrapping="Wrap" Margin="24,0,0,4"/>
+                                           Foreground="{StaticResource TextMutedBrush}" FontSize="11" TextWrapping="Wrap" Margin="24,0,0,4"/>
                                 <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                                    <TextBlock Text="{Binding Loc[Settings_CurrentSong]}" Foreground="#9FB2C8" FontSize="11"/>
+                                    <TextBlock Text="{Binding Loc[Settings_CurrentSong]}" Foreground="{StaticResource TextMutedBrush}" FontSize="11"/>
                                     <TextBlock Text="{Binding NowPlayingTitle}" FontSize="11" FontWeight="SemiBold"
                                                TextTrimming="CharacterEllipsis" MaxWidth="220"/>
-                                    <TextBlock Text=" · " Foreground="#9FB2C8" FontSize="11"/>
+                                    <TextBlock Text=" · " Foreground="{StaticResource TextMutedBrush}" FontSize="11"/>
                                     <TextBlock Text="{Binding CurrentTimeLabel}" FontSize="11"/>
-                                    <TextBlock Text=" / " Foreground="#9FB2C8" FontSize="11"/>
+                                    <TextBlock Text=" / " Foreground="{StaticResource TextMutedBrush}" FontSize="11"/>
                                     <TextBlock Text="{Binding DurationLabel}" FontSize="11"/>
                                 </StackPanel>
-                                <TextBlock Text="{Binding Loc[Settings_AudioOutput]}" Foreground="#9FB2C8" FontSize="10"
+                                <TextBlock Text="{Binding Loc[Settings_AudioOutput]}" Foreground="{StaticResource TextMutedBrush}" FontSize="10"
                                            Margin="0,12,0,2"/>
                                 <TextBlock Text="{Binding AudioOutputLabel}"
                                            ToolTip="{Binding AudioOutputLabel}"
                                            FontSize="11" FontWeight="SemiBold" TextWrapping="Wrap"/>
                                 <TextBlock Text="{Binding Loc[Settings_AudioOutputDescription]}"
-                                           Foreground="#9FB2C8" FontSize="11" TextWrapping="Wrap" Margin="0,4,0,2"/>
+                                           Foreground="{StaticResource TextMutedBrush}" FontSize="11" TextWrapping="Wrap" Margin="0,4,0,2"/>
                             </StackPanel>
                         </Border>
 
-                        <Border Background="#172638" CornerRadius="12" Padding="14" Margin="0,14,0,0">
+                        <Border Background="{StaticResource RaisedBackgroundBrush}" CornerRadius="12" Padding="14" Margin="0,14,0,0">
                             <StackPanel>
                                 <TextBlock Text="{Binding Loc[Settings_KeyboardShortcutsSection]}" Foreground="{StaticResource AccentBrush}"
                                            FontSize="11" FontWeight="Bold"/>
@@ -750,32 +760,32 @@
                                         <RowDefinition Height="Auto"/>
                                     </Grid.RowDefinitions>
                                     <TextBlock Grid.Row="0" Grid.Column="0" Text="Space" FontWeight="SemiBold" Margin="0,0,10,5"/>
-                                    <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Loc[Shortcut_PlayPause]}" Foreground="#C7D6E7" Margin="0,0,0,5"/>
+                                    <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Loc[Shortcut_PlayPause]}" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,5"/>
                                     <TextBlock Grid.Row="1" Grid.Column="0" Text="Ctrl + ← / →" FontWeight="SemiBold" Margin="0,0,10,5"/>
-                                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Loc[Shortcut_PreviousNextQueue]}" Foreground="#C7D6E7" Margin="0,0,0,5"/>
+                                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Loc[Shortcut_PreviousNextQueue]}" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,5"/>
                                     <TextBlock Grid.Row="2" Grid.Column="0" Text="← / →" FontWeight="SemiBold" Margin="0,0,10,5"/>
-                                    <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Loc[Shortcut_Seek5Seconds]}" Foreground="#C7D6E7" Margin="0,0,0,5"/>
+                                    <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Loc[Shortcut_Seek5Seconds]}" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,5"/>
                                     <TextBlock Grid.Row="3" Grid.Column="0" Text="↑ / ↓" FontWeight="SemiBold" Margin="0,0,10,5"/>
-                                    <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding Loc[Shortcut_Volume5Percent]}" Foreground="#C7D6E7" Margin="0,0,0,5"/>
+                                    <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding Loc[Shortcut_Volume5Percent]}" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,5"/>
                                     <TextBlock Grid.Row="4" Grid.Column="0" Text="{Binding Loc[Shortcut_MediaKeys]}" FontWeight="SemiBold" Margin="0,0,10,5"/>
-                                    <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding Loc[Shortcut_MediaKeysDescription]}" Foreground="#C7D6E7" TextWrapping="Wrap" Margin="0,0,0,5"/>
+                                    <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding Loc[Shortcut_MediaKeysDescription]}" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" Margin="0,0,0,5"/>
                                     <TextBlock Grid.Row="5" Grid.Column="0" Text="Ctrl + F" FontWeight="SemiBold" Margin="0,0,10,5"/>
-                                    <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding Loc[Shortcut_FocusSearch]}" Foreground="#C7D6E7" Margin="0,0,0,5"/>
+                                    <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding Loc[Shortcut_FocusSearch]}" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,5"/>
                                     <TextBlock Grid.Row="6" Grid.Column="0" Text="F11" FontWeight="SemiBold" Margin="0,0,10,5"/>
-                                    <TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding Loc[Shortcut_Stage]}" Foreground="#C7D6E7" Margin="0,0,0,5"/>
+                                    <TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding Loc[Shortcut_Stage]}" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,5"/>
                                     <TextBlock Grid.Row="7" Grid.Column="0" Text="Esc" FontWeight="SemiBold" Margin="0,0,10,5"/>
-                                    <TextBlock Grid.Row="7" Grid.Column="1" Text="{Binding Loc[Shortcut_CloseStageOrSettings]}" Foreground="#C7D6E7" Margin="0,0,0,5"/>
+                                    <TextBlock Grid.Row="7" Grid.Column="1" Text="{Binding Loc[Shortcut_CloseStageOrSettings]}" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,5"/>
                                     <TextBlock Grid.Row="8" Grid.Column="0" Text="{Binding Loc[Shortcut_StageModesKey]}" FontWeight="SemiBold" Margin="0,0,10,5"/>
-                                    <TextBlock Grid.Row="8" Grid.Column="1" Text="{Binding Loc[Shortcut_StageModes]}" Foreground="#C7D6E7" TextWrapping="Wrap" Margin="0,0,0,5"/>
+                                    <TextBlock Grid.Row="8" Grid.Column="1" Text="{Binding Loc[Shortcut_StageModes]}" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" Margin="0,0,0,5"/>
                                     <TextBlock Grid.Row="9" Grid.Column="0" Text="{Binding Loc[Shortcut_DeleteKey]}" FontWeight="SemiBold" Margin="0,0,10,0"/>
-                                    <TextBlock Grid.Row="9" Grid.Column="1" Text="{Binding Loc[Shortcut_DeleteDescription]}" Foreground="#C7D6E7" TextWrapping="Wrap"/>
+                                    <TextBlock Grid.Row="9" Grid.Column="1" Text="{Binding Loc[Shortcut_DeleteDescription]}" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap"/>
                                 </Grid>
                                 <TextBlock Text="{Binding Loc[Shortcut_Note]}"
-                                           Foreground="#9FB2C8" FontSize="11" TextWrapping="Wrap" Margin="0,10,0,0"/>
+                                           Foreground="{StaticResource TextMutedBrush}" FontSize="11" TextWrapping="Wrap" Margin="0,10,0,0"/>
                             </StackPanel>
                         </Border>
 
-                        <Border Background="#172638" CornerRadius="12" Padding="14" Margin="0,14,0,0">
+                        <Border Background="{StaticResource RaisedBackgroundBrush}" CornerRadius="12" Padding="14" Margin="0,14,0,0">
                             <StackPanel>
                                 <TextBlock Text="{Binding Loc[Settings_StartupLibrarySection]}" Foreground="{StaticResource AccentBrush}"
                                            FontSize="11" FontWeight="Bold"/>
@@ -783,29 +793,29 @@
                                           Content="{Binding Loc[Settings_RestoreLibraryView]}"
                                           AutomationProperties.Name="{Binding Loc[Settings_RestoreLibraryView]}"/>
                                 <TextBlock Text="{Binding Loc[Settings_RestoreLibraryViewDescription]}"
-                                           Foreground="#9FB2C8" FontSize="11" TextWrapping="Wrap" Margin="24,0,0,2"/>
+                                           Foreground="{StaticResource TextMutedBrush}" FontSize="11" TextWrapping="Wrap" Margin="24,0,0,2"/>
                                 <CheckBox IsChecked="{Binding RestoreWindowPlacement, Mode=TwoWay}"
                                           Content="{Binding Loc[Settings_RememberWindow]}"
                                           AutomationProperties.Name="{Binding Loc[Settings_RememberWindow]}"/>
                                 <TextBlock Text="{Binding Loc[Settings_RememberWindowDescription]}"
-                                           Foreground="#9FB2C8" FontSize="11" TextWrapping="Wrap" Margin="24,0,0,2"/>
+                                           Foreground="{StaticResource TextMutedBrush}" FontSize="11" TextWrapping="Wrap" Margin="24,0,0,2"/>
                                 <CheckBox IsChecked="{Binding AutoUpgradeLegacyCoverArt, Mode=TwoWay}"
                                           Content="{Binding Loc[Settings_OptimizeCoverCache]}"
                                           AutomationProperties.Name="{Binding Loc[Settings_OptimizeCoverCache]}"/>
                                 <TextBlock Text="{Binding Loc[Settings_OptimizeCoverCacheDescription]}"
-                                           Foreground="#9FB2C8" FontSize="11" TextWrapping="Wrap" Margin="24,0,0,2"/>
-                                <Border Height="1" Background="#24344A" Margin="0,12,0,4"/>
+                                           Foreground="{StaticResource TextMutedBrush}" FontSize="11" TextWrapping="Wrap" Margin="24,0,0,2"/>
+                                <Border Height="1" Background="{StaticResource DividerBrush}" Margin="0,12,0,4"/>
                                 <TextBlock Text="{Binding Loc[Settings_WatchedFoldersSection]}" Foreground="{StaticResource AccentBrush}"
                                            FontSize="10" FontWeight="Bold" Margin="0,4,0,0"/>
                                 <CheckBox IsChecked="{Binding WatchLibraryFolders, Mode=TwoWay}"
                                           Content="{Binding Loc[Settings_WatchFolders]}"
                                           AutomationProperties.Name="{Binding Loc[Settings_WatchFolders]}"/>
                                 <TextBlock Text="{Binding Loc[Settings_WatchFoldersDescription]}"
-                                           Foreground="#9FB2C8" FontSize="11" TextWrapping="Wrap" Margin="24,0,0,8"/>
+                                           Foreground="{StaticResource TextMutedBrush}" FontSize="11" TextWrapping="Wrap" Margin="24,0,0,8"/>
                                 <ListBox ItemsSource="{Binding WatchedFolders}"
                                          SelectedItem="{Binding SelectedWatchedFolder, Mode=TwoWay}"
-                                         Height="88" Background="#101A29" BorderBrush="#2B405A"
-                                         Foreground="#EAF2FC"
+                                         Height="88" Background="{StaticResource SunkenBackgroundBrush}" BorderBrush="{StaticResource BorderBrush}"
+                                         Foreground="{StaticResource TextStrongBrush}"
                                          ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                                          AutomationProperties.Name="{Binding Loc[Settings_WatchedFoldersList]}">
                                     <ListBox.ItemTemplate>
@@ -818,12 +828,12 @@
                                         <Style TargetType="{x:Type ListBoxItem}">
                                             <Setter Property="Padding" Value="6,4"/>
                                             <Setter Property="Background" Value="Transparent"/>
-                                            <Setter Property="Foreground" Value="#EAF2FC"/>
+                                            <Setter Property="Foreground" Value="{StaticResource TextStrongBrush}"/>
                                             <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
                                             <Setter Property="FocusVisualStyle" Value="{StaticResource MimiFocusVisualStyle}"/>
                                             <Style.Triggers>
                                                 <Trigger Property="IsSelected" Value="True">
-                                                    <Setter Property="Background" Value="#203A48"/>
+                                                    <Setter Property="Background" Value="{StaticResource SelectedBackgroundBrush}"/>
                                                 </Trigger>
                                             </Style.Triggers>
                                         </Style>
@@ -839,30 +849,30 @@
                                             Padding="10,7" FontSize="11"
                                             AutomationProperties.Name="{Binding Loc[Settings_RemoveWatchedFolderAutomation]}"/>
                                 </WrapPanel>
-                                <Border Height="1" Background="#24344A" Margin="0,12,0,4"/>
+                                <Border Height="1" Background="{StaticResource DividerBrush}" Margin="0,12,0,4"/>
                                 <TextBlock Text="{Binding Loc[Settings_WindowsIntegrationSection]}" Foreground="{StaticResource AccentBrush}"
                                            FontSize="10" FontWeight="Bold" Margin="0,4,0,0"/>
                                 <CheckBox IsChecked="{Binding IsOpenWithMimiRegistered, Mode=TwoWay}"
                                           Content="{Binding Loc[Settings_RegisterWindows]}"
                                           AutomationProperties.Name="{Binding Loc[Settings_RegisterWindows]}"/>
                                 <TextBlock Text="{Binding Loc[Settings_RegisterWindowsDescription]}"
-                                           Foreground="#9FB2C8" FontSize="11" TextWrapping="Wrap" Margin="24,0,0,4"/>
+                                           Foreground="{StaticResource TextMutedBrush}" FontSize="11" TextWrapping="Wrap" Margin="24,0,0,4"/>
                                 <TextBlock Text="{Binding OpenWithMimiStatusLabel}"
-                                           Foreground="#9FB2C8" FontSize="11" TextWrapping="Wrap"
+                                           Foreground="{StaticResource TextMutedBrush}" FontSize="11" TextWrapping="Wrap"
                                            Margin="24,0,0,2"/>
                                 <TextBlock Text="{Binding OpenWithMimiExecutablePath}"
                                            ToolTip="{Binding OpenWithMimiExecutablePath}"
-                                           Foreground="#71869E" FontSize="10"
+                                           Foreground="{StaticResource TextDisabledBrush}" FontSize="10"
                                            TextTrimming="CharacterEllipsis" Margin="24,0,0,2"/>
                             </StackPanel>
                         </Border>
 
-                        <Border Background="#172638" CornerRadius="12" Padding="14" Margin="0,14,0,0">
+                        <Border Background="{StaticResource RaisedBackgroundBrush}" CornerRadius="12" Padding="14" Margin="0,14,0,0">
                             <StackPanel>
                                 <DockPanel>
-                                    <TextBlock Text="{Binding Loc[Settings_StageEngineSection]}" Foreground="{StaticResource PinkBrush}"
+                                    <TextBlock Text="{Binding Loc[Settings_StageEngineSection]}" Foreground="{StaticResource AccentSecondaryBrush}"
                                                FontSize="11" FontWeight="Bold" DockPanel.Dock="Left"/>
-                                    <TextBlock Text="{Binding VisualizerMetricsLabel}" Foreground="#9FB2C8"
+                                    <TextBlock Text="{Binding VisualizerMetricsLabel}" Foreground="{StaticResource TextMutedBrush}"
                                                FontSize="10" DockPanel.Dock="Right"/>
                                 </DockPanel>
                                 <UniformGrid Columns="3" Margin="0,10,0,0">
@@ -877,19 +887,19 @@
                                             AutomationProperties.Name="{Binding Loc[Settings_ModeHaloAutomation]}"/>
                                 </UniformGrid>
                                 <TextBlock Text="{Binding Loc[Settings_VisualizerRestored]}"
-                                           Foreground="#9FB2C8" FontSize="11" Margin="2,8,0,0"/>
+                                           Foreground="{StaticResource TextMutedBrush}" FontSize="11" Margin="2,8,0,0"/>
                             </StackPanel>
                         </Border>
 
-                        <Border Background="#172638" CornerRadius="12" Padding="14" Margin="0,14,0,0">
+                        <Border Background="{StaticResource RaisedBackgroundBrush}" CornerRadius="12" Padding="14" Margin="0,14,0,0">
                             <StackPanel>
                                 <TextBlock Text="{Binding Loc[Settings_DataDiagnosticsSection]}" Foreground="{StaticResource AccentBrush}"
                                            FontSize="11" FontWeight="Bold"/>
                                 <TextBlock Text="{Binding AppVersionLabel}" FontWeight="SemiBold" Margin="0,12,0,8"/>
-                                <TextBlock Text="{Binding Loc[Settings_DataFolder]}" Foreground="#9FB2C8" FontSize="10"/>
+                                <TextBlock Text="{Binding Loc[Settings_DataFolder]}" Foreground="{StaticResource TextMutedBrush}" FontSize="10"/>
                                 <TextBlock Text="{Binding DataDirectory}" ToolTip="{Binding DataDirectory}"
                                            TextTrimming="CharacterEllipsis" Margin="0,2,0,8"/>
-                                <TextBlock Text="{Binding Loc[Settings_LogFolder]}" Foreground="#9FB2C8" FontSize="10"/>
+                                <TextBlock Text="{Binding Loc[Settings_LogFolder]}" Foreground="{StaticResource TextMutedBrush}" FontSize="10"/>
                                 <TextBlock Text="{Binding LogDirectory}" ToolTip="{Binding LogDirectory}"
                                            TextTrimming="CharacterEllipsis" Margin="0,2,0,8"/>
                                 <WrapPanel Margin="0,6,0,0">
@@ -903,14 +913,14 @@
                             </StackPanel>
                         </Border>
 
-                        <Border Background="#172638" CornerRadius="12" Padding="14" Margin="0,14,0,6">
+                        <Border Background="{StaticResource RaisedBackgroundBrush}" CornerRadius="12" Padding="14" Margin="0,14,0,6">
                             <StackPanel>
-                                <TextBlock Text="{Binding Loc[Settings_DefaultsSection]}" Foreground="{StaticResource PinkBrush}"
+                                <TextBlock Text="{Binding Loc[Settings_DefaultsSection]}" Foreground="{StaticResource AccentSecondaryBrush}"
                                            FontSize="11" FontWeight="Bold"/>
                                 <TextBlock Text="{Binding Loc[Settings_ResetDescription]}"
-                                           Foreground="#9FB2C8" FontSize="11" TextWrapping="Wrap" Margin="0,8,0,8"/>
+                                           Foreground="{StaticResource TextMutedBrush}" FontSize="11" TextWrapping="Wrap" Margin="0,8,0,8"/>
                                 <Button Content="{Binding Loc[Settings_ResetSettings]}" Command="{Binding ResetSettingsCommand}"
-                                        Background="#5A2A3D" HorizontalAlignment="Left"
+                                        Background="{StaticResource DangerBackgroundBrush}" HorizontalAlignment="Left"
                                         Padding="12,8" FontSize="11"
                                         AutomationProperties.Name="{Binding Loc[Settings_ResetAutomation]}"/>
                             </StackPanel>
@@ -919,40 +929,38 @@
                 </ScrollViewer>
             </Border>
 
-            <Border Grid.Column="2" Background="{StaticResource PanelBrush}" CornerRadius="18" Padding="16">
+            <Border Grid.Column="2" Background="{StaticResource PanelBackgroundBrush}" CornerRadius="18" Padding="16">
                 <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                     <StackPanel>
-                        <TextBlock Text="{Binding Loc[NowPlaying_Title]}" Foreground="#9FB2C8" FontSize="11"/>
+                        <TextBlock Text="{Binding Loc[NowPlaying_Title]}" Foreground="{StaticResource TextMutedBrush}" FontSize="11"/>
                         <Border Height="210" Margin="0,14,0,16" CornerRadius="16" ClipToBounds="True">
-                            <Grid>
-                                <Grid.Background>
-                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                                        <GradientStop Color="#235D6A" Offset="0"/>
-                                        <GradientStop Color="#302A55" Offset="1"/>
-                                    </LinearGradientBrush>
-                                </Grid.Background>
+                            <Grid Background="{StaticResource CoverGradientBrush}">
                                 <Image Source="{Binding CurrentCoverArtPath}" Stretch="UniformToFill"
                                        Opacity="0.38" IsHitTestVisible="False"/>
-                                <Ellipse Width="150" Height="150" Stroke="#6647E6D0" StrokeThickness="1.5"/>
-                                <Ellipse Width="110" Height="110" Stroke="#AA47E6D0" StrokeThickness="1.5"/>
+                                <Ellipse Width="150" Height="150" Stroke="{StaticResource AccentDecorMediumBrush}" StrokeThickness="1.5"/>
+                                <Ellipse Width="110" Height="110" Stroke="{StaticResource AccentDecorVividBrush}" StrokeThickness="1.5"/>
                                 <TextBlock Text="♫" FontSize="62" Foreground="{StaticResource AccentBrush}"
                                            HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                 <controls:VisualizerView x:Name="MainVisualizer" Mode="{Binding VisualizerMode, Mode=OneWay}"
+                                                         PrimaryColor="{DynamicResource AccentColor}"
+                                                         SecondaryColor="{DynamicResource AccentSecondaryColor}"
+                                                         PeakColor="{DynamicResource AccentHotColor}"
+                                                         BaselineColor="{DynamicResource TextMutedColor}"
                                                          Margin="14,10,14,24" IsHitTestVisible="False"/>
-                                <TextBlock Text="{Binding Loc[App_MusicInMotion]}" FontSize="9" Foreground="#B7C9DB"
+                                <TextBlock Text="{Binding Loc[App_MusicInMotion]}" FontSize="9" Foreground="{StaticResource TextSecondaryBrush}"
                                            HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,14"/>
                             </Grid>
                         </Border>
                         <TextBlock Text="{Binding NowPlayingTitle}" FontSize="17" FontWeight="Bold"
                                    TextTrimming="CharacterEllipsis"/>
-                        <TextBlock Text="{Binding NowPlayingSubtitle}" Foreground="#9FB2C8"
+                        <TextBlock Text="{Binding NowPlayingSubtitle}" Foreground="{StaticResource TextMutedBrush}"
                                    FontSize="12" Margin="0,5,0,18" TextWrapping="Wrap"/>
                         <Slider x:Name="ProgressSlider" Minimum="0" Maximum="100"
                                 Value="{Binding ProgressPercent, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                 IsMoveToPointEnabled="True" AutomationProperties.Name="{Binding Loc[NowPlaying_PlaybackPosition]}"/>
                         <DockPanel Margin="0,2,0,16">
-                            <TextBlock Text="{Binding CurrentTimeLabel}" Foreground="#9FB2C8" FontSize="10" DockPanel.Dock="Left"/>
-                            <TextBlock Text="{Binding DurationLabel}" Foreground="#9FB2C8" FontSize="10" DockPanel.Dock="Right"/>
+                            <TextBlock Text="{Binding CurrentTimeLabel}" Foreground="{StaticResource TextMutedBrush}" FontSize="10" DockPanel.Dock="Left"/>
+                            <TextBlock Text="{Binding DurationLabel}" Foreground="{StaticResource TextMutedBrush}" FontSize="10" DockPanel.Dock="Right"/>
                         </DockPanel>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                             <Button Content="−10s" Command="{Binding SeekBackward10Command}"
@@ -963,7 +971,7 @@
                                 <Path Data="{StaticResource PreviousIconGeometry}" Style="{StaticResource IconPathStyle}"/>
                             </Button>
                             <Button Command="{Binding PlayPauseCommand}" Background="{StaticResource AccentBrush}"
-                                    Foreground="#07151B" Padding="18,10"
+                                    Foreground="{StaticResource OnAccentBrush}" Padding="18,10"
                                     AutomationProperties.Name="{Binding Loc[Playback_PlayOrPause]}">
                                 <Grid Width="20" Height="20">
                                     <Path Data="{StaticResource PlayIconGeometry}">
@@ -1014,8 +1022,8 @@
                                     AutomationProperties.Name="{Binding Loc[Playback_CycleRepeatMode]}"/>
                         </UniformGrid>
                         <DockPanel Margin="4,20,4,5">
-                            <TextBlock Text="{Binding Loc[NowPlaying_VolumeHeader]}" Foreground="#9FB2C8" FontSize="10" DockPanel.Dock="Left"/>
-                            <TextBlock Text="{Binding EffectiveVolumePercentLabel}" Foreground="#9FB2C8"
+                            <TextBlock Text="{Binding Loc[NowPlaying_VolumeHeader]}" Foreground="{StaticResource TextMutedBrush}" FontSize="10" DockPanel.Dock="Left"/>
+                            <TextBlock Text="{Binding EffectiveVolumePercentLabel}" Foreground="{StaticResource TextMutedBrush}"
                                        FontSize="10" DockPanel.Dock="Right"/>
                         </DockPanel>
                         <Grid>
@@ -1033,28 +1041,28 @@
                         </Grid>
                         <TextBlock Text="{Binding AudioOutputLabel}"
                                    ToolTip="{Binding AudioOutputLabel}"
-                                   Foreground="#71869E" FontSize="9"
+                                   Foreground="{StaticResource TextDisabledBrush}" FontSize="9"
                                    TextTrimming="CharacterEllipsis" Margin="4,8,4,0"/>
-                        <Border Background="#34251A" BorderBrush="#7A5327" BorderThickness="1"
+                        <Border Background="{StaticResource WarningBackgroundBrush}" BorderBrush="{StaticResource WarningBorderBrush}" BorderThickness="1"
                                 CornerRadius="10" Padding="10" Margin="0,10,0,0"
                                 Visibility="{Binding HasAudioOutputNotice, Converter={StaticResource BooleanToVisibilityConverter}}">
-                            <TextBlock Text="{Binding AudioOutputNotice}" Foreground="#FFD9A0"
+                            <TextBlock Text="{Binding AudioOutputNotice}" Foreground="{StaticResource WarningTextBrush}"
                                        FontSize="10" TextWrapping="Wrap"/>
                         </Border>
-                        <Border Background="#172638" CornerRadius="10" Padding="10" Margin="0,18,0,0">
+                        <Border Background="{StaticResource RaisedBackgroundBrush}" CornerRadius="10" Padding="10" Margin="0,18,0,0">
                             <StackPanel>
                                 <DockPanel>
                                     <TextBlock Text="{Binding Loc[NowPlaying_UpNext]}" Foreground="{StaticResource AccentBrush}"
                                                FontSize="10" FontWeight="Bold" DockPanel.Dock="Left"/>
-                                    <TextBlock Text="{Binding QueueCountLabel}" Foreground="#9FB2C8"
+                                    <TextBlock Text="{Binding QueueCountLabel}" Foreground="{StaticResource TextMutedBrush}"
                                                FontSize="10" DockPanel.Dock="Right"/>
                                 </DockPanel>
-                                <TextBlock Text="{Binding QueueStatusLabel}" Foreground="#9FB2C8"
+                                <TextBlock Text="{Binding QueueStatusLabel}" Foreground="{StaticResource TextMutedBrush}"
                                            FontSize="10" TextWrapping="Wrap" Margin="0,5,0,8"/>
                                 <ListView ItemsSource="{Binding UpcomingQueueItems}"
                                           SelectedItem="{Binding SelectedQueueItem, Mode=TwoWay}"
-                                          Height="190" Background="#101A29" BorderBrush="#2B405A"
-                                          BorderThickness="1" Foreground="#EAF2FC"
+                                          Height="190" Background="{StaticResource SunkenBackgroundBrush}" BorderBrush="{StaticResource BorderBrush}"
+                                          BorderThickness="1" Foreground="{StaticResource TextStrongBrush}"
                                           ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                                           AutomationProperties.Name="{Binding Loc[Queue_ListAutomation]}"
                                           behaviors:PlaylistReorderBehavior.MoveCommand="{Binding MoveQueueItemCommand}"
@@ -1085,7 +1093,7 @@
                                         <Style TargetType="{x:Type ListViewItem}">
                                             <Setter Property="Padding" Value="6,4"/>
                                             <Setter Property="Background" Value="Transparent"/>
-                                            <Setter Property="Foreground" Value="#EAF2FC"/>
+                                            <Setter Property="Foreground" Value="{StaticResource TextStrongBrush}"/>
                                             <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
                                             <Setter Property="FocusVisualStyle" Value="{StaticResource MimiFocusVisualStyle}"/>
                                         </Style>
@@ -1108,10 +1116,10 @@
                                                     <TextBlock Text="{Binding Track.Title}" FontWeight="SemiBold"
                                                                TextTrimming="CharacterEllipsis"/>
                                                     <StackPanel Orientation="Horizontal">
-                                                        <TextBlock Text="{Binding Track.Artist}" Foreground="#9FB2C8"
+                                                        <TextBlock Text="{Binding Track.Artist}" Foreground="{StaticResource TextMutedBrush}"
                                                                    FontSize="10" TextTrimming="CharacterEllipsis"/>
-                                                        <TextBlock Text=" · " Foreground="#9FB2C8" FontSize="10"/>
-                                                        <TextBlock Text="{Binding Track.DurationLabel}" Foreground="#9FB2C8"
+                                                        <TextBlock Text=" · " Foreground="{StaticResource TextMutedBrush}" FontSize="10"/>
+                                                        <TextBlock Text="{Binding Track.DurationLabel}" Foreground="{StaticResource TextMutedBrush}"
                                                                    FontSize="10"/>
                                                     </StackPanel>
                                                 </StackPanel>
@@ -1120,7 +1128,7 @@
                                     </ListView.ItemTemplate>
                                 </ListView>
                                 <TextBlock Text="{Binding Loc[Queue_EmptyHint]}"
-                                           Foreground="#9FB2C8" FontSize="10" TextWrapping="Wrap" Margin="2,7,2,0">
+                                           Foreground="{StaticResource TextMutedBrush}" FontSize="10" TextWrapping="Wrap" Margin="2,7,2,0">
                                     <TextBlock.Style>
                                         <Style TargetType="{x:Type TextBlock}">
                                             <Setter Property="Visibility" Value="Collapsed"/>
@@ -1153,11 +1161,11 @@
                                         AutomationProperties.Name="{Binding Loc[Queue_ClearUpcomingAutomation]}"/>
                             </StackPanel>
                         </Border>
-                        <Border Background="#172638" CornerRadius="10" Padding="10" Margin="0,18,0,0">
+                        <Border Background="{StaticResource RaisedBackgroundBrush}" CornerRadius="10" Padding="10" Margin="0,18,0,0">
                             <StackPanel>
                                 <DockPanel>
-                                    <TextBlock Text="{Binding Loc[Settings_StageEngineSection]}" Foreground="{StaticResource PinkBrush}" FontSize="10" FontWeight="Bold" DockPanel.Dock="Left"/>
-                                    <TextBlock Text="{Binding VisualizerMetricsLabel}" Foreground="#9FB2C8" FontSize="10" DockPanel.Dock="Right"/>
+                                    <TextBlock Text="{Binding Loc[Settings_StageEngineSection]}" Foreground="{StaticResource AccentSecondaryBrush}" FontSize="10" FontWeight="Bold" DockPanel.Dock="Left"/>
+                                    <TextBlock Text="{Binding VisualizerMetricsLabel}" Foreground="{StaticResource TextMutedBrush}" FontSize="10" DockPanel.Dock="Right"/>
                                 </DockPanel>
                                 <UniformGrid Columns="3" Margin="0,8,0,0">
                                     <Button Content="{Binding Loc[Stage_ModeSpectrum]}" Command="{Binding SelectSpectrumModeCommand}"
@@ -1170,7 +1178,7 @@
                                             Style="{StaticResource HaloModeButtonStyle}"
                                             AutomationProperties.Name="{Binding Loc[Stage_ModeHaloAutomation]}"/>
                                 </UniformGrid>
-                                <Button Command="{Binding ToggleStageCommand}" Background="{StaticResource AccentBrush}" Foreground="#07151B"
+                                <Button Command="{Binding ToggleStageCommand}" Background="{StaticResource AccentBrush}" Foreground="{StaticResource OnAccentBrush}"
                                         FontWeight="Bold" Padding="10,8" Margin="2,8,2,2"
                                         AutomationProperties.Name="{Binding Loc[Stage_OpenAutomation]}">
                                     <StackPanel Orientation="Horizontal">
@@ -1186,8 +1194,8 @@
         </Grid>
 
         <DockPanel Grid.Row="2" Margin="4,14,4,0">
-            <TextBlock Text="{Binding Loc[Footer_EarlyBuild]}" Foreground="#94A9C2" FontSize="10" DockPanel.Dock="Left"/>
-            <TextBlock Text="{Binding Loc[Footer_PersonalMusicSpace]}" Foreground="#94A9C2" FontSize="10" DockPanel.Dock="Right"/>
+            <TextBlock Text="{Binding Loc[Footer_EarlyBuild]}" Foreground="{StaticResource TextFaintBrush}" FontSize="10" DockPanel.Dock="Left"/>
+            <TextBlock Text="{Binding Loc[Footer_PersonalMusicSpace]}" Foreground="{StaticResource TextFaintBrush}" FontSize="10" DockPanel.Dock="Right"/>
         </DockPanel>
     </Grid>
 </Window>

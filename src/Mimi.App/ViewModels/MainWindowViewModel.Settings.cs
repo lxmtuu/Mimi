@@ -6,6 +6,7 @@ using CommunityToolkit.Mvvm.Input;
 using Mimi.Controls;
 using Mimi.Localization;
 using Mimi.Models;
+using Mimi.Theming;
 using Serilog;
 
 namespace Mimi.ViewModels;
@@ -30,6 +31,9 @@ public sealed partial class MainWindowViewModel
 
     [ObservableProperty]
     private string uiLanguage = UiLanguages.System;
+
+    [ObservableProperty]
+    private string uiTheme = BuiltInThemes.DefaultId;
 
     [ObservableProperty]
     private bool restorePlaybackSession = true;
@@ -64,6 +68,8 @@ public sealed partial class MainWindowViewModel
         UiLanguage = settings.UiLanguage;
         Loc.SetLanguage(UiLanguage);
         RefreshLocalizedChrome();
+        UiTheme = settings.UiTheme;
+        ApplyUiTheme(UiTheme);
 
         if (Enum.TryParse<VisualizerDisplayMode>(
                 settings.VisualizerMode,
@@ -98,6 +104,26 @@ public sealed partial class MainWindowViewModel
         RefreshLocalizedChrome();
         if (settingsLoaded && !isRestoringSettings)
             SaveSettings(force: true);
+    }
+
+    partial void OnUiThemeChanged(string value)
+    {
+        var normalized = ApplyUiTheme(value);
+        if (!string.Equals(value, normalized, StringComparison.Ordinal))
+        {
+            UiTheme = normalized;
+            return;
+        }
+
+        if (settingsLoaded && !isRestoringSettings)
+            SaveSettings(force: true);
+    }
+
+    private string ApplyUiTheme(string? value)
+    {
+        var normalized = BuiltInThemes.NormalizeId(value);
+        themeService?.Apply(normalized);
+        return normalized;
     }
 
     private void RefreshLocalizedChrome()
@@ -289,6 +315,7 @@ public sealed partial class MainWindowViewModel
         settings.RepeatMode = RepeatMode.ToString();
         settings.VisualizerMode = VisualizerMode.ToString();
         settings.UiLanguage = UiLanguages.Normalize(UiLanguage);
+        settings.UiTheme = BuiltInThemes.NormalizeId(UiTheme);
         settings.RestorePlaybackSession = RestorePlaybackSession;
         settings.RestoreLibraryView = RestoreLibraryView;
         settings.RestoreWindowPlacement = RestoreWindowPlacement;

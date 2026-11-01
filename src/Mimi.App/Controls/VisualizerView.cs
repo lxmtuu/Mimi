@@ -15,24 +15,25 @@ public enum VisualizerDisplayMode
 /// <summary>
 /// A single-DrawingVisual visualizer renderer driven by
 /// <see cref="CompositionTarget.Rendering"/>. It reuses its display buffers
-/// and frozen brushes/pens, so the render loop does not allocate WPF controls,
-/// geometries, brushes, or pens per frame.
+/// and rebuilds its frozen brush/pen palette only when theme colors change,
+/// so the render loop does not allocate WPF controls, geometries, brushes,
+/// or pens per frame.
 /// </summary>
 public sealed class VisualizerView : FrameworkElement
 {
-    private static readonly Brush SpectrumBrush = CreateSpectrumBrush();
-    private static readonly Brush SpectrumGlowBrush = CreateFrozenBrush(52, 71, 230, 208);
-    private static readonly Brush HaloCoreBrush = CreateFrozenBrush(48, 71, 230, 208);
-    private static readonly Pen BaselinePen = CreateFrozenPen(CreateFrozenBrush(90, 130, 150, 174), 1.0);
-    private static readonly Pen PeakPen = CreateFrozenPen(CreateFrozenBrush(255, 255, 143, 203), 2.0);
-    private static readonly Pen WaveTealGlowPen = CreateFrozenPen(CreateFrozenBrush(64, 71, 230, 208), 5.0);
-    private static readonly Pen WavePinkGlowPen = CreateFrozenPen(CreateFrozenBrush(56, 255, 92, 174), 5.0);
-    private static readonly Pen WaveTealPen = CreateFrozenPen(CreateFrozenBrush(255, 71, 230, 208), 2.0);
-    private static readonly Pen WavePinkPen = CreateFrozenPen(CreateFrozenBrush(255, 255, 92, 174), 2.0);
-    private static readonly Pen HaloOuterPen = CreateFrozenPen(CreateFrozenBrush(120, 71, 230, 208), 1.5);
-    private static readonly Pen HaloInnerPen = CreateFrozenPen(CreateFrozenBrush(105, 255, 143, 203), 1.25);
-    private static readonly Pen HaloTealPen = CreateFrozenPen(CreateFrozenBrush(255, 71, 230, 208), 3.0);
-    private static readonly Pen HaloPinkPen = CreateFrozenPen(CreateFrozenBrush(255, 255, 92, 174), 3.0);
+    private Brush spectrumBrush = null!;
+    private Brush spectrumGlowBrush = null!;
+    private Brush haloCoreBrush = null!;
+    private Pen baselinePen = null!;
+    private Pen peakPen = null!;
+    private Pen wavePrimaryGlowPen = null!;
+    private Pen wavePeakGlowPen = null!;
+    private Pen wavePrimaryPen = null!;
+    private Pen wavePeakPen = null!;
+    private Pen haloOuterPen = null!;
+    private Pen haloInnerPen = null!;
+    private Pen haloPrimaryPen = null!;
+    private Pen haloPeakPen = null!;
 
     private readonly DrawingVisual visual = new();
     private readonly float[] displayedSpectrum = new float[VisualizerFrame.SpectrumBandCount];
@@ -52,6 +53,7 @@ public sealed class VisualizerView : FrameworkElement
 
     public VisualizerView()
     {
+        RebuildPalette();
         AddVisualChild(visual);
         AddLogicalChild(visual);
         ClipToBounds = true;
@@ -72,6 +74,103 @@ public sealed class VisualizerView : FrameworkElement
     {
         get => (VisualizerDisplayMode)GetValue(ModeProperty);
         set => SetValue(ModeProperty, value);
+    }
+
+    public static readonly DependencyProperty PrimaryColorProperty =
+        DependencyProperty.Register(
+            nameof(PrimaryColor),
+            typeof(Color),
+            typeof(VisualizerView),
+            new PropertyMetadata(
+                Color.FromRgb(0x47, 0xE6, 0xD0),
+                OnThemeColorChanged));
+
+    public Color PrimaryColor
+    {
+        get => (Color)GetValue(PrimaryColorProperty);
+        set => SetValue(PrimaryColorProperty, value);
+    }
+
+    public static readonly DependencyProperty SecondaryColorProperty =
+        DependencyProperty.Register(
+            nameof(SecondaryColor),
+            typeof(Color),
+            typeof(VisualizerView),
+            new PropertyMetadata(
+                Color.FromRgb(0xFF, 0x8F, 0xCB),
+                OnThemeColorChanged));
+
+    public Color SecondaryColor
+    {
+        get => (Color)GetValue(SecondaryColorProperty);
+        set => SetValue(SecondaryColorProperty, value);
+    }
+
+    public static readonly DependencyProperty PeakColorProperty =
+        DependencyProperty.Register(
+            nameof(PeakColor),
+            typeof(Color),
+            typeof(VisualizerView),
+            new PropertyMetadata(
+                Color.FromRgb(0xFF, 0x5C, 0xAE),
+                OnThemeColorChanged));
+
+    public Color PeakColor
+    {
+        get => (Color)GetValue(PeakColorProperty);
+        set => SetValue(PeakColorProperty, value);
+    }
+
+    public static readonly DependencyProperty BaselineColorProperty =
+        DependencyProperty.Register(
+            nameof(BaselineColor),
+            typeof(Color),
+            typeof(VisualizerView),
+            new PropertyMetadata(
+                Color.FromRgb(0x82, 0x96, 0xAE),
+                OnThemeColorChanged));
+
+    public Color BaselineColor
+    {
+        get => (Color)GetValue(BaselineColorProperty);
+        set => SetValue(BaselineColorProperty, value);
+    }
+
+    private static void OnThemeColorChanged(
+        DependencyObject dependencyObject,
+        DependencyPropertyChangedEventArgs e) =>
+        ((VisualizerView)dependencyObject).RebuildPalette();
+
+    private void RebuildPalette()
+    {
+        var primary = WithAlpha(PrimaryColor, 255);
+        var secondary = WithAlpha(SecondaryColor, 255);
+        var peak = WithAlpha(PeakColor, 255);
+        var baseline = BaselineColor;
+
+        spectrumBrush = CreateSpectrumBrush(primary, peak);
+        spectrumGlowBrush = CreateFrozenBrush(WithAlpha(primary, 52));
+        haloCoreBrush = CreateFrozenBrush(WithAlpha(primary, 48));
+        baselinePen = CreateFrozenPen(
+            CreateFrozenBrush(WithAlpha(baseline, 90)),
+            1.0);
+        peakPen = CreateFrozenPen(CreateFrozenBrush(secondary), 2.0);
+        wavePrimaryGlowPen = CreateFrozenPen(
+            CreateFrozenBrush(WithAlpha(primary, 64)),
+            5.0);
+        wavePeakGlowPen = CreateFrozenPen(
+            CreateFrozenBrush(WithAlpha(peak, 56)),
+            5.0);
+        wavePrimaryPen = CreateFrozenPen(CreateFrozenBrush(primary), 2.0);
+        wavePeakPen = CreateFrozenPen(CreateFrozenBrush(peak), 2.0);
+        haloOuterPen = CreateFrozenPen(
+            CreateFrozenBrush(WithAlpha(primary, 120)),
+            1.5);
+        haloInnerPen = CreateFrozenPen(
+            CreateFrozenBrush(WithAlpha(secondary, 105)),
+            1.25);
+        haloPrimaryPen = CreateFrozenPen(CreateFrozenBrush(primary), 3.0);
+        haloPeakPen = CreateFrozenPen(CreateFrozenBrush(peak), 3.0);
     }
 
     public double FramesPerSecond { get; private set; }
@@ -214,7 +313,7 @@ public sealed class VisualizerView : FrameworkElement
 
         var baseline = height - 5;
         var maxHeight = Math.Max(1, baseline - 8);
-        dc.DrawLine(BaselinePen, new Point(0, baseline), new Point(width, baseline));
+        dc.DrawLine(baselinePen, new Point(0, baseline), new Point(width, baseline));
 
         for (var i = 0; i < count; i++)
         {
@@ -225,20 +324,20 @@ public sealed class VisualizerView : FrameworkElement
             var radius = Math.Min(3, barWidth / 2);
 
             dc.DrawRoundedRectangle(
-                SpectrumGlowBrush,
+                spectrumGlowBrush,
                 null,
                 new Rect(Math.Max(0, x - 1), Math.Max(0, y - 3), barWidth + 2, barHeight + 3),
                 radius + 1,
                 radius + 1);
             dc.DrawRoundedRectangle(
-                SpectrumBrush,
+                spectrumBrush,
                 null,
                 new Rect(x, y, barWidth, barHeight),
                 radius,
                 radius);
 
             var peakY = baseline - (3 + peakSpectrum[i] * maxHeight) - 3;
-            dc.DrawLine(PeakPen, new Point(x, peakY), new Point(x + barWidth, peakY));
+            dc.DrawLine(peakPen, new Point(x, peakY), new Point(x + barWidth, peakY));
         }
     }
 
@@ -251,7 +350,7 @@ public sealed class VisualizerView : FrameworkElement
         var height = ActualHeight;
         var centerY = height / 2;
         var amplitude = height * 0.42;
-        dc.DrawLine(BaselinePen, new Point(0, centerY), new Point(width, centerY));
+        dc.DrawLine(baselinePen, new Point(0, centerY), new Point(width, centerY));
 
         var first = Math.Clamp(frame.Waveform[0], -1.0f, 1.0f);
         var previousTop = new Point(0, centerY - first * amplitude);
@@ -264,10 +363,10 @@ public sealed class VisualizerView : FrameworkElement
             var top = new Point(x, centerY - value * amplitude);
             var bottom = new Point(x, centerY + value * amplitude);
 
-            dc.DrawLine(WaveTealGlowPen, previousTop, top);
-            dc.DrawLine(WavePinkGlowPen, previousBottom, bottom);
-            dc.DrawLine(WaveTealPen, previousTop, top);
-            dc.DrawLine(WavePinkPen, previousBottom, bottom);
+            dc.DrawLine(wavePrimaryGlowPen, previousTop, top);
+            dc.DrawLine(wavePeakGlowPen, previousBottom, bottom);
+            dc.DrawLine(wavePrimaryPen, previousTop, top);
+            dc.DrawLine(wavePeakPen, previousBottom, bottom);
 
             previousTop = top;
             previousBottom = bottom;
@@ -281,11 +380,11 @@ public sealed class VisualizerView : FrameworkElement
         var baseRadius = shortestSide * 0.27;
         var maxLength = shortestSide * 0.2;
 
-        dc.DrawEllipse(HaloCoreBrush, null, center,
+        dc.DrawEllipse(haloCoreBrush, null, center,
             baseRadius * (0.35 + averageLevel * 0.25),
             baseRadius * (0.35 + averageLevel * 0.25));
-        dc.DrawEllipse(null, HaloOuterPen, center, baseRadius, baseRadius);
-        dc.DrawEllipse(null, HaloInnerPen, center, baseRadius * 0.72, baseRadius * 0.72);
+        dc.DrawEllipse(null, haloOuterPen, center, baseRadius, baseRadius);
+        dc.DrawEllipse(null, haloInnerPen, center, baseRadius * 0.72, baseRadius * 0.72);
 
         var count = displayedSpectrum.Length;
         for (var i = 0; i < count; i++)
@@ -297,32 +396,53 @@ public sealed class VisualizerView : FrameworkElement
             var startRadius = baseRadius + 3;
             var endRadius = startRadius + 3 + level * maxLength;
             dc.DrawLine(
-                level > 0.55 ? HaloPinkPen : HaloTealPen,
+                level > 0.55 ? haloPeakPen : haloPrimaryPen,
                 new Point(center.X + cos * startRadius, center.Y + sin * startRadius),
                 new Point(center.X + cos * endRadius, center.Y + sin * endRadius));
         }
     }
 
-    private static Brush CreateSpectrumBrush()
+    private static Brush CreateSpectrumBrush(Color primary, Color peak)
     {
         var brush = new LinearGradientBrush
         {
             StartPoint = new Point(0, 1),
             EndPoint = new Point(0, 0)
         };
-        brush.GradientStops.Add(new GradientStop(Color.FromRgb(71, 230, 208), 0));
-        brush.GradientStops.Add(new GradientStop(Color.FromRgb(57, 197, 187), 0.55));
-        brush.GradientStops.Add(new GradientStop(Color.FromRgb(255, 92, 174), 1));
+        brush.GradientStops.Add(new GradientStop(primary, 0));
+        brush.GradientStops.Add(new GradientStop(
+            Blend(primary, Color.FromRgb(0, 0, 0), 0.18),
+            0.55));
+        brush.GradientStops.Add(new GradientStop(peak, 1));
         brush.Freeze();
         return brush;
     }
 
-    private static SolidColorBrush CreateFrozenBrush(byte a, byte r, byte g, byte b)
+    private static SolidColorBrush CreateFrozenBrush(Color color)
     {
-        var brush = new SolidColorBrush(Color.FromArgb(a, r, g, b));
+        var brush = new SolidColorBrush(color);
         brush.Freeze();
         return brush;
     }
+
+    private static Color WithAlpha(Color color, byte alpha) =>
+        Color.FromArgb(alpha, color.R, color.G, color.B);
+
+    private static Color Blend(Color from, Color to, double amount)
+    {
+        var clamped = Math.Clamp(amount, 0, 1);
+        return Color.FromArgb(
+            BlendChannel(from.A, to.A, clamped),
+            BlendChannel(from.R, to.R, clamped),
+            BlendChannel(from.G, to.G, clamped),
+            BlendChannel(from.B, to.B, clamped));
+    }
+
+    private static byte BlendChannel(byte from, byte to, double amount) =>
+        (byte)Math.Clamp(
+            Math.Round(from + (to - from) * amount),
+            0,
+            255);
 
     private static Pen CreateFrozenPen(Brush brush, double thickness)
     {

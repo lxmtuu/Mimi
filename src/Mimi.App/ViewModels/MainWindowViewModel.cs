@@ -55,6 +55,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     private readonly ICoverArtOptimizer? coverArtOptimizer;
     private readonly ILibraryFolderWatcher? libraryFolderWatcher;
     private readonly IFileAssociationService? fileAssociationService;
+    private readonly ThemeService? themeService;
     private readonly Dispatcher uiDispatcher = Dispatcher.CurrentDispatcher;
 
     public LocalizationService Loc { get; }
@@ -221,7 +222,8 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         ICoverArtOptimizer? coverArtOptimizer = null,
         ILibraryFolderWatcher? libraryFolderWatcher = null,
         IFileAssociationService? fileAssociationService = null,
-        LocalizationService? localizationService = null)
+        LocalizationService? localizationService = null,
+        ThemeService? themeService = null)
     {
         this.audioPlayer = audioPlayer;
         this.libraryService = libraryService;
@@ -231,6 +233,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         this.coverArtOptimizer = coverArtOptimizer;
         this.libraryFolderWatcher = libraryFolderWatcher;
         this.fileAssociationService = fileAssociationService;
+        this.themeService = themeService;
         Loc = localizationService ?? new LocalizationService();
 
         TracksView = CollectionViewSource.GetDefaultView(Tracks);

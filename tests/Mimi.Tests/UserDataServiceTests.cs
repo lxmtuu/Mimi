@@ -1,6 +1,7 @@
 using Mimi.Localization;
 using Mimi.Models;
 using Mimi.Services;
+using Mimi.Theming;
 
 namespace Mimi.Tests;
 
@@ -98,7 +99,7 @@ public sealed class UserDataServiceTests : IDisposable
     }
 
     [Fact]
-    public void Version4SettingsRoundTrip()
+    public void Version5SettingsRoundTrip()
     {
         var expected = new AppSettings
         {
@@ -108,6 +109,7 @@ public sealed class UserDataServiceTests : IDisposable
             RepeatMode = "All",
             VisualizerMode = "TwinWave",
             UiLanguage = "vi",
+            UiTheme = " Sakura_Dream ",
             RestorePlaybackSession = false,
             RestoreLibraryView = false,
             RestoreWindowPlacement = false,
@@ -161,6 +163,7 @@ public sealed class UserDataServiceTests : IDisposable
         Assert.Equal("All", loaded.RepeatMode);
         Assert.Equal("TwinWave", loaded.VisualizerMode);
         Assert.Equal(UiLanguages.Vietnamese, loaded.UiLanguage);
+        Assert.Equal(BuiltInThemes.SakuraDreamId, loaded.UiTheme);
         Assert.False(loaded.RestorePlaybackSession);
         Assert.False(loaded.RestoreLibraryView);
         Assert.False(loaded.RestoreWindowPlacement);
@@ -203,6 +206,7 @@ public sealed class UserDataServiceTests : IDisposable
         Assert.Equal("Off", loaded.RepeatMode);
         Assert.Equal("NeonSpectrum", loaded.VisualizerMode);
         Assert.Equal(UiLanguages.System, loaded.UiLanguage);
+        Assert.Equal(BuiltInThemes.DefaultId, loaded.UiTheme);
         Assert.True(loaded.RestorePlaybackSession);
         Assert.True(loaded.RestoreLibraryView);
         Assert.True(loaded.RestoreWindowPlacement);
@@ -215,7 +219,7 @@ public sealed class UserDataServiceTests : IDisposable
     }
 
     [Fact]
-    public void Version3SettingsMigrateToVersion4WithLanguageDefault()
+    public void Version3SettingsMigrateToVersion5WithLanguageAndThemeDefaults()
     {
         File.WriteAllText(
             Path.Combine(dataDirectory, "settings.json"),
@@ -223,9 +227,25 @@ public sealed class UserDataServiceTests : IDisposable
 
         var loaded = service.LoadSettings();
 
-        Assert.Equal(4, loaded.Version);
+        Assert.Equal(5, loaded.Version);
         Assert.Equal(0.5, loaded.Volume);
         Assert.Equal(UiLanguages.System, loaded.UiLanguage);
+        Assert.Equal(BuiltInThemes.DefaultId, loaded.UiTheme);
+    }
+
+    [Fact]
+    public void Version4SettingsMigrateToVersion5WithThemeDefault()
+    {
+        File.WriteAllText(
+            Path.Combine(dataDirectory, "settings.json"),
+            "{\"Version\":4,\"Volume\":0.5,\"UiLanguage\":\"vi-VN\"}");
+
+        var loaded = service.LoadSettings();
+
+        Assert.Equal(5, loaded.Version);
+        Assert.Equal(0.5, loaded.Volume);
+        Assert.Equal(UiLanguages.Vietnamese, loaded.UiLanguage);
+        Assert.Equal(BuiltInThemes.DefaultId, loaded.UiTheme);
     }
 
     [Fact]
@@ -239,6 +259,7 @@ public sealed class UserDataServiceTests : IDisposable
               "Volume": -4,
               "VisualizerMode": " ",
               "UiLanguage": "fr-FR",
+              "UiTheme": "not-a-theme",
               "WatchedFolders": [" C:\\Music ", "c:\\music", "", null],
               "LibraryView": {
                 "ActiveView": null,
@@ -272,6 +293,7 @@ public sealed class UserDataServiceTests : IDisposable
         Assert.Equal(0, loaded.Volume);
         Assert.Equal("NeonSpectrum", loaded.VisualizerMode);
         Assert.Equal(UiLanguages.System, loaded.UiLanguage);
+        Assert.Equal(BuiltInThemes.DefaultId, loaded.UiTheme);
         Assert.Equal([@"C:\Music"], loaded.WatchedFolders);
         Assert.Equal("Library", loaded.LibraryView.ActiveView);
         Assert.Null(loaded.LibraryView.SelectedPlaylistId);
