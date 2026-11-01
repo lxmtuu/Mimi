@@ -222,7 +222,7 @@ public sealed class AudioService : IAudioPlayer
             {
                 if (!buildBeforeStoppingCurrent)
                 {
-                    var transitionStarted = Stopwatch.GetTimestamp();
+                    var preDecodeTransitionStarted = Stopwatch.GetTimestamp();
                     if (reader is not null &&
                         TryStopOutputForTrackSwapLocked())
                     {
@@ -239,8 +239,8 @@ public sealed class AudioService : IAudioPlayer
                     {
                         DisposeLoadedTrackLocked();
                     }
-                    transitionElapsed +=
-                        Stopwatch.GetElapsedTime(transitionStarted);
+                    transitionElapsed += Stopwatch.GetElapsedTime(
+                        preDecodeTransitionStarted);
                 }
 
                 var decodeStarted = Stopwatch.GetTimestamp();
