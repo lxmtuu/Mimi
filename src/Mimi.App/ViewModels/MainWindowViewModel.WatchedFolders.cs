@@ -190,7 +190,7 @@ public sealed partial class MainWindowViewModel
         var changes = pendingLibraryFolderChanges;
         pendingLibraryFolderChanges = null;
         isProcessingLibraryFolderChanges = true;
-        ScanStatusLabel = "Updating watched folders…";
+        ScanStatusLabel = Loc["Scan_UpdatingWatchedFolders"];
 
         try
         {
@@ -244,7 +244,7 @@ public sealed partial class MainWindowViewModel
         {
             ScanStatusLabel = lifetimeCancellation.IsCancellationRequested
                 ? string.Empty
-                : "Watched-folder update canceled";
+                : Loc["Scan_WatchedFolderUpdateCanceled"];
         }
         catch (Exception ex)
         {

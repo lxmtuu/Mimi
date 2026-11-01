@@ -33,13 +33,13 @@
                 IsHitTestVisible="False">
             <StackPanel>
                 <TextBlock x:Name="StageTitle"
-                           Text="Choose a song"
+                           Text="{Binding Loc[NowPlaying_ChooseSong]}"
                            FontSize="34"
                            FontWeight="Bold"
                            TextAlignment="Center"
                            TextTrimming="CharacterEllipsis"/>
                 <TextBlock x:Name="StageSubtitle"
-                           Text="Your next favorite is waiting"
+                           Text="{Binding Loc[NowPlaying_NextFavoriteWaiting]}"
                            Margin="0,8,0,0"
                            Foreground="#B7C9DB"
                            FontSize="15"
@@ -56,7 +56,7 @@
                    Foreground="#8296AE"
                    FontSize="12"
                    IsHitTestVisible="False"/>
-        <TextBlock Text="ESC / F11 close  ·  1 Spectrum  ·  2 Twin Wave  ·  3 Halo"
+        <TextBlock Text="{Binding Loc[Stage_Hint]}"
                    HorizontalAlignment="Center"
                    VerticalAlignment="Bottom"
                    Margin="0,0,0,24"

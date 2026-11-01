@@ -1,4 +1,5 @@
 using CommunityToolkit.Mvvm.ComponentModel;
+using Mimi.Localization;
 using Mimi.Models;
 
 namespace Mimi.ViewModels;
@@ -6,8 +7,13 @@ namespace Mimi.ViewModels;
 /// <summary>Presentation state for one playlist in the sidebar.</summary>
 public sealed partial class PlaylistItemViewModel : ObservableObject
 {
-    public PlaylistItemViewModel(Playlist playlist)
+    private readonly LocalizationService loc;
+
+    public PlaylistItemViewModel(
+        Playlist playlist,
+        LocalizationService? localizationService = null)
     {
+        loc = localizationService ?? new LocalizationService();
         Playlist = playlist;
         name = playlist.Name;
         trackCount = Math.Max(0, playlist.TrackCount);
@@ -24,7 +30,10 @@ public sealed partial class PlaylistItemViewModel : ObservableObject
     [NotifyPropertyChangedFor(nameof(CountLabel))]
     private int trackCount;
 
-    public string CountLabel => $"{TrackCount} song(s)";
+    public string CountLabel => loc.Format("Playlist_Count", TrackCount);
+
+    internal void RefreshLocalizedLabels() =>
+        OnPropertyChanged(nameof(CountLabel));
 
     public void Update(Playlist updated)
     {

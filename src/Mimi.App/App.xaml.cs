@@ -73,9 +73,9 @@ public partial class App : Application
         catch (Exception ex)
         {
             Log.Fatal(ex, "Mimi failed to start");
+            var loc = new LocalizationService();
             MessageBox.Show(
-                "Mimi couldn't start. Details were written to the log in " +
-                "%LocalAppData%\\Mimi\\logs.",
+                loc["App_StartupFailed"],
                 "Mimi",
                 MessageBoxButton.OK,
                 MessageBoxImage.Error);
@@ -180,10 +180,9 @@ public partial class App : Application
     {
         Log.Error(e.Exception, "Unhandled UI exception");
         e.Handled = true;
+        var loc = new LocalizationService();
         MessageBox.Show(
-            "Mimi hit an unexpected problem, but it will try to keep " +
-            "running. Details were written to the log in " +
-            "%LocalAppData%\\Mimi\\logs.",
+            loc["App_UnexpectedProblem"],
             "Mimi",
             MessageBoxButton.OK,
             MessageBoxImage.Warning);

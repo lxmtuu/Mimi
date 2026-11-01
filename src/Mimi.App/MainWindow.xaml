@@ -121,21 +121,21 @@
                          ProgressValue="{Binding TaskbarProgressValue}">
             <TaskbarItemInfo.ThumbButtonInfos>
                 <ThumbButtonInfoCollection>
-                    <ThumbButtonInfo Description="Previous"
+                    <ThumbButtonInfo Description="{Binding Loc[Common_Previous]}"
                                      ImageSource="{StaticResource TaskbarPreviousImage}"
                                      Command="{Binding PreviousCommand}"
                                      DismissWhenClicked="False"/>
-                    <ThumbButtonInfo Description="Play"
+                    <ThumbButtonInfo Description="{Binding Loc[Common_Play]}"
                                      ImageSource="{StaticResource TaskbarPlayImage}"
                                      Command="{Binding PlayPauseCommand}"
                                      Visibility="{Binding TaskbarPlayButtonVisibility}"
                                      DismissWhenClicked="False"/>
-                    <ThumbButtonInfo Description="Pause"
+                    <ThumbButtonInfo Description="{Binding Loc[Common_Pause]}"
                                      ImageSource="{StaticResource TaskbarPauseImage}"
                                      Command="{Binding PlayPauseCommand}"
                                      Visibility="{Binding TaskbarPauseButtonVisibility}"
                                      DismissWhenClicked="False"/>
-                    <ThumbButtonInfo Description="Next"
+                    <ThumbButtonInfo Description="{Binding Loc[Common_Next]}"
                                      ImageSource="{StaticResource TaskbarNextImage}"
                                      Command="{Binding NextCommand}"
                                      DismissWhenClicked="False"/>
@@ -159,7 +159,7 @@
                 </Border>
                 <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
                     <TextBlock Text="MIMI" FontSize="18" FontWeight="Bold"/>
-                    <TextBlock Text="MUSIC UNIVERSE" FontSize="10" Foreground="#9FB2C8"/>
+                    <TextBlock Text="{Binding Loc[App_MusicUniverse]}" FontSize="10" Foreground="#9FB2C8"/>
                 </StackPanel>
             </StackPanel>
             <TextBlock Text="{Binding Loc[App_Tagline]}" Foreground="#9FB2C8"
@@ -178,49 +178,49 @@
                     <StackPanel DockPanel.Dock="Top">
                         <TextBlock Text="{Binding Loc[Nav_YourSpace]}" Foreground="#9FB2C8" FontSize="11" Margin="8,10,0,14"/>
                         <Button Command="{Binding ShowHomeCommand}" HorizontalContentAlignment="Left"
-                                Background="#203A48" AutomationProperties.Name="Home">
+                                Background="#203A48" AutomationProperties.Name="{Binding Loc[Nav_Home]}">
                             <StackPanel Orientation="Horizontal">
                                 <Path Data="{StaticResource HomeIconGeometry}" Style="{StaticResource IconPathStyle}"/>
                                 <TextBlock Text="{Binding Loc[Nav_Home]}" Margin="10,0,0,0" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
                         <Button Command="{Binding ShowLibraryCommand}" HorizontalContentAlignment="Left"
-                                AutomationProperties.Name="My library">
+                                AutomationProperties.Name="{Binding Loc[Nav_MyLibrary]}">
                             <StackPanel Orientation="Horizontal">
                                 <Path Data="{StaticResource MusicIconGeometry}" Style="{StaticResource IconPathStyle}"/>
                                 <TextBlock Text="{Binding Loc[Nav_MyLibrary]}" Margin="10,0,0,0" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
                         <Button Command="{Binding ToggleFavoritesViewCommand}" HorizontalContentAlignment="Left"
-                                AutomationProperties.Name="Favorites">
+                                AutomationProperties.Name="{Binding Loc[Nav_Favorites]}">
                             <StackPanel Orientation="Horizontal">
                                 <Path Data="{StaticResource HeartIconGeometry}" Style="{StaticResource IconPathStyle}"/>
                                 <TextBlock Text="{Binding Loc[Nav_Favorites]}" Margin="10,0,0,0" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
                         <Button Command="{Binding ShowRecentCommand}" HorizontalContentAlignment="Left"
-                                AutomationProperties.Name="Recently played">
+                                AutomationProperties.Name="{Binding Loc[Nav_RecentlyPlayed]}">
                             <StackPanel Orientation="Horizontal">
                                 <Path Data="{StaticResource HistoryIconGeometry}" Style="{StaticResource IconPathStyle}"/>
                                 <TextBlock Text="{Binding Loc[Nav_RecentlyPlayed]}" Margin="10,0,0,0" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
                         <Button Command="{Binding AddFilesCommand}" HorizontalContentAlignment="Left"
-                                AutomationProperties.Name="Add music files">
+                                AutomationProperties.Name="{Binding Loc[Nav_AddMusicFiles]}">
                             <StackPanel Orientation="Horizontal">
                                 <Path Data="{StaticResource PlusIconGeometry}" Style="{StaticResource IconPathStyle}"/>
                                 <TextBlock Text="{Binding Loc[Nav_AddMusicFiles]}" Margin="10,0,0,0" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
                         <Button Command="{Binding AddFolderCommand}" HorizontalContentAlignment="Left"
-                                AutomationProperties.Name="Scan a folder">
+                                AutomationProperties.Name="{Binding Loc[Nav_ScanFolder]}">
                             <StackPanel Orientation="Horizontal">
                                 <Path Data="{StaticResource FolderIconGeometry}" Style="{StaticResource IconPathStyle}"/>
                                 <TextBlock Text="{Binding Loc[Nav_ScanFolder]}" Margin="10,0,0,0" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
                         <Button Command="{Binding OpenSettingsCommand}" HorizontalContentAlignment="Left"
-                                AutomationProperties.Name="Settings">
+                                AutomationProperties.Name="{Binding Loc[Nav_Settings]}">
                             <StackPanel Orientation="Horizontal">
                                 <Path Data="{StaticResource SettingsIconGeometry}" Style="{StaticResource IconPathStyle}"/>
                                 <TextBlock Text="{Binding Loc[Nav_Settings]}" Margin="10,0,0,0" VerticalAlignment="Center"/>
@@ -232,7 +232,7 @@
                                        VerticalAlignment="Center"/>
                             <Button Command="{Binding CreatePlaylistCommand}" DockPanel.Dock="Right"
                                     Padding="8,3" Margin="8,0,0,0" ToolTip="{Binding Loc[Playlist_New]}"
-                                    AutomationProperties.Name="New playlist">
+                                    AutomationProperties.Name="{Binding Loc[Playlist_New]}">
                                 <Path Data="{StaticResource PlusIconGeometry}"
                                       Style="{StaticResource IconPathStyle}"/>
                             </Button>
@@ -241,19 +241,19 @@
                                      IsEnabled="{Binding HasSelectedPlaylist}">
                             <Button Content="{Binding Loc[Common_Play]}" Command="{Binding PlaySelectedPlaylistCommand}"
                                     Padding="6,6" FontSize="11"
-                                    AutomationProperties.Name="Play selected playlist"/>
+                                    AutomationProperties.Name="{Binding Loc[Playlist_PlaySelected]}"/>
                             <Button Content="{Binding Loc[Common_Rename]}" Command="{Binding RenameSelectedPlaylistCommand}"
                                     Padding="6,6" FontSize="11"
-                                    AutomationProperties.Name="Rename selected playlist"/>
+                                    AutomationProperties.Name="{Binding Loc[Playlist_RenameSelected]}"/>
                             <Button Content="{Binding Loc[Common_Delete]}" Command="{Binding DeleteSelectedPlaylistCommand}"
                                     Padding="6,6" FontSize="11"
-                                    AutomationProperties.Name="Delete selected playlist"/>
+                                    AutomationProperties.Name="{Binding Loc[Playlist_DeleteSelected]}"/>
                         </UniformGrid>
                     </StackPanel>
                     <Border DockPanel.Dock="Bottom" Background="#172638" CornerRadius="12" Padding="12" Margin="2,14,2,2">
                         <StackPanel>
                             <TextBlock Text="MIMI BETA" Foreground="{StaticResource AccentBrush}" FontWeight="Bold"/>
-                            <TextBlock Text="The first step toward your own anime music universe." TextWrapping="Wrap" Foreground="#AEC2D6" FontSize="11" Margin="0,6,0,0"/>
+                            <TextBlock Text="{Binding Loc[Nav_BetaDescription]}" TextWrapping="Wrap" Foreground="#AEC2D6" FontSize="11" Margin="0,6,0,0"/>
                         </StackPanel>
                     </Border>
 
@@ -263,7 +263,7 @@
                                  Background="Transparent" BorderThickness="0"
                                  Foreground="#EAF2FC"
                                  ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                                 AutomationProperties.Name="Playlists">
+                                 AutomationProperties.Name="{Binding Loc[Playlist_List]}">
                             <ListBox.ItemTemplate>
                                 <DataTemplate>
                                     <Grid Margin="4,3">
@@ -289,8 +289,8 @@
                                         <Button Grid.Column="1" Padding="7,4" Margin="6,0,0,0"
                                                 Command="{Binding DataContext.PlayPlaylistCommand, RelativeSource={RelativeSource AncestorType={x:Type ListBox}}}"
                                                 CommandParameter="{Binding}"
-                                                ToolTip="Play playlist"
-                                                AutomationProperties.Name="Play playlist">
+                                                ToolTip="{Binding DataContext.Loc[Playlist_Play], RelativeSource={RelativeSource AncestorType={x:Type ListBox}}}"
+                                                AutomationProperties.Name="{Binding DataContext.Loc[Playlist_Play], RelativeSource={RelativeSource AncestorType={x:Type ListBox}}}">
                                             <Path Data="{StaticResource PlayIconGeometry}"
                                                   Style="{StaticResource IconPathStyle}"/>
                                         </Button>
@@ -349,16 +349,16 @@
                     </Border.Background>
                     <Grid>
                         <StackPanel VerticalAlignment="Center" MaxWidth="360" HorizontalAlignment="Left">
-                            <TextBlock Text="WELCOME TO YOUR UNIVERSE" Foreground="{StaticResource AccentBrush}" FontSize="11"/>
-                            <TextBlock Text="Every song tells&#10;a different story." FontSize="30" FontWeight="Bold" Margin="0,12,0,8"/>
-                            <TextBlock Text="Build your library. Find your rhythm. Make this space yours."
+                            <TextBlock Text="{Binding Loc[Home_Welcome]}" Foreground="{StaticResource AccentBrush}" FontSize="11"/>
+                            <TextBlock Text="{Binding Loc[Home_HeroTitle]}" FontSize="30" FontWeight="Bold" Margin="0,12,0,8"/>
+                            <TextBlock Text="{Binding Loc[Home_HeroDescription]}"
                                        Foreground="#B7C9DB" TextWrapping="Wrap" FontSize="13" Margin="0,0,0,14"/>
                             <Button Command="{Binding AddFilesCommand}" HorizontalAlignment="Left"
                                     Background="{StaticResource AccentBrush}" Foreground="#07151B"
-                                    FontWeight="Bold" AutomationProperties.Name="Add your first songs">
+                                    FontWeight="Bold" AutomationProperties.Name="{Binding Loc[Home_AddFirstSongs]}">
                                 <StackPanel Orientation="Horizontal">
                                     <Path Data="{StaticResource PlusIconGeometry}" Style="{StaticResource IconPathStyle}"/>
-                                    <TextBlock Text="Add your first songs" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding Loc[Home_AddFirstSongs]}" Margin="8,0,0,0" VerticalAlignment="Center"/>
                                 </StackPanel>
                             </Button>
                         </StackPanel>
@@ -382,9 +382,9 @@
                             <DockPanel LastChildFill="False">
                                 <TextBlock Text="{Binding ScanStatusLabel}" Foreground="#B7C7DA" FontSize="11"
                                            TextTrimming="CharacterEllipsis" MaxWidth="250"/>
-                                <Button Content="Cancel" Command="{Binding CancelScanCommand}" DockPanel.Dock="Right"
+                                <Button Content="{Binding Loc[Common_Cancel]}" Command="{Binding CancelScanCommand}" DockPanel.Dock="Right"
                                         Padding="8,3" Margin="8,0,0,0" FontSize="11"
-                                        AutomationProperties.Name="Cancel library scan"/>
+                                        AutomationProperties.Name="{Binding Loc[Library_CancelScanAutomation]}"/>
                             </DockPanel>
                             <ProgressBar Minimum="0" Maximum="100" Height="5" Margin="0,6,0,0"
                                          Value="{Binding ScanProgressPercent, Mode=OneWay}"/>
@@ -394,20 +394,20 @@
                                    AutomationProperties.LiveSetting="Polite"/>
                         <WrapPanel Margin="0,4,12,0"
                                    Visibility="{Binding IsPlaylistView, Converter={StaticResource BooleanToVisibilityConverter}}">
-                            <Button Content="↑ Up" Command="{Binding MoveSelectedPlaylistTrackUpCommand}"
+                            <Button Content="{Binding Loc[Library_UpButton]}" Command="{Binding MoveSelectedPlaylistTrackUpCommand}"
                                     IsEnabled="{Binding IsPlaylistReorderEnabled}"
                                     Padding="8,4" Margin="0,0,4,4" FontSize="11"
-                                    AutomationProperties.Name="Move selected song up in playlist"/>
-                            <Button Content="↓ Down" Command="{Binding MoveSelectedPlaylistTrackDownCommand}"
+                                    AutomationProperties.Name="{Binding Loc[Library_MoveSelectedSongUp]}"/>
+                            <Button Content="{Binding Loc[Library_DownButton]}" Command="{Binding MoveSelectedPlaylistTrackDownCommand}"
                                     IsEnabled="{Binding IsPlaylistReorderEnabled}"
                                     Padding="8,4" Margin="0,0,4,4" FontSize="11"
-                                    AutomationProperties.Name="Move selected song down in playlist"/>
-                            <Button Content="Remove from playlist"
+                                    AutomationProperties.Name="{Binding Loc[Library_MoveSelectedSongDown]}"/>
+                            <Button Content="{Binding Loc[Playlist_RemoveFromPlaylist]}"
                                     Command="{Binding RemoveSelectedTrackFromPlaylistCommand}"
                                     Padding="8,4" Margin="0,0,4,4" FontSize="11"
-                                    AutomationProperties.Name="Remove selected song from playlist"/>
+                                    AutomationProperties.Name="{Binding Loc[Playlist_RemoveSelectedSong]}"/>
                         </WrapPanel>
-                        <TextBlock Text="Drag songs to rearrange this playlist."
+                        <TextBlock Text="{Binding Loc[Playlist_DragRearrange]}"
                                    Foreground="#94A9C2" FontSize="10"
                                    Visibility="{Binding IsPlaylistReorderEnabled, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                     </StackPanel>
@@ -415,69 +415,69 @@
                              Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
                              Width="190" MinWidth="140" Height="34" VerticalContentAlignment="Center"
                              Background="#172638" Foreground="White" BorderThickness="0" Padding="10,0"
-                             ToolTip="Search songs" AutomationProperties.Name="Search songs"/>
+                             ToolTip="{Binding Loc[Library_SearchSongs]}" AutomationProperties.Name="{Binding Loc[Library_SearchSongs]}"/>
                 </DockPanel>
 
                 <WrapPanel Grid.Row="2" Margin="2,0,2,10" VerticalAlignment="Center">
-                    <TextBlock Text="Filters" Foreground="#9FB2C8" FontSize="11"
+                    <TextBlock Text="{Binding Loc[Library_Filters]}" Foreground="#9FB2C8" FontSize="11"
                                FontWeight="SemiBold" VerticalAlignment="Center"
                                Margin="0,0,8,4"/>
                     <ComboBox ItemsSource="{Binding ArtistFilterOptions}"
                               SelectedItem="{Binding SelectedArtistFilter, Mode=TwoWay}"
                               Width="132" Height="30" Margin="0,0,6,4" Padding="6,2"
                               Background="#172638" Foreground="White" BorderThickness="0"
-                              ToolTip="Filter by artist"
-                              AutomationProperties.Name="Filter by artist"/>
+                              ToolTip="{Binding Loc[Library_FilterByArtist]}"
+                              AutomationProperties.Name="{Binding Loc[Library_FilterByArtist]}"/>
                     <ComboBox ItemsSource="{Binding AlbumFilterOptions}"
                               SelectedItem="{Binding SelectedAlbumFilter, Mode=TwoWay}"
                               Width="132" Height="30" Margin="0,0,6,4" Padding="6,2"
                               Background="#172638" Foreground="White" BorderThickness="0"
-                              ToolTip="Filter by album"
-                              AutomationProperties.Name="Filter by album"/>
+                              ToolTip="{Binding Loc[Library_FilterByAlbum]}"
+                              AutomationProperties.Name="{Binding Loc[Library_FilterByAlbum]}"/>
                     <ComboBox ItemsSource="{Binding GenreFilterOptions}"
                               SelectedItem="{Binding SelectedGenreFilter, Mode=TwoWay}"
                               Width="118" Height="30" Margin="0,0,6,4" Padding="6,2"
                               Background="#172638" Foreground="White" BorderThickness="0"
-                              ToolTip="Filter by genre"
-                              AutomationProperties.Name="Filter by genre"/>
+                              ToolTip="{Binding Loc[Library_FilterByGenre]}"
+                              AutomationProperties.Name="{Binding Loc[Library_FilterByGenre]}"/>
                     <ComboBox ItemsSource="{Binding FormatFilterOptions}"
                               SelectedItem="{Binding SelectedFormatFilter, Mode=TwoWay}"
                               Width="108" Height="30" Margin="0,0,6,4" Padding="6,2"
                               Background="#172638" Foreground="White" BorderThickness="0"
-                              ToolTip="Filter by format"
-                              AutomationProperties.Name="Filter by format"/>
+                              ToolTip="{Binding Loc[Library_FilterByFormat]}"
+                              AutomationProperties.Name="{Binding Loc[Library_FilterByFormat]}"/>
                     <ComboBox ItemsSource="{Binding PlaybackStateFilterOptions}"
                               SelectedItem="{Binding SelectedPlaybackStateFilter, Mode=TwoWay}"
                               Width="112" Height="30" Margin="0,0,6,4" Padding="6,2"
                               Background="#172638" Foreground="White" BorderThickness="0"
-                              ToolTip="Filter by playback state"
-                              AutomationProperties.Name="Filter by playback state"/>
-                    <Button Content="Clear" Command="{Binding ClearLibraryFiltersCommand}"
+                              ToolTip="{Binding Loc[Library_FilterByPlaybackState]}"
+                              AutomationProperties.Name="{Binding Loc[Library_FilterByPlaybackState]}"/>
+                    <Button Content="{Binding Loc[Common_Clear]}" Command="{Binding ClearLibraryFiltersCommand}"
                             Padding="9,5" Margin="0,0,10,4" FontSize="11"
-                            AutomationProperties.Name="Clear search, filters, and sorting"/>
+                            AutomationProperties.Name="{Binding Loc[Library_ClearFiltersAutomation]}"/>
                     <TextBlock Text="{Binding SelectedTracksCountLabel}" Foreground="#B7C9DB"
                                FontSize="11" VerticalAlignment="Center" Margin="2,0,6,4"
                                Visibility="{Binding HasSelectedTracks, Converter={StaticResource BooleanToVisibilityConverter}}"/>
-                    <Button Content="Play next"
+                    <Button Content="{Binding Loc[Library_PlayNext]}"
                             Command="{Binding PlayNextSelectedCommand}"
                             Padding="9,5" Margin="0,0,6,4" FontSize="11"
                             Visibility="{Binding HasSelectedTracks, Converter={StaticResource BooleanToVisibilityConverter}}"
-                            AutomationProperties.Name="Play selected songs next"/>
-                    <Button Content="Add to queue"
+                            AutomationProperties.Name="{Binding Loc[Library_PlaySelectedSongsNext]}"/>
+                    <Button Content="{Binding Loc[Library_AddToQueue]}"
                             Command="{Binding AddSelectedToQueueCommand}"
                             Padding="9,5" Margin="0,0,6,4" FontSize="11"
                             Visibility="{Binding HasSelectedTracks, Converter={StaticResource BooleanToVisibilityConverter}}"
-                            AutomationProperties.Name="Add selected songs to queue"/>
-                    <Button Content="♥ Favorite selected"
+                            AutomationProperties.Name="{Binding Loc[Library_AddSelectedSongsToQueue]}"/>
+                    <Button Content="{Binding Loc[Library_FavoriteSelected]}"
                             Command="{Binding ToggleSelectedFavoritesCommand}"
                             Padding="9,5" Margin="0,0,6,4" FontSize="11"
                             Visibility="{Binding HasMultipleSelectedTracks, Converter={StaticResource BooleanToVisibilityConverter}}"
-                            AutomationProperties.Name="Toggle favorites for selected songs"/>
-                    <Button Content="Remove selected"
+                            AutomationProperties.Name="{Binding Loc[Library_ToggleFavoritesSelected]}"/>
+                    <Button Content="{Binding Loc[Common_RemoveSelected]}"
                             Command="{Binding RemoveSelectedTrackCommand}"
                             Padding="9,5" Margin="0,0,0,4" FontSize="11"
                             Visibility="{Binding HasMultipleSelectedTracks, Converter={StaticResource BooleanToVisibilityConverter}}"
-                            AutomationProperties.Name="Remove selected songs from library"/>
+                            AutomationProperties.Name="{Binding Loc[Library_RemoveSelectedSongs]}"/>
                 </WrapPanel>
 
                 <Border Grid.Row="3" Background="{StaticResource PanelBrush}" CornerRadius="16" Padding="8">
@@ -485,7 +485,7 @@
                               SelectedItem="{Binding SelectedTrack, Mode=TwoWay}"
                               SelectionMode="Extended"
                               Background="Transparent" BorderThickness="0"
-                              Foreground="#EAF2FC" AutomationProperties.Name="Track list"
+                              Foreground="#EAF2FC" AutomationProperties.Name="{Binding Loc[Library_TrackList]}"
                               behaviors:SelectedItemsBehavior.SelectedItems="{Binding SelectedTracks}"
                               behaviors:PlaylistReorderBehavior.MoveCommand="{Binding MovePlaylistTrackCommand}"
                               behaviors:PlaylistReorderBehavior.IsReorderEnabled="{Binding IsPlaylistReorderEnabled}">
@@ -496,31 +496,21 @@
                         </ListView.InputBindings>
                         <ListView.ContextMenu>
                             <ContextMenu>
-                                <MenuItem Header="Play"
+                                <MenuItem Header="{Binding PlacementTarget.DataContext.Loc[Common_Play], RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"
                                           Command="{Binding PlacementTarget.DataContext.PlayTrackCommand, RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"
                                           CommandParameter="{Binding PlacementTarget.DataContext.SelectedTrack, RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"/>
-                                <MenuItem Header="Play selected next"
+                                <MenuItem Header="{Binding PlacementTarget.DataContext.Loc[Library_PlaySelectedNext], RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"
                                           Command="{Binding PlacementTarget.DataContext.PlayNextSelectedCommand, RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"/>
-                                <MenuItem Header="Add selected to queue"
+                                <MenuItem Header="{Binding PlacementTarget.DataContext.Loc[Library_AddSelectedToQueue], RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"
                                           Command="{Binding PlacementTarget.DataContext.AddSelectedToQueueCommand, RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"/>
                                 <Separator/>
-                                <MenuItem Command="{Binding PlacementTarget.DataContext.ToggleFavoriteCommand, RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"
-                                          CommandParameter="{Binding PlacementTarget.DataContext.SelectedTrack, RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}">
-                                    <MenuItem.Style>
-                                        <Style TargetType="{x:Type MenuItem}">
-                                            <Setter Property="Header" Value="Add to favorites"/>
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding PlacementTarget.DataContext.SelectedTrack.IsFavorite, RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}" Value="True">
-                                                    <Setter Property="Header" Value="Remove from favorites"/>
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </MenuItem.Style>
-                                </MenuItem>
-                                <MenuItem Header="Toggle favorites for selected songs"
+                                <MenuItem Header="{Binding PlacementTarget.DataContext.SelectedTrackFavoriteMenuLabel, RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"
+                                          Command="{Binding PlacementTarget.DataContext.ToggleFavoriteCommand, RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"
+                                          CommandParameter="{Binding PlacementTarget.DataContext.SelectedTrack, RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"/>
+                                <MenuItem Header="{Binding PlacementTarget.DataContext.Loc[Library_ToggleFavoritesSelected], RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"
                                           Command="{Binding PlacementTarget.DataContext.ToggleSelectedFavoritesCommand, RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"
                                           IsEnabled="{Binding PlacementTarget.DataContext.HasMultipleSelectedTracks, RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"/>
-                                <MenuItem Header="Add to playlist"
+                                <MenuItem Header="{Binding PlacementTarget.DataContext.Loc[Playlist_AddToPlaylist], RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"
                                           ItemsSource="{Binding PlacementTarget.DataContext.Playlists, RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}">
                                     <MenuItem.ItemContainerStyle>
                                         <Style TargetType="{x:Type MenuItem}">
@@ -530,18 +520,18 @@
                                         </Style>
                                     </MenuItem.ItemContainerStyle>
                                 </MenuItem>
-                                <MenuItem Header="Remove from this playlist"
+                                <MenuItem Header="{Binding PlacementTarget.DataContext.Loc[Playlist_RemoveFromThisPlaylist], RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"
                                           Command="{Binding PlacementTarget.DataContext.RemoveSelectedTrackFromPlaylistCommand, RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"
                                           IsEnabled="{Binding PlacementTarget.DataContext.IsPlaylistView, RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"/>
                                 <Separator/>
-                                <MenuItem Header="Move up in playlist"
+                                <MenuItem Header="{Binding PlacementTarget.DataContext.Loc[Playlist_MoveUp], RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"
                                           Command="{Binding PlacementTarget.DataContext.MoveSelectedPlaylistTrackUpCommand, RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"
                                           IsEnabled="{Binding PlacementTarget.DataContext.IsPlaylistReorderEnabled, RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"/>
-                                <MenuItem Header="Move down in playlist"
+                                <MenuItem Header="{Binding PlacementTarget.DataContext.Loc[Playlist_MoveDown], RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"
                                           Command="{Binding PlacementTarget.DataContext.MoveSelectedPlaylistTrackDownCommand, RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"
                                           IsEnabled="{Binding PlacementTarget.DataContext.IsPlaylistReorderEnabled, RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"/>
                                 <Separator/>
-                                <MenuItem Header="Remove selected from library"
+                                <MenuItem Header="{Binding PlacementTarget.DataContext.Loc[Library_RemoveSelectedFromLibrary], RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"
                                           Command="{Binding PlacementTarget.DataContext.RemoveSelectedTrackCommand, RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"/>
                             </ContextMenu>
                         </ListView.ContextMenu>
@@ -568,7 +558,10 @@
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
-                                <GridViewColumn Header="COVER" Width="54">
+                                <GridViewColumn Width="54">
+                                    <GridViewColumn.Header>
+                                        <TextBlock Text="{Binding DataContext.Loc[Library_CoverHeader], RelativeSource={RelativeSource AncestorType={x:Type ListView}}}"/>
+                                    </GridViewColumn.Header>
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <Image Source="{Binding CoverThumbnailPath}"
@@ -585,7 +578,7 @@
                                                 Command="{Binding DataContext.SortTracksCommand, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}"
                                                 CommandParameter="Title"
                                                 Style="{StaticResource ColumnHeaderButtonStyle}"
-                                                AutomationProperties.Name="Sort by title"/>
+                                                AutomationProperties.Name="{Binding DataContext.Loc[Library_SortByTitle], RelativeSource={RelativeSource AncestorType={x:Type ListView}}}"/>
                                     </GridViewColumn.Header>
                                 </GridViewColumn>
                                 <GridViewColumn Width="110" DisplayMemberBinding="{Binding Artist}">
@@ -594,7 +587,7 @@
                                                 Command="{Binding DataContext.SortTracksCommand, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}"
                                                 CommandParameter="Artist"
                                                 Style="{StaticResource ColumnHeaderButtonStyle}"
-                                                AutomationProperties.Name="Sort by artist"/>
+                                                AutomationProperties.Name="{Binding DataContext.Loc[Library_SortByArtist], RelativeSource={RelativeSource AncestorType={x:Type ListView}}}"/>
                                     </GridViewColumn.Header>
                                 </GridViewColumn>
                                 <GridViewColumn Width="110" DisplayMemberBinding="{Binding Album}">
@@ -603,7 +596,7 @@
                                                 Command="{Binding DataContext.SortTracksCommand, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}"
                                                 CommandParameter="Album"
                                                 Style="{StaticResource ColumnHeaderButtonStyle}"
-                                                AutomationProperties.Name="Sort by album"/>
+                                                AutomationProperties.Name="{Binding DataContext.Loc[Library_SortByAlbum], RelativeSource={RelativeSource AncestorType={x:Type ListView}}}"/>
                                     </GridViewColumn.Header>
                                 </GridViewColumn>
                                 <GridViewColumn Width="95" DisplayMemberBinding="{Binding Genre}">
@@ -612,7 +605,7 @@
                                                 Command="{Binding DataContext.SortTracksCommand, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}"
                                                 CommandParameter="Genre"
                                                 Style="{StaticResource ColumnHeaderButtonStyle}"
-                                                AutomationProperties.Name="Sort by genre"/>
+                                                AutomationProperties.Name="{Binding DataContext.Loc[Library_SortByGenre], RelativeSource={RelativeSource AncestorType={x:Type ListView}}}"/>
                                     </GridViewColumn.Header>
                                 </GridViewColumn>
                                 <GridViewColumn Width="58" DisplayMemberBinding="{Binding YearLabel}">
@@ -621,7 +614,7 @@
                                                 Command="{Binding DataContext.SortTracksCommand, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}"
                                                 CommandParameter="Year"
                                                 Style="{StaticResource ColumnHeaderButtonStyle}"
-                                                AutomationProperties.Name="Sort by year"/>
+                                                AutomationProperties.Name="{Binding DataContext.Loc[Library_SortByYear], RelativeSource={RelativeSource AncestorType={x:Type ListView}}}"/>
                                     </GridViewColumn.Header>
                                 </GridViewColumn>
                                 <GridViewColumn Width="64" DisplayMemberBinding="{Binding DurationLabel}">
@@ -630,7 +623,7 @@
                                                 Command="{Binding DataContext.SortTracksCommand, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}"
                                                 CommandParameter="Duration"
                                                 Style="{StaticResource ColumnHeaderButtonStyle}"
-                                                AutomationProperties.Name="Sort by duration"/>
+                                                AutomationProperties.Name="{Binding DataContext.Loc[Library_SortByDuration], RelativeSource={RelativeSource AncestorType={x:Type ListView}}}"/>
                                     </GridViewColumn.Header>
                                 </GridViewColumn>
                                 <GridViewColumn Width="76" DisplayMemberBinding="{Binding Format}">
@@ -639,14 +632,14 @@
                                                 Command="{Binding DataContext.SortTracksCommand, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}"
                                                 CommandParameter="Format"
                                                 Style="{StaticResource ColumnHeaderButtonStyle}"
-                                                AutomationProperties.Name="Sort by format"/>
+                                                AutomationProperties.Name="{Binding DataContext.Loc[Library_SortByFormat], RelativeSource={RelativeSource AncestorType={x:Type ListView}}}"/>
                                     </GridViewColumn.Header>
                                 </GridViewColumn>
                                 <GridViewColumn Header="" Width="36">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock Text="{Binding PlaybackStatus}" Foreground="#FFB020"
-                                                       ToolTip="This file could not be played"/>
+                                                       ToolTip="{Binding DataContext.Loc[Library_FileCouldNotBePlayed], RelativeSource={RelativeSource AncestorType={x:Type ListView}}}"/>
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
@@ -678,7 +671,7 @@
                             </StackPanel>
                             <Button Command="{Binding CloseSettingsCommand}" DockPanel.Dock="Right"
                                     Content="✕" Padding="10,7" FontSize="14"
-                                    AutomationProperties.Name="Close settings"/>
+                                    AutomationProperties.Name="{Binding Loc[Settings_Close]}"/>
                         </DockPanel>
 
                         <Border Background="#172638" CornerRadius="12" Padding="14" Margin="0,18,0,0">
@@ -688,7 +681,7 @@
                                 <TextBlock Text="{Binding Loc[Settings_Language]}" Margin="0,14,0,6"/>
                                 <ComboBox SelectedValue="{Binding UiLanguage, Mode=TwoWay}"
                                           SelectedValuePath="Tag"
-                                          AutomationProperties.Name="Interface language">
+                                          AutomationProperties.Name="{Binding Loc[Settings_Language]}">
                                     <ComboBoxItem Tag="system" Content="{Binding DataContext.Loc[Language_System], RelativeSource={RelativeSource AncestorType={x:Type ComboBox}}}"/>
                                     <ComboBoxItem Tag="en-US" Content="English"/>
                                     <ComboBoxItem Tag="vi-VN" Content="Tiếng Việt"/>
@@ -709,14 +702,14 @@
                                 </DockPanel>
                                 <Slider Minimum="0" Maximum="1"
                                         Value="{Binding Volume, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                        AutomationProperties.Name="Settings volume"/>
+                                        AutomationProperties.Name="{Binding Loc[Settings_VolumeAutomation]}"/>
                                 <CheckBox IsChecked="{Binding RestorePlaybackSession, Mode=TwoWay}"
-                                          Content="Restore the previous session"
-                                          AutomationProperties.Name="Restore the previous playback session"/>
-                                <TextBlock Text="Reopens the last song at its saved position, always paused. Mimi never starts sound automatically."
+                                          Content="{Binding Loc[Settings_RestorePreviousSession]}"
+                                          AutomationProperties.Name="{Binding Loc[Settings_RestorePlaybackSessionAutomation]}"/>
+                                <TextBlock Text="{Binding Loc[Settings_RestoreSessionDescription]}"
                                            Foreground="#9FB2C8" FontSize="11" TextWrapping="Wrap" Margin="24,0,0,4"/>
                                 <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                                    <TextBlock Text="Current song: " Foreground="#9FB2C8" FontSize="11"/>
+                                    <TextBlock Text="{Binding Loc[Settings_CurrentSong]}" Foreground="#9FB2C8" FontSize="11"/>
                                     <TextBlock Text="{Binding NowPlayingTitle}" FontSize="11" FontWeight="SemiBold"
                                                TextTrimming="CharacterEllipsis" MaxWidth="220"/>
                                     <TextBlock Text=" · " Foreground="#9FB2C8" FontSize="11"/>
@@ -724,12 +717,12 @@
                                     <TextBlock Text=" / " Foreground="#9FB2C8" FontSize="11"/>
                                     <TextBlock Text="{Binding DurationLabel}" FontSize="11"/>
                                 </StackPanel>
-                                <TextBlock Text="Audio output" Foreground="#9FB2C8" FontSize="10"
+                                <TextBlock Text="{Binding Loc[Settings_AudioOutput]}" Foreground="#9FB2C8" FontSize="10"
                                            Margin="0,12,0,2"/>
                                 <TextBlock Text="{Binding AudioOutputLabel}"
                                            ToolTip="{Binding AudioOutputLabel}"
                                            FontSize="11" FontWeight="SemiBold" TextWrapping="Wrap"/>
-                                <TextBlock Text="Mimi follows Windows' default output through WASAPI shared mode (WaveOut is only a fallback). If that device changes or disappears during playback, Mimi pauses instead of moving sound unexpectedly; press Play to continue on the new output."
+                                <TextBlock Text="{Binding Loc[Settings_AudioOutputDescription]}"
                                            Foreground="#9FB2C8" FontSize="11" TextWrapping="Wrap" Margin="0,4,0,2"/>
                             </StackPanel>
                         </Border>
@@ -756,27 +749,27 @@
                                         <RowDefinition Height="Auto"/>
                                     </Grid.RowDefinitions>
                                     <TextBlock Grid.Row="0" Grid.Column="0" Text="Space" FontWeight="SemiBold" Margin="0,0,10,5"/>
-                                    <TextBlock Grid.Row="0" Grid.Column="1" Text="Play / pause" Foreground="#C7D6E7" Margin="0,0,0,5"/>
+                                    <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Loc[Shortcut_PlayPause]}" Foreground="#C7D6E7" Margin="0,0,0,5"/>
                                     <TextBlock Grid.Row="1" Grid.Column="0" Text="Ctrl + ← / →" FontWeight="SemiBold" Margin="0,0,10,5"/>
-                                    <TextBlock Grid.Row="1" Grid.Column="1" Text="Previous / next song in the queue" Foreground="#C7D6E7" Margin="0,0,0,5"/>
+                                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Loc[Shortcut_PreviousNextQueue]}" Foreground="#C7D6E7" Margin="0,0,0,5"/>
                                     <TextBlock Grid.Row="2" Grid.Column="0" Text="← / →" FontWeight="SemiBold" Margin="0,0,10,5"/>
-                                    <TextBlock Grid.Row="2" Grid.Column="1" Text="Seek back / forward 5 seconds" Foreground="#C7D6E7" Margin="0,0,0,5"/>
+                                    <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Loc[Shortcut_Seek5Seconds]}" Foreground="#C7D6E7" Margin="0,0,0,5"/>
                                     <TextBlock Grid.Row="3" Grid.Column="0" Text="↑ / ↓" FontWeight="SemiBold" Margin="0,0,10,5"/>
-                                    <TextBlock Grid.Row="3" Grid.Column="1" Text="Volume up / down by 5%" Foreground="#C7D6E7" Margin="0,0,0,5"/>
-                                    <TextBlock Grid.Row="4" Grid.Column="0" Text="Media keys" FontWeight="SemiBold" Margin="0,0,10,5"/>
-                                    <TextBlock Grid.Row="4" Grid.Column="1" Text="Control playback through Windows, even when Mimi is not focused" Foreground="#C7D6E7" TextWrapping="Wrap" Margin="0,0,0,5"/>
+                                    <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding Loc[Shortcut_Volume5Percent]}" Foreground="#C7D6E7" Margin="0,0,0,5"/>
+                                    <TextBlock Grid.Row="4" Grid.Column="0" Text="{Binding Loc[Shortcut_MediaKeys]}" FontWeight="SemiBold" Margin="0,0,10,5"/>
+                                    <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding Loc[Shortcut_MediaKeysDescription]}" Foreground="#C7D6E7" TextWrapping="Wrap" Margin="0,0,0,5"/>
                                     <TextBlock Grid.Row="5" Grid.Column="0" Text="Ctrl + F" FontWeight="SemiBold" Margin="0,0,10,5"/>
-                                    <TextBlock Grid.Row="5" Grid.Column="1" Text="Focus search" Foreground="#C7D6E7" Margin="0,0,0,5"/>
+                                    <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding Loc[Shortcut_FocusSearch]}" Foreground="#C7D6E7" Margin="0,0,0,5"/>
                                     <TextBlock Grid.Row="6" Grid.Column="0" Text="F11" FontWeight="SemiBold" Margin="0,0,10,5"/>
-                                    <TextBlock Grid.Row="6" Grid.Column="1" Text="Open / close fullscreen Stage" Foreground="#C7D6E7" Margin="0,0,0,5"/>
+                                    <TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding Loc[Shortcut_Stage]}" Foreground="#C7D6E7" Margin="0,0,0,5"/>
                                     <TextBlock Grid.Row="7" Grid.Column="0" Text="Esc" FontWeight="SemiBold" Margin="0,0,10,5"/>
-                                    <TextBlock Grid.Row="7" Grid.Column="1" Text="Close Stage or Settings" Foreground="#C7D6E7" Margin="0,0,0,5"/>
-                                    <TextBlock Grid.Row="8" Grid.Column="0" Text="1 / 2 / 3 in Stage" FontWeight="SemiBold" Margin="0,0,10,5"/>
-                                    <TextBlock Grid.Row="8" Grid.Column="1" Text="Neon Spectrum / Twin Wave / Halo Circle" Foreground="#C7D6E7" TextWrapping="Wrap" Margin="0,0,0,5"/>
-                                    <TextBlock Grid.Row="9" Grid.Column="0" Text="Delete in track list" FontWeight="SemiBold" Margin="0,0,10,0"/>
-                                    <TextBlock Grid.Row="9" Grid.Column="1" Text="Remove selected songs from the library" Foreground="#C7D6E7" TextWrapping="Wrap"/>
+                                    <TextBlock Grid.Row="7" Grid.Column="1" Text="{Binding Loc[Shortcut_CloseStageOrSettings]}" Foreground="#C7D6E7" Margin="0,0,0,5"/>
+                                    <TextBlock Grid.Row="8" Grid.Column="0" Text="{Binding Loc[Shortcut_StageModesKey]}" FontWeight="SemiBold" Margin="0,0,10,5"/>
+                                    <TextBlock Grid.Row="8" Grid.Column="1" Text="{Binding Loc[Shortcut_StageModes]}" Foreground="#C7D6E7" TextWrapping="Wrap" Margin="0,0,0,5"/>
+                                    <TextBlock Grid.Row="9" Grid.Column="0" Text="{Binding Loc[Shortcut_DeleteKey]}" FontWeight="SemiBold" Margin="0,0,10,0"/>
+                                    <TextBlock Grid.Row="9" Grid.Column="1" Text="{Binding Loc[Shortcut_DeleteDescription]}" Foreground="#C7D6E7" TextWrapping="Wrap"/>
                                 </Grid>
-                                <TextBlock Text="Space and arrow shortcuts step aside while you are typing or using lists, drop-downs and sliders. Use the −10s/+10s buttons in Now Playing for larger jumps."
+                                <TextBlock Text="{Binding Loc[Shortcut_Note]}"
                                            Foreground="#9FB2C8" FontSize="11" TextWrapping="Wrap" Margin="0,10,0,0"/>
                             </StackPanel>
                         </Border>
@@ -786,34 +779,34 @@
                                 <TextBlock Text="{Binding Loc[Settings_StartupLibrarySection]}" Foreground="{StaticResource AccentBrush}"
                                            FontSize="11" FontWeight="Bold"/>
                                 <CheckBox IsChecked="{Binding RestoreLibraryView, Mode=TwoWay}"
-                                          Content="Restore the last library view"
-                                          AutomationProperties.Name="Restore the last library view"/>
-                                <TextBlock Text="Restores the view or playlist, search, filters, sorting, and selected song."
+                                          Content="{Binding Loc[Settings_RestoreLibraryView]}"
+                                          AutomationProperties.Name="{Binding Loc[Settings_RestoreLibraryView]}"/>
+                                <TextBlock Text="{Binding Loc[Settings_RestoreLibraryViewDescription]}"
                                            Foreground="#9FB2C8" FontSize="11" TextWrapping="Wrap" Margin="24,0,0,2"/>
                                 <CheckBox IsChecked="{Binding RestoreWindowPlacement, Mode=TwoWay}"
-                                          Content="Remember window size and position"
-                                          AutomationProperties.Name="Remember window size and position"/>
-                                <TextBlock Text="Saved bounds are moved back on screen if a monitor is no longer available."
+                                          Content="{Binding Loc[Settings_RememberWindow]}"
+                                          AutomationProperties.Name="{Binding Loc[Settings_RememberWindow]}"/>
+                                <TextBlock Text="{Binding Loc[Settings_RememberWindowDescription]}"
                                            Foreground="#9FB2C8" FontSize="11" TextWrapping="Wrap" Margin="24,0,0,2"/>
                                 <CheckBox IsChecked="{Binding AutoUpgradeLegacyCoverArt, Mode=TwoWay}"
-                                          Content="Optimize older cover-art cache files"
-                                          AutomationProperties.Name="Optimize older cover-art cache files"/>
-                                <TextBlock Text="Creates 96px and 512px variants in the background for covers cached by older builds."
+                                          Content="{Binding Loc[Settings_OptimizeCoverCache]}"
+                                          AutomationProperties.Name="{Binding Loc[Settings_OptimizeCoverCache]}"/>
+                                <TextBlock Text="{Binding Loc[Settings_OptimizeCoverCacheDescription]}"
                                            Foreground="#9FB2C8" FontSize="11" TextWrapping="Wrap" Margin="24,0,0,2"/>
                                 <Border Height="1" Background="#24344A" Margin="0,12,0,4"/>
-                                <TextBlock Text="WATCHED FOLDERS" Foreground="{StaticResource AccentBrush}"
+                                <TextBlock Text="{Binding Loc[Settings_WatchedFoldersSection]}" Foreground="{StaticResource AccentBrush}"
                                            FontSize="10" FontWeight="Bold" Margin="0,4,0,0"/>
                                 <CheckBox IsChecked="{Binding WatchLibraryFolders, Mode=TwoWay}"
-                                          Content="Watch folders for music changes"
-                                          AutomationProperties.Name="Watch folders for music changes"/>
-                                <TextBlock Text="New or changed songs are scanned in the background. Songs deleted outside Mimi stay in the library and are marked missing."
+                                          Content="{Binding Loc[Settings_WatchFolders]}"
+                                          AutomationProperties.Name="{Binding Loc[Settings_WatchFolders]}"/>
+                                <TextBlock Text="{Binding Loc[Settings_WatchFoldersDescription]}"
                                            Foreground="#9FB2C8" FontSize="11" TextWrapping="Wrap" Margin="24,0,0,8"/>
                                 <ListBox ItemsSource="{Binding WatchedFolders}"
                                          SelectedItem="{Binding SelectedWatchedFolder, Mode=TwoWay}"
                                          Height="88" Background="#101A29" BorderBrush="#2B405A"
                                          Foreground="#EAF2FC"
                                          ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                                         AutomationProperties.Name="Watched music folders">
+                                         AutomationProperties.Name="{Binding Loc[Settings_WatchedFoldersList]}">
                                     <ListBox.ItemTemplate>
                                         <DataTemplate>
                                             <TextBlock Text="{Binding}" ToolTip="{Binding}"
@@ -836,22 +829,22 @@
                                     </ListBox.ItemContainerStyle>
                                 </ListBox>
                                 <WrapPanel Margin="0,8,0,0">
-                                    <Button Content="Add watched folder…"
+                                    <Button Content="{Binding Loc[Settings_AddWatchedFolder]}"
                                             Command="{Binding AddWatchedFolderCommand}"
                                             Padding="10,7" FontSize="11"
-                                            AutomationProperties.Name="Add a watched music folder"/>
-                                    <Button Content="Remove selected"
+                                            AutomationProperties.Name="{Binding Loc[Settings_AddWatchedFolderAutomation]}"/>
+                                    <Button Content="{Binding Loc[Common_RemoveSelected]}"
                                             Command="{Binding RemoveWatchedFolderCommand}"
                                             Padding="10,7" FontSize="11"
-                                            AutomationProperties.Name="Remove the selected watched folder"/>
+                                            AutomationProperties.Name="{Binding Loc[Settings_RemoveWatchedFolderAutomation]}"/>
                                 </WrapPanel>
                                 <Border Height="1" Background="#24344A" Margin="0,12,0,4"/>
-                                <TextBlock Text="WINDOWS INTEGRATION" Foreground="{StaticResource AccentBrush}"
+                                <TextBlock Text="{Binding Loc[Settings_WindowsIntegrationSection]}" Foreground="{StaticResource AccentBrush}"
                                            FontSize="10" FontWeight="Bold" Margin="0,4,0,0"/>
                                 <CheckBox IsChecked="{Binding IsOpenWithMimiRegistered, Mode=TwoWay}"
-                                          Content="Register Mimi with Windows for this account"
-                                          AutomationProperties.Name="Register Mimi with Windows for this account"/>
-                                <TextBlock Text="Adds Mimi to Explorer's Open with menu and creates or updates a Start menu shortcut carrying Mimi's app identity, so Windows media controls can show Mimi's name and icon. It never changes your current default music app; you choose defaults in Windows."
+                                          Content="{Binding Loc[Settings_RegisterWindows]}"
+                                          AutomationProperties.Name="{Binding Loc[Settings_RegisterWindows]}"/>
+                                <TextBlock Text="{Binding Loc[Settings_RegisterWindowsDescription]}"
                                            Foreground="#9FB2C8" FontSize="11" TextWrapping="Wrap" Margin="24,0,0,4"/>
                                 <TextBlock Text="{Binding OpenWithMimiStatusLabel}"
                                            Foreground="#9FB2C8" FontSize="11" TextWrapping="Wrap"
@@ -872,17 +865,17 @@
                                                FontSize="10" DockPanel.Dock="Right"/>
                                 </DockPanel>
                                 <UniformGrid Columns="3" Margin="0,10,0,0">
-                                    <Button Content="Spectrum" Command="{Binding SelectSpectrumModeCommand}"
+                                    <Button Content="{Binding Loc[Stage_ModeSpectrum]}" Command="{Binding SelectSpectrumModeCommand}"
                                             Style="{StaticResource SpectrumModeButtonStyle}"
-                                            AutomationProperties.Name="Settings Neon Spectrum visualizer mode"/>
-                                    <Button Content="Twin Wave" Command="{Binding SelectTwinWaveModeCommand}"
+                                            AutomationProperties.Name="{Binding Loc[Settings_ModeSpectrumAutomation]}"/>
+                                    <Button Content="{Binding Loc[Stage_ModeTwinWave]}" Command="{Binding SelectTwinWaveModeCommand}"
                                             Style="{StaticResource TwinWaveModeButtonStyle}"
-                                            AutomationProperties.Name="Settings Twin Wave visualizer mode"/>
-                                    <Button Content="Halo" Command="{Binding SelectHaloModeCommand}"
+                                            AutomationProperties.Name="{Binding Loc[Settings_ModeTwinWaveAutomation]}"/>
+                                    <Button Content="{Binding Loc[Stage_ModeHalo]}" Command="{Binding SelectHaloModeCommand}"
                                             Style="{StaticResource HaloModeButtonStyle}"
-                                            AutomationProperties.Name="Settings Halo Circle visualizer mode"/>
+                                            AutomationProperties.Name="{Binding Loc[Settings_ModeHaloAutomation]}"/>
                                 </UniformGrid>
-                                <TextBlock Text="Your visualizer choice is restored on the next launch."
+                                <TextBlock Text="{Binding Loc[Settings_VisualizerRestored]}"
                                            Foreground="#9FB2C8" FontSize="11" Margin="2,8,0,0"/>
                             </StackPanel>
                         </Border>
@@ -892,19 +885,19 @@
                                 <TextBlock Text="{Binding Loc[Settings_DataDiagnosticsSection]}" Foreground="{StaticResource AccentBrush}"
                                            FontSize="11" FontWeight="Bold"/>
                                 <TextBlock Text="{Binding AppVersionLabel}" FontWeight="SemiBold" Margin="0,12,0,8"/>
-                                <TextBlock Text="Data folder" Foreground="#9FB2C8" FontSize="10"/>
+                                <TextBlock Text="{Binding Loc[Settings_DataFolder]}" Foreground="#9FB2C8" FontSize="10"/>
                                 <TextBlock Text="{Binding DataDirectory}" ToolTip="{Binding DataDirectory}"
                                            TextTrimming="CharacterEllipsis" Margin="0,2,0,8"/>
-                                <TextBlock Text="Log folder" Foreground="#9FB2C8" FontSize="10"/>
+                                <TextBlock Text="{Binding Loc[Settings_LogFolder]}" Foreground="#9FB2C8" FontSize="10"/>
                                 <TextBlock Text="{Binding LogDirectory}" ToolTip="{Binding LogDirectory}"
                                            TextTrimming="CharacterEllipsis" Margin="0,2,0,8"/>
                                 <WrapPanel Margin="0,6,0,0">
-                                    <Button Content="Open data folder" Command="{Binding OpenDataFolderCommand}"
+                                    <Button Content="{Binding Loc[Settings_OpenDataFolder]}" Command="{Binding OpenDataFolderCommand}"
                                             Padding="10,7" FontSize="11"
-                                            AutomationProperties.Name="Open Mimi data folder"/>
-                                    <Button Content="Open logs" Command="{Binding OpenLogFolderCommand}"
+                                            AutomationProperties.Name="{Binding Loc[Settings_OpenDataFolderAutomation]}"/>
+                                    <Button Content="{Binding Loc[Settings_OpenLogs]}" Command="{Binding OpenLogFolderCommand}"
                                             Padding="10,7" FontSize="11"
-                                            AutomationProperties.Name="Open Mimi log folder"/>
+                                            AutomationProperties.Name="{Binding Loc[Settings_OpenLogsAutomation]}"/>
                                 </WrapPanel>
                             </StackPanel>
                         </Border>
@@ -913,12 +906,12 @@
                             <StackPanel>
                                 <TextBlock Text="{Binding Loc[Settings_DefaultsSection]}" Foreground="{StaticResource PinkBrush}"
                                            FontSize="11" FontWeight="Bold"/>
-                                <TextBlock Text="Reset preferences without deleting your library, playlists, favorites, or listening history."
+                                <TextBlock Text="{Binding Loc[Settings_ResetDescription]}"
                                            Foreground="#9FB2C8" FontSize="11" TextWrapping="Wrap" Margin="0,8,0,8"/>
                                 <Button Content="{Binding Loc[Settings_ResetSettings]}" Command="{Binding ResetSettingsCommand}"
                                         Background="#5A2A3D" HorizontalAlignment="Left"
                                         Padding="12,8" FontSize="11"
-                                        AutomationProperties.Name="Reset settings to defaults"/>
+                                        AutomationProperties.Name="{Binding Loc[Settings_ResetAutomation]}"/>
                             </StackPanel>
                         </Border>
                     </StackPanel>
@@ -945,7 +938,7 @@
                                            HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                 <controls:VisualizerView x:Name="MainVisualizer" Mode="{Binding VisualizerMode, Mode=OneWay}"
                                                          Margin="14,10,14,24" IsHitTestVisible="False"/>
-                                <TextBlock Text="MUSIC IN MOTION" FontSize="9" Foreground="#B7C9DB"
+                                <TextBlock Text="{Binding Loc[App_MusicInMotion]}" FontSize="9" Foreground="#B7C9DB"
                                            HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,14"/>
                             </Grid>
                         </Border>
@@ -955,22 +948,22 @@
                                    FontSize="12" Margin="0,5,0,18" TextWrapping="Wrap"/>
                         <Slider x:Name="ProgressSlider" Minimum="0" Maximum="100"
                                 Value="{Binding ProgressPercent, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                IsMoveToPointEnabled="True" AutomationProperties.Name="Playback position"/>
+                                IsMoveToPointEnabled="True" AutomationProperties.Name="{Binding Loc[NowPlaying_PlaybackPosition]}"/>
                         <DockPanel Margin="0,2,0,16">
                             <TextBlock Text="{Binding CurrentTimeLabel}" Foreground="#9FB2C8" FontSize="10" DockPanel.Dock="Left"/>
                             <TextBlock Text="{Binding DurationLabel}" Foreground="#9FB2C8" FontSize="10" DockPanel.Dock="Right"/>
                         </DockPanel>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                             <Button Content="−10s" Command="{Binding SeekBackward10Command}"
-                                    Padding="8,10" ToolTip="Back 10 seconds"
-                                    AutomationProperties.Name="Back 10 seconds"/>
+                                    Padding="8,10" ToolTip="{Binding Loc[Playback_Back10Seconds]}"
+                                    AutomationProperties.Name="{Binding Loc[Playback_Back10Seconds]}"/>
                             <Button Command="{Binding PreviousCommand}" Padding="12,10"
-                                    AutomationProperties.Name="Previous track">
+                                    AutomationProperties.Name="{Binding Loc[Playback_PreviousTrack]}">
                                 <Path Data="{StaticResource PreviousIconGeometry}" Style="{StaticResource IconPathStyle}"/>
                             </Button>
                             <Button Command="{Binding PlayPauseCommand}" Background="{StaticResource AccentBrush}"
                                     Foreground="#07151B" Padding="18,10"
-                                    AutomationProperties.Name="Play or pause">
+                                    AutomationProperties.Name="{Binding Loc[Playback_PlayOrPause]}">
                                 <Grid Width="20" Height="20">
                                     <Path Data="{StaticResource PlayIconGeometry}">
                                         <Path.Style>
@@ -1002,25 +995,25 @@
                                 </Grid>
                             </Button>
                             <Button Command="{Binding NextCommand}" Padding="12,10"
-                                    AutomationProperties.Name="Next track">
+                                    AutomationProperties.Name="{Binding Loc[Playback_NextTrack]}">
                                 <Path Data="{StaticResource NextIconGeometry}" Style="{StaticResource IconPathStyle}"/>
                             </Button>
                             <Button Content="+10s" Command="{Binding SeekForward10Command}"
-                                    Padding="8,10" ToolTip="Forward 10 seconds"
-                                    AutomationProperties.Name="Forward 10 seconds"/>
+                                    Padding="8,10" ToolTip="{Binding Loc[Playback_Forward10Seconds]}"
+                                    AutomationProperties.Name="{Binding Loc[Playback_Forward10Seconds]}"/>
                         </StackPanel>
                         <UniformGrid Columns="2" Margin="0,12,0,0">
                             <Button Content="{Binding ShuffleButtonLabel}"
                                     Command="{Binding ToggleShuffleCommand}"
                                     Padding="8,7" Margin="2"
-                                    AutomationProperties.Name="Toggle shuffle"/>
+                                    AutomationProperties.Name="{Binding Loc[Playback_ToggleShuffle]}"/>
                             <Button Content="{Binding RepeatModeLabel}"
                                     Command="{Binding CycleRepeatModeCommand}"
                                     Padding="8,7" Margin="2"
-                                    AutomationProperties.Name="Cycle repeat mode"/>
+                                    AutomationProperties.Name="{Binding Loc[Playback_CycleRepeatMode]}"/>
                         </UniformGrid>
                         <DockPanel Margin="4,20,4,5">
-                            <TextBlock Text="VOLUME" Foreground="#9FB2C8" FontSize="10" DockPanel.Dock="Left"/>
+                            <TextBlock Text="{Binding Loc[NowPlaying_VolumeHeader]}" Foreground="#9FB2C8" FontSize="10" DockPanel.Dock="Left"/>
                             <TextBlock Text="{Binding EffectiveVolumePercentLabel}" Foreground="#9FB2C8"
                                        FontSize="10" DockPanel.Dock="Right"/>
                         </DockPanel>
@@ -1032,10 +1025,10 @@
                             <Button Grid.Column="0" Content="{Binding MuteButtonLabel}"
                                     Command="{Binding ToggleMuteCommand}"
                                     Padding="9,6" Margin="0,0,8,0" FontSize="11"
-                                    AutomationProperties.Name="Mute or unmute"/>
+                                    AutomationProperties.Name="{Binding Loc[Playback_MuteOrUnmute]}"/>
                             <Slider Grid.Column="1" Minimum="0" Maximum="1" VerticalAlignment="Center"
                                     Value="{Binding Volume, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                    AutomationProperties.Name="Volume"/>
+                                    AutomationProperties.Name="{Binding Loc[Settings_Volume]}"/>
                         </Grid>
                         <TextBlock Text="{Binding AudioOutputLabel}"
                                    ToolTip="{Binding AudioOutputLabel}"
@@ -1062,7 +1055,7 @@
                                           Height="190" Background="#101A29" BorderBrush="#2B405A"
                                           BorderThickness="1" Foreground="#EAF2FC"
                                           ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                                          AutomationProperties.Name="Up next queue"
+                                          AutomationProperties.Name="{Binding Loc[Queue_ListAutomation]}"
                                           behaviors:PlaylistReorderBehavior.MoveCommand="{Binding MoveQueueItemCommand}"
                                           behaviors:PlaylistReorderBehavior.IsReorderEnabled="True">
                                     <ListView.InputBindings>
@@ -1072,18 +1065,18 @@
                                     </ListView.InputBindings>
                                     <ListView.ContextMenu>
                                         <ContextMenu>
-                                            <MenuItem Header="Play now"
+                                            <MenuItem Header="{Binding PlacementTarget.DataContext.Loc[Queue_PlayNow], RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"
                                                       Command="{Binding PlacementTarget.DataContext.PlayQueueItemCommand, RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"
                                                       CommandParameter="{Binding PlacementTarget.DataContext.SelectedQueueItem, RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"/>
-                                            <MenuItem Header="Move up"
+                                            <MenuItem Header="{Binding PlacementTarget.DataContext.Loc[Queue_MoveUp], RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"
                                                       Command="{Binding PlacementTarget.DataContext.MoveSelectedQueueItemUpCommand, RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"/>
-                                            <MenuItem Header="Move down"
+                                            <MenuItem Header="{Binding PlacementTarget.DataContext.Loc[Queue_MoveDown], RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"
                                                       Command="{Binding PlacementTarget.DataContext.MoveSelectedQueueItemDownCommand, RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"/>
                                             <Separator/>
-                                            <MenuItem Header="Remove from queue"
+                                            <MenuItem Header="{Binding PlacementTarget.DataContext.Loc[Queue_RemoveFromQueue], RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"
                                                       Command="{Binding PlacementTarget.DataContext.RemoveQueueItemCommand, RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"
                                                       CommandParameter="{Binding PlacementTarget.DataContext.SelectedQueueItem, RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"/>
-                                            <MenuItem Header="Clear upcoming"
+                                            <MenuItem Header="{Binding PlacementTarget.DataContext.Loc[Queue_ClearUpcoming], RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"
                                                       Command="{Binding PlacementTarget.DataContext.ClearUpcomingQueueCommand, RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"/>
                                         </ContextMenu>
                                     </ListView.ContextMenu>
@@ -1125,7 +1118,7 @@
                                         </DataTemplate>
                                     </ListView.ItemTemplate>
                                 </ListView>
-                                <TextBlock Text="Choose a song to start a queue, or right-click songs and choose Play selected next."
+                                <TextBlock Text="{Binding Loc[Queue_EmptyHint]}"
                                            Foreground="#9FB2C8" FontSize="10" TextWrapping="Wrap" Margin="2,7,2,0">
                                     <TextBlock.Style>
                                         <Style TargetType="{x:Type TextBlock}">
@@ -1139,49 +1132,49 @@
                                     </TextBlock.Style>
                                 </TextBlock>
                                 <UniformGrid Columns="4" Margin="0,8,0,0">
-                                    <Button Content="Play" Command="{Binding PlayQueueItemCommand}"
+                                    <Button Content="{Binding Loc[Common_Play]}" Command="{Binding PlayQueueItemCommand}"
                                             CommandParameter="{Binding SelectedQueueItem}"
                                             Padding="5,6" Margin="2" FontSize="10"
-                                            AutomationProperties.Name="Play selected queue song now"/>
+                                            AutomationProperties.Name="{Binding Loc[Queue_PlaySelectedAutomation]}"/>
                                     <Button Content="↑" Command="{Binding MoveSelectedQueueItemUpCommand}"
                                             Padding="5,6" Margin="2" FontSize="11"
-                                            AutomationProperties.Name="Move selected queue song up"/>
+                                            AutomationProperties.Name="{Binding Loc[Queue_MoveSelectedUp]}"/>
                                     <Button Content="↓" Command="{Binding MoveSelectedQueueItemDownCommand}"
                                             Padding="5,6" Margin="2" FontSize="11"
-                                            AutomationProperties.Name="Move selected queue song down"/>
-                                    <Button Content="Remove" Command="{Binding RemoveQueueItemCommand}"
+                                            AutomationProperties.Name="{Binding Loc[Queue_MoveSelectedDown]}"/>
+                                    <Button Content="{Binding Loc[Common_Remove]}" Command="{Binding RemoveQueueItemCommand}"
                                             CommandParameter="{Binding SelectedQueueItem}"
                                             Padding="5,6" Margin="2" FontSize="10"
-                                            AutomationProperties.Name="Remove selected song from queue"/>
+                                            AutomationProperties.Name="{Binding Loc[Queue_RemoveSelectedAutomation]}"/>
                                 </UniformGrid>
-                                <Button Content="Clear upcoming" Command="{Binding ClearUpcomingQueueCommand}"
+                                <Button Content="{Binding Loc[Queue_ClearUpcoming]}" Command="{Binding ClearUpcomingQueueCommand}"
                                         Padding="8,6" Margin="2,4,2,0" FontSize="10"
-                                        AutomationProperties.Name="Clear upcoming queue"/>
+                                        AutomationProperties.Name="{Binding Loc[Queue_ClearUpcomingAutomation]}"/>
                             </StackPanel>
                         </Border>
                         <Border Background="#172638" CornerRadius="10" Padding="10" Margin="0,18,0,0">
                             <StackPanel>
                                 <DockPanel>
-                                    <TextBlock Text="STAGE ENGINE" Foreground="{StaticResource PinkBrush}" FontSize="10" FontWeight="Bold" DockPanel.Dock="Left"/>
+                                    <TextBlock Text="{Binding Loc[Settings_StageEngineSection]}" Foreground="{StaticResource PinkBrush}" FontSize="10" FontWeight="Bold" DockPanel.Dock="Left"/>
                                     <TextBlock Text="{Binding VisualizerMetricsLabel}" Foreground="#9FB2C8" FontSize="10" DockPanel.Dock="Right"/>
                                 </DockPanel>
                                 <UniformGrid Columns="3" Margin="0,8,0,0">
-                                    <Button Content="Spectrum" Command="{Binding SelectSpectrumModeCommand}"
+                                    <Button Content="{Binding Loc[Stage_ModeSpectrum]}" Command="{Binding SelectSpectrumModeCommand}"
                                             Style="{StaticResource SpectrumModeButtonStyle}"
-                                            AutomationProperties.Name="Neon Spectrum visualizer mode"/>
-                                    <Button Content="Twin Wave" Command="{Binding SelectTwinWaveModeCommand}"
+                                            AutomationProperties.Name="{Binding Loc[Stage_ModeSpectrumAutomation]}"/>
+                                    <Button Content="{Binding Loc[Stage_ModeTwinWave]}" Command="{Binding SelectTwinWaveModeCommand}"
                                             Style="{StaticResource TwinWaveModeButtonStyle}"
-                                            AutomationProperties.Name="Twin Wave visualizer mode"/>
-                                    <Button Content="Halo" Command="{Binding SelectHaloModeCommand}"
+                                            AutomationProperties.Name="{Binding Loc[Stage_ModeTwinWaveAutomation]}"/>
+                                    <Button Content="{Binding Loc[Stage_ModeHalo]}" Command="{Binding SelectHaloModeCommand}"
                                             Style="{StaticResource HaloModeButtonStyle}"
-                                            AutomationProperties.Name="Halo Circle visualizer mode"/>
+                                            AutomationProperties.Name="{Binding Loc[Stage_ModeHaloAutomation]}"/>
                                 </UniformGrid>
                                 <Button Command="{Binding ToggleStageCommand}" Background="{StaticResource AccentBrush}" Foreground="#07151B"
                                         FontWeight="Bold" Padding="10,8" Margin="2,8,2,2"
-                                        AutomationProperties.Name="Open or close fullscreen Stage">
+                                        AutomationProperties.Name="{Binding Loc[Stage_OpenAutomation]}">
                                     <StackPanel Orientation="Horizontal">
                                         <Path Data="{StaticResource ExpandIconGeometry}" Style="{StaticResource IconPathStyle}"/>
-                                        <TextBlock Text="Open Stage (F11)" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                                        <TextBlock Text="{Binding Loc[Stage_Open]}" Margin="8,0,0,0" VerticalAlignment="Center"/>
                                     </StackPanel>
                                 </Button>
                             </StackPanel>
@@ -1192,8 +1185,8 @@
         </Grid>
 
         <DockPanel Grid.Row="2" Margin="4,14,4,0">
-            <TextBlock Text="MIMI  |  EARLY DEVELOPMENT BUILD" Foreground="#94A9C2" FontSize="10" DockPanel.Dock="Left"/>
-            <TextBlock Text="A personal music space" Foreground="#94A9C2" FontSize="10" DockPanel.Dock="Right"/>
+            <TextBlock Text="{Binding Loc[Footer_EarlyBuild]}" Foreground="#94A9C2" FontSize="10" DockPanel.Dock="Left"/>
+            <TextBlock Text="{Binding Loc[Footer_PersonalMusicSpace]}" Foreground="#94A9C2" FontSize="10" DockPanel.Dock="Right"/>
         </DockPanel>
     </Grid>
 </Window>

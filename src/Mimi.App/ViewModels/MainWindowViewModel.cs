@@ -289,7 +289,12 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     public bool HasMultipleSelectedTracks => SelectedTracks.Count > 1;
 
     public string SelectedTracksCountLabel =>
-        $"{SelectedTracks.Count} selected";
+        Loc.Format("Library_SelectedCount", SelectedTracks.Count);
+
+    public string SelectedTrackFavoriteMenuLabel =>
+        SelectedTrack?.IsFavorite == true
+            ? Loc["Library_RemoveFromFavorites"]
+            : Loc["Library_AddToFavorites"];
 
     public bool HasActiveAdvancedFilters =>
         !string.Equals(
@@ -314,25 +319,25 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
             StringComparison.Ordinal);
 
     public string TitleSortLabel =>
-        GetSortLabel("TITLE", TrackSortField.Title);
+        GetSortLabel(Loc["Library_SortTitleHeader"], TrackSortField.Title);
 
     public string ArtistSortLabel =>
-        GetSortLabel("ARTIST", TrackSortField.Artist);
+        GetSortLabel(Loc["Library_SortArtistHeader"], TrackSortField.Artist);
 
     public string AlbumSortLabel =>
-        GetSortLabel("ALBUM", TrackSortField.Album);
+        GetSortLabel(Loc["Library_SortAlbumHeader"], TrackSortField.Album);
 
     public string GenreSortLabel =>
-        GetSortLabel("GENRE", TrackSortField.Genre);
+        GetSortLabel(Loc["Library_SortGenreHeader"], TrackSortField.Genre);
 
     public string YearSortLabel =>
-        GetSortLabel("YEAR", TrackSortField.Year);
+        GetSortLabel(Loc["Library_SortYearHeader"], TrackSortField.Year);
 
     public string DurationSortLabel =>
-        GetSortLabel("TIME", TrackSortField.Duration);
+        GetSortLabel(Loc["Library_SortDurationHeader"], TrackSortField.Duration);
 
     public string FormatSortLabel =>
-        GetSortLabel("FORMAT", TrackSortField.Format);
+        GetSortLabel(Loc["Library_SortFormatHeader"], TrackSortField.Format);
 
     public bool HasSelectedPlaylist => SelectedPlaylist is not null;
 
@@ -524,9 +529,9 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         if (!EnsureCatalogForPlaylists()) return;
 
         var name = dialogService.PromptText(
-            "New playlist",
-            "Name your new playlist:",
-            "New playlist");
+            Loc["Playlist_New"],
+            Loc["Playlist_NamePrompt"],
+            Loc["Playlist_New"]);
         if (string.IsNullOrWhiteSpace(name)) return;
 
         try
@@ -534,7 +539,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
             var created = await libraryCatalog.CreatePlaylistAsync(
                 name,
                 lifetimeCancellation.Token);
-            var item = new PlaylistItemViewModel(created);
+            var item = new PlaylistItemViewModel(created, Loc);
             InsertPlaylistSorted(item);
             SelectedPlaylist = item;
         }
@@ -544,14 +549,16 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         }
         catch (ArgumentException ex)
         {
-            dialogService.ShowWarning(ex.Message, "Playlist");
+            dialogService.ShowWarning(
+                ex.Message,
+                Loc["Section_PlaylistFallback"]);
         }
         catch (Exception ex)
         {
             Log.Warning(ex, "Could not create playlist");
             dialogService.ShowWarning(
-                $"Couldn't create that playlist.\n\n{ex.Message}",
-                "Playlist");
+                Loc.Format("Playlist_CouldNotCreate", ex.Message),
+                Loc["Section_PlaylistFallback"]);
         }
     }
 
@@ -562,8 +569,8 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         if (playlist is null || !EnsureCatalogForPlaylists()) return;
 
         var name = dialogService.PromptText(
-            "Rename playlist",
-            "Enter a new name for this playlist:",
+            Loc["Playlist_RenameTitle"],
+            Loc["Playlist_RenamePrompt"],
             playlist.Name);
         if (string.IsNullOrWhiteSpace(name) ||
             string.Equals(name.Trim(), playlist.Name, StringComparison.Ordinal))
@@ -593,7 +600,9 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         }
         catch (ArgumentException ex)
         {
-            dialogService.ShowWarning(ex.Message, "Playlist");
+            dialogService.ShowWarning(
+                ex.Message,
+                Loc["Section_PlaylistFallback"]);
         }
         catch (Exception ex)
         {
@@ -602,8 +611,8 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
                 "Could not rename playlist {PlaylistId}",
                 playlist.Id);
             dialogService.ShowWarning(
-                $"Couldn't rename that playlist.\n\n{ex.Message}",
-                "Playlist");
+                Loc.Format("Playlist_CouldNotRename", ex.Message),
+                Loc["Section_PlaylistFallback"]);
         }
     }
 
@@ -614,9 +623,8 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         if (playlist is null || !EnsureCatalogForPlaylists()) return;
 
         if (!dialogService.Confirm(
-                $"Delete playlist \"{playlist.Name}\"?\n\n" +
-                "The songs will stay in your library.",
-                "Delete playlist"))
+                Loc.Format("Playlist_DeleteConfirm", playlist.Name),
+                Loc["Playlist_DeleteTitle"]))
         {
             return;
         }
@@ -646,8 +654,8 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
                 "Could not delete playlist {PlaylistId}",
                 playlist.Id);
             dialogService.ShowWarning(
-                $"Couldn't delete that playlist.\n\n{ex.Message}",
-                "Playlist");
+                Loc.Format("Playlist_CouldNotDelete", ex.Message),
+                Loc["Section_PlaylistFallback"]);
         }
     }
 
@@ -666,8 +674,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         if (firstTrack is null)
         {
             dialogService.ShowInformation(
-                "This playlist is empty. Add songs from the track list's " +
-                "\"Add to playlist\" menu.");
+                Loc["Playlist_EmptyPlayMessage"]);
             return;
         }
 
@@ -839,7 +846,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     private void CancelScan()
     {
         scanCancellation?.Cancel();
-        ScanStatusLabel = "Canceling scan…";
+        ScanStatusLabel = Loc["Scan_Canceling"];
     }
 
     private bool CanCancelScan() => IsScanning;
@@ -1295,15 +1302,15 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         }
         catch (OperationCanceledException) when (cancellation.IsCancellationRequested)
         {
-            ScanStatusLabel = "Scan canceled";
+            ScanStatusLabel = Loc["Scan_Canceled"];
             return [];
         }
         catch (Exception ex)
         {
             Log.Warning(ex, "Music file scan failed");
             dialogService.ShowWarning(
-                $"Couldn't scan those music files.\n\n{ex.Message}",
-                "Library warning");
+                Loc.Format("Scan_CouldNotScanFiles", ex.Message),
+                Loc["Dialog_LibraryWarning"]);
             return [];
         }
         finally
@@ -1330,15 +1337,15 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         }
         catch (OperationCanceledException) when (cancellation.IsCancellationRequested)
         {
-            ScanStatusLabel = "Scan canceled";
+            ScanStatusLabel = Loc["Scan_Canceled"];
             return null;
         }
         catch (Exception ex)
         {
             Log.Warning(ex, "Music folder scan failed for {Folder}", folder);
             dialogService.ShowWarning(
-                $"Couldn't scan that folder.\n\n{ex.Message}",
-                "Library warning");
+                Loc.Format("Scan_CouldNotScanFolder", ex.Message),
+                Loc["Dialog_LibraryWarning"]);
             return null;
         }
         finally
@@ -1356,7 +1363,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         scanCancellation = cancellation;
         IsScanning = true;
         ScanProgressPercent = 0;
-        ScanStatusLabel = "Scanning your music…";
+        ScanStatusLabel = Loc["Scan_ScanningMusic"];
         return cancellation;
     }
 
@@ -1384,7 +1391,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
 
         if (progress.DiscoveredFiles <= 0)
         {
-            ScanStatusLabel = "Discovering music files…";
+            ScanStatusLabel = Loc["Scan_Discovering"];
             return;
         }
 
@@ -1392,8 +1399,15 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
             ? string.Empty
             : Path.GetFileName(progress.CurrentFilePath);
         ScanStatusLabel = fileName.Length == 0
-            ? $"Scanning {progress.ProcessedFiles}/{progress.DiscoveredFiles}…"
-            : $"Scanning {progress.ProcessedFiles}/{progress.DiscoveredFiles} — {fileName}";
+            ? Loc.Format(
+                "Scan_Progress",
+                progress.ProcessedFiles,
+                progress.DiscoveredFiles)
+            : Loc.Format(
+                "Scan_ProgressWithFile",
+                progress.ProcessedFiles,
+                progress.DiscoveredFiles,
+                fileName);
     }
 
     private IReadOnlyDictionary<string, Track> KnownTracksByPath() =>
@@ -1445,7 +1459,8 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
 
             var item = new TrackItemViewModel(
                 track,
-                favorites.Contains(track.FilePath));
+                favorites.Contains(track.FilePath),
+                Loc);
             if (item.IsFavorite)
                 favorites.Add(track.FilePath);
 
@@ -1762,7 +1777,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
             lifetimeCancellation.Token);
         searchCancellation = cancellation;
         IsSearchingCatalog = true;
-        SearchStatusLabel = "Searching your library…";
+        SearchStatusLabel = Loc["Search_Searching"];
         _ = SearchCatalogAsync(query, version, cancellation.Token);
     }
 
@@ -1821,8 +1836,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
             if (version != searchRequestVersion) return;
 
             catalogSearchActive = false;
-            SearchStatusLabel =
-                "Catalog search unavailable; using local search";
+            SearchStatusLabel = Loc["Search_CatalogUnavailable"];
             Log.Warning(ex, "Catalog FTS search failed for query {Query}", query);
             ConfigureTracksView();
         }
@@ -1838,10 +1852,8 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         if (catalogAvailable) return true;
 
         dialogService.ShowWarning(
-            "Playlists are unavailable because the SQLite library catalog " +
-            "could not be opened. Mimi is currently using the legacy JSON " +
-            "fallback.",
-            "Playlist");
+            Loc["Playlist_CatalogUnavailable"],
+            Loc["Section_PlaylistFallback"]);
         return false;
     }
 
@@ -1875,7 +1887,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
                     item => item.Id == playlist.Id);
                 if (existing is null)
                 {
-                    InsertPlaylistSorted(new PlaylistItemViewModel(playlist));
+                    InsertPlaylistSorted(new PlaylistItemViewModel(playlist, Loc));
                 }
                 else
                 {
@@ -2476,6 +2488,8 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     {
         track.IsFavorite = isFavorite;
         track.Track.IsFavorite = isFavorite;
+        if (ReferenceEquals(track, SelectedTrack))
+            OnPropertyChanged(nameof(SelectedTrackFavoriteMenuLabel));
 
         if (isFavorite)
             favorites.Add(track.FilePath);

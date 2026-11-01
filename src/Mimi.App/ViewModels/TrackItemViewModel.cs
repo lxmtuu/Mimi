@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using Mimi.Core.Text;
+using Mimi.Localization;
 using Mimi.Models;
 using Mimi.Services;
 
@@ -8,8 +9,14 @@ namespace Mimi.ViewModels;
 /// <summary>Presentation state for one row in the track list.</summary>
 public sealed partial class TrackItemViewModel : ObservableObject
 {
-    public TrackItemViewModel(Track track, bool isFavorite)
+    private readonly LocalizationService loc;
+
+    public TrackItemViewModel(
+        Track track,
+        bool isFavorite,
+        LocalizationService? localizationService = null)
     {
+        loc = localizationService ?? new LocalizationService();
         Track = track;
         this.isFavorite = isFavorite || track.IsFavorite;
         track.IsFavorite = this.isFavorite;
@@ -109,10 +116,13 @@ public sealed partial class TrackItemViewModel : ObservableObject
     public string FavoriteGlyph => IsFavorite ? "♥" : "♡";
 
     public string FavoriteToolTip => IsFavorite
-        ? "Remove from favorites"
-        : "Add to favorites";
+        ? loc["Library_RemoveFromFavorites"]
+        : loc["Library_AddToFavorites"];
 
     public string PlaybackStatus => HasPlaybackError ? "⚠" : string.Empty;
+
+    internal void RefreshLocalizedLabels() =>
+        OnPropertyChanged(nameof(FavoriteToolTip));
 
     public void UpdateMetadata(Track updated)
     {

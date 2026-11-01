@@ -4,12 +4,87 @@
   <resheader name="version"><value>2.0</value></resheader>
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="App_MusicInMotion" xml:space="preserve"><value>ÂM NHẠC CHUYỂN ĐỘNG</value></data>
+  <data name="App_MusicUniverse" xml:space="preserve"><value>VŨ TRỤ ÂM NHẠC</value></data>
+  <data name="App_StartupFailed" xml:space="preserve"><value>Mimi không thể khởi động. Chi tiết đã được ghi vào nhật ký trong %LocalAppData%\Mimi\logs.</value></data>
   <data name="App_Tagline" xml:space="preserve"><value>TRÌNH PHÁT CỤC BỘ  |  ÂM NHẠC CỦA BẠN, THẾ GIỚI CỦA BẠN</value></data>
+  <data name="App_UnexpectedProblem" xml:space="preserve"><value>Mimi gặp sự cố không mong muốn nhưng sẽ cố tiếp tục chạy. Chi tiết đã được ghi vào nhật ký trong %LocalAppData%\Mimi\logs.</value></data>
+  <data name="Audio_CannotStartPlayback" xml:space="preserve"><value>Mimi không thể bắt đầu phát vì không có đầu ra âm thanh khả dụng.&#10;&#10;{0}</value></data>
+  <data name="Audio_NoOutput" xml:space="preserve"><value>Không có đầu ra âm thanh</value></data>
+  <data name="Audio_OutputReady" xml:space="preserve"><value>Đầu ra âm thanh đã sẵn sàng: {0}. Nhấn Phát để tiếp tục.</value></data>
+  <data name="Audio_WasapiShared" xml:space="preserve"><value>WASAPI shared · {0}</value></data>
+  <data name="Audio_WaveOutDiagnostic" xml:space="preserve"><value>WaveOut diagnostic · {0}</value></data>
+  <data name="Audio_WaveOutFallback" xml:space="preserve"><value>WaveOut dự phòng · {0}</value></data>
+  <data name="Audio_WindowsDefault" xml:space="preserve"><value>Mặc định Windows · {0}</value></data>
+  <data name="Audio_WindowsDefaultOutput" xml:space="preserve"><value>Đầu ra mặc định của Windows</value></data>
+  <data name="Common_Cancel" xml:space="preserve"><value>Huỷ</value></data>
+  <data name="Common_Clear" xml:space="preserve"><value>Xoá lọc</value></data>
   <data name="Common_Delete" xml:space="preserve"><value>Xoá</value></data>
+  <data name="Common_Next" xml:space="preserve"><value>Bài tiếp</value></data>
+  <data name="Common_Ok" xml:space="preserve"><value>OK</value></data>
+  <data name="Common_Pause" xml:space="preserve"><value>Tạm dừng</value></data>
   <data name="Common_Play" xml:space="preserve"><value>Phát</value></data>
+  <data name="Common_Previous" xml:space="preserve"><value>Bài trước</value></data>
+  <data name="Common_Remove" xml:space="preserve"><value>Xoá</value></data>
+  <data name="Common_RemoveSelected" xml:space="preserve"><value>Xoá mục đã chọn</value></data>
   <data name="Common_Rename" xml:space="preserve"><value>Đổi tên</value></data>
+  <data name="Dialog_AllFiles" xml:space="preserve"><value>Tất cả file</value></data>
+  <data name="Dialog_AudioFiles" xml:space="preserve"><value>File âm thanh</value></data>
+  <data name="Dialog_ChooseMusicFiles" xml:space="preserve"><value>Chọn file nhạc</value></data>
+  <data name="Dialog_ChooseMusicFolder" xml:space="preserve"><value>Chọn thư mục chứa nhạc của bạn</value></data>
+  <data name="Dialog_LibraryWarning" xml:space="preserve"><value>Cảnh báo thư viện</value></data>
+  <data name="Footer_EarlyBuild" xml:space="preserve"><value>MIMI  |  BẢN PHÁT TRIỂN SỚM</value></data>
+  <data name="Footer_PersonalMusicSpace" xml:space="preserve"><value>Không gian âm nhạc cá nhân</value></data>
+  <data name="Home_AddFirstSongs" xml:space="preserve"><value>Thêm những bài hát đầu tiên</value></data>
+  <data name="Home_HeroDescription" xml:space="preserve"><value>Xây dựng thư viện. Tìm nhịp điệu của bạn. Biến không gian này thành của riêng bạn.</value></data>
+  <data name="Home_HeroTitle" xml:space="preserve"><value>Mỗi bài hát kể&#10;một câu chuyện khác.</value></data>
+  <data name="Home_Welcome" xml:space="preserve"><value>CHÀO MỪNG ĐẾN VŨ TRỤ CỦA BẠN</value></data>
   <data name="Language_System" xml:space="preserve"><value>Dùng ngôn ngữ hệ thống</value></data>
+  <data name="Library_AddSelectedSongsToQueue" xml:space="preserve"><value>Thêm các bài đã chọn vào hàng đợi</value></data>
+  <data name="Library_AddSelectedToQueue" xml:space="preserve"><value>Thêm mục đã chọn vào hàng đợi</value></data>
+  <data name="Library_AddToFavorites" xml:space="preserve"><value>Thêm vào yêu thích</value></data>
+  <data name="Library_AddToQueue" xml:space="preserve"><value>Thêm vào hàng đợi</value></data>
+  <data name="Library_CancelScanAutomation" xml:space="preserve"><value>Huỷ quét thư viện</value></data>
+  <data name="Library_ClearFiltersAutomation" xml:space="preserve"><value>Xoá tìm kiếm, bộ lọc và sắp xếp</value></data>
+  <data name="Library_CoverHeader" xml:space="preserve"><value>BÌA</value></data>
+  <data name="Library_DownButton" xml:space="preserve"><value>↓ Xuống</value></data>
+  <data name="Library_FavoriteSelected" xml:space="preserve"><value>♥ Yêu thích mục đã chọn</value></data>
+  <data name="Library_FileCouldNotBePlayed" xml:space="preserve"><value>Không thể phát file này</value></data>
+  <data name="Library_FilterByAlbum" xml:space="preserve"><value>Lọc theo album</value></data>
+  <data name="Library_FilterByArtist" xml:space="preserve"><value>Lọc theo nghệ sĩ</value></data>
+  <data name="Library_FilterByFormat" xml:space="preserve"><value>Lọc theo định dạng</value></data>
+  <data name="Library_FilterByGenre" xml:space="preserve"><value>Lọc theo thể loại</value></data>
+  <data name="Library_FilterByPlaybackState" xml:space="preserve"><value>Lọc theo trạng thái phát</value></data>
+  <data name="Library_Filters" xml:space="preserve"><value>Bộ lọc</value></data>
+  <data name="Library_MoveSelectedSongDown" xml:space="preserve"><value>Di chuyển bài đã chọn xuống trong danh sách phát</value></data>
+  <data name="Library_MoveSelectedSongUp" xml:space="preserve"><value>Di chuyển bài đã chọn lên trong danh sách phát</value></data>
+  <data name="Library_PlayNext" xml:space="preserve"><value>Phát tiếp theo</value></data>
+  <data name="Library_PlaySelectedNext" xml:space="preserve"><value>Phát mục đã chọn tiếp theo</value></data>
+  <data name="Library_PlaySelectedSongsNext" xml:space="preserve"><value>Phát các bài đã chọn tiếp theo</value></data>
+  <data name="Library_RemoveFromFavorites" xml:space="preserve"><value>Xoá khỏi yêu thích</value></data>
+  <data name="Library_RemoveSelectedFromLibrary" xml:space="preserve"><value>Xoá mục đã chọn khỏi thư viện</value></data>
+  <data name="Library_RemoveSelectedSongs" xml:space="preserve"><value>Xoá các bài đã chọn khỏi thư viện</value></data>
+  <data name="Library_SearchSongs" xml:space="preserve"><value>Tìm kiếm bài hát</value></data>
+  <data name="Library_SelectedCount" xml:space="preserve"><value>Đã chọn {0}</value></data>
+  <data name="Library_SortAlbumHeader" xml:space="preserve"><value>ALBUM</value></data>
+  <data name="Library_SortArtistHeader" xml:space="preserve"><value>NGHỆ SĨ</value></data>
+  <data name="Library_SortByAlbum" xml:space="preserve"><value>Sắp xếp theo album</value></data>
+  <data name="Library_SortByArtist" xml:space="preserve"><value>Sắp xếp theo nghệ sĩ</value></data>
+  <data name="Library_SortByDuration" xml:space="preserve"><value>Sắp xếp theo thời lượng</value></data>
+  <data name="Library_SortByFormat" xml:space="preserve"><value>Sắp xếp theo định dạng</value></data>
+  <data name="Library_SortByGenre" xml:space="preserve"><value>Sắp xếp theo thể loại</value></data>
+  <data name="Library_SortByTitle" xml:space="preserve"><value>Sắp xếp theo tên bài</value></data>
+  <data name="Library_SortByYear" xml:space="preserve"><value>Sắp xếp theo năm</value></data>
+  <data name="Library_SortDurationHeader" xml:space="preserve"><value>THỜI GIAN</value></data>
+  <data name="Library_SortFormatHeader" xml:space="preserve"><value>ĐỊNH DẠNG</value></data>
+  <data name="Library_SortGenreHeader" xml:space="preserve"><value>THỂ LOẠI</value></data>
+  <data name="Library_SortTitleHeader" xml:space="preserve"><value>TÊN BÀI</value></data>
+  <data name="Library_SortYearHeader" xml:space="preserve"><value>NĂM</value></data>
+  <data name="Library_ToggleFavoritesSelected" xml:space="preserve"><value>Bật/tắt yêu thích cho các bài đã chọn</value></data>
+  <data name="Library_TrackList" xml:space="preserve"><value>Danh sách bài hát</value></data>
+  <data name="Library_UpButton" xml:space="preserve"><value>↑ Lên</value></data>
   <data name="Nav_AddMusicFiles" xml:space="preserve"><value>Thêm file nhạc</value></data>
+  <data name="Nav_BetaDescription" xml:space="preserve"><value>Bước đầu tiên hướng tới vũ trụ âm nhạc anime của riêng bạn.</value></data>
   <data name="Nav_Favorites" xml:space="preserve"><value>Yêu thích</value></data>
   <data name="Nav_Home" xml:space="preserve"><value>Trang chủ</value></data>
   <data name="Nav_MyLibrary" xml:space="preserve"><value>Thư viện của tôi</value></data>
@@ -20,27 +95,168 @@
   <data name="Nav_YourSpace" xml:space="preserve"><value>KHÔNG GIAN CỦA BẠN</value></data>
   <data name="NowPlaying_ChooseSong" xml:space="preserve"><value>Chọn một bài hát</value></data>
   <data name="NowPlaying_NextFavoriteWaiting" xml:space="preserve"><value>Bài yêu thích tiếp theo đang chờ bạn</value></data>
+  <data name="NowPlaying_PlaybackPosition" xml:space="preserve"><value>Vị trí phát</value></data>
   <data name="NowPlaying_Title" xml:space="preserve"><value>ĐANG PHÁT</value></data>
   <data name="NowPlaying_UpNext" xml:space="preserve"><value>SẮP PHÁT</value></data>
+  <data name="NowPlaying_VolumeHeader" xml:space="preserve"><value>ÂM LƯỢNG</value></data>
+  <data name="Playback_Back10Seconds" xml:space="preserve"><value>Lùi 10 giây</value></data>
+  <data name="Playback_CycleRepeatMode" xml:space="preserve"><value>Chuyển chế độ lặp</value></data>
+  <data name="Playback_Forward10Seconds" xml:space="preserve"><value>Tới 10 giây</value></data>
+  <data name="Playback_Mute" xml:space="preserve"><value>Tắt tiếng</value></data>
+  <data name="Playback_Muted" xml:space="preserve"><value>Đã tắt tiếng</value></data>
+  <data name="Playback_MuteOrUnmute" xml:space="preserve"><value>Tắt tiếng hoặc bật tiếng</value></data>
+  <data name="Playback_NextTrack" xml:space="preserve"><value>Bài tiếp</value></data>
+  <data name="Playback_PlayOrPause" xml:space="preserve"><value>Phát hoặc tạm dừng</value></data>
+  <data name="Playback_PreviousTrack" xml:space="preserve"><value>Bài trước</value></data>
+  <data name="Playback_RepeatAll" xml:space="preserve"><value>Lặp tất cả</value></data>
+  <data name="Playback_RepeatOff" xml:space="preserve"><value>Tắt lặp</value></data>
+  <data name="Playback_RepeatOne" xml:space="preserve"><value>Lặp một bài</value></data>
+  <data name="Playback_ShuffleOff" xml:space="preserve"><value>Ngẫu nhiên Tắt</value></data>
+  <data name="Playback_ShuffleOffStatus" xml:space="preserve"><value>Ngẫu nhiên tắt</value></data>
+  <data name="Playback_ShuffleOn" xml:space="preserve"><value>Ngẫu nhiên Bật</value></data>
+  <data name="Playback_ShuffleOnStatus" xml:space="preserve"><value>Ngẫu nhiên bật</value></data>
+  <data name="Playback_ToggleShuffle" xml:space="preserve"><value>Bật/tắt phát ngẫu nhiên</value></data>
+  <data name="Playback_Unmute" xml:space="preserve"><value>Bật tiếng</value></data>
+  <data name="Playlist_AddToPlaylist" xml:space="preserve"><value>Thêm vào danh sách phát</value></data>
+  <data name="Playlist_CatalogUnavailable" xml:space="preserve"><value>Danh sách phát không khả dụng vì không mở được catalog thư viện SQLite. Mimi hiện đang dùng phương án JSON cũ dự phòng.</value></data>
+  <data name="Playlist_CouldNotCreate" xml:space="preserve"><value>Không thể tạo danh sách phát đó.&#10;&#10;{0}</value></data>
+  <data name="Playlist_CouldNotDelete" xml:space="preserve"><value>Không thể xoá danh sách phát đó.&#10;&#10;{0}</value></data>
+  <data name="Playlist_CouldNotRename" xml:space="preserve"><value>Không thể đổi tên danh sách phát đó.&#10;&#10;{0}</value></data>
+  <data name="Playlist_Count" xml:space="preserve"><value>{0} bài</value></data>
+  <data name="Playlist_DeleteConfirm" xml:space="preserve"><value>Xoá danh sách phát &quot;{0}&quot;?&#10;&#10;Các bài hát sẽ vẫn ở trong thư viện của bạn.</value></data>
+  <data name="Playlist_DeleteSelected" xml:space="preserve"><value>Xoá danh sách phát đã chọn</value></data>
+  <data name="Playlist_DeleteTitle" xml:space="preserve"><value>Xoá danh sách phát</value></data>
+  <data name="Playlist_DragRearrange" xml:space="preserve"><value>Kéo bài hát để sắp xếp lại danh sách phát này.</value></data>
   <data name="Playlist_Empty" xml:space="preserve"><value>Chưa có danh sách phát nào. Dùng + để tạo bản phối đầu tiên.</value></data>
+  <data name="Playlist_EmptyPlayMessage" xml:space="preserve"><value>Danh sách phát này đang trống. Hãy thêm bài từ menu &quot;Thêm vào danh sách phát&quot; của danh sách bài hát.</value></data>
+  <data name="Playlist_List" xml:space="preserve"><value>Danh sách phát</value></data>
+  <data name="Playlist_MoveDown" xml:space="preserve"><value>Di chuyển xuống trong danh sách phát</value></data>
+  <data name="Playlist_MoveUp" xml:space="preserve"><value>Di chuyển lên trong danh sách phát</value></data>
+  <data name="Playlist_NamePrompt" xml:space="preserve"><value>Đặt tên cho danh sách phát mới:</value></data>
   <data name="Playlist_New" xml:space="preserve"><value>Danh sách phát mới</value></data>
+  <data name="Playlist_Play" xml:space="preserve"><value>Phát danh sách phát</value></data>
+  <data name="Playlist_PlaySelected" xml:space="preserve"><value>Phát danh sách phát đã chọn</value></data>
+  <data name="Playlist_RemoveFromPlaylist" xml:space="preserve"><value>Xoá khỏi danh sách phát</value></data>
+  <data name="Playlist_RemoveFromThisPlaylist" xml:space="preserve"><value>Xoá khỏi danh sách phát này</value></data>
+  <data name="Playlist_RemoveSelectedSong" xml:space="preserve"><value>Xoá bài đã chọn khỏi danh sách phát</value></data>
+  <data name="Playlist_RenamePrompt" xml:space="preserve"><value>Nhập tên mới cho danh sách phát này:</value></data>
+  <data name="Playlist_RenameSelected" xml:space="preserve"><value>Đổi tên danh sách phát đã chọn</value></data>
+  <data name="Playlist_RenameTitle" xml:space="preserve"><value>Đổi tên danh sách phát</value></data>
+  <data name="Prompt_TextValue" xml:space="preserve"><value>Giá trị văn bản</value></data>
+  <data name="Queue_ClearUpcoming" xml:space="preserve"><value>Xoá hàng đợi sắp phát</value></data>
+  <data name="Queue_ClearUpcomingAutomation" xml:space="preserve"><value>Xoá hàng đợi sắp phát</value></data>
+  <data name="Queue_CountPlural" xml:space="preserve"><value>{0} bài</value></data>
+  <data name="Queue_CountSingular" xml:space="preserve"><value>1 bài</value></data>
+  <data name="Queue_EmptyHint" xml:space="preserve"><value>Chọn một bài để bắt đầu hàng đợi, hoặc nhấp chuột phải vào bài và chọn Phát mục đã chọn tiếp theo.</value></data>
+  <data name="Queue_ListAutomation" xml:space="preserve"><value>Hàng đợi sắp phát</value></data>
+  <data name="Queue_MoveDown" xml:space="preserve"><value>Di chuyển xuống</value></data>
+  <data name="Queue_MoveSelectedDown" xml:space="preserve"><value>Di chuyển bài được chọn trong hàng đợi xuống</value></data>
+  <data name="Queue_MoveSelectedUp" xml:space="preserve"><value>Di chuyển bài được chọn trong hàng đợi lên</value></data>
+  <data name="Queue_MoveUp" xml:space="preserve"><value>Di chuyển lên</value></data>
+  <data name="Queue_PlayNow" xml:space="preserve"><value>Phát ngay</value></data>
+  <data name="Queue_PlaySelectedAutomation" xml:space="preserve"><value>Phát ngay bài được chọn trong hàng đợi</value></data>
+  <data name="Queue_RemoveFromQueue" xml:space="preserve"><value>Xoá khỏi hàng đợi</value></data>
+  <data name="Queue_RemoveSelectedAutomation" xml:space="preserve"><value>Xoá bài đã chọn khỏi hàng đợi</value></data>
+  <data name="Queue_Status" xml:space="preserve"><value>{0} sắp phát · {1} · {2}</value></data>
+  <data name="Scan_Canceled" xml:space="preserve"><value>Đã huỷ quét</value></data>
+  <data name="Scan_Canceling" xml:space="preserve"><value>Đang huỷ quét…</value></data>
+  <data name="Scan_CouldNotScanFiles" xml:space="preserve"><value>Không thể quét các file nhạc đó.&#10;&#10;{0}</value></data>
+  <data name="Scan_CouldNotScanFolder" xml:space="preserve"><value>Không thể quét thư mục đó.&#10;&#10;{0}</value></data>
+  <data name="Scan_Discovering" xml:space="preserve"><value>Đang tìm file nhạc…</value></data>
+  <data name="Scan_Progress" xml:space="preserve"><value>Đang quét {0}/{1}…</value></data>
+  <data name="Scan_ProgressWithFile" xml:space="preserve"><value>Đang quét {0}/{1} — {2}</value></data>
+  <data name="Scan_ScanningMusic" xml:space="preserve"><value>Đang quét nhạc của bạn…</value></data>
+  <data name="Scan_UpdatingWatchedFolders" xml:space="preserve"><value>Đang cập nhật thư mục theo dõi…</value></data>
+  <data name="Scan_WatchedFolderUpdateCanceled" xml:space="preserve"><value>Đã huỷ cập nhật thư mục theo dõi</value></data>
+  <data name="Search_CatalogUnavailable" xml:space="preserve"><value>Tìm kiếm catalog không khả dụng; đang dùng tìm kiếm cục bộ</value></data>
+  <data name="Search_Searching" xml:space="preserve"><value>Đang tìm trong thư viện…</value></data>
   <data name="Section_PlaylistFallback" xml:space="preserve"><value>Danh sách phát</value></data>
   <data name="Section_RecentlyPlayed" xml:space="preserve"><value>Đã nghe gần đây</value></data>
   <data name="Section_YourFavorites" xml:space="preserve"><value>Bài yêu thích của bạn</value></data>
   <data name="Section_YourLibrary" xml:space="preserve"><value>Thư viện của bạn</value></data>
+  <data name="Settings_AddWatchedFolder" xml:space="preserve"><value>Thêm thư mục theo dõi…</value></data>
+  <data name="Settings_AddWatchedFolderAutomation" xml:space="preserve"><value>Thêm thư mục nhạc được theo dõi</value></data>
+  <data name="Settings_AudioOutput" xml:space="preserve"><value>Đầu ra âm thanh</value></data>
+  <data name="Settings_AudioOutputDescription" xml:space="preserve"><value>Mimi dùng đầu ra mặc định của Windows qua WASAPI shared (WaveOut chỉ là phương án dự phòng). Nếu thiết bị đó thay đổi hoặc biến mất trong khi phát, Mimi sẽ tạm dừng thay vì chuyển âm thanh bất ngờ; nhấn Phát để tiếp tục trên đầu ra mới.</value></data>
   <data name="Settings_AutoSaveNote" xml:space="preserve"><value>Thay đổi được lưu tự động vào settings.json.</value></data>
+  <data name="Settings_Close" xml:space="preserve"><value>Đóng cài đặt</value></data>
+  <data name="Settings_CouldNotOpenFolder" xml:space="preserve"><value>Không thể mở thư mục đó.&#10;&#10;{0}</value></data>
+  <data name="Settings_CouldNotRegisterWindows" xml:space="preserve"><value>Không thể đăng ký Mimi với Windows.&#10;&#10;{0}</value></data>
+  <data name="Settings_CouldNotRemoveWindowsRegistration" xml:space="preserve"><value>Không thể gỡ đăng ký Windows của Mimi.&#10;&#10;{0}</value></data>
+  <data name="Settings_CurrentSong" xml:space="preserve"><value>Bài hiện tại: </value></data>
   <data name="Settings_DataDiagnosticsSection" xml:space="preserve"><value>DỮ LIỆU &amp; CHẨN ĐOÁN</value></data>
+  <data name="Settings_DataFolder" xml:space="preserve"><value>Thư mục dữ liệu</value></data>
   <data name="Settings_DefaultsSection" xml:space="preserve"><value>MẶC ĐỊNH</value></data>
   <data name="Settings_KeyboardShortcutsSection" xml:space="preserve"><value>PHÍM TẮT</value></data>
   <data name="Settings_Language" xml:space="preserve"><value>Ngôn ngữ giao diện</value></data>
   <data name="Settings_LanguageDescription" xml:space="preserve"><value>Thay đổi áp dụng ngay. Mimi sẽ tiếp tục mở rộng phần đã dịch trong Phase 5.</value></data>
   <data name="Settings_LanguageSection" xml:space="preserve"><value>NGÔN NGỮ</value></data>
+  <data name="Settings_LogFolder" xml:space="preserve"><value>Thư mục nhật ký</value></data>
+  <data name="Settings_ModeHaloAutomation" xml:space="preserve"><value>Chế độ visualizer Vòng hào quang trong Cài đặt</value></data>
+  <data name="Settings_ModeSpectrumAutomation" xml:space="preserve"><value>Chế độ visualizer Phổ neon trong Cài đặt</value></data>
+  <data name="Settings_ModeTwinWaveAutomation" xml:space="preserve"><value>Chế độ visualizer Sóng đôi trong Cài đặt</value></data>
+  <data name="Settings_OpenDataFolder" xml:space="preserve"><value>Mở thư mục dữ liệu</value></data>
+  <data name="Settings_OpenDataFolderAutomation" xml:space="preserve"><value>Mở thư mục dữ liệu của Mimi</value></data>
+  <data name="Settings_OpenLogs" xml:space="preserve"><value>Mở nhật ký</value></data>
+  <data name="Settings_OpenLogsAutomation" xml:space="preserve"><value>Mở thư mục nhật ký của Mimi</value></data>
+  <data name="Settings_OpenWithNotRegistered" xml:space="preserve"><value>Chưa đăng ký. Các loại được hỗ trợ: {0}.</value></data>
+  <data name="Settings_OpenWithRegistered" xml:space="preserve"><value>Đã đăng ký cho {0}.</value></data>
+  <data name="Settings_OpenWithUnavailable" xml:space="preserve"><value>Tích hợp Explorer không khả dụng trong bản này.</value></data>
+  <data name="Settings_OptimizeCoverCache" xml:space="preserve"><value>Tối ưu file cache ảnh bìa cũ</value></data>
+  <data name="Settings_OptimizeCoverCacheDescription" xml:space="preserve"><value>Tạo các biến thể 96px và 512px trong nền cho ảnh bìa được cache bởi các bản cũ.</value></data>
   <data name="Settings_PlaybackSessionSection" xml:space="preserve"><value>PHÁT NHẠC &amp; PHIÊN</value></data>
+  <data name="Settings_RegisterWindows" xml:space="preserve"><value>Đăng ký Mimi với Windows cho tài khoản này</value></data>
+  <data name="Settings_RegisterWindowsDescription" xml:space="preserve"><value>Thêm Mimi vào menu Open with của Explorer và tạo hoặc cập nhật lối tắt Start mang danh tính ứng dụng của Mimi, để điều khiển media của Windows có thể hiển thị tên và biểu tượng của Mimi. Thao tác này không bao giờ thay đổi ứng dụng nhạc mặc định hiện tại; bạn chọn mặc định trong Windows.</value></data>
+  <data name="Settings_RememberWindow" xml:space="preserve"><value>Nhớ kích thước và vị trí cửa sổ</value></data>
+  <data name="Settings_RememberWindowDescription" xml:space="preserve"><value>Khung cửa sổ đã lưu sẽ được đưa trở lại màn hình nếu màn hình cũ không còn.</value></data>
+  <data name="Settings_RemoveWatchedFolderAutomation" xml:space="preserve"><value>Xoá thư mục theo dõi đã chọn</value></data>
+  <data name="Settings_ResetAutomation" xml:space="preserve"><value>Đặt lại cài đặt về mặc định</value></data>
+  <data name="Settings_ResetConfirm" xml:space="preserve"><value>Đặt lại tuỳ chọn của Mimi về mặc định? Thư viện, yêu thích, danh sách phát và lịch sử nghe sẽ không bị xoá.</value></data>
+  <data name="Settings_ResetDescription" xml:space="preserve"><value>Đặt lại tuỳ chọn mà không xoá thư viện, danh sách phát, yêu thích hoặc lịch sử nghe.</value></data>
+  <data name="Settings_ResetDone" xml:space="preserve"><value>Đã đặt lại cài đặt. Khởi động lại Mimi nếu bạn cũng muốn cửa sổ trở về vị trí mặc định.</value></data>
   <data name="Settings_ResetSettings" xml:space="preserve"><value>Đặt lại cài đặt…</value></data>
+  <data name="Settings_ResetTitle" xml:space="preserve"><value>Đặt lại cài đặt</value></data>
+  <data name="Settings_RestoreLibraryView" xml:space="preserve"><value>Khôi phục chế độ xem thư viện cuối</value></data>
+  <data name="Settings_RestoreLibraryViewDescription" xml:space="preserve"><value>Khôi phục chế độ xem hoặc danh sách phát, tìm kiếm, bộ lọc, sắp xếp và bài đã chọn.</value></data>
+  <data name="Settings_RestorePlaybackSessionAutomation" xml:space="preserve"><value>Khôi phục phiên nghe trước</value></data>
+  <data name="Settings_RestorePreviousSession" xml:space="preserve"><value>Khôi phục phiên trước</value></data>
+  <data name="Settings_RestoreSessionDescription" xml:space="preserve"><value>Mở lại bài cuối ở vị trí đã lưu và luôn tạm dừng. Mimi không bao giờ tự phát âm thanh.</value></data>
   <data name="Settings_StageEngineSection" xml:space="preserve"><value>STAGE ENGINE</value></data>
   <data name="Settings_StartupLibrarySection" xml:space="preserve"><value>KHỞI ĐỘNG &amp; THƯ VIỆN</value></data>
+  <data name="Settings_StillLoading" xml:space="preserve"><value>Mimi vẫn đang tải thư viện của bạn. Hãy thử lại sau ít giây.</value></data>
   <data name="Settings_Title" xml:space="preserve"><value>Cài đặt</value></data>
+  <data name="Settings_VisualizerRestored" xml:space="preserve"><value>Lựa chọn visualizer sẽ được khôi phục ở lần mở tiếp theo.</value></data>
   <data name="Settings_Volume" xml:space="preserve"><value>Âm lượng</value></data>
+  <data name="Settings_VolumeAutomation" xml:space="preserve"><value>Âm lượng trong cài đặt</value></data>
+  <data name="Settings_WatchedFoldersList" xml:space="preserve"><value>Các thư mục nhạc được theo dõi</value></data>
+  <data name="Settings_WatchedFoldersSection" xml:space="preserve"><value>THƯ MỤC THEO DÕI</value></data>
+  <data name="Settings_WatchFolders" xml:space="preserve"><value>Theo dõi thư mục để phát hiện thay đổi nhạc</value></data>
+  <data name="Settings_WatchFoldersDescription" xml:space="preserve"><value>Bài mới hoặc đã thay đổi được quét trong nền. Bài bị xoá bên ngoài Mimi vẫn nằm trong thư viện và được đánh dấu thiếu file.</value></data>
+  <data name="Settings_WindowsIntegrationSection" xml:space="preserve"><value>TÍCH HỢP WINDOWS</value></data>
+  <data name="Settings_WindowsIntegrationUnavailable" xml:space="preserve"><value>Tích hợp Windows không khả dụng trong bản này.</value></data>
+  <data name="Shortcut_CloseStageOrSettings" xml:space="preserve"><value>Đóng Stage hoặc Cài đặt</value></data>
+  <data name="Shortcut_DeleteDescription" xml:space="preserve"><value>Xoá các bài đã chọn khỏi thư viện</value></data>
+  <data name="Shortcut_DeleteKey" xml:space="preserve"><value>Delete trong danh sách bài</value></data>
+  <data name="Shortcut_FocusSearch" xml:space="preserve"><value>Đặt tiêu điểm vào ô tìm kiếm</value></data>
+  <data name="Shortcut_MediaKeys" xml:space="preserve"><value>Phím media</value></data>
+  <data name="Shortcut_MediaKeysDescription" xml:space="preserve"><value>Điều khiển phát nhạc qua Windows, ngay cả khi Mimi không có tiêu điểm</value></data>
+  <data name="Shortcut_Note" xml:space="preserve"><value>Phím Space và phím mũi tên sẽ nhường khi bạn đang nhập hoặc dùng danh sách, danh sách thả xuống và thanh trượt. Dùng nút −10s/+10s trong Đang phát để nhảy xa hơn.</value></data>
+  <data name="Shortcut_PlayPause" xml:space="preserve"><value>Phát / tạm dừng</value></data>
+  <data name="Shortcut_PreviousNextQueue" xml:space="preserve"><value>Bài trước / bài tiếp trong hàng đợi</value></data>
+  <data name="Shortcut_Seek5Seconds" xml:space="preserve"><value>Tua lại / tới 5 giây</value></data>
+  <data name="Shortcut_Stage" xml:space="preserve"><value>Mở / đóng Stage toàn màn hình</value></data>
+  <data name="Shortcut_StageModes" xml:space="preserve"><value>Phổ neon / Sóng đôi / Vòng hào quang</value></data>
+  <data name="Shortcut_StageModesKey" xml:space="preserve"><value>1 / 2 / 3 trong Stage</value></data>
+  <data name="Shortcut_Volume5Percent" xml:space="preserve"><value>Tăng / giảm âm lượng 5%</value></data>
+  <data name="Stage_Hint" xml:space="preserve"><value>ESC / F11 đóng  ·  1 Phổ  ·  2 Sóng đôi  ·  3 Hào quang</value></data>
+  <data name="Stage_ModeHalo" xml:space="preserve"><value>Hào quang</value></data>
+  <data name="Stage_ModeHaloAutomation" xml:space="preserve"><value>Chế độ visualizer Vòng hào quang</value></data>
+  <data name="Stage_ModeSpectrum" xml:space="preserve"><value>Phổ</value></data>
+  <data name="Stage_ModeSpectrumAutomation" xml:space="preserve"><value>Chế độ visualizer Phổ neon</value></data>
+  <data name="Stage_ModeTwinWave" xml:space="preserve"><value>Sóng đôi</value></data>
+  <data name="Stage_ModeTwinWaveAutomation" xml:space="preserve"><value>Chế độ visualizer Sóng đôi</value></data>
+  <data name="Stage_Open" xml:space="preserve"><value>Mở Stage (F11)</value></data>
+  <data name="Stage_OpenAutomation" xml:space="preserve"><value>Mở hoặc đóng Stage toàn màn hình</value></data>
   <data name="TrackCount_Favorites" xml:space="preserve"><value>{0} bài yêu thích</value></data>
   <data name="TrackCount_FilteredSongs" xml:space="preserve"><value>{0} bài sau lọc</value></data>
   <data name="TrackCount_Library" xml:space="preserve"><value>{0} bài trong thư viện của bạn</value></data>

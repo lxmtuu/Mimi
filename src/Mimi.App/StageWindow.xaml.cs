@@ -2,6 +2,7 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Threading;
 using Mimi.Controls;
+using Mimi.Localization;
 using Mimi.Services;
 
 namespace Mimi;
@@ -11,9 +12,14 @@ public partial class StageWindow : Window
     private readonly DispatcherTimer cursorTimer;
     private readonly DispatcherTimer metricsTimer;
 
-    public StageWindow(IAudioPlayer audio, VisualizerDisplayMode mode)
+    public StageWindow(
+        IAudioPlayer audio,
+        VisualizerDisplayMode mode,
+        LocalizationService? localizationService = null)
     {
+        Loc = localizationService ?? new LocalizationService();
         InitializeComponent();
+        DataContext = this;
         StageVisualizer.FrameProvider = audio.GetVisualizerFrame;
         StageVisualizer.Mode = mode;
         Cursor = Cursors.None;
@@ -31,11 +37,15 @@ public partial class StageWindow : Window
         UpdateMetrics();
     }
 
+    public LocalizationService Loc { get; }
+
     public event Action<VisualizerDisplayMode>? ModeChanged;
 
     public void SetTrack(string title, string subtitle)
     {
-        StageTitle.Text = string.IsNullOrWhiteSpace(title) ? "Choose a song" : title;
+        StageTitle.Text = string.IsNullOrWhiteSpace(title)
+            ? Loc["NowPlaying_ChooseSong"]
+            : title;
         StageSubtitle.Text = subtitle;
     }
 

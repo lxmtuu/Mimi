@@ -1,5 +1,7 @@
 using System.ComponentModel;
 using Mimi.Localization;
+using Mimi.Models;
+using Mimi.ViewModels;
 
 namespace Mimi.Tests;
 
@@ -26,6 +28,18 @@ public sealed class LocalizationServiceTests
 
         Assert.Equal("Home", service.GetString("Nav_Home", "en-US"));
         Assert.Equal("Trang chủ", service.GetString("Nav_Home", "vi-VN"));
+        Assert.Equal(
+            "Restore the previous session",
+            service.GetString("Settings_RestorePreviousSession", "en-US"));
+        Assert.Equal(
+            "Khôi phục phiên trước",
+            service.GetString("Settings_RestorePreviousSession", "vi-VN"));
+        Assert.Equal(
+            "Clear upcoming",
+            service.GetString("Queue_ClearUpcoming", "en-US"));
+        Assert.Equal(
+            "Xoá hàng đợi sắp phát",
+            service.GetString("Queue_ClearUpcoming", "vi-VN"));
     }
 
     [Fact]
@@ -61,6 +75,41 @@ public sealed class LocalizationServiceTests
 
         void OnPropertyChanged(object? sender, PropertyChangedEventArgs e) =>
             changedProperties.Add(e.PropertyName);
+    }
+
+    [Fact]
+    public void ChildViewModelLabelsUseTheInjectedLocalizationService()
+    {
+        var originalCulture = Thread.CurrentThread.CurrentCulture;
+        var originalUiCulture = Thread.CurrentThread.CurrentUICulture;
+        var service = new LocalizationService();
+
+        try
+        {
+            service.SetLanguage(UiLanguages.Vietnamese);
+            var playlist = new PlaylistItemViewModel(
+                new Playlist { Name = "Mix", TrackCount = 3 },
+                service);
+            var track = new TrackItemViewModel(
+                new Track { FilePath = @"C:\Music\song.mp3" },
+                isFavorite: false,
+                service);
+
+            Assert.Equal("3 bài", playlist.CountLabel);
+            Assert.Equal("Thêm vào yêu thích", track.FavoriteToolTip);
+
+            track.IsFavorite = true;
+            Assert.Equal("Xoá khỏi yêu thích", track.FavoriteToolTip);
+
+            service.SetLanguage(UiLanguages.English);
+            Assert.Equal("3 song(s)", playlist.CountLabel);
+            Assert.Equal("Remove from favorites", track.FavoriteToolTip);
+        }
+        finally
+        {
+            Thread.CurrentThread.CurrentCulture = originalCulture;
+            Thread.CurrentThread.CurrentUICulture = originalUiCulture;
+        }
     }
 
     [Fact]

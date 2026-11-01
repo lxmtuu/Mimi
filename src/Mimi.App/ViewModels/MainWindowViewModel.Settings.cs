@@ -103,6 +103,24 @@ public sealed partial class MainWindowViewModel
     private void RefreshLocalizedChrome()
     {
         OnPropertyChanged(nameof(SectionTitle));
+        OnPropertyChanged(nameof(SelectedTracksCountLabel));
+        OnPropertyChanged(nameof(SelectedTrackFavoriteMenuLabel));
+        OnPropertyChanged(nameof(EffectiveVolumePercentLabel));
+        OnPropertyChanged(nameof(MuteButtonLabel));
+        OnPropertyChanged(nameof(ShuffleButtonLabel));
+        OnPropertyChanged(nameof(RepeatModeLabel));
+        OnPropertyChanged(nameof(QueueCountLabel));
+        OnPropertyChanged(nameof(QueueStatusLabel));
+        OnPropertyChanged(nameof(OpenWithMimiStatusLabel));
+        NotifySortLabelsChanged();
+
+        if (lastAudioOutputStatus is { } audioOutputStatus)
+            RefreshAudioOutputStatus(audioOutputStatus);
+
+        foreach (var track in Tracks)
+            track.RefreshLocalizedLabels();
+        foreach (var playlist in Playlists)
+            playlist.RefreshLocalizedLabels();
 
         if (CurrentTrack is null)
         {
@@ -154,6 +172,7 @@ public sealed partial class MainWindowViewModel
 
     partial void OnSelectedTrackChanged(TrackItemViewModel? value)
     {
+        OnPropertyChanged(nameof(SelectedTrackFavoriteMenuLabel));
         if (settingsLoaded && !isRestoringSettings)
             SaveSettings();
     }
@@ -170,15 +189,14 @@ public sealed partial class MainWindowViewModel
         if (!persistedStateRestored)
         {
             dialogService.ShowInformation(
-                "Mimi is still loading your library. Try again in a moment.",
-                "Settings");
+                Loc["Settings_StillLoading"],
+                Loc["Settings_Title"]);
             return;
         }
 
         if (!dialogService.Confirm(
-                "Reset Mimi's preferences to their defaults? Your library, " +
-                "favorites, playlists, and playback history will not be deleted.",
-                "Reset settings"))
+                Loc["Settings_ResetConfirm"],
+                Loc["Settings_ResetTitle"]))
         {
             return;
         }
@@ -207,9 +225,8 @@ public sealed partial class MainWindowViewModel
         ConfigureLibraryFolderWatcher();
         SaveSettings(force: true);
         dialogService.ShowInformation(
-            "Settings were reset. Restart Mimi if you also want the window " +
-            "to return to its default position.",
-            "Settings");
+            Loc["Settings_ResetDone"],
+            Loc["Settings_Title"]);
     }
 
     [RelayCommand]
@@ -233,8 +250,8 @@ public sealed partial class MainWindowViewModel
         {
             Log.Warning(ex, "Could not open folder {Folder}", path);
             dialogService.ShowWarning(
-                $"Couldn't open that folder.\n\n{ex.Message}",
-                "Settings");
+                Loc.Format("Settings_CouldNotOpenFolder", ex.Message),
+                Loc["Settings_Title"]);
         }
     }
 

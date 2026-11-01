@@ -15,16 +15,16 @@
         <TextBox x:Name="InputTextBox" Grid.Row="1" Margin="0,14,0,0"
                  Height="36" Padding="10,0" VerticalContentAlignment="Center"
                  Background="#172638" Foreground="White" BorderThickness="0"
-                 AutomationProperties.Name="Text value"/>
+                 AutomationProperties.Name="{Binding Loc[Prompt_TextValue]}"/>
 
         <StackPanel Grid.Row="2" Orientation="Horizontal"
                     HorizontalAlignment="Right" VerticalAlignment="Bottom">
-            <Button Content="Cancel" IsCancel="True" MinWidth="88"
-                    AutomationProperties.Name="Cancel"/>
-            <Button Content="OK" IsDefault="True" MinWidth="88"
+            <Button Content="{Binding Loc[Common_Cancel]}" IsCancel="True" MinWidth="88"
+                    AutomationProperties.Name="{Binding Loc[Common_Cancel]}"/>
+            <Button Content="{Binding Loc[Common_Ok]}" IsDefault="True" MinWidth="88"
                     Background="{StaticResource AccentBrush}" Foreground="#07151B"
                     FontWeight="Bold" Click="OkButton_Click"
-                    AutomationProperties.Name="OK"/>
+                    AutomationProperties.Name="{Binding Loc[Common_Ok]}"/>
         </StackPanel>
     </Grid>
 </Window>

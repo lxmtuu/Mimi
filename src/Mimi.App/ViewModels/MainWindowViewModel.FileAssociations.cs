@@ -25,10 +25,14 @@ public sealed partial class MainWindowViewModel
 
     public string OpenWithMimiStatusLabel =>
         fileAssociationService is null
-            ? "Explorer integration is unavailable in this build."
+            ? Loc["Settings_OpenWithUnavailable"]
             : IsOpenWithMimiRegistered
-                ? $"Registered for {SupportedExtensionsLabel}."
-                : $"Not registered. Supported types: {SupportedExtensionsLabel}.";
+                ? Loc.Format(
+                    "Settings_OpenWithRegistered",
+                    SupportedExtensionsLabel)
+                : Loc.Format(
+                    "Settings_OpenWithNotRegistered",
+                    SupportedExtensionsLabel);
 
     public string OpenWithMimiExecutablePath =>
         fileAssociationService?.ExecutablePath ?? string.Empty;
@@ -45,8 +49,8 @@ public sealed partial class MainWindowViewModel
         if (fileAssociationService is null)
         {
             dialogService.ShowWarning(
-                "Windows integration is unavailable in this build.",
-                "Settings");
+                Loc["Settings_WindowsIntegrationUnavailable"],
+                Loc["Settings_Title"]);
             RefreshOpenWithMimiRegistration();
             return;
         }
@@ -67,9 +71,13 @@ public sealed partial class MainWindowViewModel
                     : "Could not remove Mimi's Windows registration");
             dialogService.ShowWarning(
                 value
-                    ? $"Couldn't register Mimi with Windows.\n\n{ex.Message}"
-                    : $"Couldn't remove Mimi's Windows registration.\n\n{ex.Message}",
-                "Settings");
+                    ? Loc.Format(
+                        "Settings_CouldNotRegisterWindows",
+                        ex.Message)
+                    : Loc.Format(
+                        "Settings_CouldNotRemoveWindowsRegistration",
+                        ex.Message),
+                Loc["Settings_Title"]);
         }
         finally
         {

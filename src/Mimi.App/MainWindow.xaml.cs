@@ -123,7 +123,8 @@ public partial class MainWindow : Window
 
         stageWindow = new StageWindow(
             audioPlayer,
-            viewModel.VisualizerMode)
+            viewModel.VisualizerMode,
+            viewModel.Loc)
         {
             Owner = this
         };

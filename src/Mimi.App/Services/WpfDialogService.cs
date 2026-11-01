@@ -1,16 +1,24 @@
 using Microsoft.Win32;
+using Mimi.Localization;
 
 namespace Mimi.Services;
 
 /// <summary>WPF implementation of the dialogs used by the main window.</summary>
 public sealed class WpfDialogService : IDialogService
 {
+    private readonly LocalizationService loc;
+
+    public WpfDialogService(LocalizationService? localizationService = null)
+    {
+        loc = localizationService ?? new LocalizationService();
+    }
+
     public IReadOnlyList<string> PickAudioFiles()
     {
         var dialog = new OpenFileDialog
         {
-            Title = "Choose music files",
-            Filter = $"Audio files|{SupportedAudioFiles.FileDialogPattern}|All files|*.*",
+            Title = loc["Dialog_ChooseMusicFiles"],
+            Filter = $"{loc["Dialog_AudioFiles"]}|{SupportedAudioFiles.FileDialogPattern}|{loc["Dialog_AllFiles"]}|*.*",
             Multiselect = true
         };
 
@@ -22,7 +30,7 @@ public sealed class WpfDialogService : IDialogService
         // Built-in WPF folder picker (.NET 8); no WinForms dependency needed.
         var dialog = new OpenFolderDialog
         {
-            Title = "Choose a folder containing your music"
+            Title = loc["Dialog_ChooseMusicFolder"]
         };
 
         return dialog.ShowDialog() == true ? dialog.FolderName : null;
@@ -34,7 +42,7 @@ public sealed class WpfDialogService : IDialogService
         string initialValue = "")
     {
         var owner = System.Windows.Application.Current?.MainWindow;
-        var dialog = new TextPromptWindow(title, prompt, initialValue)
+        var dialog = new TextPromptWindow(title, prompt, initialValue, loc)
         {
             Owner = owner is { IsLoaded: true } ? owner : null
         };

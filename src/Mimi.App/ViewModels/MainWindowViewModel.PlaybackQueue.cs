@@ -46,6 +46,8 @@ public sealed partial class MainWindowViewModel
     [ObservableProperty]
     private string audioOutputLabel = "Windows default output";
 
+    private AudioOutputStatus? lastAudioOutputStatus;
+
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasAudioOutputNotice))]
     private string audioOutputNotice = string.Empty;
@@ -56,20 +58,22 @@ public sealed partial class MainWindowViewModel
         !string.IsNullOrWhiteSpace(AudioOutputNotice);
 
     public string EffectiveVolumePercentLabel => IsMuted
-        ? "Muted"
+        ? Loc["Playback_Muted"]
         : VolumePercentLabel;
 
-    public string MuteButtonLabel => IsMuted ? "Unmute" : "Mute";
+    public string MuteButtonLabel => IsMuted
+        ? Loc["Playback_Unmute"]
+        : Loc["Playback_Mute"];
 
     public string ShuffleButtonLabel => IsShuffleEnabled
-        ? "Shuffle On"
-        : "Shuffle Off";
+        ? Loc["Playback_ShuffleOn"]
+        : Loc["Playback_ShuffleOff"];
 
     public string RepeatModeLabel => RepeatMode switch
     {
-        RepeatMode.All => "Repeat All",
-        RepeatMode.One => "Repeat One",
-        _ => "Repeat Off"
+        RepeatMode.All => Loc["Playback_RepeatAll"],
+        RepeatMode.One => Loc["Playback_RepeatOne"],
+        _ => Loc["Playback_RepeatOff"]
     };
 
     public bool IsRepeatEnabled => RepeatMode != RepeatMode.Off;
@@ -77,15 +81,21 @@ public sealed partial class MainWindowViewModel
     public bool HasUpcomingQueueItems => UpcomingQueueItems.Count > 0;
 
     public string QueueCountLabel => UpcomingQueueItems.Count == 1
-        ? "1 song"
-        : $"{UpcomingQueueItems.Count} songs";
+        ? Loc["Queue_CountSingular"]
+        : Loc.Format("Queue_CountPlural", UpcomingQueueItems.Count);
 
     public string QueueStatusLabel
     {
         get
         {
-            var shuffle = IsShuffleEnabled ? "Shuffle on" : "Shuffle off";
-            return $"{QueueCountLabel} up next · {shuffle} · {RepeatModeLabel}";
+            var shuffle = IsShuffleEnabled
+                ? Loc["Playback_ShuffleOnStatus"]
+                : Loc["Playback_ShuffleOffStatus"];
+            return Loc.Format(
+                "Queue_Status",
+                QueueCountLabel,
+                shuffle,
+                RepeatModeLabel);
         }
     }
 
@@ -157,16 +167,19 @@ public sealed partial class MainWindowViewModel
         AudioOutputStatus status,
         bool playbackInterrupted = false)
     {
+        lastAudioOutputStatus = status;
         AudioOutputLabel = status switch
         {
-            { IsAvailable: false } => "No audio output available",
+            { IsAvailable: false } => Loc["Audio_NoOutput"],
             { Kind: AudioOutputKind.WasapiShared } =>
-                $"WASAPI shared · {status.DeviceName}",
+                Loc.Format("Audio_WasapiShared", status.DeviceName),
             { Kind: AudioOutputKind.WaveOutFallback } =>
-                $"WaveOut fallback · {status.DeviceName}",
+                Loc.Format("Audio_WaveOutFallback", status.DeviceName),
             { Kind: AudioOutputKind.WaveOutForced } =>
-                $"WaveOut diagnostic · {status.DeviceName}",
-            _ => $"Windows default · {status.DeviceName}"
+                Loc.Format("Audio_WaveOutDiagnostic", status.DeviceName),
+            { Kind: AudioOutputKind.None, DeviceName: "Windows default output" } =>
+                Loc["Audio_WindowsDefaultOutput"],
+            _ => Loc.Format("Audio_WindowsDefault", status.DeviceName)
         };
 
         if (playbackInterrupted || !status.IsAvailable)
@@ -180,9 +193,9 @@ public sealed partial class MainWindowViewModel
         else if (!string.IsNullOrWhiteSpace(AudioOutputNotice) &&
                  !audioPlayer.IsPlaying)
         {
-            AudioOutputNotice =
-                $"Audio output is ready: {status.DeviceName}. " +
-                "Press Play to continue.";
+            AudioOutputNotice = Loc.Format(
+                "Audio_OutputReady",
+                status.DeviceName);
         }
     }
 
@@ -197,9 +210,8 @@ public sealed partial class MainWindowViewModel
             ex,
             "Playback could not start because no usable audio output is available");
         dialogService.ShowWarning(
-            "Mimi can't start playback because no usable audio output " +
-            $"is available.\n\n{ex.Message}",
-            "Audio output");
+            Loc.Format("Audio_CannotStartPlayback", ex.Message),
+            Loc["Settings_AudioOutput"]);
     }
 
     private void ApplyPlaybackPreferenceSettings()
