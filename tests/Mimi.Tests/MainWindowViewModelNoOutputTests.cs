@@ -4,7 +4,6 @@ using System.Text;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Threading;
 using Mimi.Core.Playback;
@@ -328,7 +327,8 @@ public sealed class MainWindowViewModelNoOutputTests
                     SelectionMode = SelectionMode.Extended
                 };
                 listView.SetBinding(
-                    Selector.SelectedItemProperty,
+                    System.Windows.Controls.Primitives.Selector
+                        .SelectedItemProperty,
                     new Binding(nameof(MainWindowViewModel.SelectedTrack))
                     {
                         Mode = BindingMode.TwoWay
