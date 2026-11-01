@@ -1,6 +1,7 @@
 using System.Reflection;
 using System.Threading;
 using System.Windows;
+using System.Windows.Markup;
 using System.Windows.Media;
 using Mimi.Controls;
 using Mimi.Services;
@@ -51,16 +52,12 @@ public sealed class ThemeServiceTests
     {
         RunOnSta(() =>
         {
-            var resources = new ResourceDictionary();
+            var resources = CreateBrushDictionary();
             var neon = BuiltInThemes.Default;
             var mono = BuiltInThemes.GetOrDefault(BuiltInThemes.MonoFocusId);
+            var brush = Assert.IsType<SolidColorBrush>(
+                resources[ThemeService.BrushResourceKey(ThemeTokens.Accent)]);
             ThemeService.Apply(neon, resources);
-
-            var brush = new SolidColorBrush();
-            brush.SetResourceReference(
-                SolidColorBrush.ColorProperty,
-                ThemeService.ColorResourceKey(ThemeTokens.Accent));
-            resources.Add(ThemeService.BrushResourceKey(ThemeTokens.Accent), brush);
 
             Assert.Equal(
                 ToColor(neon.GetColor(ThemeTokens.Accent)),
@@ -80,14 +77,9 @@ public sealed class ThemeServiceTests
         RunOnSta(() =>
         {
             var resources = new ResourceDictionary();
-            var brushes = new ResourceDictionary();
-            var brush = new SolidColorBrush();
-            brush.SetResourceReference(
-                SolidColorBrush.ColorProperty,
-                ThemeService.ColorResourceKey(ThemeTokens.Accent));
-            brushes.Add(
-                ThemeService.BrushResourceKey(ThemeTokens.Accent),
-                brush);
+            var brushes = CreateBrushDictionary();
+            var brush = Assert.IsType<SolidColorBrush>(
+                brushes[ThemeService.BrushResourceKey(ThemeTokens.Accent)]);
             resources.MergedDictionaries.Add(brushes);
 
             ThemeService.Apply(BuiltInThemes.Default, resources);
@@ -193,6 +185,18 @@ public sealed class ThemeServiceTests
             Assert.Equal(view.BaselineColor.G, baseline.G);
             Assert.Equal(view.BaselineColor.B, baseline.B);
         });
+    }
+
+    private static ResourceDictionary CreateBrushDictionary()
+    {
+        const string xaml = """
+            <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                <SolidColorBrush x:Key="AccentBrush"
+                                 Color="{DynamicResource AccentColor}"/>
+            </ResourceDictionary>
+            """;
+        return Assert.IsType<ResourceDictionary>(XamlReader.Parse(xaml));
     }
 
     private static T GetField<T>(object instance, string fieldName)
