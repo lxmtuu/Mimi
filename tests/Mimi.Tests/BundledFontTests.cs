@@ -122,10 +122,10 @@ public sealed class BundledFontTests
     {
         var assembly = typeof(global::Mimi.App).Assembly;
         var resourceStreamName = Assert.Single(
-            assembly.GetManifestResourceNames()
-                .Where(name => name.EndsWith(
-                    ".g.resources",
-                    StringComparison.OrdinalIgnoreCase)));
+            assembly.GetManifestResourceNames(),
+            name => name.EndsWith(
+                ".g.resources",
+                StringComparison.OrdinalIgnoreCase));
         using var resourceStream =
             assembly.GetManifestResourceStream(resourceStreamName);
         Assert.NotNull(resourceStream);
