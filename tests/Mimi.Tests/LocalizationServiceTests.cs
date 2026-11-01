@@ -15,6 +15,8 @@ public sealed class LocalizationServiceTests
 
         Assert.NotEmpty(neutralKeys);
         Assert.Equal(neutralKeys, vietnameseKeys);
+        Assert.Equal("Home", service.GetString("Nav_Home", "en-US"));
+        Assert.Equal("Trang chủ", service.GetString("Nav_Home", "vi-VN"));
     }
 
     [Fact]

@@ -48,7 +48,9 @@ public sealed class LocalizationService : INotifyPropertyChanged
             ? CultureInfo.InvariantCulture
             : CultureInfo.GetCultureInfo(cultureName);
 
-        using var resourceSet = Resources.GetResourceSet(
+        // ResourceManager owns and caches the returned set. Disposing it
+        // here would poison later GetString calls with a closed set.
+        var resourceSet = Resources.GetResourceSet(
             culture,
             createIfNotExists: true,
             tryParents: false);
