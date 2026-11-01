@@ -50,6 +50,96 @@ public sealed class ItemClickCommandBehaviorTests
     }
 
     [Fact]
+    public void CompletedClick_ExecutesEvenWhenMouseUpWasHandledByContainer()
+    {
+        RunOnSta(() =>
+        {
+            var command = new RecordingCommand();
+            var listView = new ListView
+            {
+                ItemsSource = new[] { "Cyan", "Magenta" }
+            };
+            ItemClickCommandBehavior.SetCommand(listView, command);
+
+            var window = new Window
+            {
+                Width = 400,
+                Height = 300,
+                Content = listView
+            };
+
+            try
+            {
+                window.Show();
+                window.UpdateLayout();
+
+                var container = Assert.IsType<ListViewItem>(
+                    listView.ItemContainerGenerator.ContainerFromIndex(1));
+                container.AddHandler(
+                    Mouse.MouseUpEvent,
+                    new MouseButtonEventHandler(
+                        (_, args) => args.Handled = true));
+
+                container.RaiseEvent(NewMouseButtonEvent(
+                    Mouse.PreviewMouseDownEvent));
+                container.RaiseEvent(NewMouseButtonEvent(
+                    Mouse.MouseUpEvent));
+
+                Assert.Equal(new object?[] { "Magenta" }, command.Parameters);
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
+    [Fact]
+    public void CompletedClick_UsesGeneratorItemInsteadOfContainerDataContext()
+    {
+        RunOnSta(() =>
+        {
+            var command = new RecordingCommand();
+            var listView = new ListView
+            {
+                ItemsSource = new[] { "Cyan", "Magenta" }
+            };
+            ItemClickCommandBehavior.SetCommand(listView, command);
+
+            var window = new Window
+            {
+                Width = 400,
+                Height = 300,
+                Content = listView
+            };
+
+            try
+            {
+                window.Show();
+                window.UpdateLayout();
+
+                var container = Assert.IsType<ListViewItem>(
+                    listView.ItemContainerGenerator.ContainerFromIndex(1));
+
+                // A template/style can replace a container's DataContext.
+                // The generator still knows which data item it presents.
+                container.DataContext = "Not the data item";
+
+                container.RaiseEvent(NewMouseButtonEvent(
+                    Mouse.PreviewMouseDownEvent));
+                container.RaiseEvent(NewMouseButtonEvent(
+                    Mouse.MouseUpEvent));
+
+                Assert.Equal(new object?[] { "Magenta" }, command.Parameters);
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
+    [Fact]
     public void ClickSurvivesContainerRefreshBetweenPressAndRelease()
     {
         RunOnSta(() =>

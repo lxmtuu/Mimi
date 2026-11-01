@@ -5,7 +5,9 @@ using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Input;
 using System.Windows.Threading;
+using Mimi.Behaviors;
 using Mimi.Core.Playback;
 using Mimi.Localization;
 using Mimi.Models;
@@ -177,6 +179,116 @@ public sealed class MainWindowViewModelNoOutputTests
             }
             finally
             {
+                viewModel.Dispose();
+            }
+        });
+    }
+
+    [Fact]
+    public void SingleClickOnBoundTrackList_UpdatesNowPlayingWithoutPlayButton()
+    {
+        RunOnSta(() =>
+        {
+            var audio = new FakeAudioPlayer
+            {
+                OutputStatus = new AudioOutputStatus(
+                    isAvailable: true,
+                    AudioOutputKind.WasapiShared,
+                    "Test Speakers",
+                    "Audio output is ready.")
+            };
+            var viewModel = new MainWindowViewModel(
+                audio,
+                new FakeLibraryService(),
+                new FakeLibraryCatalog(),
+                new FakeUserDataService(),
+                new FakeDialogService());
+
+            Window? window = null;
+            try
+            {
+                viewModel.InitializationTask.GetAwaiter().GetResult();
+
+                var first = new TrackItemViewModel(
+                    new Track
+                    {
+                        FilePath = @"C:\fixtures\cyan.wav",
+                        MetadataTitle = "Cyan Signal",
+                        Duration = TimeSpan.FromSeconds(30)
+                    },
+                    isFavorite: false);
+                var second = new TrackItemViewModel(
+                    new Track
+                    {
+                        FilePath = @"C:\fixtures\magenta.wav",
+                        MetadataTitle = "Magenta Signal",
+                        Duration = TimeSpan.FromSeconds(30)
+                    },
+                    isFavorite: false);
+                viewModel.Tracks.Add(first);
+                viewModel.Tracks.Add(second);
+
+                var listView = new ListView
+                {
+                    DataContext = viewModel,
+                    ItemsSource = viewModel.TracksView,
+                    SelectionMode = SelectionMode.Extended
+                };
+                listView.SetBinding(
+                    System.Windows.Controls.Primitives.Selector
+                        .SelectedItemProperty,
+                    new Binding(nameof(MainWindowViewModel.SelectedTrack))
+                    {
+                        Mode = BindingMode.TwoWay
+                    });
+                ItemClickCommandBehavior.SetCommand(
+                    listView,
+                    viewModel.PlayTrackCommand);
+                window = new Window
+                {
+                    Width = 600,
+                    Height = 400,
+                    Content = listView
+                };
+                window.Show();
+                window.UpdateLayout();
+
+                var container = Assert.IsType<ListViewItem>(
+                    listView.ItemContainerGenerator.ContainerFromIndex(1));
+
+                // The completed click must still activate playback even if
+                // an element in the row consumes the bubbling MouseUp.
+                container.AddHandler(
+                    Mouse.MouseUpEvent,
+                    new MouseButtonEventHandler(
+                        (_, args) => args.Handled = true));
+                container.RaiseEvent(
+                    new MouseButtonEventArgs(
+                        Mouse.PrimaryDevice,
+                        Environment.TickCount,
+                        MouseButton.Left)
+                    {
+                        RoutedEvent = Mouse.PreviewMouseDownEvent
+                    });
+                container.RaiseEvent(
+                    new MouseButtonEventArgs(
+                        Mouse.PrimaryDevice,
+                        Environment.TickCount,
+                        MouseButton.Left)
+                    {
+                        RoutedEvent = Mouse.MouseUpEvent
+                    });
+
+                Assert.Equal(1, audio.LoadCalls);
+                Assert.Equal(1, audio.PlayCalls);
+                Assert.Same(second, viewModel.CurrentTrack);
+                Assert.Same(second, viewModel.SelectedTrack);
+                Assert.Equal(second.Title, viewModel.NowPlayingTitle);
+                Assert.True(viewModel.IsPlaying);
+            }
+            finally
+            {
+                window?.Close();
                 viewModel.Dispose();
             }
         });
