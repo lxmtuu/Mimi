@@ -327,6 +327,28 @@ thường dài hơn nên đây là phép thử bắt buộc sau khi icon hoá.
   Windows CI `41471065914` đã xanh; vẫn cần ảnh kiểm lại, một bài có
   bìa màu để đánh giá cover bloom và ảnh Stage riêng.
 
+### Follow-up — Up Next / Stage Engine không cắt chữ (`b2989d0`)
+
+- Ảnh cận panel phải khi đang phát và có hai bài trong Up Next cho
+  thấy `Remove`, `Spectrum` và `Twin Wave` bị cắt ký tự cuối vì bề
+  rộng hữu dụng bị scrollbar dọc lấy mất một phần. Style nút chế độ
+  nay giảm padding/margin, hạ cỡ chữ và có template
+  `CharacterEllipsis` dự phòng; thay đổi áp dụng cho cả Stage Engine
+  trong Now Playing lẫn Settings.
+- Play/Remove của Up Next được icon hoá bằng glyph Play/thùng rác
+  sẵn có, giữ ToolTip song ngữ và tên trợ năng riêng; hai nút lên/
+  xuống cũng có ToolTip. Dòng phụ của mỗi hàng đợi chuyển sang Grid
+  `* / Auto / Auto` để tên nghệ sĩ dài tự rút gọn bằng `…` mà không
+  đẩy mất thời lượng; bìa thu nhỏ được clip đúng góc bo 5px.
+- Chỉ số `24 FPS · 0.05 ms` trong ảnh không phải dấu hiệu nghẽn vẽ:
+  `VisualizerView` chủ động giới hạn tối đa 30 FPS khi cửa sổ không
+  active hoặc Battery Saver bật, đúng trạng thái thường gặp khi chụp
+  bằng công cụ ngoài; thời gian vẽ 0,05 ms/frame vẫn rất thấp. Nếu
+  Mimi đang active trên màn hình 60 Hz mà chỉ số vẫn quanh 24 FPS,
+  đó mới là việc cần điều tra riêng. Windows CI `41473516225` đã
+  xanh; cần ảnh kiểm lại để xác nhận các nhãn đã đủ chữ trên Windows
+  thật.
+
 ### Chưa nghiệm thu / để lại sau
 
 - Các checkpoint trên mới là nghiệm thu kỹ thuật bằng CI. **Nghiệm thu
