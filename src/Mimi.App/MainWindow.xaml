@@ -2,6 +2,7 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:controls="clr-namespace:Mimi.Controls"
+        xmlns:effects="clr-namespace:Mimi.Effects"
         xmlns:behaviors="clr-namespace:Mimi.Behaviors"
         xmlns:vm="clr-namespace:Mimi.ViewModels"
         Title="Mimi" Height="820" Width="1320" MinHeight="620" MinWidth="960"
@@ -538,7 +539,13 @@
                                 Opacity="0.62" IsHitTestVisible="False"/>
                         <Border CornerRadius="{StaticResource HeroCornerRadius}"
                                 Background="{StaticResource HeroAccentGlowBrush}"
-                                Opacity="0.82" IsHitTestVisible="False"/>
+                                Opacity="0.82" IsHitTestVisible="False">
+                            <Border.Effect>
+                                <effects:AuroraGlowEffect AccentColor="{DynamicResource AccentColor}"
+                                                          SecondaryColor="{DynamicResource AccentSecondaryColor}"
+                                                          Strength="0.42" Phase="0.18"/>
+                            </Border.Effect>
+                        </Border>
                         <Border CornerRadius="{StaticResource HeroCornerRadius}"
                                 Background="{StaticResource HeroTopHighlightBrush}"
                                 Opacity="0.5" IsHitTestVisible="False"/>
