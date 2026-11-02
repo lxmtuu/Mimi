@@ -342,7 +342,15 @@
                 </Grid.RowDefinitions>
                 <Border Grid.Row="0" CornerRadius="20" Padding="24" Margin="0,0,0,16" ClipToBounds="True"
                         Background="{StaticResource HeroGradientBrush}">
-                    <Grid>
+                    <DockPanel>
+                        <Border DockPanel.Dock="Right" Width="140" Height="140" Margin="16,0,0,0"
+                                VerticalAlignment="Center" CornerRadius="16" ClipToBounds="True"
+                                BorderBrush="{StaticResource AccentDecorMediumBrush}" BorderThickness="1"
+                                IsHitTestVisible="False">
+                            <Image Source="pack://application:,,,/Assets/Mascot/mimi-mascot-v1.png"
+                                   Stretch="UniformToFill"
+                                   AutomationProperties.Name="{Binding Loc[Mascot_Automation]}"/>
+                        </Border>
                         <StackPanel VerticalAlignment="Center" MaxWidth="360" HorizontalAlignment="Left">
                             <TextBlock Text="{Binding Loc[Home_Welcome]}" Foreground="{StaticResource AccentBrush}" FontSize="11"/>
                             <TextBlock Text="{Binding Loc[Home_HeroTitle]}" FontSize="30" FontWeight="Bold" Margin="0,12,0,8"/>
@@ -357,15 +365,7 @@
                                 </StackPanel>
                             </Button>
                         </StackPanel>
-                        <Canvas HorizontalAlignment="Right" Width="145" Margin="0,0,8,0" IsHitTestVisible="False">
-                            <Ellipse Width="130" Height="130" Stroke="{StaticResource AccentDecorMediumBrush}" StrokeThickness="1" Canvas.Left="7" Canvas.Top="8"/>
-                            <Ellipse Width="100" Height="100" Stroke="{StaticResource AccentDecorStrongBrush}" StrokeThickness="2" Canvas.Left="22" Canvas.Top="23"/>
-                            <Ellipse Width="68" Height="68" Fill="{StaticResource AccentDecorSoftBrush}" Stroke="{StaticResource AccentBrush}" StrokeThickness="1.5" Canvas.Left="38" Canvas.Top="39"/>
-                            <TextBlock Text="♫" FontSize="38" Foreground="{StaticResource AccentBrush}" Canvas.Left="55" Canvas.Top="48"/>
-                            <Ellipse Width="8" Height="8" Fill="{StaticResource AccentSecondaryBrush}" Canvas.Left="3" Canvas.Top="34"/>
-                            <Ellipse Width="6" Height="6" Fill="{StaticResource AccentBrush}" Canvas.Left="119" Canvas.Top="110"/>
-                        </Canvas>
-                    </Grid>
+                    </DockPanel>
                 </Border>
 
                 <DockPanel Grid.Row="1" Margin="2,0,2,12">
@@ -907,7 +907,15 @@
                             <StackPanel>
                                 <TextBlock Text="{Binding Loc[Settings_DataDiagnosticsSection]}" Foreground="{StaticResource AccentBrush}"
                                            FontSize="11" FontWeight="Bold"/>
-                                <TextBlock Text="{Binding AppVersionLabel}" FontWeight="SemiBold" Margin="0,12,0,8"/>
+                                <DockPanel Margin="0,12,0,8">
+                                    <Border DockPanel.Dock="Left" Width="56" Height="56" Margin="0,0,10,0"
+                                            CornerRadius="12" ClipToBounds="True" IsHitTestVisible="False">
+                                        <Image Source="pack://application:,,,/Assets/Mascot/mimi-mascot-v1.png"
+                                               Stretch="UniformToFill"
+                                               AutomationProperties.Name="{Binding Loc[Mascot_Automation]}"/>
+                                    </Border>
+                                    <TextBlock Text="{Binding AppVersionLabel}" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                </DockPanel>
                                 <TextBlock Text="{Binding Loc[Settings_DataFolder]}" Foreground="{StaticResource TextMutedBrush}" FontSize="10"/>
                                 <TextBlock Text="{Binding DataDirectory}" ToolTip="{Binding DataDirectory}"
                                            TextTrimming="CharacterEllipsis" Margin="0,2,0,8"/>

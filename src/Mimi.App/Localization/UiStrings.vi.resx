@@ -113,6 +113,7 @@
   <data name="Library_ToggleFavoritesSelected" xml:space="preserve"><value>Bật/tắt yêu thích cho các bài đã chọn</value></data>
   <data name="Library_TrackList" xml:space="preserve"><value>Danh sách bài hát</value></data>
   <data name="Library_UpButton" xml:space="preserve"><value>↑ Lên</value></data>
+  <data name="Mascot_Automation" xml:space="preserve"><value>Mimi, mascot của ứng dụng</value></data>
   <data name="Metadata_LocalMusicSuffix" xml:space="preserve"><value>{0}  •  Nhạc cục bộ</value></data>
   <data name="Metadata_UnknownAlbum" xml:space="preserve"><value>Album không rõ</value></data>
   <data name="Metadata_UnknownArtist" xml:space="preserve"><value>Nghệ sĩ không rõ</value></data>

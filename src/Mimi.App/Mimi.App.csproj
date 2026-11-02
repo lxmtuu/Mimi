@@ -35,6 +35,7 @@
        installed. The OFL license must travel with published builds. -->
   <ItemGroup>
     <Resource Include="Assets\Fonts\BeVietnamPro-*.ttf" />
+    <Resource Include="Assets\Mascot\*.png" />
     <None Update="Assets\Fonts\OFL.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>

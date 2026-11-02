@@ -113,6 +113,7 @@
   <data name="Library_ToggleFavoritesSelected" xml:space="preserve"><value>Toggle favorites for selected songs</value></data>
   <data name="Library_TrackList" xml:space="preserve"><value>Track list</value></data>
   <data name="Library_UpButton" xml:space="preserve"><value>↑ Up</value></data>
+  <data name="Mascot_Automation" xml:space="preserve"><value>Mimi, the app mascot</value></data>
   <data name="Metadata_LocalMusicSuffix" xml:space="preserve"><value>{0}  •  Local music</value></data>
   <data name="Metadata_UnknownAlbum" xml:space="preserve"><value>Unknown album</value></data>
   <data name="Metadata_UnknownArtist" xml:space="preserve"><value>Unknown artist</value></data>
