@@ -358,14 +358,17 @@ thường dài hơn nên đây là phép thử bắt buộc sau khi icon hoá.
   kiện cho Play/Remove/lên/xuống/Clear (gồm biên đầu/cuối), thông
   báo lại khi lựa chọn hoặc thứ tự hàng đợi đổi, và làm mờ nút
   disabled dùng chung; test mới bao phủ hàng đợi trống, mục đầu,
-  mục cuối và sau khi Clear. Windows CI `41475557243` đã xanh; cần
-  ảnh kiểm lại để xác nhận các nút đã mờ đúng khi không có mục nào.
+  mục cuối và sau khi Clear. Windows CI `41475557243` đã xanh, và
+  chủ dự án đã xác nhận trên Windows thật rằng mục Up Next/Stage
+  Engine cùng trạng thái mờ của các nút không khả dụng đã ổn.
+  Follow-up này đóng ở mức runtime; nó không thay thế ma trận
+  nghiệm thu UI Polish đầy đủ hoặc ảnh Stage/bìa màu riêng.
 
 ### Chưa nghiệm thu / để lại sau
 
-- Các checkpoint trên mới là nghiệm thu kỹ thuật bằng CI. **Nghiệm thu
-  trực quan vẫn chờ chủ dự án chạy trên Windows thật** và đối chiếu ảnh
-  trước/sau ở cửa sổ mặc định + cửa sổ hẹp × Neon Stage + Mono Focus ×
+- Các follow-up ở trên đã có ảnh/xác nhận runtime cho từng phần được
+  ghi rõ, nhưng **nghiệm thu trực quan tổng thể vẫn chưa đóng**: vẫn
+  cần đối chiếu ảnh trước/sau ở cửa sổ mặc định + cửa sổ hẹp × Neon Stage + Mono Focus ×
   VI/EN; các icon Path tự vẽ (đặc biệt Shuffle/Repeat), title bar tối,
   dropdown/slider/scrollbar, độ vừa của hàng transport và cường độ
   Lighting & Glow tại Hero/Now Playing/Stage cần được nhìn thực tế
