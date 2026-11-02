@@ -7,6 +7,12 @@ on:
       - "arena/**"
   pull_request:
   workflow_dispatch:
+    inputs:
+      compile_pixel_shader:
+        description: Compile and upload the Aurora pixel shader
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -42,6 +48,20 @@ jobs:
             }
           }
           if ($failed) { exit 1 }
+
+      - name: Compile prototype pixel shader
+        if: ${{ inputs.compile_pixel_shader || contains(github.event.head_commit.message, '[compile-shader]') }}
+        shell: pwsh
+        run: ./tools/Compile-PixelShader.ps1 -InputPath src/Mimi.App/Effects/AuroraGlowEffect.fx -OutputPath artifacts/pixel-shader/AuroraGlowEffect.ps
+
+      - name: Upload prototype pixel shader
+        if: ${{ inputs.compile_pixel_shader || contains(github.event.head_commit.message, '[compile-shader]') }}
+        uses: actions/upload-artifact@v7.0.2
+        with:
+          name: Mimi-pixel-shader-${{ github.sha }}
+          path: artifacts/pixel-shader/AuroraGlowEffect.ps
+          if-no-files-found: error
+          retention-days: 14
 
       - name: Restore packages
         run: dotnet restore Mimi.sln
