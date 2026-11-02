@@ -4,6 +4,11 @@ A Windows desktop music-player foundation built with C# / WPF / .NET 8 and NAudi
 
 ## Current starter features
 - Dark anime-inspired cyan/pink desktop UI with the Mimi app icon
+- Four built-in color themes plus community themes: drop a JSON file into
+  the per-user `themes` folder (Settings → **Open themes folder**), press
+  **Reload themes**, and pick it from the theme list. Format guide:
+  [docs/COMMUNITY-THEMES.md](docs/COMMUNITY-THEMES.md); ready-made example:
+  [docs/examples/sunset-drive.json](docs/examples/sunset-drive.json)
 - Local audio file selection, Explorer drag-and-drop, and a resilient
   recursive folder scan that reports directories it could not read instead of
   discarding the whole result. Folder/file scans run in the background with
