@@ -397,16 +397,48 @@ thường dài hơn nên đây là phép thử bắt buộc sau khi icon hoá.
   kỹ thuật lẫn cảm nhận runtime, và UI Polish v1 không còn lát
   trực quan bắt buộc nào đang chờ nghiệm thu.
 
+### Hậu v1 — Prototype shader Aurora cho Hero (`735facb`, `5a425e9`, `cbf6769`)
+
+- Sau khi UI Polish v1 đã đóng, chủ dự án chọn thử custom shader
+  giới hạn trước khi sang đầu việc khác. Prototype chỉ áp dụng
+  `AuroraGlowEffect` lên lớp `HeroAccentGlowBrush` sẵn có của
+  Hero; Stage, Now Playing và `VisualizerView` không dùng HLSL.
+  Gradient hiện tại vẫn quyết định hình dạng/độ mờ, nên gỡ
+  `Border.Effect` là quay lại đúng giao diện trước thử nghiệm.
+- HLSL tại `Effects/AuroraGlowEffect.fx` lấy mẫu lớp glow đã kết
+  xuất, giữ nguyên alpha, trộn màu premultiplied theo dải sóng
+  chéo giữa `AccentColor` và `AccentSecondaryColor`. Hai màu đi
+  qua `DynamicResource` nên theme sẵn có và theme cộng đồng đều
+  đổi theo trực tiếp; `Strength` hiện là `0.42`, `Phase` là
+  `0.18` và cố định, không có animation theo thời gian hay bước
+  vẽ cộng thêm trong vòng lặp mỗi frame của visualizer.
+- Nguồn HLSL được biên dịch bằng
+  `tools/Compile-PixelShader.ps1` ở profile `ps_3_0`; bytecode
+  `Effects/AuroraGlowEffect.ps` (1.132 byte) được commit và đóng
+  gói dạng WPF `Resource`, vì vậy build thông thường không cần
+  `fxc.exe`. CI có thể sinh lại bytecode bằng lựa chọn thủ công
+  hoặc dấu `[compile-shader]` trong thông điệp commit. Test
+  `BundledShaderTests` kiểm chứng đúng pack path và token
+  pixel-shader 3.0. Lượt sinh bytecode `41493461425` và lượt nối
+  effect `41494296736` đều xanh.
+- Checkpoint này mới hoàn tất kỹ thuật. Chủ dự án còn cần nhìn
+  Hero trên Windows thật để quyết định dải Aurora có đủ khác
+  biệt, quá nhẹ hay quá rõ; khi đó chỉ cần chỉnh `Strength`,
+  `Phase`, gỡ effect hoặc cân nhắc mở rộng sang Stage như một
+  quyết định riêng. Việc chờ cảm nhận này không mở lại nghiệm
+  thu UI Polish v1 đã đóng ở trên.
+
 ### Để lại sau
 
 - UI Polish v1 nay **đã đóng theo các xác nhận runtime của chủ dự
   án vào 03/11/2026**, gồm lát 1 + 2, Lighting & Glow, các
   follow-up và lát 3. Các tinh chỉnh thẩm mỹ phát sinh sau này
   được xử lý như follow-up mới thay vì mở lại phạm vi v1.
-- Một custom shader giới hạn vẫn chỉ là lựa chọn hậu kỳ nếu bản
-  Lighting & Glow bằng gradient/blur chưa đủ “chất sân khấu” trên
-  Windows thật; lát 3 không đưa thêm HLSL hay tải vẽ theo frame vào
-  visualizer.
+- Prototype Aurora ở trên là bước thử HLSL duy nhất hiện nay và
+  chỉ nằm ở Hero. Việc mở rộng sang Stage, cho shader chuyển động
+  theo thời gian hoặc giữ lại lâu dài vẫn là quyết định hậu kỳ,
+  chỉ thực hiện nếu bản Windows thật cho thấy lợi ích rõ và hiệu
+  năng vẫn ổn; riêng lát 3 không dùng HLSL.
 - Đợt polish này không thay đổi hành vi phát nhạc, phím tắt, hợp đồng
   một click hay bất kỳ giới hạn/miễn trừ nào của Phase 4; cũng không bao
   gồm PR/merge vào `main`, LICENSE, tag hay đóng gói phát hành.
