@@ -1,3 +1,4 @@
+using System.IO;
 using System.Windows;
 using System.Windows.Media;
 using Mimi.Theming;
@@ -9,21 +10,41 @@ namespace Mimi.Services;
 /// Publishes platform-neutral theme colors into the WPF application
 /// resource dictionary. Shared brushes in ThemeBrushes.xaml bind to these
 /// colors dynamically, so changing a theme updates open windows without a
-/// restart.
+/// restart. In addition to the built-in themes, the service loads
+/// community *.json themes from the per-user themes folder; invalid files
+/// are skipped and logged, never fatal.
 /// </summary>
 public sealed class ThemeService
 {
+    public ThemeService(IUserDataService? userDataService = null)
+    {
+        ThemesDirectory = userDataService is null
+            ? null
+            : Path.Combine(userDataService.DataDirectory, "themes");
+        Catalog = LoadCatalog();
+    }
+
     public event EventHandler? ThemeChanged;
+
+    /// <summary>
+    /// Per-user folder scanned for community themes, or null when the
+    /// service was created without user-data access (design-time/tests).
+    /// </summary>
+    public string? ThemesDirectory { get; }
+
+    public ThemeCatalog Catalog { get; private set; }
+
+    public IReadOnlyList<ThemeDefinition> AvailableThemes => Catalog.All;
 
     public string CurrentThemeId { get; private set; } =
         BuiltInThemes.DefaultId;
 
     public ThemeDefinition CurrentTheme =>
-        BuiltInThemes.GetOrDefault(CurrentThemeId);
+        Catalog.GetOrDefault(CurrentThemeId);
 
     public string Apply(string? themeId)
     {
-        var theme = BuiltInThemes.GetOrDefault(themeId);
+        var theme = Catalog.GetOrDefault(themeId);
         CurrentThemeId = theme.Id;
 
         if (Application.Current?.Resources is { } resources)
@@ -34,6 +55,72 @@ public sealed class ThemeService
     }
 
     public void ApplyDefault() => Apply(BuiltInThemes.DefaultId);
+
+    public string NormalizeId(string? themeId) => Catalog.NormalizeId(themeId);
+
+    /// <summary>
+    /// Re-scans the themes folder, then re-applies the current theme so an
+    /// edited community theme refreshes live and a removed one falls back
+    /// to the default theme.
+    /// </summary>
+    public void ReloadCommunityThemes()
+    {
+        Catalog = LoadCatalog();
+        Apply(CurrentThemeId);
+    }
+
+    private ThemeCatalog LoadCatalog()
+    {
+        if (ThemesDirectory is null)
+            return ThemeCatalog.BuiltInsOnly;
+
+        try
+        {
+            // Create the folder eagerly so "Open themes folder" always has
+            // somewhere real to show, even before the first custom theme.
+            Directory.CreateDirectory(ThemesDirectory);
+            var results = CommunityThemeLoader.LoadDirectory(ThemesDirectory);
+
+            var themes = new List<ThemeDefinition>();
+            foreach (var result in results)
+            {
+                if (result.Theme is { } theme)
+                {
+                    themes.Add(theme);
+                }
+                else
+                {
+                    Log.Warning(
+                        "Skipped community theme file {ThemeFile}: {Errors}",
+                        result.Source,
+                        string.Join("; ", result.Errors));
+                }
+            }
+
+            var catalog = new ThemeCatalog(themes);
+            foreach (var warning in catalog.Warnings)
+                Log.Warning("Community themes: {Warning}", warning);
+
+            if (catalog.CommunityThemes.Count > 0)
+            {
+                Log.Information(
+                    "Loaded {CommunityThemeCount} community theme(s) from {ThemesDirectory}",
+                    catalog.CommunityThemes.Count,
+                    ThemesDirectory);
+            }
+
+            return catalog;
+        }
+        catch (Exception ex) when (
+            ex is IOException or UnauthorizedAccessException)
+        {
+            Log.Warning(
+                ex,
+                "Could not load community themes from {ThemesDirectory}; using built-in themes only",
+                ThemesDirectory);
+            return ThemeCatalog.BuiltInsOnly;
+        }
+    }
 
     public static void Apply(
         ThemeDefinition theme,

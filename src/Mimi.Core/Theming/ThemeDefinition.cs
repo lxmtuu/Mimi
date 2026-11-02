@@ -89,9 +89,14 @@ public sealed record ThemeDefinition
         return errors;
     }
 
-    private static bool IsValidId(string value)
+    /// <summary>
+    /// Theme ids are lowercase slugs so they stay safe in settings files,
+    /// URLs, and community-theme file names across languages.
+    /// </summary>
+    public static bool IsValidId(string? value)
     {
-        if (value.Length is < 1 or > 64 ||
+        if (value is null ||
+            value.Length is < 1 or > 64 ||
             value.StartsWith('-') ||
             value.EndsWith('-') ||
             value.Contains("--", StringComparison.Ordinal))

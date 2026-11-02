@@ -99,6 +99,22 @@ public sealed class UserDataServiceTests : IDisposable
     }
 
     [Fact]
+    public void CommunityThemeIdSurvivesSettingsRoundTrip()
+    {
+        service.SaveSettings(new AppSettings { UiTheme = "my-custom-theme" });
+
+        Assert.Equal("my-custom-theme", service.LoadSettings().UiTheme);
+    }
+
+    [Fact]
+    public void MalformedThemeIdFallsBackToDefault()
+    {
+        service.SaveSettings(new AppSettings { UiTheme = "Not A Slug!" });
+
+        Assert.Equal(BuiltInThemes.DefaultId, service.LoadSettings().UiTheme);
+    }
+
+    [Fact]
     public void Version5SettingsRoundTrip()
     {
         var expected = new AppSettings
@@ -293,7 +309,11 @@ public sealed class UserDataServiceTests : IDisposable
         Assert.Equal(0, loaded.Volume);
         Assert.Equal("NeonSpectrum", loaded.VisualizerMode);
         Assert.Equal(UiLanguages.System, loaded.UiLanguage);
-        Assert.Equal(BuiltInThemes.DefaultId, loaded.UiTheme);
+
+        // "not-a-theme" is a well-formed slug, so settings keep it: it may
+        // name a community theme. The app layer falls back to the default
+        // theme if no loaded theme actually has that id.
+        Assert.Equal("not-a-theme", loaded.UiTheme);
         Assert.Equal([@"C:\Music"], loaded.WatchedFolders);
         Assert.Equal("Library", loaded.LibraryView.ActiveView);
         Assert.Null(loaded.LibraryView.SelectedPlaylistId);

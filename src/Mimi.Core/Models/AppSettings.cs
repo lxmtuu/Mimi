@@ -64,7 +64,17 @@ public sealed class AppSettings
             : 0.7;
         VisualizerMode = Clean(VisualizerMode, "NeonSpectrum", 64);
         UiLanguage = UiLanguages.Normalize(UiLanguage);
-        UiTheme = BuiltInThemes.NormalizeId(UiTheme);
+
+        // Friendly spellings of built-in ids canonicalize immediately. Any
+        // other well-formed slug is preserved because it may name a
+        // community theme; the app layer falls back to the default theme
+        // when no loaded theme actually has that id.
+        if (BuiltInThemes.TryGet(UiTheme, out var builtInTheme))
+            UiTheme = builtInTheme.Id;
+        else if (!ThemeDefinition.IsValidId(UiTheme?.Trim()))
+            UiTheme = BuiltInThemes.DefaultId;
+        else
+            UiTheme = UiTheme.Trim();
         RepeatMode = Clean(RepeatMode, "Off", 32);
         WatchedFolders = (WatchedFolders ?? [])
             .Select(CleanNullablePath)

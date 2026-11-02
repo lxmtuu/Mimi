@@ -496,6 +496,73 @@ public sealed class MainWindowViewModelNoOutputTests
     }
 
     [Fact]
+    public void CommunityTheme_LoadsFromThemesFolderAppliesAndPersists()
+    {
+        RunOnSta(() =>
+        {
+            var userData = new FakeUserDataService
+            {
+                InitialSettings = new AppSettings
+                {
+                    UiTheme = "alpha-one"
+                }
+            };
+            var themesDirectory = Path.Combine(userData.DataDirectory, "themes");
+            Directory.CreateDirectory(themesDirectory);
+            File.WriteAllText(
+                Path.Combine(themesDirectory, "alpha-one.json"),
+                CommunityThemeLoaderTests.BuildThemeJson(
+                    "alpha-one",
+                    "Alpha One"));
+            var themeService = new ThemeService(userData);
+            var viewModel = new MainWindowViewModel(
+                new FakeAudioPlayer
+                {
+                    OutputStatus = new AudioOutputStatus(
+                        true,
+                        AudioOutputKind.WasapiShared,
+                        "Test Speakers",
+                        "Audio output is ready.")
+                },
+                new FakeLibraryService(),
+                new FakeLibraryCatalog(),
+                userData,
+                new FakeDialogService(),
+                themeService: themeService);
+
+            try
+            {
+                viewModel.InitializationTask.GetAwaiter().GetResult();
+
+                Assert.Equal("alpha-one", viewModel.UiTheme);
+                Assert.Equal("alpha-one", themeService.CurrentThemeId);
+                Assert.Contains(
+                    viewModel.ThemeOptions,
+                    option => option.Id == "alpha-one" &&
+                              option.Name == "Alpha One" &&
+                              !option.IsBuiltIn);
+                Assert.Equal(
+                    BuiltInThemes.All.Count + 1,
+                    viewModel.ThemeOptions.Count);
+
+                viewModel.UiTheme = BuiltInThemes.SakuraDreamId;
+                Assert.Equal(
+                    BuiltInThemes.SakuraDreamId,
+                    userData.LastSavedSettings?.UiTheme);
+
+                viewModel.UiTheme = "alpha-one";
+                Assert.Equal(
+                    "alpha-one",
+                    userData.LastSavedSettings?.UiTheme);
+            }
+            finally
+            {
+                viewModel.Dispose();
+            }
+        });
+    }
+
+    [Fact]
     public void ThemePreference_AppliesLoadedThemeNormalizesAndPersistsChanges()
     {
         RunOnSta(() =>

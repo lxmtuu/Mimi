@@ -231,6 +231,7 @@
   <data name="Settings_AudioOutputDescription" xml:space="preserve"><value>Mimi follows Windows' default output through WASAPI shared mode (WaveOut is only a fallback). If that device changes or disappears during playback, Mimi pauses instead of moving sound unexpectedly; press Play to continue on the new output.</value></data>
   <data name="Settings_AutoSaveNote" xml:space="preserve"><value>Changes save automatically to settings.json.</value></data>
   <data name="Settings_Close" xml:space="preserve"><value>Close settings</value></data>
+  <data name="Settings_CommunityThemesHint" xml:space="preserve"><value>You can add your own themes: place .json theme files in the themes folder, then reload the list. See docs/COMMUNITY-THEMES.md in the Mimi repository for the file format.</value></data>
   <data name="Settings_CouldNotOpenFolder" xml:space="preserve"><value>Couldn't open that folder.&#10;&#10;{0}</value></data>
   <data name="Settings_CouldNotRegisterWindows" xml:space="preserve"><value>Couldn't register Mimi with Windows.&#10;&#10;{0}</value></data>
   <data name="Settings_CouldNotRemoveWindowsRegistration" xml:space="preserve"><value>Couldn't remove Mimi's Windows registration.&#10;&#10;{0}</value></data>
@@ -251,6 +252,7 @@
   <data name="Settings_OpenDataFolderAutomation" xml:space="preserve"><value>Open Mimi data folder</value></data>
   <data name="Settings_OpenLogs" xml:space="preserve"><value>Open logs</value></data>
   <data name="Settings_OpenLogsAutomation" xml:space="preserve"><value>Open Mimi log folder</value></data>
+  <data name="Settings_OpenThemesFolder" xml:space="preserve"><value>Open themes folder</value></data>
   <data name="Settings_OpenWithNotRegistered" xml:space="preserve"><value>Not registered. Supported types: {0}.</value></data>
   <data name="Settings_OpenWithRegistered" xml:space="preserve"><value>Registered for {0}.</value></data>
   <data name="Settings_OpenWithUnavailable" xml:space="preserve"><value>Explorer integration is unavailable in this build.</value></data>
@@ -259,6 +261,7 @@
   <data name="Settings_PlaybackSessionSection" xml:space="preserve"><value>PLAYBACK &amp; SESSION</value></data>
   <data name="Settings_RegisterWindows" xml:space="preserve"><value>Register Mimi with Windows for this account</value></data>
   <data name="Settings_RegisterWindowsDescription" xml:space="preserve"><value>Adds Mimi to Explorer's Open with menu and creates or updates a Start menu shortcut carrying Mimi's app identity, so Windows media controls can show Mimi's name and icon. It never changes your current default music app; you choose defaults in Windows.</value></data>
+  <data name="Settings_ReloadThemes" xml:space="preserve"><value>Reload themes</value></data>
   <data name="Settings_RememberWindow" xml:space="preserve"><value>Remember window size and position</value></data>
   <data name="Settings_RememberWindowDescription" xml:space="preserve"><value>Saved bounds are moved back on screen if a monitor is no longer available.</value></data>
   <data name="Settings_RemoveWatchedFolderAutomation" xml:space="preserve"><value>Remove the selected watched folder</value></data>

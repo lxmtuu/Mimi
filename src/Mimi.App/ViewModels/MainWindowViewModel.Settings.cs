@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
@@ -58,6 +59,15 @@ public sealed partial class MainWindowViewModel
 
     public string LogDirectory => Path.Combine(DataDirectory, "logs");
 
+    public string ThemesDirectory =>
+        themeService?.ThemesDirectory ?? Path.Combine(DataDirectory, "themes");
+
+    /// <summary>
+    /// Themes offered by the Settings picker: built-ins first, then valid
+    /// community themes loaded from <see cref="ThemesDirectory"/>.
+    /// </summary>
+    public ObservableCollection<ThemeOptionViewModel> ThemeOptions { get; } = [];
+
     public string AppVersionLabel =>
         $"Mimi {GetType().Assembly.GetName().Version?.ToString(3) ?? "0.6.0"}";
 
@@ -108,6 +118,12 @@ public sealed partial class MainWindowViewModel
 
     partial void OnUiThemeChanged(string value)
     {
+        // The theme ComboBox briefly reports a null SelectedValue while
+        // its item list is being re-synced (language change, theme
+        // reload). That transient empty value is not a user choice and
+        // must not reset or persist a different theme.
+        if (string.IsNullOrWhiteSpace(value)) return;
+
         var normalized = ApplyUiTheme(value);
         if (!string.Equals(value, normalized, StringComparison.Ordinal))
         {
@@ -119,12 +135,66 @@ public sealed partial class MainWindowViewModel
             SaveSettings(force: true);
     }
 
-    private string ApplyUiTheme(string? value)
+    private string ApplyUiTheme(string? value) =>
+        themeService?.Apply(value) ?? BuiltInThemes.NormalizeId(value);
+
+    /// <summary>
+    /// Aligns <see cref="ThemeOptions"/> with the themes the service can
+    /// apply right now. Existing option objects are kept (only their
+    /// display names refresh) so a language change never disturbs the
+    /// ComboBox selection; options are added/removed/moved only when the
+    /// set of available themes actually changes.
+    /// </summary>
+    private void RefreshThemeOptions()
     {
-        var normalized = BuiltInThemes.NormalizeId(value);
-        themeService?.Apply(normalized);
-        return normalized;
+        var themes = themeService?.AvailableThemes ?? BuiltInThemes.All;
+
+        for (var i = ThemeOptions.Count - 1; i >= 0; i--)
+        {
+            if (!themes.Any(theme => string.Equals(
+                    theme.Id,
+                    ThemeOptions[i].Id,
+                    StringComparison.OrdinalIgnoreCase)))
+            {
+                ThemeOptions.RemoveAt(i);
+            }
+        }
+
+        for (var i = 0; i < themes.Count; i++)
+        {
+            var theme = themes[i];
+            var existing = ThemeOptions.FirstOrDefault(option =>
+                string.Equals(
+                    option.Id,
+                    theme.Id,
+                    StringComparison.OrdinalIgnoreCase));
+            if (existing is null)
+            {
+                ThemeOptions.Insert(
+                    i,
+                    new ThemeOptionViewModel(
+                        theme.Id,
+                        GetThemeDisplayName(theme),
+                        ThemeCatalog.IsBuiltIn(theme)));
+            }
+            else
+            {
+                existing.Name = GetThemeDisplayName(theme);
+                var currentIndex = ThemeOptions.IndexOf(existing);
+                if (currentIndex != i)
+                    ThemeOptions.Move(currentIndex, i);
+            }
+        }
     }
+
+    private string GetThemeDisplayName(ThemeDefinition theme) => theme.Id switch
+    {
+        BuiltInThemes.NeonStageId => Loc["Theme_NeonStage"],
+        BuiltInThemes.SakuraDreamId => Loc["Theme_SakuraDream"],
+        BuiltInThemes.MidnightLiveId => Loc["Theme_MidnightLive"],
+        BuiltInThemes.MonoFocusId => Loc["Theme_MonoFocus"],
+        _ => theme.Name
+    };
 
     private void RefreshLocalizedChrome()
     {
@@ -141,6 +211,7 @@ public sealed partial class MainWindowViewModel
         NotifySortLabelsChanged();
         RefreshPlaybackStateFilterOptions();
         RefreshFilterOptions();
+        RefreshThemeOptions();
 
         if (lastAudioOutputStatus is { } audioOutputStatus)
             RefreshAudioOutputStatus(audioOutputStatus);
@@ -267,6 +338,25 @@ public sealed partial class MainWindowViewModel
     [RelayCommand]
     private void OpenLogFolder() => OpenFolder(LogDirectory);
 
+    [RelayCommand]
+    private void OpenThemesFolder() => OpenFolder(ThemesDirectory);
+
+    [RelayCommand]
+    private void ReloadThemes()
+    {
+        if (themeService is null) return;
+
+        themeService.ReloadCommunityThemes();
+        RefreshThemeOptions();
+
+        // If the previously selected community theme was removed or became
+        // invalid, the service has already fallen back; mirror that here
+        // so the picker and persisted setting stay in sync.
+        var effectiveThemeId = themeService.CurrentThemeId;
+        if (!string.Equals(UiTheme, effectiveThemeId, StringComparison.Ordinal))
+            UiTheme = effectiveThemeId;
+    }
+
     private void OpenFolder(string path)
     {
         try
@@ -315,7 +405,9 @@ public sealed partial class MainWindowViewModel
         settings.RepeatMode = RepeatMode.ToString();
         settings.VisualizerMode = VisualizerMode.ToString();
         settings.UiLanguage = UiLanguages.Normalize(UiLanguage);
-        settings.UiTheme = BuiltInThemes.NormalizeId(UiTheme);
+        settings.UiTheme =
+            themeService?.NormalizeId(UiTheme) ??
+            BuiltInThemes.NormalizeId(UiTheme);
         settings.RestorePlaybackSession = RestorePlaybackSession;
         settings.RestoreLibraryView = RestoreLibraryView;
         settings.RestoreWindowPlacement = RestoreWindowPlacement;

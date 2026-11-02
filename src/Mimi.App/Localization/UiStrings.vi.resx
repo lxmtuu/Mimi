@@ -231,6 +231,7 @@
   <data name="Settings_AudioOutputDescription" xml:space="preserve"><value>Mimi dùng đầu ra mặc định của Windows qua WASAPI shared (WaveOut chỉ là phương án dự phòng). Nếu thiết bị đó thay đổi hoặc biến mất trong khi phát, Mimi sẽ tạm dừng thay vì chuyển âm thanh bất ngờ; nhấn Phát để tiếp tục trên đầu ra mới.</value></data>
   <data name="Settings_AutoSaveNote" xml:space="preserve"><value>Thay đổi được lưu tự động vào settings.json.</value></data>
   <data name="Settings_Close" xml:space="preserve"><value>Đóng cài đặt</value></data>
+  <data name="Settings_CommunityThemesHint" xml:space="preserve"><value>Bạn có thể tự thêm theme: đặt các tệp theme .json vào thư mục theme rồi tải lại danh sách. Xem định dạng tệp trong docs/COMMUNITY-THEMES.md của kho Mimi.</value></data>
   <data name="Settings_CouldNotOpenFolder" xml:space="preserve"><value>Không thể mở thư mục đó.&#10;&#10;{0}</value></data>
   <data name="Settings_CouldNotRegisterWindows" xml:space="preserve"><value>Không thể đăng ký Mimi với Windows.&#10;&#10;{0}</value></data>
   <data name="Settings_CouldNotRemoveWindowsRegistration" xml:space="preserve"><value>Không thể gỡ đăng ký Windows của Mimi.&#10;&#10;{0}</value></data>
@@ -251,6 +252,7 @@
   <data name="Settings_OpenDataFolderAutomation" xml:space="preserve"><value>Mở thư mục dữ liệu của Mimi</value></data>
   <data name="Settings_OpenLogs" xml:space="preserve"><value>Mở nhật ký</value></data>
   <data name="Settings_OpenLogsAutomation" xml:space="preserve"><value>Mở thư mục nhật ký của Mimi</value></data>
+  <data name="Settings_OpenThemesFolder" xml:space="preserve"><value>Mở thư mục theme</value></data>
   <data name="Settings_OpenWithNotRegistered" xml:space="preserve"><value>Chưa đăng ký. Các loại được hỗ trợ: {0}.</value></data>
   <data name="Settings_OpenWithRegistered" xml:space="preserve"><value>Đã đăng ký cho {0}.</value></data>
   <data name="Settings_OpenWithUnavailable" xml:space="preserve"><value>Tích hợp Explorer không khả dụng trong bản này.</value></data>
@@ -259,6 +261,7 @@
   <data name="Settings_PlaybackSessionSection" xml:space="preserve"><value>PHÁT NHẠC &amp; PHIÊN</value></data>
   <data name="Settings_RegisterWindows" xml:space="preserve"><value>Đăng ký Mimi với Windows cho tài khoản này</value></data>
   <data name="Settings_RegisterWindowsDescription" xml:space="preserve"><value>Thêm Mimi vào menu Open with của Explorer và tạo hoặc cập nhật lối tắt Start mang danh tính ứng dụng của Mimi, để điều khiển media của Windows có thể hiển thị tên và biểu tượng của Mimi. Thao tác này không bao giờ thay đổi ứng dụng nhạc mặc định hiện tại; bạn chọn mặc định trong Windows.</value></data>
+  <data name="Settings_ReloadThemes" xml:space="preserve"><value>Tải lại theme</value></data>
   <data name="Settings_RememberWindow" xml:space="preserve"><value>Nhớ kích thước và vị trí cửa sổ</value></data>
   <data name="Settings_RememberWindowDescription" xml:space="preserve"><value>Khung cửa sổ đã lưu sẽ được đưa trở lại màn hình nếu màn hình cũ không còn.</value></data>
   <data name="Settings_RemoveWatchedFolderAutomation" xml:space="preserve"><value>Xoá thư mục theo dõi đã chọn</value></data>

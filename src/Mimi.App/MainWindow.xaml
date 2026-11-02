@@ -689,20 +689,27 @@
                                 <TextBlock Text="{Binding Loc[Settings_LanguageDescription]}"
                                            Foreground="{StaticResource TextMutedBrush}" FontSize="11" TextWrapping="Wrap" Margin="0,8,0,0"/>
                                 <TextBlock Text="{Binding Loc[Settings_Theme]}" Margin="0,18,0,6"/>
-                                <ComboBox SelectedValue="{Binding UiTheme, Mode=TwoWay}"
-                                          SelectedValuePath="Tag"
-                                          AutomationProperties.Name="{Binding Loc[Settings_Theme]}">
-                                    <ComboBoxItem Tag="neon-stage" Content="{Binding DataContext.Loc[Theme_NeonStage], RelativeSource={RelativeSource AncestorType={x:Type ComboBox}}}"/>
-                                    <ComboBoxItem Tag="sakura-dream" Content="{Binding DataContext.Loc[Theme_SakuraDream], RelativeSource={RelativeSource AncestorType={x:Type ComboBox}}}"/>
-                                    <ComboBoxItem Tag="midnight-live" Content="{Binding DataContext.Loc[Theme_MidnightLive], RelativeSource={RelativeSource AncestorType={x:Type ComboBox}}}"/>
-                                    <ComboBoxItem Tag="mono-focus" Content="{Binding DataContext.Loc[Theme_MonoFocus], RelativeSource={RelativeSource AncestorType={x:Type ComboBox}}}"/>
-                                </ComboBox>
+                                <ComboBox ItemsSource="{Binding ThemeOptions}"
+                                          DisplayMemberPath="Name"
+                                          SelectedValuePath="Id"
+                                          SelectedValue="{Binding UiTheme, Mode=TwoWay}"
+                                          AutomationProperties.Name="{Binding Loc[Settings_Theme]}"/>
                                 <StackPanel Orientation="Horizontal" Margin="0,10,0,0" IsHitTestVisible="False">
                                     <Ellipse Width="12" Height="12" Fill="{StaticResource AccentBrush}"/>
                                     <Ellipse Width="12" Height="12" Fill="{StaticResource AccentSecondaryBrush}" Margin="6,0,0,0"/>
                                     <Ellipse Width="12" Height="12" Fill="{StaticResource AccentHotBrush}" Margin="6,0,0,0"/>
                                 </StackPanel>
                                 <TextBlock Text="{Binding Loc[Settings_ThemeDescription]}"
+                                           Foreground="{StaticResource TextMutedBrush}" FontSize="11" TextWrapping="Wrap" Margin="0,8,0,0"/>
+                                <WrapPanel Margin="0,10,0,0">
+                                    <Button Content="{Binding Loc[Settings_OpenThemesFolder]}" Command="{Binding OpenThemesFolderCommand}"
+                                            Padding="10,7" FontSize="11"
+                                            AutomationProperties.Name="{Binding Loc[Settings_OpenThemesFolder]}"/>
+                                    <Button Content="{Binding Loc[Settings_ReloadThemes]}" Command="{Binding ReloadThemesCommand}"
+                                            Padding="10,7" FontSize="11" Margin="8,0,0,0"
+                                            AutomationProperties.Name="{Binding Loc[Settings_ReloadThemes]}"/>
+                                </WrapPanel>
+                                <TextBlock Text="{Binding Loc[Settings_CommunityThemesHint]}"
                                            Foreground="{StaticResource TextMutedBrush}" FontSize="11" TextWrapping="Wrap" Margin="0,8,0,0"/>
                             </StackPanel>
                         </Border>

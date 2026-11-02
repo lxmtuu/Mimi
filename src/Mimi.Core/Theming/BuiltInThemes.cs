@@ -45,9 +45,7 @@ public static class BuiltInThemes
         return false;
     }
 
-    private static string CompactId(string value) =>
-        new(value.Trim().Where(character =>
-            character is not ('-' or '_' or ' ')).ToArray());
+    private static string CompactId(string value) => ThemeIds.Compact(value);
 
     private static ThemeDefinition CreateNeonStage() => new(
         NeonStageId,
