@@ -113,3 +113,46 @@ jobs:
           path: src/Mimi.App/bin/Release/net8.0-windows10.0.19041.0/**
           if-no-files-found: error
           retention-days: 14
+
+  generate-pixel-shader:
+    name: Generate Aurora pixel shader
+    if: ${{ (github.event_name == 'workflow_dispatch' && inputs.compile_pixel_shader) || (github.event_name == 'push' && contains(github.event.head_commit.message, '[compile-shader]')) }}
+    runs-on: windows-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v7.0.1
+
+      - name: Compile and commit Aurora pixel shader
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $shaderPath = 'src/Mimi.App/Effects/AuroraGlowEffect.ps'
+
+          ./tools/Compile-PixelShader.ps1 -InputPath src/Mimi.App/Effects/AuroraGlowEffect.fx -OutputPath $shaderPath
+          if ($LASTEXITCODE -ne 0) {
+            throw 'Pixel shader compilation failed.'
+          }
+
+          $changes = git status --porcelain -- $shaderPath
+          if ($LASTEXITCODE -ne 0) {
+            throw 'Could not inspect the generated pixel shader.'
+          }
+
+          if ([string]::IsNullOrWhiteSpace(($changes -join ''))) {
+            Write-Host 'Aurora pixel shader is unchanged.'
+            exit 0
+          }
+
+          git config user.name 'github-actions[bot]'
+          if ($LASTEXITCODE -ne 0) { throw 'Could not configure the bot git name.' }
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          if ($LASTEXITCODE -ne 0) { throw 'Could not configure the bot git email.' }
+          git add -- $shaderPath
+          if ($LASTEXITCODE -ne 0) { throw 'Could not stage the generated pixel shader.' }
+          git commit -m 'build: generate aurora pixel shader [skip ci]'
+          if ($LASTEXITCODE -ne 0) { throw 'Could not commit the generated pixel shader.' }
+          git push origin "HEAD:$env:GITHUB_REF_NAME"
+          if ($LASTEXITCODE -ne 0) { throw 'Could not push the generated pixel shader.' }
