@@ -93,6 +93,7 @@
   <data name="Library_RemoveFromFavorites" xml:space="preserve"><value>Remove from favorites</value></data>
   <data name="Library_RemoveSelectedFromLibrary" xml:space="preserve"><value>Remove selected from library</value></data>
   <data name="Library_RemoveSelectedSongs" xml:space="preserve"><value>Remove selected songs from library</value></data>
+  <data name="Library_SearchPlaceholder" xml:space="preserve"><value>Search songs…</value></data>
   <data name="Library_SearchSongs" xml:space="preserve"><value>Search songs</value></data>
   <data name="Library_SelectedCount" xml:space="preserve"><value>{0} selected</value></data>
   <data name="Library_SkippedDirectories" xml:space="preserve"><value>{0} folder(s) could not be read and were skipped.</value></data>
@@ -199,6 +200,7 @@
   <data name="Queue_CountPlural" xml:space="preserve"><value>{0} songs</value></data>
   <data name="Queue_CountSingular" xml:space="preserve"><value>1 song</value></data>
   <data name="Queue_EmptyHint" xml:space="preserve"><value>Choose a song to start a queue, or right-click songs and choose Play selected next.</value></data>
+  <data name="Queue_EmptyState" xml:space="preserve"><value>Nothing queued yet</value></data>
   <data name="Queue_ListAutomation" xml:space="preserve"><value>Up next queue</value></data>
   <data name="Queue_MoveDown" xml:space="preserve"><value>Move down</value></data>
   <data name="Queue_MoveSelectedDown" xml:space="preserve"><value>Move selected queue song down</value></data>

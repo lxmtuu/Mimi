@@ -93,6 +93,7 @@
   <data name="Library_RemoveFromFavorites" xml:space="preserve"><value>Xoá khỏi yêu thích</value></data>
   <data name="Library_RemoveSelectedFromLibrary" xml:space="preserve"><value>Xoá mục đã chọn khỏi thư viện</value></data>
   <data name="Library_RemoveSelectedSongs" xml:space="preserve"><value>Xoá các bài đã chọn khỏi thư viện</value></data>
+  <data name="Library_SearchPlaceholder" xml:space="preserve"><value>Tìm bài hát…</value></data>
   <data name="Library_SearchSongs" xml:space="preserve"><value>Tìm kiếm bài hát</value></data>
   <data name="Library_SelectedCount" xml:space="preserve"><value>Đã chọn {0}</value></data>
   <data name="Library_SkippedDirectories" xml:space="preserve"><value>{0} thư mục không đọc được và đã bị bỏ qua.</value></data>
@@ -199,6 +200,7 @@
   <data name="Queue_CountPlural" xml:space="preserve"><value>{0} bài</value></data>
   <data name="Queue_CountSingular" xml:space="preserve"><value>1 bài</value></data>
   <data name="Queue_EmptyHint" xml:space="preserve"><value>Chọn một bài để bắt đầu hàng đợi, hoặc nhấp chuột phải vào bài và chọn Phát mục đã chọn tiếp theo.</value></data>
+  <data name="Queue_EmptyState" xml:space="preserve"><value>Chưa có bài nào trong hàng đợi</value></data>
   <data name="Queue_ListAutomation" xml:space="preserve"><value>Hàng đợi sắp phát</value></data>
   <data name="Queue_MoveDown" xml:space="preserve"><value>Di chuyển xuống</value></data>
   <data name="Queue_MoveSelectedDown" xml:space="preserve"><value>Di chuyển bài được chọn trong hàng đợi xuống</value></data>
