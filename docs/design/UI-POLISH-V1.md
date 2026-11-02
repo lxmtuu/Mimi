@@ -315,6 +315,17 @@ thường dài hơn nên đây là phép thử bắt buộc sau khi icon hoá.
   `41468987185` đã xanh. Cường độ sáng vẫn cần chủ dự án duyệt trên
   Windows thật; nếu quá yếu hoặc quá mạnh, chỉ cần tinh chỉnh opacity
   của các lớp này sau ảnh chụp đối chiếu.
+- Ảnh Windows thật đầu tiên (kích thước mặc định, Neon Stage, EN,
+  chưa chọn bài) cho thấy hướng cân bằng đã lên hình: Hero có chiều
+  sâu, mascot hòa nền và panel Now Playing không còn phẳng. Cùng ảnh
+  cũng lộ ba điểm cần vá: các lớp trong thẻ bìa/visualizer vẫn vuông
+  góc dù Border đã đặt `CornerRadius`, quầng quanh CTA/Play còn hơi
+  chìm, và chữ Album/Genre ở thư viện bị cắt cụt không có `…`.
+  Follow-up `7c4bb48` thêm mask bo góc cho toàn bộ lớp bìa, tăng nhẹ
+  ba quầng điểm nhấn, đồng thời chuyển Title/Artist/Album/Genre sang
+  template `CharacterEllipsis` + ToolTip và cân lại bề rộng cột.
+  Windows CI `41471065914` đã xanh; vẫn cần ảnh kiểm lại, một bài có
+  bìa màu để đánh giá cover bloom và ảnh Stage riêng.
 
 ### Chưa nghiệm thu / để lại sau
 
