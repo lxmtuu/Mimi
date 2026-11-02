@@ -55,6 +55,7 @@ public partial class MainWindow : Window
     protected override void OnSourceInitialized(EventArgs e)
     {
         base.OnSourceInitialized(e);
+        WindowChromeHelper.ApplyDarkTitleBar(this);
 
         // SMTC is keyed to the top-level HWND. It must therefore be created
         // after WPF has created the native window, not in the view model.
@@ -88,6 +89,9 @@ public partial class MainWindow : Window
 
     private void ViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
+        if (e.PropertyName == nameof(MainWindowViewModel.UiTheme))
+            WindowChromeHelper.ApplyDarkTitleBar(this);
+
         if (stageWindow is null) return;
 
         if (e.PropertyName == nameof(MainWindowViewModel.VisualizerMode))

@@ -1,5 +1,6 @@
 using System.Windows;
 using Mimi.Localization;
+using Mimi.Services;
 
 namespace Mimi;
 
@@ -25,6 +26,12 @@ public partial class TextPromptWindow : Window
             InputTextBox.Focus();
             InputTextBox.SelectAll();
         };
+    }
+
+    protected override void OnSourceInitialized(EventArgs e)
+    {
+        base.OnSourceInitialized(e);
+        WindowChromeHelper.ApplyDarkTitleBar(this);
     }
 
     public LocalizationService Loc { get; }

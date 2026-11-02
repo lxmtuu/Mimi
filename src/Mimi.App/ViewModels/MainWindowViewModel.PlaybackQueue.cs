@@ -37,6 +37,7 @@ public sealed partial class MainWindowViewModel
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(RepeatModeLabel))]
     [NotifyPropertyChangedFor(nameof(IsRepeatEnabled))]
+    [NotifyPropertyChangedFor(nameof(IsRepeatOne))]
     [NotifyPropertyChangedFor(nameof(QueueStatusLabel))]
     private RepeatMode repeatMode;
 
@@ -77,6 +78,8 @@ public sealed partial class MainWindowViewModel
     };
 
     public bool IsRepeatEnabled => RepeatMode != RepeatMode.Off;
+
+    public bool IsRepeatOne => RepeatMode == RepeatMode.One;
 
     public bool HasUpcomingQueueItems => UpcomingQueueItems.Count > 0;
 
