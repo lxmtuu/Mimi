@@ -348,6 +348,18 @@ thường dài hơn nên đây là phép thử bắt buộc sau khi icon hoá.
   đó mới là việc cần điều tra riêng. Windows CI `41473516225` đã
   xanh; cần ảnh kiểm lại để xác nhận các nhãn đã đủ chữ trên Windows
   thật.
+- Ảnh kiểm lại xác nhận `Spectrum` và `Twin Wave` đã đủ chữ, hàng
+  icon Play/lên/xuống/xoá vừa panel và chỉ số khi Mimi active là
+  `96 FPS · 0.03 ms`, khớp với giải thích throttle ở trên. Ảnh này
+  đồng thời lộ một lỗi trạng thái khác: Up Next đang trống nhưng các
+  nút thao tác và `Clear upcoming` vẫn sáng như bấm được, vì các lệnh
+  chưa có `CanExecute` và template Button dùng chung chưa có hình
+  ảnh riêng cho trạng thái disabled. Follow-up `6b0e0ae` thêm điều
+  kiện cho Play/Remove/lên/xuống/Clear (gồm biên đầu/cuối), thông
+  báo lại khi lựa chọn hoặc thứ tự hàng đợi đổi, và làm mờ nút
+  disabled dùng chung; test mới bao phủ hàng đợi trống, mục đầu,
+  mục cuối và sau khi Clear. Windows CI `41475557243` đã xanh; cần
+  ảnh kiểm lại để xác nhận các nút đã mờ đúng khi không có mục nào.
 
 ### Chưa nghiệm thu / để lại sau
 
