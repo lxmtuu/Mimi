@@ -117,11 +117,19 @@
         </Style>
 
         <Style x:Key="ModeButtonBaseStyle" TargetType="{x:Type Button}" BasedOn="{StaticResource {x:Type Button}}">
-            <Setter Property="Padding" Value="6,6"/>
-            <Setter Property="Margin" Value="2"/>
-            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Padding" Value="4,6"/>
+            <Setter Property="Margin" Value="1"/>
+            <Setter Property="FontSize" Value="10"/>
             <Setter Property="Background" Value="{StaticResource ControlBackgroundBrush}"/>
             <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+            <Setter Property="ContentTemplate">
+                <Setter.Value>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding}" TextAlignment="Center"
+                                   TextTrimming="CharacterEllipsis"/>
+                    </DataTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
         <Style x:Key="SpectrumModeButtonStyle" TargetType="{x:Type Button}" BasedOn="{StaticResource ModeButtonBaseStyle}">
             <Style.Triggers>
@@ -1404,19 +1412,33 @@
                                                                    Opacity="0.85" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                                         <Image Source="{Binding Track.CoverThumbnailPath}"
                                                                Width="30" Height="30" Stretch="UniformToFill"
-                                                               RenderOptions.BitmapScalingMode="HighQuality"/>
+                                                               RenderOptions.BitmapScalingMode="HighQuality">
+                                                            <Image.Clip>
+                                                                <RectangleGeometry Rect="0,0,30,30" RadiusX="5" RadiusY="5"/>
+                                                            </Image.Clip>
+                                                        </Image>
                                                     </Grid>
                                                 </Border>
                                                 <StackPanel Grid.Column="2" Margin="7,0,0,0" VerticalAlignment="Center">
                                                     <TextBlock Text="{Binding Track.Title}" FontWeight="SemiBold"
-                                                               TextTrimming="CharacterEllipsis"/>
-                                                    <StackPanel Orientation="Horizontal">
-                                                        <TextBlock Text="{Binding Track.Artist}" Foreground="{StaticResource TextMutedBrush}"
-                                                                   FontSize="10" TextTrimming="CharacterEllipsis"/>
-                                                        <TextBlock Text=" · " Foreground="{StaticResource TextMutedBrush}" FontSize="10"/>
-                                                        <TextBlock Text="{Binding Track.DurationLabel}" Foreground="{StaticResource TextMutedBrush}"
+                                                               TextTrimming="CharacterEllipsis"
+                                                               ToolTip="{Binding Track.Title}"/>
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="*"/>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                        </Grid.ColumnDefinitions>
+                                                        <TextBlock Grid.Column="0" Text="{Binding Track.Artist}"
+                                                                   Foreground="{StaticResource TextMutedBrush}"
+                                                                   FontSize="10" TextTrimming="CharacterEllipsis"
+                                                                   ToolTip="{Binding Track.Artist}"/>
+                                                        <TextBlock Grid.Column="1" Text=" · "
+                                                                   Foreground="{StaticResource TextMutedBrush}" FontSize="10"/>
+                                                        <TextBlock Grid.Column="2" Text="{Binding Track.DurationLabel}"
+                                                                   Foreground="{StaticResource TextMutedBrush}"
                                                                    FontSize="10"/>
-                                                    </StackPanel>
+                                                    </Grid>
                                                 </StackPanel>
                                             </Grid>
                                         </DataTemplate>
@@ -1452,23 +1474,33 @@
                                     </TextBlock.Style>
                                 </TextBlock>
                                 <UniformGrid Columns="4" Margin="0,8,0,0">
-                                    <Button Content="{Binding Loc[Common_Play]}" Command="{Binding PlayQueueItemCommand}"
+                                    <Button Command="{Binding PlayQueueItemCommand}"
                                             CommandParameter="{Binding SelectedQueueItem}"
-                                            Padding="5,6" Margin="2" FontSize="10"
-                                            AutomationProperties.Name="{Binding Loc[Queue_PlaySelectedAutomation]}"/>
+                                            Padding="4,6" Margin="1"
+                                            ToolTip="{Binding Loc[Common_Play]}"
+                                            AutomationProperties.Name="{Binding Loc[Queue_PlaySelectedAutomation]}">
+                                        <Path Data="{StaticResource PlayIconGeometry}" Style="{StaticResource IconPathStyle}"
+                                              Width="15" Height="15"/>
+                                    </Button>
                                     <Button Content="↑" Command="{Binding MoveSelectedQueueItemUpCommand}"
-                                            Padding="5,6" Margin="2" FontSize="11"
+                                            Padding="4,6" Margin="1" FontSize="11"
+                                            ToolTip="{Binding Loc[Queue_MoveSelectedUp]}"
                                             AutomationProperties.Name="{Binding Loc[Queue_MoveSelectedUp]}"/>
                                     <Button Content="↓" Command="{Binding MoveSelectedQueueItemDownCommand}"
-                                            Padding="5,6" Margin="2" FontSize="11"
+                                            Padding="4,6" Margin="1" FontSize="11"
+                                            ToolTip="{Binding Loc[Queue_MoveSelectedDown]}"
                                             AutomationProperties.Name="{Binding Loc[Queue_MoveSelectedDown]}"/>
-                                    <Button Content="{Binding Loc[Common_Remove]}" Command="{Binding RemoveQueueItemCommand}"
+                                    <Button Command="{Binding RemoveQueueItemCommand}"
                                             CommandParameter="{Binding SelectedQueueItem}"
-                                            Padding="5,6" Margin="2" FontSize="10"
-                                            AutomationProperties.Name="{Binding Loc[Queue_RemoveSelectedAutomation]}"/>
+                                            Padding="4,6" Margin="1"
+                                            ToolTip="{Binding Loc[Common_Remove]}"
+                                            AutomationProperties.Name="{Binding Loc[Queue_RemoveSelectedAutomation]}">
+                                        <Path Data="{StaticResource DeleteIconGeometry}" Style="{StaticResource IconPathStyle}"
+                                              Width="15" Height="15"/>
+                                    </Button>
                                 </UniformGrid>
                                 <Button Content="{Binding Loc[Queue_ClearUpcoming]}" Command="{Binding ClearUpcomingQueueCommand}"
-                                        Padding="8,6" Margin="2,4,2,0" FontSize="10"
+                                        Padding="8,6" Margin="1,4,1,0" FontSize="10"
                                         AutomationProperties.Name="{Binding Loc[Queue_ClearUpcomingAutomation]}"/>
                             </StackPanel>
                         </Border>
