@@ -421,12 +421,12 @@ thường dài hơn nên đây là phép thử bắt buộc sau khi icon hoá.
   `BundledShaderTests` kiểm chứng đúng pack path và token
   pixel-shader 3.0. Lượt sinh bytecode `41493461425` và lượt nối
   effect `41494296736` đều xanh.
-- Checkpoint này mới hoàn tất kỹ thuật. Chủ dự án còn cần nhìn
-  Hero trên Windows thật để quyết định dải Aurora có đủ khác
-  biệt, quá nhẹ hay quá rõ; khi đó chỉ cần chỉnh `Strength`,
-  `Phase`, gỡ effect hoặc cân nhắc mở rộng sang Stage như một
-  quyết định riêng. Việc chờ cảm nhận này không mở lại nghiệm
-  thu UI Polish v1 đã đóng ở trên.
+- Chủ dự án đã xem Hero trên Windows thật, đánh giá độ rõ hiện
+  tại vừa đẹp và chốt giữ prototype ở phạm vi Hero với thông số
+  tĩnh hiện tại. Prototype vì vậy đóng cả ở mức kỹ thuật lẫn
+  cảm nhận runtime theo xác nhận của chủ dự án; xác nhận này là
+  follow-up hậu v1 và không mở lại nghiệm thu UI Polish v1 đã
+  đóng ở trên.
 
 ### Để lại sau
 
@@ -434,11 +434,12 @@ thường dài hơn nên đây là phép thử bắt buộc sau khi icon hoá.
   án vào 03/11/2026**, gồm lát 1 + 2, Lighting & Glow, các
   follow-up và lát 3. Các tinh chỉnh thẩm mỹ phát sinh sau này
   được xử lý như follow-up mới thay vì mở lại phạm vi v1.
-- Prototype Aurora ở trên là bước thử HLSL duy nhất hiện nay và
-  chỉ nằm ở Hero. Việc mở rộng sang Stage, cho shader chuyển động
-  theo thời gian hoặc giữ lại lâu dài vẫn là quyết định hậu kỳ,
-  chỉ thực hiện nếu bản Windows thật cho thấy lợi ích rõ và hiệu
-  năng vẫn ổn; riêng lát 3 không dùng HLSL.
+- Aurora hiện được giữ lâu dài ở phạm vi Hero với pha tĩnh sau
+  xác nhận runtime của chủ dự án. Việc mở rộng sang Stage hoặc
+  cho shader chuyển động theo thời gian vẫn là quyết định riêng
+  trong tương lai, chỉ thực hiện nếu phát sinh nhu cầu mới và
+  hiệu năng toàn màn hình được đánh giá lại; riêng lát 3 không
+  dùng HLSL.
 - Đợt polish này không thay đổi hành vi phát nhạc, phím tắt, hợp đồng
   một click hay bất kỳ giới hạn/miễn trừ nào của Phase 4; cũng không bao
   gồm PR/merge vào `main`, LICENSE, tag hay đóng gói phát hành.
