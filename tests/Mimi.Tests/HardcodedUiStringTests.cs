@@ -46,12 +46,15 @@ public sealed class HardcodedUiStringTests
             "0 FPS \u00B7 0.00 ms"
         };
 
+    // \x22 is the double-quote character; spelling it out keeps these
+    // patterns free of nested-quote escaping.
     private static readonly Regex XamlLiteralAttribute = new(
-        """(?:Text|Content|Header|ToolTip|Title|AutomationProperties\.Name)\s*=\s*"([^"{][^"]*)\"""",
+        "(?:Text|Content|Header|ToolTip|Title|AutomationProperties\\.Name)" +
+        "\\s*=\\s*\\x22([^\\x22{][^\\x22]*)\\x22",
         RegexOptions.Compiled);
 
     private static readonly Regex ViewModelFieldInitializer = new(
-        """private string [A-Za-z_][A-Za-z0-9_]* = "([^"]*)";""",
+        "private string [A-Za-z_][A-Za-z0-9_]* = \\x22([^\\x22]*)\\x22;",
         RegexOptions.Compiled);
 
     [Fact]
