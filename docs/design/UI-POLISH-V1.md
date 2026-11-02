@@ -392,18 +392,17 @@ thường dài hơn nên đây là phép thử bắt buộc sau khi icon hoá.
   parity lên 330/330 khóa EN/VI. Test
   `PlaybackIndicatorAndLibraryEmptyStates_ReflectCurrentTrackAndVisibleRows`
   bao phủ chuyển bài, Play/Pause, thư viện trống và không có kết
-  quả; Windows CI `41488192555` đã xanh. Đây là hoàn tất kỹ thuật
-  của lát 3; cảm nhận chuyển động/chỉ dấu trên bản Windows thật vẫn
-  chờ chủ dự án kiểm tra sau khi kéo bản mới.
+  quả; Windows CI `41488192555` đã xanh. Chủ dự án sau đó xác nhận
+  lát 3 đã ổn trên bản Windows thật; lát 3 vì vậy đóng cả ở mức
+  kỹ thuật lẫn cảm nhận runtime, và UI Polish v1 không còn lát
+  trực quan bắt buộc nào đang chờ nghiệm thu.
 
-### Chưa nghiệm thu / để lại sau
+### Để lại sau
 
-- Nghiệm thu trực quan của lát 1 + 2, Lighting & Glow và các
-  follow-up trước lát 3 **đã đóng theo xác nhận của chủ dự án vào
-  03/11/2026**. Riêng lát 3 mới hoàn tất ở mức code + Windows CI;
-  vẫn cần chủ dự án nhìn bản chạy thật để xác nhận cường độ chuyển
-  động của Mimi/equalizer, độ dễ nhận ra của hàng hiện tại và hai
-  overlay trạng thái trống ở kích thước cửa sổ thường dùng.
+- UI Polish v1 nay **đã đóng theo các xác nhận runtime của chủ dự
+  án vào 03/11/2026**, gồm lát 1 + 2, Lighting & Glow, các
+  follow-up và lát 3. Các tinh chỉnh thẩm mỹ phát sinh sau này
+  được xử lý như follow-up mới thay vì mở lại phạm vi v1.
 - Một custom shader giới hạn vẫn chỉ là lựa chọn hậu kỳ nếu bản
   Lighting & Glow bằng gradient/blur chưa đủ “chất sân khấu” trên
   Windows thật; lát 3 không đưa thêm HLSL hay tải vẽ theo frame vào
