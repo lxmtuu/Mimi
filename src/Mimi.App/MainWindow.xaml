@@ -450,7 +450,7 @@
                                     Background="{StaticResource AccentBrush}" Foreground="{StaticResource OnAccentBrush}"
                                     FontWeight="Bold" AutomationProperties.Name="{Binding Loc[Home_AddFirstSongs]}">
                                 <Button.Effect>
-                                    <DropShadowEffect Color="{DynamicResource AccentColor}" BlurRadius="14" ShadowDepth="0" Opacity="0.28"/>
+                                    <DropShadowEffect Color="{DynamicResource AccentColor}" BlurRadius="18" ShadowDepth="0" Opacity="0.36"/>
                                 </Button.Effect>
                                 <StackPanel Orientation="Horizontal">
                                     <Path Data="{StaticResource PlusIconGeometry}" Style="{StaticResource IconPathStyle}"/>
@@ -700,7 +700,7 @@
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
-                                <GridViewColumn Width="140" DisplayMemberBinding="{Binding Title}">
+                                <GridViewColumn Width="122">
                                     <GridViewColumn.Header>
                                         <Button Content="{Binding DataContext.TitleSortLabel, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}"
                                                 Command="{Binding DataContext.SortTracksCommand, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}"
@@ -708,8 +708,14 @@
                                                 Style="{StaticResource ColumnHeaderButtonStyle}"
                                                 AutomationProperties.Name="{Binding DataContext.Loc[Library_SortByTitle], RelativeSource={RelativeSource AncestorType={x:Type ListView}}}"/>
                                     </GridViewColumn.Header>
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Title}" TextTrimming="CharacterEllipsis"
+                                                       ToolTip="{Binding Title}"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
-                                <GridViewColumn Width="100" DisplayMemberBinding="{Binding Artist}">
+                                <GridViewColumn Width="108">
                                     <GridViewColumn.Header>
                                         <Button Content="{Binding DataContext.ArtistSortLabel, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}"
                                                 Command="{Binding DataContext.SortTracksCommand, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}"
@@ -717,8 +723,14 @@
                                                 Style="{StaticResource ColumnHeaderButtonStyle}"
                                                 AutomationProperties.Name="{Binding DataContext.Loc[Library_SortByArtist], RelativeSource={RelativeSource AncestorType={x:Type ListView}}}"/>
                                     </GridViewColumn.Header>
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Artist}" TextTrimming="CharacterEllipsis"
+                                                       ToolTip="{Binding Artist}"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
-                                <GridViewColumn Width="100" DisplayMemberBinding="{Binding Album}">
+                                <GridViewColumn Width="114">
                                     <GridViewColumn.Header>
                                         <Button Content="{Binding DataContext.AlbumSortLabel, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}"
                                                 Command="{Binding DataContext.SortTracksCommand, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}"
@@ -726,8 +738,14 @@
                                                 Style="{StaticResource ColumnHeaderButtonStyle}"
                                                 AutomationProperties.Name="{Binding DataContext.Loc[Library_SortByAlbum], RelativeSource={RelativeSource AncestorType={x:Type ListView}}}"/>
                                     </GridViewColumn.Header>
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Album}" TextTrimming="CharacterEllipsis"
+                                                       ToolTip="{Binding Album}"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
-                                <GridViewColumn Width="94" DisplayMemberBinding="{Binding Genre}">
+                                <GridViewColumn Width="110">
                                     <GridViewColumn.Header>
                                         <Button Content="{Binding DataContext.GenreSortLabel, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}"
                                                 Command="{Binding DataContext.SortTracksCommand, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}"
@@ -735,6 +753,12 @@
                                                 Style="{StaticResource ColumnHeaderButtonStyle}"
                                                 AutomationProperties.Name="{Binding DataContext.Loc[Library_SortByGenre], RelativeSource={RelativeSource AncestorType={x:Type ListView}}}"/>
                                     </GridViewColumn.Header>
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Genre}" TextTrimming="CharacterEllipsis"
+                                                       ToolTip="{Binding Genre}"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
                                 <GridViewColumn Width="54">
                                     <GridViewColumn.Header>
@@ -764,7 +788,7 @@
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
-                                <GridViewColumn Width="84">
+                                <GridViewColumn Width="72">
                                     <GridViewColumn.Header>
                                         <Button Content="{Binding DataContext.FormatSortLabel, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}"
                                                 Command="{Binding DataContext.SortTracksCommand, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}"
@@ -1098,9 +1122,21 @@
                         <TextBlock Text="{Binding Loc[NowPlaying_Title]}" Foreground="{StaticResource TextMutedBrush}" FontSize="11"/>
                         <Border Height="210" Margin="0,14,0,16" CornerRadius="16" ClipToBounds="True">
                             <Border.Effect>
-                                <DropShadowEffect Color="{DynamicResource AccentColor}" BlurRadius="16" ShadowDepth="0" Opacity="0.2"/>
+                                <DropShadowEffect Color="{DynamicResource AccentColor}" BlurRadius="20" ShadowDepth="0" Opacity="0.26"/>
                             </Border.Effect>
                             <Grid Background="{StaticResource CoverGradientBrush}">
+                                <!-- Shape-only mask: white is not a visible UI color. It clips every cover layer to the same rounded card shape at any panel width. -->
+                                <Grid.OpacityMask>
+                                    <DrawingBrush Stretch="Fill" Viewbox="0,0,1,1" ViewboxUnits="Absolute">
+                                        <DrawingBrush.Drawing>
+                                            <GeometryDrawing Brush="White">
+                                                <GeometryDrawing.Geometry>
+                                                    <RectangleGeometry Rect="0,0,1,1" RadiusX="0.067" RadiusY="0.076"/>
+                                                </GeometryDrawing.Geometry>
+                                            </GeometryDrawing>
+                                        </DrawingBrush.Drawing>
+                                    </DrawingBrush>
+                                </Grid.OpacityMask>
                                 <Image Source="{Binding CurrentCoverArtPath}" Stretch="UniformToFill"
                                        Opacity="0.55" IsHitTestVisible="False"
                                        RenderTransformOrigin="0.5,0.5">
@@ -1154,7 +1190,7 @@
                                     Foreground="{StaticResource OnAccentBrush}" Padding="16,9" Margin="2,0"
                                     AutomationProperties.Name="{Binding Loc[Playback_PlayOrPause]}">
                                 <Button.Effect>
-                                    <DropShadowEffect Color="{DynamicResource AccentColor}" BlurRadius="16" ShadowDepth="0" Opacity="0.34"/>
+                                    <DropShadowEffect Color="{DynamicResource AccentColor}" BlurRadius="20" ShadowDepth="0" Opacity="0.42"/>
                                 </Button.Effect>
                                 <Grid Width="20" Height="20">
                                     <Path Data="{StaticResource PlayIconGeometry}">
