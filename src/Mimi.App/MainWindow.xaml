@@ -171,6 +171,116 @@
             </Style.Triggers>
         </Style>
 
+        <Style x:Key="MascotFloatImageStyle" TargetType="{x:Type Image}">
+            <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Source={x:Static SystemParameters.ClientAreaAnimation}}"
+                             Value="True">
+                    <DataTrigger.EnterActions>
+                        <BeginStoryboard Name="MascotFloatStoryboard">
+                            <Storyboard AutoReverse="True" RepeatBehavior="Forever">
+                                <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
+                                                 From="-2" To="3" Duration="0:0:3.2">
+                                    <DoubleAnimation.EasingFunction>
+                                        <SineEase EasingMode="EaseInOut"/>
+                                    </DoubleAnimation.EasingFunction>
+                                </DoubleAnimation>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </DataTrigger.EnterActions>
+                    <DataTrigger.ExitActions>
+                        <StopStoryboard BeginStoryboardName="MascotFloatStoryboard"/>
+                    </DataTrigger.ExitActions>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="TrackTitleTextStyle" TargetType="{x:Type TextBlock}">
+            <Setter Property="Foreground" Value="{StaticResource TextStrongBrush}"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsCurrentTrack}" Value="True">
+                    <Setter Property="Foreground" Value="{StaticResource AccentBrush}"/>
+                    <Setter Property="FontWeight" Value="SemiBold"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="NowPlayingEqualizerBarStyle" TargetType="{x:Type Rectangle}">
+            <Setter Property="Width" Value="2"/>
+            <Setter Property="Height" Value="8"/>
+            <Setter Property="Fill" Value="{StaticResource OnAccentBrush}"/>
+            <Setter Property="Margin" Value="0.75,0"/>
+            <Setter Property="VerticalAlignment" Value="Bottom"/>
+            <Setter Property="RenderTransformOrigin" Value="0.5,1"/>
+        </Style>
+        <Style x:Key="NowPlayingEqualizerBar1Style" TargetType="{x:Type Rectangle}"
+               BasedOn="{StaticResource NowPlayingEqualizerBarStyle}">
+            <Style.Triggers>
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding IsCurrentTrackPlaying}" Value="True"/>
+                        <Condition Binding="{Binding Source={x:Static SystemParameters.ClientAreaAnimation}}" Value="True"/>
+                    </MultiDataTrigger.Conditions>
+                    <MultiDataTrigger.EnterActions>
+                        <BeginStoryboard Name="NowPlayingEqualizerBar1Storyboard">
+                            <Storyboard AutoReverse="True" RepeatBehavior="Forever">
+                                <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                                                 From="0.35" To="1" Duration="0:0:0.42"/>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </MultiDataTrigger.EnterActions>
+                    <MultiDataTrigger.ExitActions>
+                        <StopStoryboard BeginStoryboardName="NowPlayingEqualizerBar1Storyboard"/>
+                    </MultiDataTrigger.ExitActions>
+                </MultiDataTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="NowPlayingEqualizerBar2Style" TargetType="{x:Type Rectangle}"
+               BasedOn="{StaticResource NowPlayingEqualizerBarStyle}">
+            <Style.Triggers>
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding IsCurrentTrackPlaying}" Value="True"/>
+                        <Condition Binding="{Binding Source={x:Static SystemParameters.ClientAreaAnimation}}" Value="True"/>
+                    </MultiDataTrigger.Conditions>
+                    <MultiDataTrigger.EnterActions>
+                        <BeginStoryboard Name="NowPlayingEqualizerBar2Storyboard">
+                            <Storyboard AutoReverse="True" RepeatBehavior="Forever">
+                                <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                                                 From="0.95" To="0.3" Duration="0:0:0.53"/>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </MultiDataTrigger.EnterActions>
+                    <MultiDataTrigger.ExitActions>
+                        <StopStoryboard BeginStoryboardName="NowPlayingEqualizerBar2Storyboard"/>
+                    </MultiDataTrigger.ExitActions>
+                </MultiDataTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="NowPlayingEqualizerBar3Style" TargetType="{x:Type Rectangle}"
+               BasedOn="{StaticResource NowPlayingEqualizerBarStyle}">
+            <Style.Triggers>
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding IsCurrentTrackPlaying}" Value="True"/>
+                        <Condition Binding="{Binding Source={x:Static SystemParameters.ClientAreaAnimation}}" Value="True"/>
+                    </MultiDataTrigger.Conditions>
+                    <MultiDataTrigger.EnterActions>
+                        <BeginStoryboard Name="NowPlayingEqualizerBar3Storyboard">
+                            <Storyboard AutoReverse="True" RepeatBehavior="Forever">
+                                <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                                                 From="0.5" To="1" Duration="0:0:0.61"
+                                                 BeginTime="0:0:0.08"/>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </MultiDataTrigger.EnterActions>
+                    <MultiDataTrigger.ExitActions>
+                        <StopStoryboard BeginStoryboardName="NowPlayingEqualizerBar3Storyboard"/>
+                    </MultiDataTrigger.ExitActions>
+                </MultiDataTrigger>
+            </Style.Triggers>
+        </Style>
+
         <Style x:Key="ColumnHeaderButtonStyle" TargetType="{x:Type Button}" BasedOn="{StaticResource {x:Type Button}}">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="Foreground" Value="{StaticResource AccentBrush}"/>
@@ -442,8 +552,11 @@
                                 </Ellipse.Effect>
                             </Ellipse>
                             <Image Source="pack://application:,,,/Assets/Mascot/mimi-mascot-v1.png"
-                                   Stretch="Uniform"
+                                   Stretch="Uniform" Style="{StaticResource MascotFloatImageStyle}"
                                    AutomationProperties.Name="{Binding Loc[Mascot_Automation]}">
+                                <Image.RenderTransform>
+                                    <TranslateTransform/>
+                                </Image.RenderTransform>
                                 <Image.Effect>
                                     <DropShadowEffect Color="{DynamicResource AppBackgroundColor}" BlurRadius="14" ShadowDepth="3" Direction="270" Opacity="0.42"/>
                                 </Image.Effect>
@@ -607,6 +720,7 @@
                 </WrapPanel>
 
                 <Border Grid.Row="3" Background="{StaticResource PanelBackgroundBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="16" Padding="8">
+                    <Grid>
                     <ListView x:Name="TrackList" ItemsSource="{Binding TracksView}"
                               SelectedItem="{Binding SelectedTrack, Mode=TwoWay}"
                               SelectionMode="Extended"
@@ -703,6 +817,55 @@
                                                            Stretch="UniformToFill"
                                                            RenderOptions.BitmapScalingMode="HighQuality"
                                                            ToolTip="{Binding Album}"/>
+                                                    <Border BorderBrush="{StaticResource AccentBrush}" BorderThickness="1.5"
+                                                            CornerRadius="6" IsHitTestVisible="False">
+                                                        <Border.Style>
+                                                            <Style TargetType="{x:Type Border}">
+                                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding IsCurrentTrack}" Value="True">
+                                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </Border.Style>
+                                                    </Border>
+                                                    <Border Width="18" Height="18" CornerRadius="5"
+                                                            Background="{StaticResource AccentBrush}"
+                                                            HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="2"
+                                                            IsHitTestVisible="False"
+                                                            ToolTip="{Binding CurrentPlaybackIndicatorLabel}"
+                                                            AutomationProperties.Name="{Binding CurrentPlaybackIndicatorLabel}">
+                                                        <Border.Style>
+                                                            <Style TargetType="{x:Type Border}">
+                                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding IsCurrentTrack}" Value="True">
+                                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </Border.Style>
+                                                        <StackPanel Orientation="Horizontal" Height="10"
+                                                                    HorizontalAlignment="Center" VerticalAlignment="Bottom"
+                                                                    Margin="0,0,0,3">
+                                                            <Rectangle Style="{StaticResource NowPlayingEqualizerBar1Style}">
+                                                                <Rectangle.RenderTransform>
+                                                                    <ScaleTransform ScaleY="0.35"/>
+                                                                </Rectangle.RenderTransform>
+                                                            </Rectangle>
+                                                            <Rectangle Style="{StaticResource NowPlayingEqualizerBar2Style}">
+                                                                <Rectangle.RenderTransform>
+                                                                    <ScaleTransform ScaleY="0.95"/>
+                                                                </Rectangle.RenderTransform>
+                                                            </Rectangle>
+                                                            <Rectangle Style="{StaticResource NowPlayingEqualizerBar3Style}">
+                                                                <Rectangle.RenderTransform>
+                                                                    <ScaleTransform ScaleY="0.5"/>
+                                                                </Rectangle.RenderTransform>
+                                                            </Rectangle>
+                                                        </StackPanel>
+                                                    </Border>
                                                 </Grid>
                                             </Border>
                                         </DataTemplate>
@@ -719,6 +882,7 @@
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock Text="{Binding Title}" TextTrimming="CharacterEllipsis"
+                                                       Style="{StaticResource TrackTitleTextStyle}"
                                                        ToolTip="{Binding Title}"/>
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
@@ -830,6 +994,91 @@
                             </Style>
                         </ListView.ItemContainerStyle>
                     </ListView>
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
+                                MaxWidth="280" Margin="24,42,24,16" IsHitTestVisible="False">
+                        <StackPanel.Style>
+                            <Style TargetType="{x:Type StackPanel}">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <MultiDataTrigger>
+                                        <MultiDataTrigger.Conditions>
+                                            <Condition Binding="{Binding IsLibraryReady}" Value="True"/>
+                                            <Condition Binding="{Binding HasVisibleTracks}" Value="False"/>
+                                            <Condition Binding="{Binding IsScanning}" Value="False"/>
+                                            <Condition Binding="{Binding IsSearchingCatalog}" Value="False"/>
+                                        </MultiDataTrigger.Conditions>
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </MultiDataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </StackPanel.Style>
+                        <Image Source="pack://application:,,,/Assets/Mascot/mimi-mascot-v1.png"
+                               Width="58" Height="78" Stretch="Uniform"
+                               Style="{StaticResource MascotFloatImageStyle}" Opacity="0.94"
+                               HorizontalAlignment="Center"
+                               AutomationProperties.Name="{Binding Loc[Mascot_Automation]}">
+                            <Image.RenderTransform>
+                                <TranslateTransform/>
+                            </Image.RenderTransform>
+                        </Image>
+                        <TextBlock Text="{Binding Loc[Library_EmptyStateTitle]}"
+                                   Foreground="{StaticResource TextStrongBrush}" FontSize="15" FontWeight="SemiBold"
+                                   TextAlignment="Center" TextWrapping="Wrap" Margin="0,8,0,0">
+                            <TextBlock.Style>
+                                <Style TargetType="{x:Type TextBlock}">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding HasAnyTracks}" Value="False">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                        <TextBlock Text="{Binding Loc[Library_NoResultsTitle]}"
+                                   Foreground="{StaticResource TextStrongBrush}" FontSize="15" FontWeight="SemiBold"
+                                   TextAlignment="Center" TextWrapping="Wrap" Margin="0,8,0,0">
+                            <TextBlock.Style>
+                                <Style TargetType="{x:Type TextBlock}">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding HasAnyTracks}" Value="True">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                        <TextBlock Text="{Binding Loc[Library_EmptyStateHint]}"
+                                   Foreground="{StaticResource TextMutedBrush}" FontSize="11"
+                                   TextAlignment="Center" TextWrapping="Wrap" Margin="0,5,0,0">
+                            <TextBlock.Style>
+                                <Style TargetType="{x:Type TextBlock}">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding HasAnyTracks}" Value="False">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                        <TextBlock Text="{Binding Loc[Library_NoResultsHint]}"
+                                   Foreground="{StaticResource TextMutedBrush}" FontSize="11"
+                                   TextAlignment="Center" TextWrapping="Wrap" Margin="0,5,0,0">
+                            <TextBlock.Style>
+                                <Style TargetType="{x:Type TextBlock}">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding HasAnyTracks}" Value="True">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </StackPanel>
+                    </Grid>
                 </Border>
             </Grid>
 
@@ -1444,12 +1693,10 @@
                                         </DataTemplate>
                                     </ListView.ItemTemplate>
                                 </ListView>
-                                <TextBlock Text="{Binding Loc[Queue_EmptyState]}"
-                                           Foreground="{StaticResource TextFaintBrush}" FontSize="11"
-                                           HorizontalAlignment="Center" VerticalAlignment="Center"
-                                           IsHitTestVisible="False">
-                                    <TextBlock.Style>
-                                        <Style TargetType="{x:Type TextBlock}">
+                                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
+                                            MaxWidth="180" Margin="12" IsHitTestVisible="False">
+                                    <StackPanel.Style>
+                                        <Style TargetType="{x:Type StackPanel}">
                                             <Setter Property="Visibility" Value="Collapsed"/>
                                             <Style.Triggers>
                                                 <DataTrigger Binding="{Binding HasUpcomingQueueItems}" Value="False">
@@ -1457,8 +1704,20 @@
                                                 </DataTrigger>
                                             </Style.Triggers>
                                         </Style>
-                                    </TextBlock.Style>
-                                </TextBlock>
+                                    </StackPanel.Style>
+                                    <Image Source="pack://application:,,,/Assets/Mascot/mimi-mascot-v1.png"
+                                           Width="48" Height="64" Stretch="Uniform"
+                                           Style="{StaticResource MascotFloatImageStyle}" Opacity="0.94"
+                                           HorizontalAlignment="Center"
+                                           AutomationProperties.Name="{Binding Loc[Mascot_Automation]}">
+                                        <Image.RenderTransform>
+                                            <TranslateTransform/>
+                                        </Image.RenderTransform>
+                                    </Image>
+                                    <TextBlock Text="{Binding Loc[Queue_EmptyState]}"
+                                               Foreground="{StaticResource TextFaintBrush}" FontSize="11"
+                                               TextAlignment="Center" TextWrapping="Wrap" Margin="0,6,0,0"/>
+                                </StackPanel>
                                 </Grid>
                                 <TextBlock Text="{Binding Loc[Queue_EmptyHint]}"
                                            Foreground="{StaticResource TextMutedBrush}" FontSize="10" TextWrapping="Wrap" Margin="2,7,2,0">

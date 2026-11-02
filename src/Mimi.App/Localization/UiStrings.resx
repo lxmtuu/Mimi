@@ -77,6 +77,8 @@
   <data name="Library_CouldNotSaveFavorites" xml:space="preserve"><value>Couldn't save favorites.&#10;&#10;{0}</value></data>
   <data name="Library_CoverHeader" xml:space="preserve"><value>COVER</value></data>
   <data name="Library_DownButton" xml:space="preserve"><value>↓ Down</value></data>
+  <data name="Library_EmptyStateHint" xml:space="preserve"><value>Add songs to build your library and start the show.</value></data>
+  <data name="Library_EmptyStateTitle" xml:space="preserve"><value>Your stage is still quiet</value></data>
   <data name="Library_FavoriteSelected" xml:space="preserve"><value>♥ Favorite selected</value></data>
   <data name="Library_FileCouldNotBePlayed" xml:space="preserve"><value>This file could not be played</value></data>
   <data name="Library_FilterByAlbum" xml:space="preserve"><value>Filter by album</value></data>
@@ -87,6 +89,8 @@
   <data name="Library_Filters" xml:space="preserve"><value>Filters</value></data>
   <data name="Library_MoveSelectedSongDown" xml:space="preserve"><value>Move selected song down in playlist</value></data>
   <data name="Library_MoveSelectedSongUp" xml:space="preserve"><value>Move selected song up in playlist</value></data>
+  <data name="Library_NoResultsHint" xml:space="preserve"><value>Try a different search or clear the filters.</value></data>
+  <data name="Library_NoResultsTitle" xml:space="preserve"><value>No songs match this view</value></data>
   <data name="Library_PlayNext" xml:space="preserve"><value>Play next</value></data>
   <data name="Library_PlaySelectedNext" xml:space="preserve"><value>Play selected next</value></data>
   <data name="Library_PlaySelectedSongsNext" xml:space="preserve"><value>Play selected songs next</value></data>
@@ -151,6 +155,8 @@
   <data name="Playback_NextTrack" xml:space="preserve"><value>Next track</value></data>
   <data name="Playback_NoneInQueue" xml:space="preserve"><value>None of the songs in this queue could be played.</value></data>
   <data name="Playback_NonePreviousInQueue" xml:space="preserve"><value>None of the previous songs in this queue could be played.</value></data>
+  <data name="Playback_NowPlayingIndicator" xml:space="preserve"><value>Now playing</value></data>
+  <data name="Playback_PausedIndicator" xml:space="preserve"><value>Current song, paused</value></data>
   <data name="Playback_PlayOrPause" xml:space="preserve"><value>Play or pause</value></data>
   <data name="Playback_PreviousTrack" xml:space="preserve"><value>Previous track</value></data>
   <data name="Playback_RepeatAll" xml:space="preserve"><value>Repeat All</value></data>

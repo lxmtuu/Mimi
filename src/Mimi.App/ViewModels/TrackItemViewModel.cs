@@ -102,6 +102,14 @@ public sealed partial class TrackItemViewModel : ObservableObject
     private bool hasPlaybackError;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CurrentPlaybackIndicatorLabel))]
+    private bool isCurrentTrack;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CurrentPlaybackIndicatorLabel))]
+    private bool isCurrentTrackPlaying;
+
+    [ObservableProperty]
     private DateTimeOffset? lastPlayedAtUtc;
 
     [ObservableProperty]
@@ -121,6 +129,20 @@ public sealed partial class TrackItemViewModel : ObservableObject
 
     public string PlaybackStatus => HasPlaybackError ? "⚠" : string.Empty;
 
+    public string CurrentPlaybackIndicatorLabel => IsCurrentTrackPlaying
+        ? loc["Playback_NowPlayingIndicator"]
+        : IsCurrentTrack
+            ? loc["Playback_PausedIndicator"]
+            : string.Empty;
+
+    internal void SetCurrentPlaybackState(
+        bool isCurrentTrack,
+        bool isPlaying)
+    {
+        IsCurrentTrack = isCurrentTrack;
+        IsCurrentTrackPlaying = isCurrentTrack && isPlaying;
+    }
+
     internal void RefreshLocalizedLabels()
     {
         OnPropertyChanged(nameof(Artist));
@@ -129,6 +151,7 @@ public sealed partial class TrackItemViewModel : ObservableObject
         OnPropertyChanged(nameof(Genre));
         OnPropertyChanged(nameof(Subtitle));
         OnPropertyChanged(nameof(FavoriteToolTip));
+        OnPropertyChanged(nameof(CurrentPlaybackIndicatorLabel));
     }
 
     public void UpdateMetadata(Track updated)

@@ -151,9 +151,27 @@ public sealed partial class MainWindowViewModel
 
     partial void OnCurrentTrackChanged(TrackItemViewModel? value)
     {
+        if (trackWithPlaybackIndicator is not null &&
+            !ReferenceEquals(trackWithPlaybackIndicator, value))
+        {
+            trackWithPlaybackIndicator.SetCurrentPlaybackState(
+                isCurrentTrack: false,
+                isPlaying: false);
+        }
+
+        value?.SetCurrentPlaybackState(
+            isCurrentTrack: true,
+            isPlaying: IsPlaying);
+        trackWithPlaybackIndicator = value;
+
         if (value is null)
             AudioOutputNotice = string.Empty;
     }
+
+    partial void OnIsPlayingChanged(bool value) =>
+        CurrentTrack?.SetCurrentPlaybackState(
+            isCurrentTrack: true,
+            isPlaying: value);
 
     private void AudioPlayer_OutputStatusChanged(
         object? sender,

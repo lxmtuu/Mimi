@@ -213,6 +213,98 @@ public sealed class MainWindowViewModelNoOutputTests
     }
 
     [Fact]
+    public void PlaybackIndicatorAndLibraryEmptyStates_ReflectCurrentTrackAndVisibleRows()
+    {
+        RunOnSta(() =>
+        {
+            var audio = new FakeAudioPlayer
+            {
+                OutputStatus = new AudioOutputStatus(
+                    isAvailable: true,
+                    AudioOutputKind.WasapiShared,
+                    "Test Speakers",
+                    "Audio output is ready.")
+            };
+            var viewModel = new MainWindowViewModel(
+                audio,
+                new FakeLibraryService(),
+                new FakeLibraryCatalog(),
+                new FakeUserDataService(),
+                new FakeDialogService());
+
+            try
+            {
+                viewModel.InitializationTask.GetAwaiter().GetResult();
+
+                Assert.True(viewModel.IsLibraryReady);
+                Assert.False(viewModel.HasAnyTracks);
+                Assert.False(viewModel.HasVisibleTracks);
+
+                static TrackItemViewModel CreateTrack(string fileName, string title) =>
+                    new(
+                        new Track
+                        {
+                            FilePath = @$"C:\fixtures\{fileName}",
+                            MetadataTitle = title,
+                            Duration = TimeSpan.FromSeconds(30)
+                        },
+                        isFavorite: false);
+
+                var first = CreateTrack("cyan.wav", "Cyan Signal");
+                var second = CreateTrack("magenta.wav", "Magenta Signal");
+                viewModel.Tracks.Add(first);
+                viewModel.Tracks.Add(second);
+
+                // SearchText reconfigures the view synchronously, which also
+                // refreshes the empty-state inputs used by the library overlay.
+                viewModel.SearchText = "Signal";
+                Assert.True(viewModel.HasAnyTracks);
+                Assert.True(viewModel.HasVisibleTracks);
+
+                viewModel.PlayTrackCommand.Execute(first);
+
+                Assert.True(first.IsCurrentTrack);
+                Assert.True(first.IsCurrentTrackPlaying);
+                Assert.Equal("Now playing", first.CurrentPlaybackIndicatorLabel);
+                Assert.False(second.IsCurrentTrack);
+                Assert.False(second.IsCurrentTrackPlaying);
+                Assert.Equal(string.Empty, second.CurrentPlaybackIndicatorLabel);
+
+                viewModel.PausePlaybackCommand.Execute(null);
+
+                Assert.True(first.IsCurrentTrack);
+                Assert.False(first.IsCurrentTrackPlaying);
+                Assert.Equal(
+                    "Current song, paused",
+                    first.CurrentPlaybackIndicatorLabel);
+
+                viewModel.PlayTrackCommand.Execute(second);
+
+                Assert.False(first.IsCurrentTrack);
+                Assert.False(first.IsCurrentTrackPlaying);
+                Assert.Equal(string.Empty, first.CurrentPlaybackIndicatorLabel);
+                Assert.True(second.IsCurrentTrack);
+                Assert.True(second.IsCurrentTrackPlaying);
+                Assert.Equal("Now playing", second.CurrentPlaybackIndicatorLabel);
+
+                viewModel.SearchText = "no-such-song";
+
+                Assert.True(viewModel.HasAnyTracks);
+                Assert.False(viewModel.HasVisibleTracks);
+
+                viewModel.SearchText = string.Empty;
+
+                Assert.True(viewModel.HasAnyTracks);
+                Assert.True(viewModel.HasVisibleTracks);
+            }
+            finally
+            {
+                viewModel.Dispose();
+            }
+        });
+    }
+
+    [Fact]
     public void PlayTrack_WhenTrackIsAlreadyCurrent_DoesNotReloadAndResumesWhenPaused()
     {
         RunOnSta(() =>

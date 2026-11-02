@@ -101,6 +101,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     private TrackSortField trackSortField;
     private ListSortDirection trackSortDirection = ListSortDirection.Ascending;
     private long? currentPlayHistoryId;
+    private TrackItemViewModel? trackWithPlaybackIndicator;
     private bool changingProgress;
     private bool userSeeking;
     private bool firstTrackSwitchLogged;
@@ -138,6 +139,15 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
 
     [ObservableProperty]
     private string trackCountLabel = string.Empty;
+
+    [ObservableProperty]
+    private bool isLibraryReady;
+
+    [ObservableProperty]
+    private bool hasAnyTracks;
+
+    [ObservableProperty]
+    private bool hasVisibleTracks;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(TaskbarDescription))]
@@ -1218,6 +1228,10 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
                     Loc["Dialog_LibraryWarning"]);
             }
         }
+        finally
+        {
+            IsLibraryReady = true;
+        }
     }
 
     private void QueueLegacyCoverArtUpgrade()
@@ -1693,6 +1707,8 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     private void UpdateTrackCount()
     {
         var visibleCount = TracksView.Cast<TrackItemViewModel>().Count();
+        HasAnyTracks = Tracks.Count > 0;
+        HasVisibleTracks = visibleCount > 0;
 
         if (normalizedSearchQuery.Length > 0)
         {

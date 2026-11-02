@@ -77,6 +77,8 @@
   <data name="Library_CouldNotSaveFavorites" xml:space="preserve"><value>Không thể lưu mục yêu thích.&#10;&#10;{0}</value></data>
   <data name="Library_CoverHeader" xml:space="preserve"><value>BÌA</value></data>
   <data name="Library_DownButton" xml:space="preserve"><value>↓ Xuống</value></data>
+  <data name="Library_EmptyStateHint" xml:space="preserve"><value>Thêm bài hát để xây dựng thư viện và bắt đầu buổi diễn.</value></data>
+  <data name="Library_EmptyStateTitle" xml:space="preserve"><value>Sân khấu của bạn vẫn đang yên lặng</value></data>
   <data name="Library_FavoriteSelected" xml:space="preserve"><value>♥ Yêu thích mục đã chọn</value></data>
   <data name="Library_FileCouldNotBePlayed" xml:space="preserve"><value>Không thể phát file này</value></data>
   <data name="Library_FilterByAlbum" xml:space="preserve"><value>Lọc theo album</value></data>
@@ -87,6 +89,8 @@
   <data name="Library_Filters" xml:space="preserve"><value>Bộ lọc</value></data>
   <data name="Library_MoveSelectedSongDown" xml:space="preserve"><value>Di chuyển bài đã chọn xuống trong danh sách phát</value></data>
   <data name="Library_MoveSelectedSongUp" xml:space="preserve"><value>Di chuyển bài đã chọn lên trong danh sách phát</value></data>
+  <data name="Library_NoResultsHint" xml:space="preserve"><value>Hãy thử từ khóa khác hoặc xóa các bộ lọc.</value></data>
+  <data name="Library_NoResultsTitle" xml:space="preserve"><value>Không có bài hát nào khớp với chế độ xem này</value></data>
   <data name="Library_PlayNext" xml:space="preserve"><value>Phát tiếp theo</value></data>
   <data name="Library_PlaySelectedNext" xml:space="preserve"><value>Phát mục đã chọn tiếp theo</value></data>
   <data name="Library_PlaySelectedSongsNext" xml:space="preserve"><value>Phát các bài đã chọn tiếp theo</value></data>
@@ -151,6 +155,8 @@
   <data name="Playback_NextTrack" xml:space="preserve"><value>Bài tiếp</value></data>
   <data name="Playback_NoneInQueue" xml:space="preserve"><value>Không bài nào trong hàng đợi này phát được.</value></data>
   <data name="Playback_NonePreviousInQueue" xml:space="preserve"><value>Không bài trước nào trong hàng đợi này phát được.</value></data>
+  <data name="Playback_NowPlayingIndicator" xml:space="preserve"><value>Đang phát</value></data>
+  <data name="Playback_PausedIndicator" xml:space="preserve"><value>Bài hiện tại, đang tạm dừng</value></data>
   <data name="Playback_PlayOrPause" xml:space="preserve"><value>Phát hoặc tạm dừng</value></data>
   <data name="Playback_PreviousTrack" xml:space="preserve"><value>Bài trước</value></data>
   <data name="Playback_RepeatAll" xml:space="preserve"><value>Lặp tất cả</value></data>
