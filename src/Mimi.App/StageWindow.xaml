@@ -13,6 +13,12 @@
         Foreground="{StaticResource TextPrimaryBrush}"
         FontFamily="{StaticResource MimiUiFontFamily}">
     <Grid Background="{StaticResource StageGradientBrush}">
+        <Rectangle Fill="{StaticResource StageAccentGlowBrush}"
+                   Opacity="0.8" IsHitTestVisible="False"/>
+        <Rectangle Fill="{StaticResource StageHotGlowBrush}"
+                   Opacity="0.74" IsHitTestVisible="False"/>
+        <Rectangle Fill="{StaticResource StageVignetteBrush}"
+                   Opacity="0.52" IsHitTestVisible="False"/>
 
         <controls:VisualizerView x:Name="StageVisualizer"
                                   PrimaryColor="{DynamicResource AccentColor}"
@@ -28,14 +34,23 @@
                 Padding="28,16"
                 CornerRadius="18"
                 Background="{StaticResource StageOverlayBrush}"
+                BorderBrush="{StaticResource AccentDecorSoftBrush}"
+                BorderThickness="1"
                 IsHitTestVisible="False">
+            <Border.Effect>
+                <DropShadowEffect Color="{DynamicResource AccentColor}" BlurRadius="28" ShadowDepth="0" Opacity="0.18"/>
+            </Border.Effect>
             <StackPanel>
                 <TextBlock x:Name="StageTitle"
                            Text="{Binding Loc[NowPlaying_ChooseSong]}"
                            FontSize="34"
                            FontWeight="Bold"
                            TextAlignment="Center"
-                           TextTrimming="CharacterEllipsis"/>
+                           TextTrimming="CharacterEllipsis">
+                    <TextBlock.Effect>
+                        <DropShadowEffect Color="{DynamicResource AppBackgroundColor}" BlurRadius="8" ShadowDepth="2" Direction="270" Opacity="0.45"/>
+                    </TextBlock.Effect>
+                </TextBlock>
                 <TextBlock x:Name="StageSubtitle"
                            Text="{Binding Loc[NowPlaying_NextFavoriteWaiting]}"
                            Margin="0,8,0,0"

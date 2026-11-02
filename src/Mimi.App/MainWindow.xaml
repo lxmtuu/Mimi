@@ -412,13 +412,23 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
-                <Border Grid.Row="0" CornerRadius="{StaticResource HeroCornerRadius}" BorderBrush="{StaticResource DividerBrush}" BorderThickness="1" Padding="24" Margin="0,0,0,16" ClipToBounds="True"
+                <Border Grid.Row="0" CornerRadius="{StaticResource HeroCornerRadius}" BorderBrush="{StaticResource DividerBrush}" BorderThickness="1" Margin="0,0,0,16" ClipToBounds="True"
                         Background="{StaticResource HeroGradientBrush}">
-                    <DockPanel>
+                    <Grid>
+                        <Border CornerRadius="{StaticResource HeroCornerRadius}"
+                                Background="{StaticResource HeroSecondaryGlowBrush}"
+                                Opacity="0.62" IsHitTestVisible="False"/>
+                        <Border CornerRadius="{StaticResource HeroCornerRadius}"
+                                Background="{StaticResource HeroAccentGlowBrush}"
+                                Opacity="0.82" IsHitTestVisible="False"/>
+                        <Border CornerRadius="{StaticResource HeroCornerRadius}"
+                                Background="{StaticResource HeroTopHighlightBrush}"
+                                Opacity="0.5" IsHitTestVisible="False"/>
+                        <DockPanel Margin="24">
                         <Grid DockPanel.Dock="Right" Width="132" Height="162" Margin="16,0,0,0"
                               VerticalAlignment="Center" IsHitTestVisible="False">
                             <Ellipse Width="118" Height="118" Fill="{StaticResource AccentDecorMediumBrush}"
-                                     Opacity="0.5" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                     Opacity="0.36" HorizontalAlignment="Center" VerticalAlignment="Center">
                                 <Ellipse.Effect>
                                     <BlurEffect Radius="24"/>
                                 </Ellipse.Effect>
@@ -439,13 +449,17 @@
                             <Button Command="{Binding AddFilesCommand}" HorizontalAlignment="Left"
                                     Background="{StaticResource AccentBrush}" Foreground="{StaticResource OnAccentBrush}"
                                     FontWeight="Bold" AutomationProperties.Name="{Binding Loc[Home_AddFirstSongs]}">
+                                <Button.Effect>
+                                    <DropShadowEffect Color="{DynamicResource AccentColor}" BlurRadius="14" ShadowDepth="0" Opacity="0.28"/>
+                                </Button.Effect>
                                 <StackPanel Orientation="Horizontal">
                                     <Path Data="{StaticResource PlusIconGeometry}" Style="{StaticResource IconPathStyle}"/>
                                     <TextBlock Text="{Binding Loc[Home_AddFirstSongs]}" Margin="8,0,0,0" VerticalAlignment="Center"/>
                                 </StackPanel>
                             </Button>
                         </StackPanel>
-                    </DockPanel>
+                        </DockPanel>
+                    </Grid>
                 </Border>
 
                 <DockPanel Grid.Row="1" Margin="2,0,2,12">
@@ -1078,14 +1092,31 @@
                 </ScrollViewer>
             </Border>
 
-            <Border Grid.Column="2" Background="{StaticResource PanelBackgroundBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="18" Padding="16">
+            <Border Grid.Column="2" Background="{StaticResource NowPlayingPanelBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="18" Padding="16">
                 <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                     <StackPanel>
                         <TextBlock Text="{Binding Loc[NowPlaying_Title]}" Foreground="{StaticResource TextMutedBrush}" FontSize="11"/>
                         <Border Height="210" Margin="0,14,0,16" CornerRadius="16" ClipToBounds="True">
+                            <Border.Effect>
+                                <DropShadowEffect Color="{DynamicResource AccentColor}" BlurRadius="16" ShadowDepth="0" Opacity="0.2"/>
+                            </Border.Effect>
                             <Grid Background="{StaticResource CoverGradientBrush}">
                                 <Image Source="{Binding CurrentCoverArtPath}" Stretch="UniformToFill"
-                                       Opacity="0.38" IsHitTestVisible="False"/>
+                                       Opacity="0.55" IsHitTestVisible="False"
+                                       RenderTransformOrigin="0.5,0.5">
+                                    <Image.RenderTransform>
+                                        <ScaleTransform ScaleX="1.08" ScaleY="1.08"/>
+                                    </Image.RenderTransform>
+                                    <Image.Effect>
+                                        <BlurEffect Radius="24"/>
+                                    </Image.Effect>
+                                </Image>
+                                <Border CornerRadius="16" Background="{StaticResource NowPlayingGlowBrush}"
+                                        Opacity="0.72" IsHitTestVisible="False"/>
+                                <Image Source="{Binding CurrentCoverArtPath}" Stretch="UniformToFill"
+                                       Opacity="0.46" IsHitTestVisible="False"/>
+                                <Border CornerRadius="16" Background="{StaticResource CoverSheenBrush}"
+                                        Opacity="0.55" IsHitTestVisible="False"/>
                                 <Ellipse Width="150" Height="150" Stroke="{StaticResource AccentDecorMediumBrush}" StrokeThickness="1.5"/>
                                 <Ellipse Width="110" Height="110" Stroke="{StaticResource AccentDecorVividBrush}" StrokeThickness="1.5"/>
                                 <TextBlock Text="♫" FontSize="62" Foreground="{StaticResource AccentBrush}"
@@ -1122,6 +1153,9 @@
                             <Button Command="{Binding PlayPauseCommand}" Background="{StaticResource AccentBrush}"
                                     Foreground="{StaticResource OnAccentBrush}" Padding="16,9" Margin="2,0"
                                     AutomationProperties.Name="{Binding Loc[Playback_PlayOrPause]}">
+                                <Button.Effect>
+                                    <DropShadowEffect Color="{DynamicResource AccentColor}" BlurRadius="16" ShadowDepth="0" Opacity="0.34"/>
+                                </Button.Effect>
                                 <Grid Width="20" Height="20">
                                     <Path Data="{StaticResource PlayIconGeometry}">
                                         <Path.Style>

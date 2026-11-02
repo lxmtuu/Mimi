@@ -21,6 +21,10 @@
     <SolidColorBrush x:Key="AccentDecorMediumBrush" Color="{DynamicResource AccentDecorMediumColor}"/>
     <SolidColorBrush x:Key="AccentDecorStrongBrush" Color="{DynamicResource AccentDecorStrongColor}"/>
     <SolidColorBrush x:Key="AccentDecorVividBrush" Color="{DynamicResource AccentDecorVividColor}"/>
+    <SolidColorBrush x:Key="AccentSecondaryDecorSoftBrush" Color="{DynamicResource AccentSecondaryDecorSoftColor}"/>
+    <SolidColorBrush x:Key="AccentSecondaryDecorMediumBrush" Color="{DynamicResource AccentSecondaryDecorMediumColor}"/>
+    <SolidColorBrush x:Key="AccentHotDecorSoftBrush" Color="{DynamicResource AccentHotDecorSoftColor}"/>
+    <SolidColorBrush x:Key="AccentHotDecorMediumBrush" Color="{DynamicResource AccentHotDecorMediumColor}"/>
 
     <SolidColorBrush x:Key="TextPrimaryBrush" Color="{DynamicResource TextPrimaryColor}"/>
     <SolidColorBrush x:Key="TextStrongBrush" Color="{DynamicResource TextStrongColor}"/>
@@ -52,4 +56,73 @@
         <GradientStop Color="{DynamicResource CoverGradientStartColor}" Offset="0"/>
         <GradientStop Color="{DynamicResource CoverGradientEndColor}" Offset="1"/>
     </LinearGradientBrush>
+
+    <!-- Lighting & Glow v1: soft premium shading with clearly visible
+         neon focal points. Every stop is theme-derived, including the
+         transparent endpoints, so gradients fade through the theme hue
+         instead of through black/gray. -->
+    <LinearGradientBrush x:Key="NowPlayingPanelBrush" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Color="{DynamicResource RaisedBackgroundColor}" Offset="0"/>
+        <GradientStop Color="{DynamicResource PanelBackgroundColor}" Offset="0.38"/>
+        <GradientStop Color="{DynamicResource SunkenBackgroundColor}" Offset="1"/>
+    </LinearGradientBrush>
+
+    <RadialGradientBrush x:Key="HeroAccentGlowBrush"
+                         Center="0.82,0.34" GradientOrigin="0.82,0.34"
+                         RadiusX="0.58" RadiusY="0.88">
+        <GradientStop Color="{DynamicResource AccentDecorMediumColor}" Offset="0"/>
+        <GradientStop Color="{DynamicResource AccentDecorSoftColor}" Offset="0.42"/>
+        <GradientStop Color="{DynamicResource AccentTransparentColor}" Offset="1"/>
+    </RadialGradientBrush>
+
+    <RadialGradientBrush x:Key="HeroSecondaryGlowBrush"
+                         Center="0.08,0.02" GradientOrigin="0.08,0.02"
+                         RadiusX="0.52" RadiusY="0.82">
+        <GradientStop Color="{DynamicResource AccentSecondaryDecorMediumColor}" Offset="0"/>
+        <GradientStop Color="{DynamicResource AccentSecondaryDecorSoftColor}" Offset="0.38"/>
+        <GradientStop Color="{DynamicResource AccentSecondaryTransparentColor}" Offset="1"/>
+    </RadialGradientBrush>
+
+    <LinearGradientBrush x:Key="HeroTopHighlightBrush" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Color="{DynamicResource TextPrimaryDecorSoftColor}" Offset="0"/>
+        <GradientStop Color="{DynamicResource TextPrimaryTransparentColor}" Offset="0.34"/>
+    </LinearGradientBrush>
+
+    <RadialGradientBrush x:Key="NowPlayingGlowBrush"
+                         Center="0.5,0.3" GradientOrigin="0.5,0.3"
+                         RadiusX="0.72" RadiusY="0.72">
+        <GradientStop Color="{DynamicResource AccentDecorMediumColor}" Offset="0"/>
+        <GradientStop Color="{DynamicResource AccentSecondaryDecorSoftColor}" Offset="0.46"/>
+        <GradientStop Color="{DynamicResource AccentSecondaryTransparentColor}" Offset="1"/>
+    </RadialGradientBrush>
+
+    <LinearGradientBrush x:Key="CoverSheenBrush" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Color="{DynamicResource TextPrimaryDecorSoftColor}" Offset="0"/>
+        <GradientStop Color="{DynamicResource TextPrimaryTransparentColor}" Offset="0.42"/>
+        <GradientStop Color="{DynamicResource TextPrimaryTransparentColor}" Offset="1"/>
+    </LinearGradientBrush>
+
+    <RadialGradientBrush x:Key="StageAccentGlowBrush"
+                         Center="0.14,0.08" GradientOrigin="0.14,0.08"
+                         RadiusX="0.72" RadiusY="0.72">
+        <GradientStop Color="{DynamicResource AccentDecorMediumColor}" Offset="0"/>
+        <GradientStop Color="{DynamicResource AccentDecorSoftColor}" Offset="0.44"/>
+        <GradientStop Color="{DynamicResource AccentTransparentColor}" Offset="1"/>
+    </RadialGradientBrush>
+
+    <RadialGradientBrush x:Key="StageHotGlowBrush"
+                         Center="0.88,0.9" GradientOrigin="0.88,0.9"
+                         RadiusX="0.72" RadiusY="0.72">
+        <GradientStop Color="{DynamicResource AccentHotDecorMediumColor}" Offset="0"/>
+        <GradientStop Color="{DynamicResource AccentHotDecorSoftColor}" Offset="0.44"/>
+        <GradientStop Color="{DynamicResource AccentHotTransparentColor}" Offset="1"/>
+    </RadialGradientBrush>
+
+    <RadialGradientBrush x:Key="StageVignetteBrush"
+                         Center="0.5,0.46" GradientOrigin="0.5,0.46"
+                         RadiusX="0.74" RadiusY="0.74">
+        <GradientStop Color="{DynamicResource AppBackgroundTransparentColor}" Offset="0"/>
+        <GradientStop Color="{DynamicResource AppBackgroundTransparentColor}" Offset="0.58"/>
+        <GradientStop Color="{DynamicResource AppBackgroundColor}" Offset="1"/>
+    </RadialGradientBrush>
 </ResourceDictionary>

@@ -43,6 +43,50 @@ public sealed class ThemeServiceTests
             Assert.Equal(
                 ToColor(accent.WithAlpha(0xAA)),
                 Assert.IsType<Color>(resources["AccentDecorVividColor"]));
+            Assert.Equal(
+                ToColor(accent.WithAlpha(0x00)),
+                Assert.IsType<Color>(resources["AccentTransparentColor"]));
+
+            var accentSecondary = theme.GetColor(
+                ThemeTokens.AccentSecondary);
+            Assert.Equal(
+                ToColor(accentSecondary.WithAlpha(0x22)),
+                Assert.IsType<Color>(
+                    resources["AccentSecondaryDecorSoftColor"]));
+            Assert.Equal(
+                ToColor(accentSecondary.WithAlpha(0x66)),
+                Assert.IsType<Color>(
+                    resources["AccentSecondaryDecorMediumColor"]));
+            Assert.Equal(
+                ToColor(accentSecondary.WithAlpha(0x00)),
+                Assert.IsType<Color>(
+                    resources["AccentSecondaryTransparentColor"]));
+
+            var accentHot = theme.GetColor(ThemeTokens.AccentHot);
+            Assert.Equal(
+                ToColor(accentHot.WithAlpha(0x22)),
+                Assert.IsType<Color>(resources["AccentHotDecorSoftColor"]));
+            Assert.Equal(
+                ToColor(accentHot.WithAlpha(0x66)),
+                Assert.IsType<Color>(resources["AccentHotDecorMediumColor"]));
+            Assert.Equal(
+                ToColor(accentHot.WithAlpha(0x00)),
+                Assert.IsType<Color>(resources["AccentHotTransparentColor"]));
+
+            var appBackground = theme.GetColor(ThemeTokens.AppBackground);
+            Assert.Equal(
+                ToColor(appBackground.WithAlpha(0x00)),
+                Assert.IsType<Color>(
+                    resources["AppBackgroundTransparentColor"]));
+
+            var textPrimary = theme.GetColor(ThemeTokens.TextPrimary);
+            Assert.Equal(
+                ToColor(textPrimary.WithAlpha(0x2A)),
+                Assert.IsType<Color>(resources["TextPrimaryDecorSoftColor"]));
+            Assert.Equal(
+                ToColor(textPrimary.WithAlpha(0x00)),
+                Assert.IsType<Color>(
+                    resources["TextPrimaryTransparentColor"]));
             Assert.Equal(theme.Id, Assert.IsType<string>(resources["MimiThemeId"]));
             Assert.Equal(theme.Name, Assert.IsType<string>(resources["MimiThemeName"]));
         });

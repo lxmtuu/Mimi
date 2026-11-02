@@ -158,6 +158,42 @@ public sealed class ThemeService
             accent.WithAlpha(0x88));
         publishedColors["AccentDecorVividColor"] = ToColor(
             accent.WithAlpha(0xAA));
+        publishedColors["AccentTransparentColor"] = ToColor(
+            accent.WithAlpha(0x00));
+
+        // Lighting gradients use the secondary/hot accents as colored
+        // light sources. Publishing their alpha variants (and matching
+        // transparent hues) keeps those gradients theme-derived instead
+        // of hard-coding cyan/pink into XAML, so community themes light
+        // up in their own palette too.
+        var accentSecondary = effectiveTheme.GetColor(
+            ThemeTokens.AccentSecondary);
+        publishedColors["AccentSecondaryDecorSoftColor"] = ToColor(
+            accentSecondary.WithAlpha(0x22));
+        publishedColors["AccentSecondaryDecorMediumColor"] = ToColor(
+            accentSecondary.WithAlpha(0x66));
+        publishedColors["AccentSecondaryTransparentColor"] = ToColor(
+            accentSecondary.WithAlpha(0x00));
+
+        var accentHot = effectiveTheme.GetColor(ThemeTokens.AccentHot);
+        publishedColors["AccentHotDecorSoftColor"] = ToColor(
+            accentHot.WithAlpha(0x22));
+        publishedColors["AccentHotDecorMediumColor"] = ToColor(
+            accentHot.WithAlpha(0x66));
+        publishedColors["AccentHotTransparentColor"] = ToColor(
+            accentHot.WithAlpha(0x00));
+
+        var appBackground = effectiveTheme.GetColor(
+            ThemeTokens.AppBackground);
+        publishedColors["AppBackgroundTransparentColor"] = ToColor(
+            appBackground.WithAlpha(0x00));
+
+        var textPrimary = effectiveTheme.GetColor(
+            ThemeTokens.TextPrimary);
+        publishedColors["TextPrimaryDecorSoftColor"] = ToColor(
+            textPrimary.WithAlpha(0x2A));
+        publishedColors["TextPrimaryTransparentColor"] = ToColor(
+            textPrimary.WithAlpha(0x00));
 
         // Publish into merged dictionaries as well as the root. WPF
         // resolves DynamicResource values owned by a merged dictionary in
