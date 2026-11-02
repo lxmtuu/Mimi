@@ -44,7 +44,7 @@ public sealed partial class MainWindowViewModel
     private PlaybackQueueItemViewModel? selectedQueueItem;
 
     [ObservableProperty]
-    private string audioOutputLabel = "Windows default output";
+    private string audioOutputLabel = string.Empty;
 
     private AudioOutputStatus? lastAudioOutputStatus;
 

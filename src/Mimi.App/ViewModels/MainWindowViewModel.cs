@@ -137,15 +137,15 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     private PlaylistItemViewModel? selectedPlaylist;
 
     [ObservableProperty]
-    private string trackCountLabel = "No songs yet - add some music to begin";
+    private string trackCountLabel = string.Empty;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(TaskbarDescription))]
-    private string nowPlayingTitle = "Choose a song";
+    private string nowPlayingTitle = string.Empty;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(TaskbarDescription))]
-    private string nowPlayingSubtitle = "Your next favorite is waiting";
+    private string nowPlayingSubtitle = string.Empty;
 
     [ObservableProperty]
     private string? currentCoverArtPath;
