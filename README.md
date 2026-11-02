@@ -439,6 +439,9 @@ Phase 0–7 plan with exit criteria, audit findings, and open decisions.
 For executing the remaining manual Windows gates, use the
 **[Windows Acceptance Kit](docs/acceptance/README.md)** and copy its
 result template for each test session.
+Phase closeout records:
+[Phase 4](docs/acceptance/PHASE-4-CLOSEOUT.md) ·
+[Phase 5](docs/acceptance/PHASE-5-CLOSEOUT.md).
 
 ## Rename note
 This app was previously named **MikuVerse Music** and is now **Mimi** (application project `src/Mimi.App/Mimi.App.csproj`, namespace `Mimi`, output `Mimi.exe`). On first launch, an existing library/favorites saved under `%LocalAppData%\MikuVerseMusic` are copied automatically to `%LocalAppData%\Mimi`; when the SQLite catalog is empty, those JSON records are then imported into `library.db` and the imported JSON files are archived as `.bak`. The old `MikuVerseMusic` folder is left untouched.
