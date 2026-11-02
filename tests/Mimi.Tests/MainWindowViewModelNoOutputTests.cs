@@ -119,6 +119,100 @@ public sealed class MainWindowViewModelNoOutputTests
     }
 
     [Fact]
+    public void QueueCommands_ReflectEmptySelectionAndBoundaryStates()
+    {
+        RunOnSta(() =>
+        {
+            var audio = new FakeAudioPlayer
+            {
+                OutputStatus = new AudioOutputStatus(
+                    isAvailable: true,
+                    AudioOutputKind.WasapiShared,
+                    "Test Speakers",
+                    "Audio output is ready.")
+            };
+            var viewModel = new MainWindowViewModel(
+                audio,
+                new FakeLibraryService(),
+                new FakeLibraryCatalog(),
+                new FakeUserDataService(),
+                new FakeDialogService());
+
+            try
+            {
+                viewModel.InitializationTask.GetAwaiter().GetResult();
+
+                Assert.False(viewModel.PlayQueueItemCommand.CanExecute(null));
+                Assert.False(viewModel.RemoveQueueItemCommand.CanExecute(null));
+                Assert.False(
+                    viewModel.MoveSelectedQueueItemUpCommand.CanExecute(null));
+                Assert.False(
+                    viewModel.MoveSelectedQueueItemDownCommand.CanExecute(null));
+                Assert.False(viewModel.ClearUpcomingQueueCommand.CanExecute(null));
+
+                static TrackItemViewModel CreateTrack(string fileName, string title) =>
+                    new(
+                        new Track
+                        {
+                            FilePath = @$"C:\fixtures\{fileName}",
+                            MetadataTitle = title,
+                            Duration = TimeSpan.FromSeconds(30)
+                        },
+                        isFavorite: false);
+
+                var first = CreateTrack("cyan.wav", "Cyan Signal");
+                var second = CreateTrack("magenta.wav", "Magenta Signal");
+                var third = CreateTrack("amber.wav", "Amber Signal");
+                viewModel.Tracks.Add(first);
+                viewModel.Tracks.Add(second);
+                viewModel.Tracks.Add(third);
+
+                viewModel.PlayTrackCommand.Execute(first);
+
+                Assert.Equal(2, viewModel.UpcomingQueueItems.Count);
+                Assert.NotNull(viewModel.SelectedQueueItem);
+                var selected = viewModel.SelectedQueueItem!;
+                Assert.Same(second, selected.Track);
+                Assert.True(viewModel.PlayQueueItemCommand.CanExecute(selected));
+                Assert.True(viewModel.RemoveQueueItemCommand.CanExecute(selected));
+                Assert.False(
+                    viewModel.MoveSelectedQueueItemUpCommand.CanExecute(null));
+                Assert.True(
+                    viewModel.MoveSelectedQueueItemDownCommand.CanExecute(null));
+                Assert.True(viewModel.ClearUpcomingQueueCommand.CanExecute(null));
+
+                viewModel.MoveSelectedQueueItemDownCommand.Execute(null);
+
+                Assert.Same(selected, viewModel.SelectedQueueItem);
+                Assert.Same(third, viewModel.UpcomingQueueItems[0].Track);
+                Assert.Same(second, viewModel.UpcomingQueueItems[1].Track);
+                Assert.True(
+                    viewModel.MoveSelectedQueueItemUpCommand.CanExecute(null));
+                Assert.False(
+                    viewModel.MoveSelectedQueueItemDownCommand.CanExecute(null));
+
+                viewModel.ClearUpcomingQueueCommand.Execute(null);
+
+                Assert.Empty(viewModel.UpcomingQueueItems);
+                Assert.Null(viewModel.SelectedQueueItem);
+                Assert.False(
+                    viewModel.PlayQueueItemCommand.CanExecute(
+                        viewModel.SelectedQueueItem));
+                Assert.False(viewModel.RemoveQueueItemCommand.CanExecute(selected));
+                Assert.False(
+                    viewModel.MoveSelectedQueueItemUpCommand.CanExecute(null));
+                Assert.False(
+                    viewModel.MoveSelectedQueueItemDownCommand.CanExecute(null));
+                Assert.False(viewModel.ClearUpcomingQueueCommand.CanExecute(null));
+            }
+            finally
+            {
+                viewModel.Dispose();
+            }
+        });
+    }
+
+    [Fact]
     public void PlayTrack_WhenTrackIsAlreadyCurrent_DoesNotReloadAndResumesWhenPaused()
     {
         RunOnSta(() =>

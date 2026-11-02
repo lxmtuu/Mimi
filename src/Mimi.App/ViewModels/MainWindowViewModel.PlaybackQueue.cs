@@ -42,6 +42,10 @@ public sealed partial class MainWindowViewModel
     private RepeatMode repeatMode;
 
     [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(PlayQueueItemCommand))]
+    [NotifyCanExecuteChangedFor(nameof(RemoveQueueItemCommand))]
+    [NotifyCanExecuteChangedFor(nameof(MoveSelectedQueueItemUpCommand))]
+    [NotifyCanExecuteChangedFor(nameof(MoveSelectedQueueItemDownCommand))]
     private PlaybackQueueItemViewModel? selectedQueueItem;
 
     [ObservableProperty]
@@ -552,7 +556,27 @@ public sealed partial class MainWindowViewModel
         SaveSettings();
     }
 
-    [RelayCommand]
+    private bool CanPlayQueueItem(PlaybackQueueItemViewModel? item) =>
+        item is not null;
+
+    private bool CanRemoveQueueItem(PlaybackQueueItemViewModel? item) =>
+        item is not null && UpcomingQueueItems.Contains(item);
+
+    private bool CanMoveSelectedQueueItemUp() =>
+        SelectedQueueItem is not null &&
+        UpcomingQueueItems.IndexOf(SelectedQueueItem) > 0;
+
+    private bool CanMoveSelectedQueueItemDown()
+    {
+        if (SelectedQueueItem is null) return false;
+
+        var index = UpcomingQueueItems.IndexOf(SelectedQueueItem);
+        return index >= 0 && index + 1 < UpcomingQueueItems.Count;
+    }
+
+    private bool CanClearUpcomingQueue() => HasUpcomingQueueItems;
+
+    [RelayCommand(CanExecute = nameof(CanPlayQueueItem))]
     private void PlayQueueItem(PlaybackQueueItemViewModel? item)
     {
         if (item is null) return;
@@ -573,7 +597,7 @@ public sealed partial class MainWindowViewModel
             });
     }
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(CanRemoveQueueItem))]
     private void RemoveQueueItem(PlaybackQueueItemViewModel? item)
     {
         if (item is null || !playbackQueue.RemoveUpcoming(item)) return;
@@ -594,7 +618,7 @@ public sealed partial class MainWindowViewModel
         }
     }
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(CanMoveSelectedQueueItemUp))]
     private void MoveSelectedQueueItemUp()
     {
         if (SelectedQueueItem is null) return;
@@ -608,7 +632,7 @@ public sealed partial class MainWindowViewModel
         }
     }
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(CanMoveSelectedQueueItemDown))]
     private void MoveSelectedQueueItemDown()
     {
         if (SelectedQueueItem is null) return;
@@ -622,7 +646,7 @@ public sealed partial class MainWindowViewModel
         }
     }
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(CanClearUpcomingQueue))]
     private void ClearUpcomingQueue()
     {
         playbackQueue.ClearUpcoming();
@@ -657,6 +681,11 @@ public sealed partial class MainWindowViewModel
         OnPropertyChanged(nameof(HasUpcomingQueueItems));
         OnPropertyChanged(nameof(QueueCountLabel));
         OnPropertyChanged(nameof(QueueStatusLabel));
+        PlayQueueItemCommand.NotifyCanExecuteChanged();
+        RemoveQueueItemCommand.NotifyCanExecuteChanged();
+        MoveSelectedQueueItemUpCommand.NotifyCanExecuteChanged();
+        MoveSelectedQueueItemDownCommand.NotifyCanExecuteChanged();
+        ClearUpcomingQueueCommand.NotifyCanExecuteChanged();
     }
 
     private (List<string> SourcePaths, List<string> HistoryPaths, List<string> UpcomingPaths)
