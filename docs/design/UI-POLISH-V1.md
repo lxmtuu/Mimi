@@ -272,6 +272,26 @@ thường dài hơn nên đây là phép thử bắt buộc sau khi icon hoá.
   đã được vẽ lại bằng hai subpath không chồng lấn tại `7015f6d`. Windows
   CI `41462935871` sau bản sửa đã xanh.
 
+### Follow-up — Mascot trong suốt (`011249b`)
+
+- Chủ dự án chọn xử lý mascot trước phần Lighting & Glow/shader. Ảnh
+  gốc đã duyệt được giữ nguyên hình vẽ; nền navy nướng sẵn được tách
+  bằng matte nối từ biên ảnh, tận dụng đường viền sticker trắng để
+  không ăn vào hoodie navy. Các nốt nhạc/lấp lánh rời và viền sticker
+  được giữ; quầng sáng quanh micro được khử nền thành lớp hồng bán
+  trong suốt thay vì mảng tím tối trên nền sáng.
+- Asset hiện hành là PNG RGBA 548×757 (458.684 byte), đã cắt khoảng
+  trong suốt thừa và có alpha 0 ở bốn góc. Hero hiển thị bằng
+  `Stretch="Uniform"` trên một quầng accent làm mờ theo token theme,
+  với bóng đổ bám theo alpha của nhân vật; ảnh thu nhỏ trong Settings
+  cũng dùng `Uniform` và bỏ khung bo/clip hình chữ nhật.
+- `BundledMascotTests` nay kiểm tra thêm IHDR 8-bit, color type 6
+  (RGBA) để asset không thể âm thầm quay lại dạng PNG đặc. Windows CI
+  `41466796260` đã xanh. Đây là bản sửa đúng nguyên nhân “dán nguyên
+  khung ảnh”, nhưng vẫn cần chủ dự án nhìn trên Windows thật trước khi
+  coi là duyệt thẩm mỹ; nó không thay thế ma trận nghiệm thu của lát
+  1 + 2 và chưa phải đợt Lighting & Glow toàn giao diện.
+
 ### Chưa nghiệm thu / để lại sau
 
 - Các checkpoint trên mới là nghiệm thu kỹ thuật bằng CI. **Nghiệm thu
