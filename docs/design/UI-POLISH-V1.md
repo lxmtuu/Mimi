@@ -227,7 +227,7 @@ thường dài hơn nên đây là phép thử bắt buộc sau khi icon hoá.
 *Tài liệu rà soát lập ngày 02/11/2026 từ ảnh chụp của chủ dự án. Chủ dự
 án đã duyệt triển khai lát 1 + lát 2; lát 3 để lại sau.*
 
-## Trạng thái triển khai (02/11/2026)
+## Trạng thái triển khai (cập nhật 03/11/2026)
 
 ### Lát 1 — “Gọn” (`1ecc826`)
 
@@ -364,20 +364,50 @@ thường dài hơn nên đây là phép thử bắt buộc sau khi icon hoá.
   Follow-up này đóng ở mức runtime; nó không thay thế ma trận
   nghiệm thu UI Polish đầy đủ hoặc ảnh Stage/bìa màu riêng.
 
+### Đóng nghiệm thu trực quan trước lát 3 và lát 3 — “Có hồn” (`2324ea8`)
+
+- Ngày 03/11/2026, chủ dự án thông báo đã hoàn tất nghiệm thu trực
+  quan trên Windows thật cho lát 1 + 2, Lighting & Glow và các
+  follow-up đã triển khai trước đó, rồi chọn làm tiếp lát 3. Mốc này
+  đóng nghiệm thu thẩm mỹ của phần UI Polish trước lát 3 ở mức xác
+  nhận của chủ dự án; repository không lưu thêm một bộ ảnh ma trận
+  riêng ngoài các ảnh runtime đã đối chiếu trong quá trình làm.
+- `TrackItemViewModel` nay giữ `IsCurrentTrack` và
+  `IsCurrentTrackPlaying`; ViewModel chính chỉ cập nhật hai trạng
+  thái này khi bài hiện tại hoặc Play/Pause thật sự đổi. Hàng thư
+  viện của bài hiện tại có viền accent quanh bìa thu nhỏ, huy hiệu
+  equalizer ba thanh và tiêu đề accent bán đậm. Ba thanh chỉ chuyển
+  động khi bài đang phát và Windows cho phép client-area animation;
+  khi tạm dừng, huy hiệu đứng yên để vẫn nhận ra bài hiện tại.
+  Nhãn trợ năng/ToolTip phân biệt “đang phát” với “bài hiện tại,
+  đang tạm dừng” bằng tài nguyên song ngữ.
+- Thư viện có overlay Mimi ở trạng thái trống, phân biệt thư viện
+  chưa có bài nào với chế độ xem/tìm kiếm/bộ lọc không có kết quả.
+  Overlay chỉ hiện sau khi thư viện đã sẵn sàng và không hiện trong
+  lúc quét hoặc tra catalog để tránh nhấp nháy sai. Up Next trống
+  cũng có Mimi nhỏ phía trên dòng trạng thái hiện hữu.
+- Mascot ở Hero và hai trạng thái trống dùng chung chuyển động trôi
+  dọc rất nhẹ theo chu kỳ 3,2 giây, chỉ biến đổi transform và vẫn
+  tôn trọng cài đặt animation của Windows. Sáu khóa resx mới nâng
+  parity lên 330/330 khóa EN/VI. Test
+  `PlaybackIndicatorAndLibraryEmptyStates_ReflectCurrentTrackAndVisibleRows`
+  bao phủ chuyển bài, Play/Pause, thư viện trống và không có kết
+  quả; Windows CI `41488192555` đã xanh. Đây là hoàn tất kỹ thuật
+  của lát 3; cảm nhận chuyển động/chỉ dấu trên bản Windows thật vẫn
+  chờ chủ dự án kiểm tra sau khi kéo bản mới.
+
 ### Chưa nghiệm thu / để lại sau
 
-- Các follow-up ở trên đã có ảnh/xác nhận runtime cho từng phần được
-  ghi rõ, nhưng **nghiệm thu trực quan tổng thể vẫn chưa đóng**: vẫn
-  cần đối chiếu ảnh trước/sau ở cửa sổ mặc định + cửa sổ hẹp × Neon Stage + Mono Focus ×
-  VI/EN; các icon Path tự vẽ (đặc biệt Shuffle/Repeat), title bar tối,
-  dropdown/slider/scrollbar, độ vừa của hàng transport và cường độ
-  Lighting & Glow tại Hero/Now Playing/Stage cần được nhìn thực tế
-  trước khi coi là duyệt thẩm mỹ.
-- Phần còn lại của lát 3 “Có hồn” chưa triển khai: chỉ dấu hàng đang
-  phát, trạng thái trống có minh họa mascot và chuyển động nhẹ vẫn là
-  việc hậu kỳ tùy chọn. Một custom shader giới hạn vẫn có thể được
-  cân nhắc sau nếu bản Lighting & Glow bằng gradient/blur chưa đủ
-  “chất sân khấu” trên Windows thật.
+- Nghiệm thu trực quan của lát 1 + 2, Lighting & Glow và các
+  follow-up trước lát 3 **đã đóng theo xác nhận của chủ dự án vào
+  03/11/2026**. Riêng lát 3 mới hoàn tất ở mức code + Windows CI;
+  vẫn cần chủ dự án nhìn bản chạy thật để xác nhận cường độ chuyển
+  động của Mimi/equalizer, độ dễ nhận ra của hàng hiện tại và hai
+  overlay trạng thái trống ở kích thước cửa sổ thường dùng.
+- Một custom shader giới hạn vẫn chỉ là lựa chọn hậu kỳ nếu bản
+  Lighting & Glow bằng gradient/blur chưa đủ “chất sân khấu” trên
+  Windows thật; lát 3 không đưa thêm HLSL hay tải vẽ theo frame vào
+  visualizer.
 - Đợt polish này không thay đổi hành vi phát nhạc, phím tắt, hợp đồng
   một click hay bất kỳ giới hạn/miễn trừ nào của Phase 4; cũng không bao
   gồm PR/merge vào `main`, LICENSE, tag hay đóng gói phát hành.
