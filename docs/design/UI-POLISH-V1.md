@@ -224,5 +224,65 @@ hẹp (gần MinWidth) × Neon Stage + một theme tương phản khác (Mono Fo
 × VI + EN, để bảo đảm không tràn chữ ở cả hai ngôn ngữ — tiếng Việt
 thường dài hơn nên đây là phép thử bắt buộc sau khi icon hoá.
 
-*Tài liệu rà soát lập ngày 02/11/2026 từ ảnh chụp của chủ dự án; chờ
-duyệt phạm vi trước khi triển khai.*
+*Tài liệu rà soát lập ngày 02/11/2026 từ ảnh chụp của chủ dự án. Chủ dự
+án đã duyệt triển khai lát 1 + lát 2; lát 3 để lại sau.*
+
+## Trạng thái triển khai (02/11/2026)
+
+### Lát 1 — “Gọn” (`1ecc826`)
+
+- Đã rà và sửa các `DockPanel` trái/phải còn thiếu
+  `LastChildFill="False"`: nhãn Volume, Up Next, footer, thời gian tiến
+  trình, Settings và Stage metrics không còn bị kéo dính sang trái; nút
+  tạo playlist không còn bị kéo rộng thành pill.
+- Bảng thư viện đã bỏ tiêu đề “COVER”, chỉnh lại ngân sách bề rộng cột,
+  căn trái tiêu đề/ô chữ và căn phải Year/Duration/Format. Hàng không có
+  bìa nay hiện ô placeholder gradient có ký hiệu ♫ ở cả thư viện và Up
+  Next.
+- Ô tìm kiếm đã có icon kính lúp và watermark song ngữ; Up Next trống có
+  dòng trạng thái ngay trong khung; Play/Rename/Delete của playlist đã
+  thành nút icon có ToolTip + tên trợ năng. Hai khóa resx mới
+  (`Library_SearchPlaceholder`, `Queue_EmptyState`) giữ đủ parity
+  324/324 khóa EN/VI.
+- Windows CI `41460739188` xanh (Release build + toàn bộ unit test).
+
+### Lát 2 — “Đẹp hệ thống” (`4beb0d3` + sửa XAML `7015f6d`)
+
+- `WindowChromeHelper` bật immersive dark title bar qua DWM cho cửa sổ
+  chính và hộp thoại nhập tên; trên Windows 11 màu caption/chữ caption
+  còn lấy trực tiếp từ token theme đang dùng và được áp lại khi đổi
+  theme. Đây là xử lý best-effort: nếu DWM không khả dụng, app giữ
+  caption hệ thống và vẫn chạy bình thường. Stage toàn màn hình vốn
+  không có caption nên không đổi.
+- Thêm `Themes/ControlStyles.xaml` dùng chung cho ComboBox/ComboBoxItem,
+  Slider, ScrollBar và màu ProgressBar; mọi màu đi qua brush/token theme
+  nên theme sẵn có và theme cộng đồng đều đổi theo trực tiếp. Cùng tệp
+  ghi thang radius dùng chung (`8/12/16/20`).
+- Shuffle/Repeat/Mute đã thành nút icon gọn: trạng thái bật dùng accent
+  và nền selected, Repeat One có badge “1”, ToolTip vẫn hiển thị nhãn
+  trạng thái đã bản địa hóa. Hàng transport được giảm padding/margin để
+  nằm gọn trong cột Now Playing. Riêng `−10s/+10s` giữ dạng chữ/số nhỏ
+  vì nghĩa trực tiếp và vẫn đủ gọn sau khi co kích thước.
+- Sidebar có trạng thái chọn thật theo view/Settings; Home không còn
+  luôn trông như đang được chọn, và nhóm thêm nhạc được tách bằng
+  khoảng cách. Mascot hero bỏ viền đóng khung, lớn hơn và có bóng mềm;
+  các thẻ cấu trúc chính thêm viền 1px để tách lớp rõ hơn.
+- Lượt CI đầu `41462523443` đỏ vì `StreamGeometry` khai nội dung bằng
+  TypeConverter không chấp nhận thêm thuộc tính `FillRule`; icon Repeat
+  đã được vẽ lại bằng hai subpath không chồng lấn tại `7015f6d`. Windows
+  CI `41462935871` sau bản sửa đã xanh.
+
+### Chưa nghiệm thu / để lại sau
+
+- Các checkpoint trên mới là nghiệm thu kỹ thuật bằng CI. **Nghiệm thu
+  trực quan vẫn chờ chủ dự án chạy trên Windows thật** và đối chiếu ảnh
+  trước/sau ở cửa sổ mặc định + cửa sổ hẹp × Neon Stage + Mono Focus ×
+  VI/EN; các icon Path tự vẽ (đặc biệt Shuffle/Repeat), title bar tối,
+  dropdown/slider/scrollbar và độ vừa của hàng transport cần được nhìn
+  thực tế trước khi coi là duyệt thẩm mỹ.
+- Lát 3 “Có hồn” chưa triển khai: gradient accent có kiểm soát, chỉ dấu
+  hàng đang phát, trạng thái trống có minh họa mascot, tinh chỉnh độ bão
+  hòa hero và chuyển động nhẹ vẫn giữ nguyên là việc hậu kỳ tùy chọn.
+- Đợt polish này không thay đổi hành vi phát nhạc, phím tắt, hợp đồng
+  một click hay bất kỳ giới hạn/miễn trừ nào của Phase 4; cũng không bao
+  gồm PR/merge vào `main`, LICENSE, tag hay đóng gói phát hành.
