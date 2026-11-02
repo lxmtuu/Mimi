@@ -287,10 +287,34 @@ thường dài hơn nên đây là phép thử bắt buộc sau khi icon hoá.
   cũng dùng `Uniform` và bỏ khung bo/clip hình chữ nhật.
 - `BundledMascotTests` nay kiểm tra thêm IHDR 8-bit, color type 6
   (RGBA) để asset không thể âm thầm quay lại dạng PNG đặc. Windows CI
-  `41466796260` đã xanh. Đây là bản sửa đúng nguyên nhân “dán nguyên
-  khung ảnh”, nhưng vẫn cần chủ dự án nhìn trên Windows thật trước khi
-  coi là duyệt thẩm mỹ; nó không thay thế ma trận nghiệm thu của lát
-  1 + 2 và chưa phải đợt Lighting & Glow toàn giao diện.
+  `41466796260` đã xanh. Chủ dự án đã xác nhận mascot ổn trên bản chạy
+  thật và chọn chuyển sang bước Lighting & Glow; xác nhận này đóng
+  follow-up mascot ở mức runtime, nhưng không thay thế ma trận nghiệm
+  thu trực quan đầy đủ của lát 1 + 2.
+
+### Follow-up — Lighting & Glow cân bằng (`5aae07a`)
+
+- Chủ dự án chọn phong cách **cân bằng**: nền mềm, có chiều sâu cao
+  cấp nhưng điểm nhấn neon vẫn rõ; phạm vi đợt đầu chỉ gồm Hero,
+  Now Playing và Stage để kiểm soát hiệu năng/rủi ro bố cục.
+- `ThemeService` nay xuất thêm các biến thể alpha/transparent của
+  accent phụ, accent hot, nền app và chữ chính. `ThemeBrushes.xaml`
+  dùng chúng để dựng các radial glow, top highlight, sheen, vignette
+  và gradient panel; mọi điểm dừng màu đều suy ra từ theme hiện hành
+  nên theme cộng đồng cũng tự phát sáng theo palette riêng.
+- Hero có hai nguồn sáng màu ở hai phía, vệt sáng trên và quầng nhẹ
+  quanh nút hành động chính; quầng riêng sau mascot được giảm để tổng
+  lượng sáng không bị cháy. Now Playing dùng nền panel chuyển sắc
+  dọc, bloom mờ từ chính bìa bài hát, glow accent, sheen chéo, hào
+  quang quanh thẻ bìa/visualizer và quanh nút Play/Pause. Stage có
+  nguồn accent phía trên-trái, nguồn hot phía dưới-phải, vignette
+  dưới visualizer, viền/hào quang cho thẻ tiêu đề và bóng chữ nhẹ.
+- Đợt này chưa dùng custom HLSL `ShaderEffect`; gradient, blur và
+  drop shadow của WPF được giới hạn ở các điểm nhấn tĩnh để tránh
+  tăng tải cho visualizer đang chạy theo frame. Windows CI
+  `41468987185` đã xanh. Cường độ sáng vẫn cần chủ dự án duyệt trên
+  Windows thật; nếu quá yếu hoặc quá mạnh, chỉ cần tinh chỉnh opacity
+  của các lớp này sau ảnh chụp đối chiếu.
 
 ### Chưa nghiệm thu / để lại sau
 
@@ -298,11 +322,14 @@ thường dài hơn nên đây là phép thử bắt buộc sau khi icon hoá.
   trực quan vẫn chờ chủ dự án chạy trên Windows thật** và đối chiếu ảnh
   trước/sau ở cửa sổ mặc định + cửa sổ hẹp × Neon Stage + Mono Focus ×
   VI/EN; các icon Path tự vẽ (đặc biệt Shuffle/Repeat), title bar tối,
-  dropdown/slider/scrollbar và độ vừa của hàng transport cần được nhìn
-  thực tế trước khi coi là duyệt thẩm mỹ.
-- Lát 3 “Có hồn” chưa triển khai: gradient accent có kiểm soát, chỉ dấu
-  hàng đang phát, trạng thái trống có minh họa mascot, tinh chỉnh độ bão
-  hòa hero và chuyển động nhẹ vẫn giữ nguyên là việc hậu kỳ tùy chọn.
+  dropdown/slider/scrollbar, độ vừa của hàng transport và cường độ
+  Lighting & Glow tại Hero/Now Playing/Stage cần được nhìn thực tế
+  trước khi coi là duyệt thẩm mỹ.
+- Phần còn lại của lát 3 “Có hồn” chưa triển khai: chỉ dấu hàng đang
+  phát, trạng thái trống có minh họa mascot và chuyển động nhẹ vẫn là
+  việc hậu kỳ tùy chọn. Một custom shader giới hạn vẫn có thể được
+  cân nhắc sau nếu bản Lighting & Glow bằng gradient/blur chưa đủ
+  “chất sân khấu” trên Windows thật.
 - Đợt polish này không thay đổi hành vi phát nhạc, phím tắt, hợp đồng
   một click hay bất kỳ giới hạn/miễn trừ nào của Phase 4; cũng không bao
   gồm PR/merge vào `main`, LICENSE, tag hay đóng gói phát hành.
