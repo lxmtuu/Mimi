@@ -415,16 +415,22 @@
                 <Border Grid.Row="0" CornerRadius="{StaticResource HeroCornerRadius}" BorderBrush="{StaticResource DividerBrush}" BorderThickness="1" Padding="24" Margin="0,0,0,16" ClipToBounds="True"
                         Background="{StaticResource HeroGradientBrush}">
                     <DockPanel>
-                        <Border DockPanel.Dock="Right" Width="152" Height="152" Margin="16,0,0,0"
-                                VerticalAlignment="Center" CornerRadius="16" ClipToBounds="True"
-                                IsHitTestVisible="False">
-                            <Border.Effect>
-                                <DropShadowEffect Color="{DynamicResource AppBackgroundColor}" BlurRadius="18" ShadowDepth="4" Direction="270" Opacity="0.35"/>
-                            </Border.Effect>
+                        <Grid DockPanel.Dock="Right" Width="132" Height="162" Margin="16,0,0,0"
+                              VerticalAlignment="Center" IsHitTestVisible="False">
+                            <Ellipse Width="118" Height="118" Fill="{StaticResource AccentDecorMediumBrush}"
+                                     Opacity="0.5" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <Ellipse.Effect>
+                                    <BlurEffect Radius="24"/>
+                                </Ellipse.Effect>
+                            </Ellipse>
                             <Image Source="pack://application:,,,/Assets/Mascot/mimi-mascot-v1.png"
-                                   Stretch="UniformToFill"
-                                   AutomationProperties.Name="{Binding Loc[Mascot_Automation]}"/>
-                        </Border>
+                                   Stretch="Uniform"
+                                   AutomationProperties.Name="{Binding Loc[Mascot_Automation]}">
+                                <Image.Effect>
+                                    <DropShadowEffect Color="{DynamicResource AppBackgroundColor}" BlurRadius="14" ShadowDepth="3" Direction="270" Opacity="0.42"/>
+                                </Image.Effect>
+                            </Image>
+                        </Grid>
                         <StackPanel VerticalAlignment="Center" MaxWidth="420" HorizontalAlignment="Left">
                             <TextBlock Text="{Binding Loc[Home_Welcome]}" Foreground="{StaticResource AccentBrush}" FontSize="11"/>
                             <TextBlock Text="{Binding Loc[Home_HeroTitle]}" FontSize="30" FontWeight="Bold" Margin="0,12,0,8"/>
@@ -1031,10 +1037,10 @@
                                 <TextBlock Text="{Binding Loc[Settings_DataDiagnosticsSection]}" Foreground="{StaticResource AccentBrush}"
                                            FontSize="11" FontWeight="Bold"/>
                                 <DockPanel Margin="0,12,0,8">
-                                    <Border DockPanel.Dock="Left" Width="56" Height="56" Margin="0,0,10,0"
-                                            CornerRadius="12" ClipToBounds="True" IsHitTestVisible="False">
+                                    <Border DockPanel.Dock="Left" Width="44" Height="56" Margin="0,0,10,0"
+                                            IsHitTestVisible="False">
                                         <Image Source="pack://application:,,,/Assets/Mascot/mimi-mascot-v1.png"
-                                               Stretch="UniformToFill"
+                                               Stretch="Uniform"
                                                AutomationProperties.Name="{Binding Loc[Mascot_Automation]}"/>
                                     </Border>
                                     <TextBlock Text="{Binding AppVersionLabel}" FontWeight="SemiBold" VerticalAlignment="Center"/>

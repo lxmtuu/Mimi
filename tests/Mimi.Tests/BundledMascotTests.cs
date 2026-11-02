@@ -7,7 +7,8 @@ namespace Mimi.Tests;
 /// The original Mimi mascot ships inside the application assembly as a WPF
 /// resource; if the project include or pack URI drifts, the hero and
 /// Settings images would silently render empty. Read the bundled bytes the
-/// same way the font tests do and verify a real PNG is present.
+/// same way the font tests do and verify a real transparent RGBA PNG is
+/// present, so the mascot cannot regress to an opaque rectangular card.
 /// </summary>
 public sealed class BundledMascotTests
 {
@@ -58,6 +59,13 @@ public sealed class BundledMascotTests
         Assert.Equal(
             PngSignature,
             mascot.Take(PngSignature.Length).ToArray());
+        Assert.True(
+            mascot.Length > 25,
+            "Bundled mascot is missing its PNG IHDR chunk.");
+        // PNG IHDR: bit depth at byte 24, color type at byte 25.
+        // 8/6 means 8-bit RGBA, which carries the transparent background.
+        Assert.Equal(8, mascot[24]);
+        Assert.Equal(6, mascot[25]);
     }
 
     private static byte[] ReadAllBytes(Stream stream)
