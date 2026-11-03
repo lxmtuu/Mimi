@@ -1,8 +1,8 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Mimi.Core.Playback;
 using Mimi.Online;
+using Mimi.Services;
 using Serilog;
 
 namespace Mimi.ViewModels;
