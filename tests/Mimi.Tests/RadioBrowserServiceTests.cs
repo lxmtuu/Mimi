@@ -86,7 +86,7 @@ public sealed class RadioBrowserServiceTests
     public async Task SearchStationsSendsBoundedHealthyQueryWithMimiUserAgent()
     {
         var handler = new RecordingHandler((_, _) => JsonResponse(ValidStationJson()));
-        using var service = CreateService(handler, new Uri("https://mirror.example/"));
+        using var service = CreateService(handler, new Uri("https://mirror.api.radio-browser.info/"));
 
         var stations = await service.SearchStationsAsync("  lofi & chill  ");
 
@@ -104,7 +104,7 @@ public sealed class RadioBrowserServiceTests
     public async Task BlankSearchUsesTopStationsEndpoint()
     {
         var handler = new RecordingHandler((_, _) => JsonResponse("[]"));
-        using var service = CreateService(handler, new Uri("https://mirror.example/"));
+        using var service = CreateService(handler, new Uri("https://mirror.api.radio-browser.info/"));
 
         var stations = await service.SearchStationsAsync("   ");
 
@@ -118,19 +118,19 @@ public sealed class RadioBrowserServiceTests
     public async Task CatalogRequestsFailOverToHealthyMirror()
     {
         var handler = new RecordingHandler((request, _) =>
-            request.RequestUri?.Host == "one.example"
+            request.RequestUri?.Host == "one.api.radio-browser.info"
                 ? new HttpResponseMessage(HttpStatusCode.ServiceUnavailable)
                 : JsonResponse("[]"));
         using var service = CreateService(
             handler,
-            new Uri("https://one.example/"),
-            new Uri("https://two.example/"));
+            new Uri("https://one.api.radio-browser.info/"),
+            new Uri("https://two.api.radio-browser.info/"));
 
         var stations = await service.GetTopStationsAsync();
 
         Assert.Empty(stations);
         Assert.Equal(
-            ["one.example", "two.example"],
+            ["one.api.radio-browser.info", "two.api.radio-browser.info"],
             handler.RequestUris.Select(uri => uri.Host).ToArray());
     }
 
@@ -141,15 +141,68 @@ public sealed class RadioBrowserServiceTests
             new HttpResponseMessage(HttpStatusCode.ServiceUnavailable));
         using var service = CreateService(
             handler,
-            new Uri("https://one.example/"),
-            new Uri("https://two.example/"));
+            new Uri("https://one.api.radio-browser.info/"),
+            new Uri("https://two.api.radio-browser.info/"));
 
         await Assert.ThrowsAsync<RadioServiceException>(() =>
             service.RegisterStationClickAsync(ValidStationUuid));
 
         var requestUri = Assert.Single(handler.RequestUris);
-        Assert.Equal("one.example", requestUri.Host);
+        Assert.Equal("one.api.radio-browser.info", requestUri.Host);
         Assert.Equal($"/json/url/{ValidStationUuid:D}", requestUri.AbsolutePath);
+    }
+
+    [Fact]
+    public async Task CatalogRequestsIgnoreNonRadioBrowserMirrors()
+    {
+        var handler = new RecordingHandler((_, _) => JsonResponse("[]"));
+        using var service = CreateService(
+            handler,
+            new Uri("https://evil.example/"),
+            new Uri("https://api.radio-browser.info.evil.example/"),
+            new Uri("http://de1.api.radio-browser.info/"),
+            new Uri("https://de2.api.radio-browser.info/"));
+
+        var stations = await service.GetTopStationsAsync();
+
+        Assert.Empty(stations);
+        var requestUri = Assert.Single(handler.RequestUris);
+        Assert.Equal("de2.api.radio-browser.info", requestUri.Host);
+    }
+
+    [Theory]
+    [InlineData("http://localhost/live.mp3")]
+    [InlineData("http://127.0.0.1/live.mp3")]
+    [InlineData("http://10.0.0.5/live.mp3")]
+    [InlineData("http://172.16.0.5/live.mp3")]
+    [InlineData("http://192.168.1.20/live.mp3")]
+    [InlineData("http://169.254.10.20/live.mp3")]
+    [InlineData("http://[::1]/live.mp3")]
+    [InlineData("http://[fd00::1]/live.mp3")]
+    [InlineData("http://[fe80::1]/live.mp3")]
+    [InlineData("http://printer.local/live.mp3")]
+    public void ParseStationsFiltersNonPublicStreamHosts(string streamUrl)
+    {
+        var json = ValidStationJson().Replace(
+            "https://stream.example/live.mp3",
+            streamUrl,
+            StringComparison.Ordinal);
+
+        Assert.Empty(RadioBrowserService.ParseStations(json));
+    }
+
+    [Theory]
+    [InlineData("https://8.8.8.8/live.mp3")]
+    [InlineData("http://172.15.0.5/live.mp3")]
+    [InlineData("http://172.32.0.5/live.mp3")]
+    public void ParseStationsAllowsPublicStreamHosts(string streamUrl)
+    {
+        var json = ValidStationJson().Replace(
+            "https://stream.example/live.mp3",
+            streamUrl,
+            StringComparison.Ordinal);
+
+        Assert.Single(RadioBrowserService.ParseStations(json));
     }
 
     [Theory]

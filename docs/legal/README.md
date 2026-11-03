@@ -44,8 +44,8 @@ kiện sau:
 1. **Radio Browser** nếu mục tiêu là có nội dung nghe ngay với rủi ro tích
    hợp thấp nhất. Đây là radio tuyến tính, không phải catalog chọn bài.
    Chủ dự án đã chọn hướng này và prototype đã có trên nhánh làm việc;
-   trạng thái hiện tại vẫn chờ nghiệm thu runtime trên Windows thật và
-   chưa phải phê duyệt production.
+   prototype đã được chủ dự án nghiệm thu runtime trên Windows thật
+   ngày 03/11/2026 nhưng chưa phải phê duyệt production.
 2. **Navidrome/OpenSubsonic hoặc Jellyfin** nếu mục tiêu là nghe thư viện
    của chính người dùng từ xa. Đây là hướng an toàn nhất về quyền nội dung
    nhưng không tạo thêm catalog công cộng.

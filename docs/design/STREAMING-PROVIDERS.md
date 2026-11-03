@@ -48,8 +48,11 @@ sau:
   `Track`, file path hoặc khóa của thư viện local.
 - `RadioBrowserService` khám phá mirror HTTPS qua DNS
   `all.api.radio-browser.info`, có mirror dự phòng, timeout 12 giây,
-  backoff ngắn, response tối đa 2 MiB và tối đa 60 kết quả. Adapter loại
-  đài `lastcheckok != 1`, HLS, URL không phải HTTP(S) và URL chứa user-info.
+  backoff ngắn, response tối đa 2 MiB và tối đa 60 kết quả. Mirror chỉ
+  được chấp nhận khi host là `api.radio-browser.info` hoặc subdomain
+  của nó. Adapter loại đài `lastcheckok != 1`, HLS, URL không phải
+  HTTP(S), URL chứa user-info và stream host localhost/private/
+  link-local.
 - Click-counter dùng đúng một request, không retry/failover, và chỉ được
   ViewModel gọi sau khi `Play()` thành công cho một đài mới do người dùng
   chọn. Pause/resume cùng đài không tạo click mới.
@@ -69,8 +72,9 @@ sau:
   sách hiện tại, còn resume tạo kết nối mới tới live edge. SMTC nhận
   metadata và nút Play/Pause/Next/Previous nhưng timeline không cho seek.
 
-Giới hạn còn mở của prototype: chưa có nghiệm thu runtime trên Windows
-thật; đài chết, geo-block hoặc định dạng Media Foundation không mở được
+Chủ dự án đã nghiệm thu runtime prototype trên Windows thật ngày
+03/11/2026. Giới hạn còn mở của prototype: đài chết, geo-block hoặc
+định dạng Media Foundation không mở được
 chỉ báo lỗi để người dùng chọn đài khác; chưa tự reconnect khi network
 stall ngoài thao tác Play/resume; chưa có kill switch trong Settings,
 trang privacy/attribution hoàn chỉnh hoặc cơ chế tắt provider từ xa. Các
@@ -229,8 +233,9 @@ chặn, không dùng placeholder chung chung để lấp.
 
 ## Thứ tự prototype khuyến nghị
 
-1. **Radio Browser** — đã có prototype nhỏ nhất, không credential; đang
-   chờ nghiệm thu network playback/live UI trên Windows thật.
+1. **Radio Browser** — đã có prototype nhỏ nhất, không credential; đã
+   được chủ dự án nghiệm thu network playback/live UI trên Windows
+   thật ngày 03/11/2026.
 2. **Navidrome/OpenSubsonic hoặc Jellyfin** — chứng minh đăng nhập, DPAPI,
    remote library và seek trên server của người dùng.
 3. **Audius** — catalog on-demand, chỉ sau khi session-cache, attribution,

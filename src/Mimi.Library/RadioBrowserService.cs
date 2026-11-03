@@ -20,6 +20,8 @@ public sealed class RadioBrowserService : IRadioStationService, IDisposable
     private const int MaximumSearchCharacters = 100;
     private const int MaximumResponseBytes = 2 * 1024 * 1024;
     private const string MirrorDiscoveryHost = "all.api.radio-browser.info";
+    private const string RadioBrowserApiHost = "api.radio-browser.info";
+    private const string RadioBrowserApiHostSuffix = ".api.radio-browser.info";
 
     private static readonly Uri[] FallbackMirrors =
     [
@@ -367,7 +369,8 @@ public sealed class RadioBrowserService : IRadioStationService, IDisposable
         {
             if (!candidate.IsAbsoluteUri ||
                 !string.Equals(candidate.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase) ||
-                !string.IsNullOrEmpty(candidate.UserInfo))
+                !string.IsNullOrEmpty(candidate.UserInfo) ||
+                !IsRadioBrowserApiHost(candidate.Host))
             {
                 continue;
             }
@@ -378,6 +381,10 @@ public sealed class RadioBrowserService : IRadioStationService, IDisposable
         }
         return result;
     }
+
+    private static bool IsRadioBrowserApiHost(string host) =>
+        string.Equals(host, RadioBrowserApiHost, StringComparison.OrdinalIgnoreCase) ||
+        host.EndsWith(RadioBrowserApiHostSuffix, StringComparison.OrdinalIgnoreCase);
 
     internal static IReadOnlyList<RadioStation> ParseStations(string json)
     {
@@ -429,7 +436,10 @@ public sealed class RadioBrowserService : IRadioStationService, IDisposable
         if (GetInt(element, "lastcheckok") != 1 || GetInt(element, "hls") == 1)
             return false;
 
-        if (!TryCreateWebUri(GetString(element, "url_resolved"), out var streamUrl) ||
+        if (!TryCreateWebUri(
+                GetString(element, "url_resolved"),
+                out var streamUrl,
+                requirePublicHost: true) ||
             streamUrl is null)
         {
             return false;
@@ -486,7 +496,10 @@ public sealed class RadioBrowserService : IRadioStationService, IDisposable
         };
     }
 
-    private static bool TryCreateWebUri(string? value, out Uri? uri)
+    private static bool TryCreateWebUri(
+        string? value,
+        out Uri? uri,
+        bool requirePublicHost = false)
     {
         uri = null;
         if (string.IsNullOrWhiteSpace(value) ||
@@ -501,7 +514,65 @@ public sealed class RadioBrowserService : IRadioStationService, IDisposable
             return false;
         }
 
+        if (requirePublicHost && !IsPublicHost(candidate))
+            return false;
+
         uri = candidate;
+        return true;
+    }
+
+    private static bool IsPublicHost(Uri uri)
+    {
+        var host = uri.Host.Trim().TrimEnd('.');
+        if (host.Length == 0 ||
+            string.Equals(host, "localhost", StringComparison.OrdinalIgnoreCase) ||
+            host.EndsWith(".localhost", StringComparison.OrdinalIgnoreCase) ||
+            host.EndsWith(".local", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        var addressText = host.Trim('[', ']');
+        return !IPAddress.TryParse(addressText, out var address) ||
+               !IsNonPublicAddress(address);
+    }
+
+    private static bool IsNonPublicAddress(IPAddress address)
+    {
+        if (IPAddress.IsLoopback(address) ||
+            address.Equals(IPAddress.Any) ||
+            address.Equals(IPAddress.IPv6Any))
+        {
+            return true;
+        }
+
+        if (address.IsIPv4MappedToIPv6)
+            address = address.MapToIPv4();
+
+        if (address.AddressFamily == AddressFamily.InterNetwork)
+        {
+            var bytes = address.GetAddressBytes();
+            return bytes[0] == 0 ||
+                   bytes[0] == 10 ||
+                   bytes[0] == 127 ||
+                   (bytes[0] == 172 && bytes[1] >= 16 && bytes[1] <= 31) ||
+                   (bytes[0] == 192 && bytes[1] == 168) ||
+                   (bytes[0] == 169 && bytes[1] == 254);
+        }
+
+        if (address.AddressFamily == AddressFamily.InterNetworkV6)
+        {
+            if (address.IsIPv6LinkLocal ||
+                address.IsIPv6Multicast ||
+                address.IsIPv6SiteLocal)
+            {
+                return true;
+            }
+
+            var bytes = address.GetAddressBytes();
+            return (bytes[0] & 0xfe) == 0xfc;
+        }
+
         return true;
     }
 

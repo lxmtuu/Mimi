@@ -54,10 +54,13 @@ Chủ dự án đã chọn Radio Browser cho prototype Online đầu tiên trên
 làm việc. Bản prototype áp dụng các điều kiện trên như sau:
 
 - Mọi request API đi qua mirror HTTPS được khám phá từ DNS của Radio
-  Browser (có mirror dự phòng), kèm `User-Agent: Mimi/<version>`, timeout,
+  Browser (có mirror dự phòng), chỉ chấp nhận host
+  `api.radio-browser.info` hoặc subdomain của nó, kèm
+  `User-Agent: Mimi/<version>`, timeout,
   backoff và giới hạn 60 kết quả/response tối đa 2 MiB.
 - Chỉ hiển thị đài có `lastcheckok = 1`, không HLS và có `url_resolved`
-  HTTP(S) không chứa thông tin đăng nhập nhúng. Stream được mở trực tiếp
+  HTTP(S) không chứa thông tin đăng nhập nhúng, không trỏ tới
+  localhost hoặc các dải IP private/link-local. Stream được mở trực tiếp
   bằng Media Foundation; Mimi không proxy, ghi, tải xuống, lưu vào thư
   viện/history/session hoặc tìm cách vượt giới hạn của đài.
 - Click-counter được gọi đúng một request sau khi một đài mới do người
@@ -70,10 +73,11 @@ làm việc. Bản prototype áp dụng các điều kiện trên như sau:
 - Log không ghi search query hoặc toàn bộ stream URL; lỗi stream chỉ ghi
   station UUID/loại exception và log load chỉ ghi host.
 
-Trạng thái này chưa phải phê duyệt production. Còn cần chủ dự án nghiệm
-thu runtime trên Windows thật với mạng/đài thật, đồng thời hoàn thành các
-cổng phát hành còn thiếu như kill switch trong Settings và nội dung
-privacy/attribution trước khi bật mặc định cho người dùng cuối.
+Trạng thái này chưa phải phê duyệt production. Chủ dự án đã nghiệm thu
+runtime prototype trên Windows thật với mạng/đài thật ngày 03/11/2026;
+vẫn cần hoàn thành các cổng phát hành còn thiếu như kill switch trong
+Settings và nội dung privacy/attribution trước khi bật mặc định cho
+người dùng cuối.
 
 ## Nguồn
 
