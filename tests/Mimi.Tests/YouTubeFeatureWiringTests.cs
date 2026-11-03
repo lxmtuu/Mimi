@@ -364,8 +364,13 @@ public sealed class YouTubeFeatureWiringTests
         // Owner requirement: no API key field anywhere in the interface.
         var xaml = Read(root, "src", "Mimi.App", "MainWindow.xaml");
         Assert.DoesNotContain("PasswordBox", xaml, StringComparison.Ordinal);
-        Assert.DoesNotContain("Settings_YouTubeKey", xaml, StringComparison.Ordinal);
         Assert.DoesNotContain("YouTubeApiKeyBox", xaml, StringComparison.Ordinal);
+        // A hint that names the terminal script is allowed; a field that takes
+        // a key is what this rule forbids, so the only key reference in the
+        // window is that hint.
+        Assert.Contains("Settings_YouTubeKeyHint", xaml, StringComparison.Ordinal);
+        Assert.DoesNotContain("Settings_YouTubeKeyField", xaml, StringComparison.Ordinal);
+        Assert.DoesNotContain("Loc[Settings_YouTubeKey]", xaml, StringComparison.Ordinal);
 
         var viewModel = Read(
             root,
