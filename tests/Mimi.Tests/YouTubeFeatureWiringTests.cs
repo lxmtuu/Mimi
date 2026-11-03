@@ -103,8 +103,10 @@ public sealed class YouTubeFeatureWiringTests
         Assert.Contains("if (IsYouTubePlaying)", main, StringComparison.Ordinal);
         // The transport hands playback to the video; the Stop button and the
         // row toggle are what tear the player down.
+        // The page flips its own state, so a stale report cannot turn the
+        // Play button into a no-op.
         Assert.Contains(
-            "RequestEmbeddedPlayer(isYouTubeVideoPlaying",
+            "RequestEmbeddedPlayer(EmbeddedPlayerCommandKind.Toggle)",
             main,
             StringComparison.Ordinal);
         Assert.Contains(
@@ -175,8 +177,10 @@ public sealed class YouTubeFeatureWiringTests
         var main = Read(root, "src", "Mimi.App", "ViewModels", "MainWindowViewModel.cs");
         // The play/pause button toggles the video instead of stopping it, and
         // the NAudio timeline stops writing over the video's timeline.
+        // The page flips its own state, so a stale report cannot turn the
+        // Play button into a no-op.
         Assert.Contains(
-            "RequestEmbeddedPlayer(isYouTubeVideoPlaying",
+            "RequestEmbeddedPlayer(EmbeddedPlayerCommandKind.Toggle)",
             main,
             StringComparison.Ordinal);
         // Slider input seeks the video rather than a silent local player.
@@ -286,6 +290,104 @@ public sealed class YouTubeFeatureWiringTests
     }
 
     [Fact]
+    public void TheEmbedIdentifiesItselfSoTheVideoPlaysInsideMimi()
+    {
+        var root = FindRepositoryRoot();
+        var codeBehind = Read(root, "src", "Mimi.App", "MainWindow.xaml.cs");
+
+        // A page served from a virtual https host gives the iframe an origin
+        // and a referrer. Without one YouTube answers error 153 and the owner
+        // is pushed out to youtube.com, which is exactly what must not happen.
+        Assert.Contains("SetVirtualHostNameToFolderMapping(", codeBehind, StringComparison.Ordinal);
+        Assert.Contains("mimi-player.local", codeBehind, StringComparison.Ordinal);
+        Assert.Contains("strict-origin-when-cross-origin", codeBehind, StringComparison.Ordinal);
+
+        // WebView2 does not always send Referer itself, so Mimi fills it in
+        // rather than leaving the player unattributable.
+        Assert.Contains("AddWebResourceRequestedFilter(", codeBehind, StringComparison.Ordinal);
+        Assert.Contains("\"Referer\"", codeBehind, StringComparison.Ordinal);
+        Assert.Contains("SetHeader(", codeBehind, StringComparison.Ordinal);
+
+        // The page also names itself to the player.
+        Assert.Contains("origin: window.location.origin", codeBehind, StringComparison.Ordinal);
+        Assert.Contains("widget_referrer:", codeBehind, StringComparison.Ordinal);
+
+        // A refused embed is reported instead of leaving a dead progress bar.
+        Assert.Contains("ReportEmbeddedPlayerError(", codeBehind, StringComparison.Ordinal);
+        Assert.Contains(
+            "YouTube_ReferrerRejected",
+            Read(root, "src", "Mimi.App", "ViewModels", "MainWindowViewModel.YouTube.cs"),
+            StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void ThePlayerPollCannotGetStuckAndSaysWhyItIsEmpty()
+    {
+        var root = FindRepositoryRoot();
+        var codeBehind = Read(root, "src", "Mimi.App", "MainWindow.xaml.cs");
+
+        // A script call issued while the page navigates can stay pending. If
+        // the in-flight flag is never cleared, the timeline looks dead while
+        // the video keeps playing.
+        Assert.Contains("Task.WhenAny(", codeBehind, StringComparison.Ordinal);
+        Assert.Contains("NavigationCompleted", codeBehind, StringComparison.Ordinal);
+        Assert.Contains("youTubePollInFlight = false;", codeBehind, StringComparison.Ordinal);
+
+        // The page reports why it has no state instead of returning null, so a
+        // missing player can be told apart from a slow one.
+        Assert.Contains("problem: 'api-missing'", codeBehind, StringComparison.Ordinal);
+        Assert.Contains("problem: 'player-missing'", codeBehind, StringComparison.Ordinal);
+        Assert.Contains("problem.GetString()", codeBehind, StringComparison.Ordinal);
+
+        // Play/Pause is decided inside the page, where the state is real.
+        Assert.Contains("command.command === 'toggle'", codeBehind, StringComparison.Ordinal);
+        Assert.Contains(
+            "EmbeddedPlayerCommandKind.Toggle => ",
+            codeBehind,
+            StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void TheKeyLivesInATerminalCommandAndNeverInTheSettingsPanel()
+    {
+        var root = FindRepositoryRoot();
+
+        // Standing owner rule: no key field anywhere in Settings. The key is
+        // typed into a terminal (tools\Set-YouTubeKey.ps1) or set as an
+        // environment variable, and Mimi only ever reads it back.
+        var xaml = Read(root, "src", "Mimi.App", "MainWindow.xaml");
+        Assert.DoesNotContain("PasswordBox", xaml, StringComparison.Ordinal);
+        Assert.DoesNotContain("YouTubeApiKeyBox", xaml, StringComparison.Ordinal);
+        Assert.DoesNotContain("YouTubeKeyBox", xaml, StringComparison.Ordinal);
+        Assert.DoesNotContain("youtube-api-key", xaml, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("Settings_YouTubeSection", xaml, StringComparison.Ordinal);
+        // The panel may explain where the key comes from; it must not offer a
+        // field to paste one.
+        Assert.Contains("Settings_YouTubeKeyHint", xaml, StringComparison.Ordinal);
+
+        // The old guidance pointed at Settings; the key is stored by script.
+        foreach (var file in new[] { "UiStrings.resx", "UiStrings.vi.resx" })
+        {
+            var resx = Read(root, "src", "Mimi.App", "Localization", file);
+            var line = resx
+                .Split('\n')
+                .FirstOrDefault(candidate =>
+                    candidate.Contains(
+                        "name=\"YouTube_InvalidKey\"",
+                        StringComparison.Ordinal));
+            Assert.NotNull(line);
+            Assert.Contains("Set-YouTubeKey.ps1", line!, StringComparison.Ordinal);
+            Assert.DoesNotContain("Settings", line!, StringComparison.Ordinal);
+        }
+
+        // The terminal path is real: the script exists and has a status check.
+        var script = Read(root, "tools", "Set-YouTubeKey.ps1");
+        Assert.Contains("youtube-api-key.txt", script, StringComparison.Ordinal);
+        Assert.Contains("Read-Host -AsSecureString", script, StringComparison.Ordinal);
+        Assert.Contains("[switch]$Remove", script, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void TheKeyIsConfiguredFromATerminalAndNeverInTheUi()
     {
         var root = FindRepositoryRoot();
@@ -293,8 +395,13 @@ public sealed class YouTubeFeatureWiringTests
         // Owner requirement: no API key field anywhere in the interface.
         var xaml = Read(root, "src", "Mimi.App", "MainWindow.xaml");
         Assert.DoesNotContain("PasswordBox", xaml, StringComparison.Ordinal);
-        Assert.DoesNotContain("Settings_YouTubeKey", xaml, StringComparison.Ordinal);
         Assert.DoesNotContain("YouTubeApiKeyBox", xaml, StringComparison.Ordinal);
+        // A hint that names the terminal script is allowed; a field that takes
+        // a key is what this rule forbids, so the only key reference in the
+        // window is that hint.
+        Assert.Contains("Settings_YouTubeKeyHint", xaml, StringComparison.Ordinal);
+        Assert.DoesNotContain("Settings_YouTubeKeyField", xaml, StringComparison.Ordinal);
+        Assert.DoesNotContain("Loc[Settings_YouTubeKey]", xaml, StringComparison.Ordinal);
 
         var viewModel = Read(
             root,
@@ -375,6 +482,56 @@ public sealed class YouTubeFeatureWiringTests
             Assert.Contains($"name=\"{key}\"", neutral, StringComparison.Ordinal);
             Assert.Contains($"name=\"{key}\"", vietnamese, StringComparison.Ordinal);
         }
+    }
+
+    [Fact]
+    public void TheVideoStageReusesTheOnePlayerInsteadOfMovingIt()
+    {
+        var root = FindRepositoryRoot();
+        var stage = Read(root, "src", "Mimi.App", "MainWindow.VideoStage.cs");
+        var shell = Read(root, "src", "Mimi.App", "MainWindow.xaml");
+        var main = Read(root, "src", "Mimi.App", "MainWindow.xaml.cs");
+        var keyboard = Read(root, "src", "Mimi.App", "MainWindow.Keyboard.cs");
+
+        // The shell has to be addressable: the stage collapses it around the
+        // player rather than building a second window with a second player.
+        foreach (var name in new[]
+                 {
+                     "ShellGrid",
+                     "AppHeader",
+                     "AppTransport",
+                     "NavRail",
+                     "MainContent",
+                     "NowPlayingPanel",
+                     "PlayerCard",
+                     "NavColumn",
+                     "MainColumn",
+                     "NowPlayingColumn",
+                     "AppHeaderRow",
+                     "AppTransportRow"
+                 })
+        {
+            Assert.Contains("x:Name=\"" + name + "\"", shell, StringComparison.Ordinal);
+        }
+
+        Assert.Contains("private void EnterVideoStage()", stage, StringComparison.Ordinal);
+        Assert.Contains("private void ExitVideoStage()", stage, StringComparison.Ordinal);
+
+        // Leaving the stage must restore the shell and the card's own height,
+        // otherwise every later layout change stays full-screen.
+        Assert.Contains(
+            "PlayerCard.ClearValue(FrameworkElement.HeightProperty)",
+            stage,
+            StringComparison.Ordinal);
+        Assert.Contains("WindowState = videoStageRestoreState;", stage, StringComparison.Ordinal);
+        Assert.Contains("NowPlayingColumn.Width = new GridLength(270);", stage, StringComparison.Ordinal);
+
+        // The Stage shortcut and the Stage button both go through it.
+        Assert.Contains("ToggleVideoStage();", main, StringComparison.Ordinal);
+        Assert.Contains("if (isVideoStageOpen || viewModel.IsYouTubePlaying)", main, StringComparison.Ordinal);
+
+        // Esc leaves the video before it means anything else.
+        Assert.Contains("Key.Escape && isVideoStageOpen", keyboard, StringComparison.Ordinal);
     }
 
     private static string Read(string root, params string[] pathParts) =>

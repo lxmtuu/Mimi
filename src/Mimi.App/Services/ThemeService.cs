@@ -188,6 +188,30 @@ public sealed class ThemeService
         publishedColors["AppBackgroundTransparentColor"] = ToColor(
             appBackground.WithAlpha(0x00));
 
+        // Interaction surfaces — row hover, row selection outline, field
+        // borders, menu and tooltip plates — are mixed from the theme's own
+        // panel colour and accent instead of relying on the WPF system
+        // highlight, which is a light-theme brush. Without this, lists and
+        // editors flashed white on hover and ignored the selected theme.
+        var panelBackground = effectiveTheme.GetColor(
+            ThemeTokens.PanelBackground);
+        var selectedBackground = effectiveTheme.GetColor(
+            ThemeTokens.SelectedBackground);
+        publishedColors["HoverSurfaceColor"] = ToColor(
+            Mix(panelBackground, accent, 0.14));
+        publishedColors["HoverSurfaceStrongColor"] = ToColor(
+            Mix(panelBackground, accent, 0.26));
+        publishedColors["HoverBorderColor"] = ToColor(
+            Mix(panelBackground, accent, 0.38));
+        publishedColors["SelectedBorderColor"] = ToColor(
+            Mix(selectedBackground, accent, 0.42));
+        publishedColors["FieldBorderColor"] = ToColor(
+            Mix(panelBackground, accent, 0.18));
+        publishedColors["MenuSurfaceColor"] = ToColor(
+            Mix(panelBackground, accent, 0.04));
+        publishedColors["ToolTipSurfaceColor"] = ToColor(
+            Mix(panelBackground, accent, 0.10));
+
         var textPrimary = effectiveTheme.GetColor(
             ThemeTokens.TextPrimary);
         publishedColors["TextPrimaryDecorSoftColor"] = ToColor(
@@ -243,6 +267,26 @@ public sealed class ThemeService
                 pending.Push(merged);
         }
     }
+
+    /// <summary>
+    /// Linear color mix, used to derive interaction surfaces that belong to
+    /// the same family as the theme instead of a fixed grey.
+    /// </summary>
+    private static ThemeColor Mix(
+        ThemeColor from,
+        ThemeColor to,
+        double amount)
+    {
+        var t = Math.Clamp(amount, 0d, 1d);
+        return new ThemeColor(
+            255,
+            Blend(from.R, to.R, t),
+            Blend(from.G, to.G, t),
+            Blend(from.B, to.B, t));
+    }
+
+    private static byte Blend(byte from, byte to, double t) =>
+        (byte)Math.Round(from + ((to - from) * t));
 
     private static Color ToColor(ThemeColor color) =>
         Color.FromArgb(color.A, color.R, color.G, color.B);

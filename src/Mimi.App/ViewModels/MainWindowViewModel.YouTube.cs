@@ -12,6 +12,10 @@ public enum EmbeddedPlayerCommandKind
 {
     Play,
     Pause,
+    // Toggle asks the page to flip its own state. The Play button must work
+    // even when Mimi's last report is stale, so the decision is made where the
+    // player state actually lives.
+    Toggle,
     Seek,
     SetVolume,
     Restart
@@ -233,21 +237,25 @@ public sealed partial class MainWindowViewModel
 
     /// <summary>
     /// Handles the player's own error codes. 101 and 150 are the official
-    /// "the owner disabled embedding" codes, which no amount of retrying fixes,
-    /// so the honest answer is to say so and point at the Open button.
+    /// "the owner disabled embedding" codes, and 153 means YouTube could not
+    /// identify the embedding page, which no retry fixes either. Both stop the
+    /// dead playback state and say what happened instead of leaving a progress
+    /// bar that never moves.
     /// </summary>
     public void ReportEmbeddedPlayerError(int code)
     {
         if (disposed) return;
 
-        if (code is not (101 or 150))
+        if (code is not (101 or 150 or 153))
         {
             Log.Debug("The YouTube player reported error code {Code}", code);
             return;
         }
 
         StopYouTubeVideo();
-        YouTubeStatusLabel = Loc["YouTube_EmbeddingBlocked"];
+        YouTubeStatusLabel = code == 153
+            ? Loc["YouTube_ReferrerRejected"]
+            : Loc["YouTube_EmbeddingBlocked"];
     }
 
     /// <summary>

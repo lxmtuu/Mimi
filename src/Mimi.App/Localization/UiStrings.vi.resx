@@ -81,6 +81,11 @@
   <data name="Library_EmptyStateTitle" xml:space="preserve"><value>Sân khấu của bạn vẫn đang yên lặng</value></data>
   <data name="Library_FavoriteSelected" xml:space="preserve"><value>♥ Yêu thích mục đã chọn</value></data>
   <data name="Library_FileCouldNotBePlayed" xml:space="preserve"><value>Không thể phát file này</value></data>
+  <data name="Library_FilterArtistChip" xml:space="preserve"><value>Nghệ sĩ</value></data>
+  <data name="Library_FilterAlbumChip" xml:space="preserve"><value>Album</value></data>
+  <data name="Library_FilterGenreChip" xml:space="preserve"><value>Thể loại</value></data>
+  <data name="Library_FilterFormatChip" xml:space="preserve"><value>Định dạng</value></data>
+  <data name="Library_FilterStateChip" xml:space="preserve"><value>Trạng thái</value></data>
   <data name="Library_FilterByAlbum" xml:space="preserve"><value>Lọc theo album</value></data>
   <data name="Library_FilterByArtist" xml:space="preserve"><value>Lọc theo nghệ sĩ</value></data>
   <data name="Library_FilterByFormat" xml:space="preserve"><value>Lọc theo định dạng</value></data>
@@ -335,6 +340,7 @@
   <data name="Settings_OnlineSection" xml:space="preserve"><value>NHẠC TRỰC TUYẾN</value></data>
   <data name="Settings_EnableYouTube" xml:space="preserve"><value>Bật tìm kiếm YouTube</value></data>
   <data name="Settings_YouTubeDescription" xml:space="preserve"><value>Khi bật, Mimi tìm trên YouTube bằng API key của chính bạn và phát video bằng trình phát nhúng chính thức của YouTube ngay trong Mimi. Mimi không tải, không tách và không lưu đệm nội dung, và không có gì từ YouTube được thêm vào thư viện, hàng đợi, lịch sử, yêu thích hay phiên lưu. Tắt tùy chọn này để ẩn YouTube và dừng video.</value></data>
+  <data name="Settings_YouTubeKeyHint" xml:space="preserve"><value>API key được lưu bằng lệnh trong terminal, không nhập ở cửa sổ này: chạy tools\Set-YouTubeKey.ps1 (hoặc đặt biến môi trường MIMI_YOUTUBE_API_KEY).</value></data>
   <data name="Settings_YouTubeSection" xml:space="preserve"><value>YOUTUBE</value></data>
   <data name="Settings_KeyboardShortcutsSection" xml:space="preserve"><value>PHÍM TẮT</value></data>
   <data name="Settings_Language" xml:space="preserve"><value>Ngôn ngữ giao diện</value></data>
@@ -421,10 +427,11 @@
   <data name="TrackCount_Playlist" xml:space="preserve"><value>{0} bài trong danh sách phát này</value></data>
   <data name="TrackCount_RecentlyPlayed" xml:space="preserve"><value>{0} bài đã nghe gần đây</value></data>
   <data name="TrackCount_SearchResults" xml:space="preserve"><value>{0} kết quả tìm kiếm</value></data>
-  <data name="YouTube_InvalidKey" xml:space="preserve"><value>YouTube từ chối key. Hãy dán key YouTube Data API v3 hợp lệ trong Settings.</value></data>
+  <data name="YouTube_InvalidKey" xml:space="preserve"><value>YouTube từ chối key. Chạy tools\Set-YouTubeKey.ps1 trong terminal để lưu key YouTube Data API v3 hợp lệ, rồi tìm lại.</value></data>
   <data name="YouTube_Play" xml:space="preserve"><value>Phát</value></data>
   <data name="YouTube_StopRow" xml:space="preserve"><value>Dừng</value></data>
   <data name="YouTube_EmbeddingBlocked" xml:space="preserve"><value>Video này không phát được trong Mimi vì chủ video đã tắt nhúng. Dùng nút Mở để xem trên YouTube.</value></data>
+  <data name="YouTube_ReferrerRejected" xml:space="preserve"><value>YouTube không nhận ra cửa sổ này nên video không thể phát trong Mimi (lỗi 153). Hãy mở lại video; nếu vẫn lỗi, bấm "Chẩn đoán trình phát" và xem log.</value></data>
   <data name="YouTube_BridgeUnavailable" xml:space="preserve"><value>Player không báo được vị trí nên thanh thời gian để trống. Hãy mở lại video; nếu vẫn vậy, log có ghi lý do.</value></data>
   <data name="YouTube_Diagnose" xml:space="preserve"><value>Chẩn đoán player</value></data>
   <data name="YouTube_DiagnosticFormat" xml:space="preserve"><value>Player báo: {0}</value></data>

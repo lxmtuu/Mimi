@@ -26,6 +26,17 @@
     <SolidColorBrush x:Key="AccentHotDecorSoftBrush" Color="{DynamicResource AccentHotDecorSoftColor}"/>
     <SolidColorBrush x:Key="AccentHotDecorMediumBrush" Color="{DynamicResource AccentHotDecorMediumColor}"/>
 
+    <!-- Interaction surfaces derived from the theme's own accent, so a row,
+         a field and a menu never fall back to the light system highlight. -->
+    <SolidColorBrush x:Key="HoverSurfaceBrush" Color="{DynamicResource HoverSurfaceColor}"/>
+    <SolidColorBrush x:Key="HoverSurfaceStrongBrush" Color="{DynamicResource HoverSurfaceStrongColor}"/>
+    <SolidColorBrush x:Key="HoverBorderBrush" Color="{DynamicResource HoverBorderColor}"/>
+    <SolidColorBrush x:Key="SelectedBorderBrush" Color="{DynamicResource SelectedBorderColor}"/>
+    <SolidColorBrush x:Key="FieldBorderBrush" Color="{DynamicResource FieldBorderColor}"/>
+    <SolidColorBrush x:Key="MenuSurfaceBrush" Color="{DynamicResource MenuSurfaceColor}"/>
+    <SolidColorBrush x:Key="ToolTipSurfaceBrush" Color="{DynamicResource ToolTipSurfaceColor}"/>
+    <SolidColorBrush x:Key="ScrimBrush" Color="{DynamicResource AppBackgroundColor}" Opacity="0.72"/>
+
     <SolidColorBrush x:Key="TextPrimaryBrush" Color="{DynamicResource TextPrimaryColor}"/>
     <SolidColorBrush x:Key="TextStrongBrush" Color="{DynamicResource TextStrongColor}"/>
     <SolidColorBrush x:Key="TextSecondaryBrush" Color="{DynamicResource TextSecondaryColor}"/>

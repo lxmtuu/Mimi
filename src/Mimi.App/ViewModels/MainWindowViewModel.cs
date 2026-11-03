@@ -334,6 +334,16 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
             ? Loc["Library_RemoveFromFavorites"]
             : Loc["Library_AddToFavorites"];
 
+    /// <summary>
+    /// Filters that are actually narrowing the list. The toolbar shows them as
+    /// chips so the state stays visible while the filter panel is closed.
+    /// </summary>
+    public ObservableCollection<LibraryFilterChip> ActiveLibraryFilters { get; } = [];
+
+    public bool HasActiveLibraryFilters => ActiveLibraryFilters.Count > 0;
+
+    public int ActiveLibraryFilterCount => ActiveLibraryFilters.Count;
+
     public bool HasActiveAdvancedFilters =>
         !string.Equals(
             SelectedArtistFilter,
@@ -829,6 +839,71 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         SaveSettings();
     }
 
+    /// <summary>
+    /// The five filters live behind one button: keeping them all on screen
+    /// pushed the toolbar onto two rows and showed no state at all.
+    /// </summary>
+    [ObservableProperty]
+    private bool isFilterPanelOpen;
+
+    [RelayCommand]
+    private void ToggleFilterPanel() => IsFilterPanelOpen = !IsFilterPanelOpen;
+
+    /// <summary>
+    /// Clears one chip. Unknown kinds are ignored so a stale chip cannot throw.
+    /// </summary>
+    [RelayCommand]
+    private void ClearLibraryFilter(string? kind)
+    {
+        switch (kind)
+        {
+            case "artist":
+                SelectedArtistFilter = AllArtistsFilter;
+                break;
+            case "album":
+                SelectedAlbumFilter = AllAlbumsFilter;
+                break;
+            case "genre":
+                SelectedGenreFilter = AllGenresFilter;
+                break;
+            case "format":
+                SelectedFormatFilter = AllFormatsFilter;
+                break;
+            case "state":
+                SelectedPlaybackStateFilter = AllPlaybackStatesFilter;
+                break;
+        }
+    }
+
+    private void RefreshActiveLibraryFilters()
+    {
+        ActiveLibraryFilters.Clear();
+        AddLibraryFilterChip("artist", "Library_FilterArtistChip", SelectedArtistFilter, AllArtistsFilter);
+        AddLibraryFilterChip("album", "Library_FilterAlbumChip", SelectedAlbumFilter, AllAlbumsFilter);
+        AddLibraryFilterChip("genre", "Library_FilterGenreChip", SelectedGenreFilter, AllGenresFilter);
+        AddLibraryFilterChip("format", "Library_FilterFormatChip", SelectedFormatFilter, AllFormatsFilter);
+        AddLibraryFilterChip("state", "Library_FilterStateChip", SelectedPlaybackStateFilter, AllPlaybackStatesFilter);
+
+        OnPropertyChanged(nameof(HasActiveLibraryFilters));
+        OnPropertyChanged(nameof(ActiveLibraryFilterCount));
+        OnPropertyChanged(nameof(HasActiveAdvancedFilters));
+    }
+
+    private void AddLibraryFilterChip(
+        string kind,
+        string labelKey,
+        string? value,
+        string allValue)
+    {
+        if (string.IsNullOrWhiteSpace(value) ||
+            string.Equals(value, allValue, StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        ActiveLibraryFilters.Add(new LibraryFilterChip(kind, Loc[labelKey], value));
+    }
+
     [RelayCommand]
     private void ClearLibraryFilters()
     {
@@ -937,9 +1012,9 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         // result row that is currently playing.
         if (IsYouTubePlaying)
         {
-            RequestEmbeddedPlayer(isYouTubeVideoPlaying
-                ? EmbeddedPlayerCommandKind.Pause
-                : EmbeddedPlayerCommandKind.Play);
+            // The page decides whether this means play or pause, so a stale
+            // report cannot turn the button into a no-op.
+            RequestEmbeddedPlayer(EmbeddedPlayerCommandKind.Toggle);
             return;
         }
 
@@ -1790,6 +1865,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     {
         TracksView.Refresh();
         UpdateTrackCount();
+        RefreshActiveLibraryFilters();
     }
 
     private void UpdateTrackCount()

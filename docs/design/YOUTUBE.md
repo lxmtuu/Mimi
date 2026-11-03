@@ -60,8 +60,9 @@ tra lại khi cửa sổ Mimi được kích hoạt (alt-tab trở về) và khi
 lại app.
 
 Nếu key sai hoặc chưa bật YouTube Data API v3 cho project, API trả 400/401;
-Mimi báo riêng trạng thái *key bị từ chối* và chỉ người dùng vào Settings, thay
-vì gộp chung vào lỗi mạng.
+Mimi báo riêng trạng thái *key bị từ chối* và chỉ người dùng chạy lại
+`tools/Set-YouTubeKey.ps1` trong terminal, thay vì gộp chung vào lỗi mạng.
+Giao diện **không** có ô dán key: mọi thứ về key nằm ở terminal.
 
 Tạo key: Google Cloud Console → tạo project → bật **YouTube Data API v3** →
 Create credentials → API key → API restrictions → chỉ chọn *YouTube Data API
@@ -83,6 +84,15 @@ quy trình của Google.
   (`SetVirtualHostNameToFolderMapping`), trang này mới tạo iframe nhúng chính
   thức với `referrerpolicy="strict-origin-when-cross-origin"`, nên iframe có
   origin và referrer hợp lệ.
+- Dù vậy, WebView2 vẫn có trường hợp **không gửi `Referer`** (host ảo, iframe
+  cross-origin). Vì thế Mimi còn chặn request tới `youtube.com` bằng
+  `WebResourceRequested` và chỉ điền `Referer` khi header còn thiếu — header
+  trình duyệt đã gửi thì giữ nguyên. Trang cũng khai báo `origin` và
+  `widget_referrer` cho player.
+- Nếu YouTube vẫn từ chối, Mimi đọc mã lỗi từ `onError` (`101`/`150`: chủ video
+  tắt nhúng; `153`: không nhận diện được trang nhúng) và hiện thông báo tương
+  ứng, thay vì để thanh tiến trình đứng im. Nút **Chẩn đoán trình phát** in
+  `{ready,error,state,duration,position}` để biết chính xác chuyện gì xảy ra.
 - Thư mục chứa trang đó là `%LOCALAPPDATA%\Mimi\YouTubePlayerPage`, tách khỏi
   profile Chromium (`YouTubeBrowserProfile`); Mimi ghi lại mỗi lần khởi động
   player.
@@ -114,6 +124,22 @@ quy trình của Google.
     vòng khi hết danh sách, `Off` dừng ở cuối; shuffle chọn ngẫu nhiên một kết
     quả khác;
   - **Phát tất cả** bắt đầu danh sách từ mục đang chọn, giống một playlist.
+- **Cầu nối không được phép treo**: lệnh `ExecuteScriptAsync` phát ra đúng lúc
+  trang đang điều hướng có thể không bao giờ trả về. Mỗi lần đọc trạng thái có
+  watchdog 2,5 giây, và cờ "đang đọc" được xoá khi `NavigationCompleted`, nên
+  một lần lỗi không làm timeline chết vĩnh viễn. Trang cũng trả `problem`
+  (`api-missing` / `player-missing`) thay vì `null` để log nói rõ vì sao.
+- Nút Play/Pause gửi lệnh **`toggle`**: trang tự đọc trạng thái và lật, nên báo
+  cáo cũ không thể biến nút thành nút không làm gì.
+- **Stage video (03/11/2026)**: khi đang phát video YouTube, phím `F11` hoặc
+  nút Stage đưa cửa sổ chính sang chế độ toàn màn hình: phần còn lại của shell
+  (thanh bên, thư viện, header, thanh transport dưới) thu về 0 và thẻ phát
+  chiếm gần trọn cửa sổ. `Esc` hoặc `F11` lần nữa để thoát; đóng player cũng
+  tự thoát. Đây **không phải** cửa sổ Stage thứ hai: WebView2 không thể
+  chuyển sang cửa sổ khác, nên làm vậy sẽ phải tạo player thứ hai — tải lại
+  video, hai nguồn âm thanh và hai timeline phải đồng bộ. Stage video dùng
+  đúng player đang chạy nên hình to hơn mà âm thanh và timeline không đứt.
+  Đánh đổi: chưa đưa được video sang màn hình thứ hai.
 - Không còn chuyện đồng hồ NAudio ghi đè lên timeline của video:
   `RefreshPlaybackPosition` thoát sớm khi `IsYouTubePlaying`.
 - Video chạy hết → player báo `state = 0` → Mimi đóng player, visualizer trở

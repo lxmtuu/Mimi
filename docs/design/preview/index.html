@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8"/>
+<title>Mimi — xem trước UI refresh v2</title>
+<style>
+  :root{
+    --bg:#070B14; --panel:#0D1424; --raised:#131D33; --sunken:#0A1120;
+    --control:#1B2842; --selected:#17325C; --border:#243653; --divider:#1A2740;
+    --accent:#3E8BFF; --accent2:#4FE3FF; --hot:#FF5CAE; --on-accent:#04101F;
+    --text:#F4F8FF; --strong:#E8F0FE; --secondary:#C6D6EC; --muted:#93A9C7; --faint:#8298B8;
+    --hover:#142340;         /* PanelBackground + Accent 14% */
+    --hover-border:#1F3654;  /* PanelBackground + Accent 38% */
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;padding:26px;background:var(--bg);color:var(--text);
+    font-family:"Segoe UI",system-ui,-apple-system,sans-serif;font-size:13px;
+  }
+  .note{
+    max-width:1180px;margin:0 auto 18px;padding:12px 16px;border-radius:12px;
+    background:rgba(62,139,255,.10);border:1px solid rgba(62,139,255,.28);
+    color:var(--secondary);font-size:12px;line-height:1.55;
+  }
+  .note b{color:var(--accent2)}
+  .app{
+    max-width:1180px;margin:0 auto;display:grid;
+    grid-template-columns:210px 1fr 270px;gap:14px;align-items:start;
+  }
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:18px}
+  /* ---- rail ---- */
+  .rail{padding:12px;display:flex;flex-direction:column;min-height:620px}
+  .brand{display:flex;align-items:center;gap:10px;padding:2px 4px 14px}
+  .logo{
+    width:34px;height:34px;border-radius:10px;flex:0 0 auto;
+    background:linear-gradient(145deg,#12325C,#0A1730);
+    border:1px solid #1E3A63;display:grid;place-items:center;
+    color:var(--accent2);font-weight:800;font-size:16px;
+  }
+  .brand small{display:block;color:var(--muted);font-size:10px;margin-top:2px}
+  .section{color:var(--muted);font-size:10px;font-weight:600;margin:6px 0 10px 9px}
+  .nav{display:flex;flex-direction:column;gap:2px}
+  .nav a{
+    display:flex;align-items:center;gap:10px;padding:8px 9px;border-radius:10px;
+    color:var(--secondary);text-decoration:none;font-size:12.5px;
+  }
+  .nav a:hover{background:var(--hover);border:1px solid var(--hover-border);padding:7px 8px}
+  .nav a.on{
+    background:var(--selected);color:var(--accent);font-weight:600;
+    box-shadow:inset 3px 0 0 var(--accent);padding:8px 9px 8px 11px;
+  }
+  .ico{width:16px;height:16px;flex:0 0 auto;opacity:.9}
+  .rule{height:1px;background:var(--divider);margin:8px 9px}
+  .rail-foot{margin-top:auto;display:flex;flex-direction:column;gap:8px;padding-top:14px}
+  .beta{background:var(--raised);border-radius:12px;padding:8px 10px}
+  .beta b{color:var(--accent);font-size:10px;letter-spacing:.4px}
+  .beta p{margin:4px 0 0;color:var(--muted);font-size:10px;line-height:1.4}
+  /* ---- main ---- */
+  .main{display:flex;flex-direction:column;gap:12px}
+  .topbar{display:flex;align-items:flex-start;gap:12px}
+  .topbar h1{font-size:21px;margin:0}
+  .topbar p{margin:4px 0 0;color:var(--muted);font-size:12px}
+  .field{
+    margin-left:auto;display:flex;align-items:center;gap:8px;width:200px;height:32px;
+    padding:0 10px;border-radius:8px;background:var(--raised);border:1px solid var(--hover-border);
+  }
+  .field span{color:var(--faint);font-size:12px}
+  .field.focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(62,139,255,.16)}
+  .chips{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+  .chip{
+    background:var(--raised);border:1px solid var(--border);border-radius:8px;
+    padding:5px 9px;color:var(--secondary);font-size:11px;display:flex;gap:14px;align-items:center;
+  }
+  .chip:hover{border-color:var(--hover-border);background:var(--hover)}
+  .chip.tag{color:var(--muted);background:transparent;border-style:dashed}
+  table{width:100%;border-collapse:separate;border-spacing:0 2px}
+  thead th{
+    text-align:left;font-size:10.5px;letter-spacing:.6px;text-transform:uppercase;
+    color:var(--accent2);padding:7px 8px;background:#0E1B2C;font-weight:600;
+  }
+  thead th:first-child{border-radius:8px 0 0 8px}
+  thead th:last-child{border-radius:0 8px 8px 0}
+  tbody tr{background:transparent}
+  tbody td{padding:8px;font-size:12.5px;color:var(--strong);border:1px solid transparent}
+  tbody td:first-child{border-radius:8px 0 0 8px}
+  tbody td:last-child{border-radius:0 8px 8px 0}
+  tbody tr.hover td{background:var(--hover);border-color:var(--hover-border)}
+  tbody tr.selected td{background:var(--selected);border-color:#26507F}
+  tbody tr.selected td:first-child{box-shadow:inset 3px 0 0 var(--accent)}
+  .sub{color:var(--muted);font-size:11px}
+  .album-art{width:30px;height:30px;border-radius:6px;background:linear-gradient(140deg,#1E5FA8,#2B2B6B);
+    display:grid;place-items:center;color:var(--accent2);font-size:13px}
+  .heart{color:var(--hot);font-size:12px}
+  .btn{
+    display:inline-flex;align-items:center;gap:7px;border:0;border-radius:10px;cursor:pointer;
+    background:var(--control);color:var(--text);padding:9px 14px;font-size:12.5px;font-family:inherit;
+  }
+  .btn:hover{background:#26374F}
+  .btn.primary{background:var(--accent);color:var(--on-accent);font-weight:700}
+  .btn.primary:hover{background:#4E97FF}
+  .btn.ghost{background:transparent;color:var(--secondary)}
+  .btn.ghost:hover{background:var(--hover);outline:1px solid var(--hover-border)}
+  .row-buttons{display:flex;gap:8px;align-items:center;margin-top:4px}
+  /* ---- now playing ---- */
+  .np{padding:16px;display:flex;flex-direction:column;gap:12px;
+    background:linear-gradient(180deg,var(--raised),var(--panel) 38%,var(--sunken))}
+  .cover{
+    aspect-ratio:1;border-radius:14px;background:linear-gradient(145deg,#1E5FA8,#2B2B6B 60%,#3A1F53);
+    display:grid;place-items:center;color:rgba(255,255,255,.72);font-size:34px;
+    border:1px solid rgba(79,227,255,.25);box-shadow:0 18px 40px -22px rgba(62,139,255,.75);
+  }
+  .np h2{font-size:16px;margin:0}
+  .np .sub{margin-top:3px}
+  .track{height:4px;border-radius:2px;background:var(--control);position:relative}
+  .track i{position:absolute;inset:0 62% 0 0;border-radius:2px;background:var(--accent)}
+  .track u{position:absolute;left:38%;top:-5px;width:14px;height:14px;border-radius:50%;
+    background:var(--text);border:2px solid var(--accent)}
+  .times{display:flex;justify-content:space-between;color:var(--muted);font-size:10.5px;margin-top:6px}
+  .transport{display:flex;justify-content:center;align-items:center;gap:10px}
+  .transport button{
+    width:34px;height:34px;border-radius:50%;border:0;background:var(--control);color:var(--text);
+    display:grid;place-items:center;cursor:pointer;font-size:13px;
+  }
+  .transport button:hover{background:#26374F}
+  .transport button.play{width:46px;height:46px;background:var(--accent);color:var(--on-accent);font-size:17px}
+  /* ---- palettes ---- */
+  .palettes{max-width:1180px;margin:18px auto 0;display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  .pal{padding:12px 14px;border-radius:14px}
+  .pal h3{margin:0 0 2px;font-size:12.5px}
+  .pal p{margin:0 0 10px;font-size:10.5px;opacity:.75}
+  .sw{display:flex;gap:6px}
+  .sw i{width:100%;height:22px;border-radius:6px;display:block}
+  .pal .hoverline{margin-top:10px;display:flex;align-items:center;gap:6px}
+  .pal .hoverline .plate{flex:1;height:20px;border-radius:6px}
+  .pal .hoverline small{font-size:9.5px;opacity:.7}
+  footer{max-width:1180px;margin:18px auto 40px;color:var(--faint);font-size:11px;line-height:1.6}
+</style>
+</head>
+<body>
+
+<div class="note">
+  <b>Bản xem trước màu và trạng thái</b> — không phải ứng dụng Mimi. Nó vẽ lại đúng
+  token màu mới để bạn duyệt trước khi chạy WPF. Hàng thứ hai đang ở trạng thái
+  <b>hover</b>, hàng thứ ba đang <b>được chọn</b>: không còn khối trắng, chữ giữ nguyên
+  độ tương phản, và thanh accent 3 px đánh dấu bài đang chọn.
+</div>
+
+<div class="app">
+  <aside class="card rail">
+    <div class="brand">
+      <div class="logo">M</div>
+      <div><b style="font-size:15px">MIMI</b><small>Music universe</small></div>
+    </div>
+
+    <div class="section">KHÔNG GIAN CỦA BẠN</div>
+    <nav class="nav">
+      <a href="#"><svg class="ico" viewBox="0 0 24 24" fill="currentColor"><path d="M3 11 12 3l9 8h-2v10h-5v-6h-4v6H5V11z"/></svg>Trang chủ</a>
+      <a class="on" href="#"><svg class="ico" viewBox="0 0 24 24" fill="currentColor"><path d="M9 18.5A3 2.5 0 1 1 6 16V5l14-2v12.5A3 2.5 0 1 1 17 13V6.2L9 7.8z"/></svg>Thư viện</a>
+      <a href="#"><svg class="ico" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21C7 16.5 3 13.2 3 9.3 3 6.4 5.1 4.5 7.6 4.5 9.4 4.5 11 5.5 12 7c1-1.5 2.6-2.5 4.4-2.5 2.5 0 4.6 1.9 4.6 4.8 0 3.9-4 7.2-9 11.7z"/></svg>Yêu thích</a>
+      <a href="#"><svg class="ico" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3a9 9 0 1 1-8.8 6H1.7L5.2 4.7 8.7 9H5.3A7 7 0 1 0 12 5z"/></svg>Gần đây</a>
+    </nav>
+    <div class="rule"></div>
+    <nav class="nav">
+      <a href="#"><svg class="ico" viewBox="0 0 24 24" fill="currentColor"><path d="M4 10h16v10H4zM9 13a1.8 1.8 0 1 0 0 3.6A1.8 1.8 0 0 0 9 13z"/></svg>Radio</a>
+      <a href="#"><svg class="ico" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 1 1 0 20 10 10 0 0 1 0-20zm-2 5.6v8.8L16.6 12z"/></svg>Nhạc online</a>
+      <a href="#"><svg class="ico" viewBox="0 0 24 24" fill="currentColor"><path d="M3 6a2.5 2.5 0 0 1 2.5-2.5h13A2.5 2.5 0 0 1 21 6v12a2.5 2.5 0 0 1-2.5 2.5h-13A2.5 2.5 0 0 1 3 18zM10 8.5v7l6-3.5z"/></svg>YouTube</a>
+    </nav>
+    <div class="rule"></div>
+    <nav class="nav">
+      <a href="#"><svg class="ico" viewBox="0 0 24 24" fill="currentColor"><path d="M10 4h4v6h6v4h-6v6h-4v-6H4v-4h6z"/></svg>Thêm nhạc</a>
+      <a href="#"><svg class="ico" viewBox="0 0 24 24" fill="currentColor"><path d="M3 6a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Quét thư mục</a>
+    </nav>
+
+    <div class="rail-foot">
+      <nav class="nav"><a href="#"><svg class="ico" viewBox="0 0 24 24" fill="currentColor"><path d="M4 6h6V4h2v2h8v2h-8v2H10V8H4zM4 16h10v-2h2v2h4v2h-4v2h-2v-2H4z"/></svg>Cài đặt</a></nav>
+      <div class="beta">
+        <b>MIMI BETA</b>
+        <p>Bản chạy thử cho cộng đồng. Tính năng có thể đổi.</p>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div>
+        <h1>Thư viện của bạn</h1>
+        <p>3 bài trong thư viện</p>
+      </div>
+      <div class="field focus">
+        <svg class="ico" viewBox="0 0 24 24" fill="currentColor" style="color:var(--accent)"><path d="M10 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm0 2.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11zM15.2 13.8 21 19.6 19.6 21l-5.8-5.8z"/></svg>
+        <span>Tìm bài hát…</span>
+      </div>
+    </div>
+
+    <div class="chips">
+      <span class="sub" style="font-weight:600">Bộ lọc</span>
+      <span class="chip">Tất cả nghệ sĩ <b style="opacity:.6">⌄</b></span>
+      <span class="chip">Tất cả album <b style="opacity:.6">⌄</b></span>
+      <span class="chip">Tất cả thể loại <b style="opacity:.6">⌄</b></span>
+      <span class="chip">Tất cả định dạng <b style="opacity:.6">⌄</b></span>
+      <span class="chip tag">Đang phát</span>
+    </div>
+
+    <div class="card" style="padding:8px;background:var(--panel)">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:30px">♥</th><th style="width:44px"></th>
+            <th>TIÊU ĐỀ</th><th>NGHỆ SĨ</th><th>ALBUM</th><th>THỂ LOẠI</th>
+            <th style="width:54px;text-align:right">NĂM</th>
+            <th style="width:60px;text-align:right">THỜI GIAN</th>
+            <th style="width:72px;text-align:right">ĐỊNH DẠNG</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="heart">♥</td>
+            <td><div class="album-art">♪</div></td>
+            <td><b>senbonzakura</b></td>
+            <td class="sub">Unknown artist</td><td class="sub">Unknown album</td>
+            <td class="sub">Unknown genre</td>
+            <td class="sub" style="text-align:right">—</td>
+            <td class="sub" style="text-align:right">1:39</td>
+            <td class="sub" style="text-align:right">MP3</td>
+          </tr>
+          <tr class="hover">
+            <td class="heart" style="color:var(--muted)">♡</td>
+            <td><div class="album-art">♪</div></td>
+            <td><b>videoplayback</b> <span class="sub">— đang hover</span></td>
+            <td class="sub">Unknown artist</td><td class="sub">Unknown album</td>
+            <td class="sub">Unknown genre</td>
+            <td class="sub" style="text-align:right">—</td>
+            <td class="sub" style="text-align:right">1:55</td>
+            <td class="sub" style="text-align:right">MP3</td>
+          </tr>
+          <tr class="selected">
+            <td class="heart">♥</td>
+            <td><div class="album-art">♪</div></td>
+            <td><b>World is Mine</b> <span class="sub">— đang chọn</span></td>
+            <td class="sub">ryo (supercell)</td><td class="sub">Supercell</td>
+            <td class="sub">J-Pop</td>
+            <td class="sub" style="text-align:right">2009</td>
+            <td class="sub" style="text-align:right">4:12</td>
+            <td class="sub" style="text-align:right">FLAC</td>
+          </tr>
+          <tr>
+            <td class="heart" style="color:var(--muted)">♡</td>
+            <td><div class="album-art">♪</div></td>
+            <td><b>Tell Your World</b></td>
+            <td class="sub">livetune</td><td class="sub">Tell Your World</td>
+            <td class="sub">Electronic</td>
+            <td class="sub" style="text-align:right">2012</td>
+            <td class="sub" style="text-align:right">4:16</td>
+            <td class="sub" style="text-align:right">MP3</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="row-buttons">
+      <button class="btn primary">▶ Phát tất cả</button>
+      <button class="btn">Thêm vào hàng đợi</button>
+      <button class="btn ghost">Bỏ chọn</button>
+    </div>
+  </main>
+
+  <aside class="card np">
+    <div class="cover">♪</div>
+    <div>
+      <h2>World is Mine</h2>
+      <div class="sub">ryo (supercell) · Supercell</div>
+    </div>
+    <div>
+      <div class="track"><i></i><u></u></div>
+      <div class="times"><span>1:42</span><span>4:12</span></div>
+    </div>
+    <div class="transport">
+      <button title="Trước">⏮</button>
+      <button class="play" title="Phát">▶</button>
+      <button title="Sau">⏭</button>
+    </div>
+    <div class="row-buttons" style="justify-content:center">
+      <button class="btn ghost">↺</button>
+      <button class="btn ghost">⇄</button>
+      <button class="btn ghost">🔊</button>
+    </div>
+  </aside>
+</div>
+
+<div class="palettes">
+  <div class="card pal" style="background:#0D1424;border-color:#243653;color:#F4F8FF">
+    <h3>Neon Stage <span class="sub">· mặc định</span></h3>
+    <p>Navy đêm + xanh dương gốc #3E8BFF</p>
+    <div class="sw">
+      <i style="background:#070B14"></i><i style="background:#0D1424"></i>
+      <i style="background:#17325C"></i><i style="background:#3E8BFF"></i>
+      <i style="background:#4FE3FF"></i><i style="background:#FF5CAE"></i>
+    </div>
+    <div class="hoverline"><span class="plate" style="background:#142340;border:1px solid #1F3654"></span><small>hover</small></div>
+  </div>
+  <div class="card pal" style="background:#211222;border-color:#533154;color:#FFF3FA">
+    <h3>Sakura Dream</h3>
+    <p>Hồng hoa anh đào + tím</p>
+    <div class="sw">
+      <i style="background:#160D18"></i><i style="background:#211222"></i>
+      <i style="background:#47233F"></i><i style="background:#FF8FCB"></i>
+      <i style="background:#C77DFF"></i><i style="background:#FF5CAE"></i>
+    </div>
+    <div class="hoverline"><span class="plate" style="background:#3A2136;border:1px solid #6A3C5E"></span><small>hover</small></div>
+  </div>
+  <div class="card pal" style="background:#0A1020;border-color:#263B63;color:#F2F7FF">
+    <h3>Midnight Live</h3>
+    <p>Đêm xanh lạnh + tím than</p>
+    <div class="sw">
+      <i style="background:#050812"></i><i style="background:#0A1020"></i>
+      <i style="background:#123A52"></i><i style="background:#5AD1FF"></i>
+      <i style="background:#8B7CFF"></i><i style="background:#FF6BCE"></i>
+    </div>
+    <div class="hoverline"><span class="plate" style="background:#142B41;border:1px solid #2A4E6B"></span><small>hover</small></div>
+  </div>
+  <div class="card pal" style="background:#16161A;border-color:#3A3A42;color:#F5F5F7">
+    <h3>Mono Focus</h3>
+    <p>Xám trung tính, tập trung</p>
+    <div class="sw">
+      <i style="background:#0D0D0F"></i><i style="background:#16161A"></i>
+      <i style="background:#34343B"></i><i style="background:#F2F2F2"></i>
+      <i style="background:#B8B8C0"></i><i style="background:#FFFFFF"></i>
+    </div>
+    <div class="hoverline"><span class="plate" style="background:#333338;border:1px solid #4B4B54"></span><small>hover</small></div>
+  </div>
+</div>
+
+<footer>
+  Mỗi theme giờ có màu hover/viền/menu riêng, trộn từ chính panel + accent của nó,
+  nên chuyển theme là đổi cả hàng danh sách, ô nhập, checkbox và menu chuột phải —
+  không chỉ vài mảng màu. Thanh accent bên trái hàng đang chọn lấy từ Accent của theme.
+</footer>
+
+</body>
+</html>

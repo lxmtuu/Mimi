@@ -241,6 +241,78 @@ public sealed class ThemeServiceTests
         });
     }
 
+    [Theory]
+    [InlineData(BuiltInThemes.NeonStageId)]
+    [InlineData(BuiltInThemes.SakuraDreamId)]
+    [InlineData(BuiltInThemes.MidnightLiveId)]
+    [InlineData(BuiltInThemes.MonoFocusId)]
+    public void InteractionSurfacesAreMixedFromTheThemeNotTheSystemHighlight(
+        string themeId)
+    {
+        RunOnSta(() =>
+        {
+            var resources = new ResourceDictionary();
+            var theme = BuiltInThemes.GetOrDefault(themeId);
+
+            ThemeService.Apply(theme, resources);
+
+            var panel = theme.GetColor(ThemeTokens.PanelBackground);
+            var accent = theme.GetColor(ThemeTokens.Accent);
+            var selected = theme.GetColor(ThemeTokens.SelectedBackground);
+
+            Assert.Equal(
+                Mix(panel, accent, 0.14),
+                Assert.IsType<Color>(resources["HoverSurfaceColor"]));
+            Assert.Equal(
+                Mix(panel, accent, 0.26),
+                Assert.IsType<Color>(resources["HoverSurfaceStrongColor"]));
+            Assert.Equal(
+                Mix(panel, accent, 0.38),
+                Assert.IsType<Color>(resources["HoverBorderColor"]));
+            Assert.Equal(
+                Mix(selected, accent, 0.42),
+                Assert.IsType<Color>(resources["SelectedBorderColor"]));
+            Assert.Equal(
+                Mix(panel, accent, 0.18),
+                Assert.IsType<Color>(resources["FieldBorderColor"]));
+
+            // A hover plate must stay close to the theme's panel colour:
+            // the old defect was a near-white plate on a dark theme.
+            var hover = Assert.IsType<Color>(resources["HoverSurfaceColor"]);
+            Assert.True(
+                RelativeLuminance(hover) < 0.2,
+                $"{themeId}: hover plate is too bright ({hover}).");
+        });
+    }
+
+    private static double RelativeLuminance(Color color)
+    {
+        static double Channel(byte value)
+        {
+            var c = value / 255d;
+            return c <= 0.03928
+                ? c / 12.92
+                : Math.Pow((c + 0.055) / 1.055, 2.4);
+        }
+
+        return (0.2126 * Channel(color.R)) +
+               (0.7152 * Channel(color.G)) +
+               (0.0722 * Channel(color.B));
+    }
+
+    private static Color Mix(ThemeColor from, ThemeColor to, double amount)
+    {
+        static byte Blend(byte a, byte b, double t) =>
+            (byte)Math.Round(a + ((b - a) * t));
+
+        var t = Math.Clamp(amount, 0d, 1d);
+        return Color.FromArgb(
+            255,
+            Blend(from.R, to.R, t),
+            Blend(from.G, to.G, t),
+            Blend(from.B, to.B, t));
+    }
+
     private static ResourceDictionary CreateBrushDictionary()
     {
         const string xaml = """
