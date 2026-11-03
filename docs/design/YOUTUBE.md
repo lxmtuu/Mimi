@@ -134,6 +134,24 @@ quy trình của Google.
 - Nội dung YouTube **không** vào `Track`, queue, history, favorites, lyrics hay
   phiên lưu; không có cache media của Mimi.
 
+## Danh sách đã lưu và menu chuột phải
+
+- Danh sách kết quả có **menu chuột phải** giống danh sách local: Phát, Dừng,
+  Phát tất cả, **Thêm/Bỏ khỏi đã lưu**, Sao chép liên kết, Mở trên YouTube.
+- Nút cạnh "Phát tất cả" đổi giữa **Kết quả (n)** và **Đã lưu (n)**. Mục đã lưu
+  hiện dấu ★ trên hàng.
+- "Đã lưu" là danh sách **riêng của YouTube** trong `settings.json`
+  (`YouTubeFavorites`, schema **v10**): chỉ gồm `videoId`, tiêu đề, kênh và URL
+  thumbnail. Không có media, không có URL stream, và **không** gì ở đây đi vào
+  thư viện, queue, history hay phiên lưu của Mimi. Tối đa 500 mục, id sai bị
+  loại khi đọc file.
+- Vì sao không dùng chung "Yêu thích" local: favourites của Mimi khoá theo
+  **đường dẫn file**; một video YouTube không phải file và không được phát qua
+  NAudio, nên trộn hai loại vào một danh sách sẽ làm hỏng cả hai.
+- Radio và Online Music cũng có menu chuột phải, nhưng chỉ những hành động có
+  nghĩa với chúng: Phát và Mở trang nguồn. Chúng chưa có danh sách đã lưu vì mỗi
+  provider cần khoá nhận dạng riêng (station uuid, track id).
+
 ## Vì sao không ẩn điều khiển của YouTube
 
 Yêu cầu "đừng hiện thanh tiêu đề / nút play của YouTube, thay bằng nút của Mimi"
@@ -191,7 +209,8 @@ Các hướng hợp lệ khác nếu vẫn thấy vướng:
 - **Stage**: hiện video full màn hình khi mở Stage. Sẽ làm sau khi pane ở cửa
   sổ chính được nghiệm thu, để tránh hai HWND WebView2 cùng lúc.
 - Playlist/kênh, tìm theo thời lượng, lọc kết quả.
-- Playlist **lưu lại** cho YouTube (hiện chỉ có hàng đợi là danh sách kết quả).
+- Danh sách đã lưu cho Radio và Online Music (YouTube đã có).
+- Sắp xếp lại / đặt tên cho danh sách YouTube đã lưu.
 - SMTC/Quick Settings cho nội dung YouTube.
 - Âm lượng: slider của Mimi vẫn chỉ điều khiển NAudio, chưa nối vào player
   (dùng nút loa trong player, hoặc âm lượng hệ thống).

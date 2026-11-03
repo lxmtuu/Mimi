@@ -134,6 +134,14 @@ public sealed class UserDataServiceTests : IDisposable
             InternetRadioEnabled = false,
             OnlineCatalogEnabled = false,
             YouTubeSearchEnabled = false,
+            YouTubeFavorites =
+            [
+                new Mimi.YouTube.SavedYouTubeVideo(
+                    "dQw4w9WgXcQ",
+                    "Saved clip",
+                    "Some channel",
+                    "https://i.ytimg.com/vi/dQw4w9WgXcQ/mqdefault.jpg")
+            ],
             WatchedFolders = [@"C:\Music", @"D:\Songs"],
             LyricsOffsetsByPath = new Dictionary<string, int>
             {
@@ -197,6 +205,9 @@ public sealed class UserDataServiceTests : IDisposable
         Assert.False(loaded.InternetRadioEnabled);
         Assert.False(loaded.OnlineCatalogEnabled);
         Assert.False(loaded.YouTubeSearchEnabled);
+        var savedVideo = Assert.Single(loaded.YouTubeFavorites);
+        Assert.Equal("dQw4w9WgXcQ", savedVideo.VideoId);
+        Assert.Equal("Saved clip", savedVideo.Title);
         Assert.Equal([@"C:\Music", @"D:\Songs"], loaded.WatchedFolders);
         Assert.Equal(
             250,

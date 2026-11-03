@@ -1,6 +1,7 @@
 using System.Text.Json.Serialization;
 using Mimi.Localization;
 using Mimi.Theming;
+using Mimi.YouTube;
 
 namespace Mimi.Models;
 
@@ -21,7 +22,7 @@ namespace Mimi.Models;
 /// </summary>
 public sealed class AppSettings
 {
-    public const int CurrentVersion = 9;
+    public const int CurrentVersion = 10;
 
     public const int MinimumLyricsOffsetMilliseconds = -30000;
 
@@ -69,6 +70,15 @@ public sealed class AppSettings
     /// </summary>
     public bool YouTubeSearchEnabled { get; set; } = true;
 
+    /// <summary>
+    /// YouTube items the user kept. Only ids and display metadata are stored;
+    /// nothing here is media, and none of it joins the local library.
+    /// </summary>
+    public List<SavedYouTubeVideo> YouTubeFavorites { get; set; } = [];
+
+    /// <summary>Upper bound so a mis-edited file cannot grow without limit.</summary>
+    public const int MaximumYouTubeFavorites = 500;
+
     public List<string> WatchedFolders { get; set; } = [];
 
     /// <summary>
@@ -89,6 +99,12 @@ public sealed class AppSettings
     /// Repairs values that are absent, out of range, or unsafe to consume.
     /// settings.json is user-editable, so loading must never trust it blindly.
     /// </summary>
+    private static string? CleanNullableUrl(string? value)
+    {
+        var cleaned = Clean(value, string.Empty, 512);
+        return cleaned.Length == 0 ? null : cleaned;
+    }
+
     public void Normalize()
     {
         Version = CurrentVersion;
@@ -136,6 +152,29 @@ public sealed class AppSettings
         }
 
         LyricsOffsetsByPath = normalizedLyricsOffsets;
+
+        // Saved YouTube items: keep only what can be played again, drop
+        // duplicates, and cap the list so an edited file cannot grow forever.
+        var normalizedFavorites = new List<SavedYouTubeVideo>();
+        var seenVideoIds = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var favorite in YouTubeFavorites ?? [])
+        {
+            if (favorite is null) continue;
+
+            var id = Clean(favorite.VideoId, string.Empty, 32);
+            if (id.Length != 11) continue;
+            if (!seenVideoIds.Add(id)) continue;
+
+            normalizedFavorites.Add(new SavedYouTubeVideo(
+                id,
+                Clean(favorite.Title, "YouTube", 200),
+                Clean(favorite.ChannelTitle, "YouTube", 120),
+                CleanNullableUrl(favorite.ThumbnailUrl)));
+
+            if (normalizedFavorites.Count >= MaximumYouTubeFavorites) break;
+        }
+
+        YouTubeFavorites = normalizedFavorites;
 
         LibraryView ??= new LibraryViewSettings();
         LibraryView.Normalize();

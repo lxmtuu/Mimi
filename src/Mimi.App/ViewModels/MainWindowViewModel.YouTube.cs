@@ -87,6 +87,36 @@ public sealed partial class MainWindowViewModel
 
     public ObservableCollection<YouTubeVideoItemViewModel> YouTubeVideos { get; } = [];
 
+    /// <summary>
+    /// Videos the user kept. Persisted as ids and display metadata only; no
+    /// media, no stream, and nothing joins the local library or its session.
+    /// </summary>
+    public ObservableCollection<YouTubeVideoItemViewModel> SavedYouTubeVideos { get; } = [];
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(YouTubeDisplayedVideos))]
+    [NotifyPropertyChangedFor(nameof(YouTubeListToggleLabel))]
+    private bool isYouTubeSavedView;
+
+    /// <summary>
+    /// What the list currently shows. Next/previous and play-all follow this,
+    /// so the transport always matches the list on screen.
+    /// </summary>
+    public System.Collections.IList YouTubeDisplayedVideos =>
+        IsYouTubeSavedView ? SavedYouTubeVideos : YouTubeVideos;
+
+    public string YouTubeListToggleLabel => IsYouTubeSavedView
+        ? Loc.Format("YouTube_SearchTab", YouTubeVideos.Count)
+        : Loc.Format("YouTube_SavedTab", SavedYouTubeVideos.Count);
+
+    public string SelectedYouTubeFavoriteMenuLabel =>
+        SelectedYouTubeVideo is { } video && IsYouTubeFavorite(video.VideoId)
+            ? Loc["YouTube_FavoriteRemove"]
+            : Loc["YouTube_FavoriteAdd"];
+
+    /// <summary>Raised so the window can put a watch link on the clipboard.</summary>
+    public event Action<string>? YouTubeLinkCopyRequested;
+
     public bool IsYouTubeServiceInstalled => youtubeSearchService is not null;
 
     /// <summary>
@@ -246,20 +276,21 @@ public sealed partial class MainWindowViewModel
 
     private bool PlayAdjacentYouTubeVideo(int offset, bool allowWrap)
     {
-        if (!IsYouTubePlaying || YouTubeVideos.Count == 0) return false;
+        var list = IsYouTubeSavedView ? SavedYouTubeVideos : YouTubeVideos;
+        if (!IsYouTubePlaying || list.Count == 0) return false;
 
         var current = CurrentYouTubeVideo;
         if (current is null) return false;
 
-        var index = YouTubeVideos.IndexOf(current);
+        var index = list.IndexOf(current);
         if (index < 0) return false;
 
         int target;
-        if (offset > 0 && IsShuffleEnabled && YouTubeVideos.Count > 1)
+        if (offset > 0 && IsShuffleEnabled && list.Count > 1)
         {
             do
             {
-                target = Random.Shared.Next(YouTubeVideos.Count);
+                target = Random.Shared.Next(list.Count);
             }
             while (target == index);
         }
@@ -267,15 +298,15 @@ public sealed partial class MainWindowViewModel
         {
             target = index + offset;
 
-            if (target < 0 || target >= YouTubeVideos.Count)
+            if (target < 0 || target >= list.Count)
             {
                 if (!allowWrap) return false;
 
-                target = (target + YouTubeVideos.Count) % YouTubeVideos.Count;
+                target = (target + list.Count) % list.Count;
             }
         }
 
-        StartYouTubeVideo(YouTubeVideos[target]);
+        StartYouTubeVideo(list[target]);
         return true;
     }
 
@@ -295,13 +326,91 @@ public sealed partial class MainWindowViewModel
         StopYouTubeVideo();
     }
 
+    [RelayCommand]
+    private void ToggleYouTubeSavedView()
+    {
+        if (disposed) return;
+
+        IsYouTubeSavedView = !IsYouTubeSavedView;
+
+        if (IsYouTubeSavedView && SavedYouTubeVideos.Count == 0)
+            YouTubeStatusLabel = Loc["YouTube_NoSaved"];
+        else
+            RefreshYouTubeStatusLabel();
+    }
+
+    /// <summary>
+    /// Saves or unsaves one video. This is the YouTube counterpart of the local
+    /// favourites: the same intent, kept in its own list because a YouTube id is
+    /// not a file path and must never enter the local library.
+    /// </summary>
+    [RelayCommand]
+    private void ToggleYouTubeFavorite(YouTubeVideoItemViewModel? video)
+    {
+        if (disposed || video is null) return;
+
+        var existing = SavedYouTubeVideos.FirstOrDefault(saved =>
+            string.Equals(saved.VideoId, video.VideoId, StringComparison.Ordinal));
+
+        if (existing is not null)
+        {
+            SavedYouTubeVideos.Remove(existing);
+            YouTubeStatusLabel = Loc["YouTube_FavoriteRemoved"];
+        }
+        else
+        {
+            SavedYouTubeVideos.Insert(
+                0,
+                new YouTubeVideoItemViewModel(video.Video));
+
+            // Someone may have opened the saved tab before saving anything.
+            IsYouTubeSavedView = false;
+            YouTubeStatusLabel = Loc["YouTube_FavoriteAdded"];
+        }
+
+        RefreshYouTubeFavoriteStates();
+        OnPropertyChanged(nameof(YouTubeListToggleLabel));
+        OnPropertyChanged(nameof(SelectedYouTubeFavoriteMenuLabel));
+        SaveSettings();
+    }
+
+    [RelayCommand]
+    private void CopyYouTubeLink(YouTubeVideoItemViewModel? video)
+    {
+        var target = video ?? SelectedYouTubeVideo ?? CurrentYouTubeVideo;
+        if (target is null) return;
+
+        YouTubeLinkCopyRequested?.Invoke(target.Video.WatchUrl.AbsoluteUri);
+        YouTubeStatusLabel = Loc["YouTube_LinkCopied"];
+    }
+
+    public bool IsYouTubeFavorite(string videoId) =>
+        SavedYouTubeVideos.Any(saved =>
+            string.Equals(saved.VideoId, videoId, StringComparison.Ordinal));
+
+    /// <summary>Applies the saved state to every row that shows that id.</summary>
+    private void RefreshYouTubeFavoriteStates()
+    {
+        foreach (var video in YouTubeVideos)
+            video.SetFavoriteState(IsYouTubeFavorite(video.VideoId));
+
+        foreach (var video in SavedYouTubeVideos)
+            video.SetFavoriteState(true);
+    }
+
     /// <summary>Starts the list from the selection: the "play all" of this panel.</summary>
     [RelayCommand]
     private void PlayAllYouTubeVideos()
     {
-        if (disposed || YouTubeVideos.Count == 0) return;
+        if (disposed) return;
 
-        var first = SelectedYouTubeVideo ?? YouTubeVideos[0];
+        var list = IsYouTubeSavedView ? SavedYouTubeVideos : YouTubeVideos;
+        if (list.Count == 0) return;
+
+        var first = SelectedYouTubeVideo is { } selected && list.Contains(selected)
+            ? selected
+            : list[0];
+
         StartYouTubeVideo(first);
     }
 
@@ -352,6 +461,9 @@ public sealed partial class MainWindowViewModel
 
     partial void OnCurrentYouTubeVideoChanged(YouTubeVideoItemViewModel? value) =>
         RefreshYouTubePlaybackStates();
+
+    partial void OnSelectedYouTubeVideoChanged(YouTubeVideoItemViewModel? value) =>
+        OnPropertyChanged(nameof(SelectedYouTubeFavoriteMenuLabel));
 
     [RelayCommand]
     private void ShowYouTube()
@@ -626,6 +738,9 @@ public sealed partial class MainWindowViewModel
     private void RefreshYouTubePlaybackStates()
     {
         foreach (var video in YouTubeVideos)
+            video.SetPlaybackState(ReferenceEquals(video, CurrentYouTubeVideo));
+
+        foreach (var video in SavedYouTubeVideos)
             video.SetPlaybackState(ReferenceEquals(video, CurrentYouTubeVideo));
     }
 

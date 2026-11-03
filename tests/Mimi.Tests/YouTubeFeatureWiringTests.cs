@@ -252,6 +252,40 @@ public sealed class YouTubeFeatureWiringTests
     }
 
     [Fact]
+    public void TheResultListHasTheSameRightClickActionsAndASavedList()
+    {
+        var root = FindRepositoryRoot();
+
+        var xaml = Read(root, "src", "Mimi.App", "MainWindow.xaml");
+        Assert.Contains("ToggleYouTubeFavoriteCommand", xaml, StringComparison.Ordinal);
+        Assert.Contains("CopyYouTubeLinkCommand", xaml, StringComparison.Ordinal);
+        Assert.Contains("ToggleYouTubeSavedViewCommand", xaml, StringComparison.Ordinal);
+        Assert.Contains("ItemsSource=\"{Binding YouTubeDisplayedVideos}\"", xaml, StringComparison.Ordinal);
+        // Radio and the online catalog answer a right click too.
+        Assert.Contains("PlayRadioStationCommand", xaml, StringComparison.Ordinal);
+        Assert.Contains("OpenOnlineTrackPageCommand", xaml, StringComparison.Ordinal);
+
+        var viewModel = Read(
+            root,
+            "src",
+            "Mimi.App",
+            "ViewModels",
+            "MainWindowViewModel.YouTube.cs");
+        Assert.Contains("public ObservableCollection<YouTubeVideoItemViewModel> SavedYouTubeVideos", viewModel, StringComparison.Ordinal);
+        Assert.Contains("private void ToggleYouTubeFavorite(", viewModel, StringComparison.Ordinal);
+        Assert.Contains("private void CopyYouTubeLink(", viewModel, StringComparison.Ordinal);
+        Assert.Contains("public bool IsYouTubeFavorite(string videoId)", viewModel, StringComparison.Ordinal);
+
+        // Saved items are ids and labels only, in their own settings list.
+        var settingsModel = Read(root, "src", "Mimi.Core", "Models", "AppSettings.cs");
+        Assert.Contains("public List<SavedYouTubeVideo> YouTubeFavorites", settingsModel, StringComparison.Ordinal);
+
+        // Play inside the YouTube panel no longer falls through to the library.
+        var main = Read(root, "src", "Mimi.App", "ViewModels", "MainWindowViewModel.cs");
+        Assert.Contains("if (IsYouTubeOpen && SelectedYouTubeVideo is { } youTubeSelection)", main, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void TheKeyIsConfiguredFromATerminalAndNeverInTheUi()
     {
         var root = FindRepositoryRoot();

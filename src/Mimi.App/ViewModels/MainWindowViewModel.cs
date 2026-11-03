@@ -943,6 +943,15 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
             return;
         }
 
+        // The YouTube panel keeps a selection after a video ends or is stopped.
+        // Play there must resume that video, not fall through to the local
+        // library, which is what used to happen and looked like a view switch.
+        if (IsYouTubeOpen && SelectedYouTubeVideo is { } youTubeSelection)
+        {
+            StartYouTubeVideo(youTubeSelection);
+            return;
+        }
+
         // The online catalog has its own session state: resuming or
         // replays the online selection instead of picking up a local track.
         if (TryToggleOnlinePlayback())

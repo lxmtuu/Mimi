@@ -1214,6 +1214,16 @@
                              ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                              VirtualizingPanel.IsVirtualizing="True"
                              AutomationProperties.Name="{Binding Loc[Radio_StationListAutomation]}">
+                        <ListBox.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="{Binding PlacementTarget.DataContext.Loc[Common_Play], RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"
+                                          Command="{Binding PlacementTarget.DataContext.PlayRadioStationCommand, RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"
+                                          CommandParameter="{Binding PlacementTarget.DataContext.SelectedRadioStation, RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"/>
+                                <MenuItem Header="{Binding PlacementTarget.DataContext.Loc[Radio_Homepage], RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"
+                                          Command="{Binding PlacementTarget.DataContext.OpenRadioHomepageCommand, RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"
+                                          CommandParameter="{Binding PlacementTarget.DataContext.SelectedRadioStation, RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"/>
+                            </ContextMenu>
+                        </ListBox.ContextMenu>
                         <ListBox.ItemContainerStyle>
                             <Style TargetType="{x:Type ListBoxItem}">
                                 <Setter Property="Padding" Value="8"/>
@@ -1373,6 +1383,16 @@
                              ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                              VirtualizingPanel.IsVirtualizing="True"
                              AutomationProperties.Name="{Binding Loc[Online_ResultListAutomation]}">
+                        <ListBox.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="{Binding PlacementTarget.DataContext.Loc[Common_Play], RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"
+                                          Command="{Binding PlacementTarget.DataContext.PlayOnlineTrackCommand, RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"
+                                          CommandParameter="{Binding PlacementTarget.DataContext.SelectedOnlineTrack, RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"/>
+                                <MenuItem Header="{Binding PlacementTarget.DataContext.Loc[Online_OpenSource], RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"
+                                          Command="{Binding PlacementTarget.DataContext.OpenOnlineTrackPageCommand, RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"
+                                          CommandParameter="{Binding PlacementTarget.DataContext.SelectedOnlineTrack, RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"/>
+                            </ContextMenu>
+                        </ListBox.ContextMenu>
                         <ListBox.ItemContainerStyle>
                             <Style TargetType="{x:Type ListBoxItem}">
                                 <Setter Property="Padding" Value="8"/>
@@ -1508,6 +1528,10 @@
                                 Command="{Binding PlayAllYouTubeVideosCommand}"
                                 Padding="12,7" FontSize="11" Margin="0,0,8,0" VerticalAlignment="Top"
                                 AutomationProperties.Name="{Binding Loc[YouTube_PlayAll]}"/>
+                        <Button DockPanel.Dock="Right" Content="{Binding YouTubeListToggleLabel}"
+                                Command="{Binding ToggleYouTubeSavedViewCommand}"
+                                Padding="12,7" FontSize="11" Margin="0,0,8,0" VerticalAlignment="Top"
+                                AutomationProperties.Name="{Binding YouTubeListToggleLabel}"/>
                     </DockPanel>
 
                     <Grid Grid.Row="1" Margin="0,18,0,0">
@@ -1548,7 +1572,7 @@
                     </StackPanel>
 
                     <ListBox Grid.Row="3"
-                             ItemsSource="{Binding YouTubeVideos}"
+                             ItemsSource="{Binding YouTubeDisplayedVideos}"
                              SelectedItem="{Binding SelectedYouTubeVideo, Mode=TwoWay}"
                              Background="Transparent" BorderThickness="0"
                              Foreground="{StaticResource TextStrongBrush}"
@@ -1556,6 +1580,28 @@
                              VirtualizingPanel.IsVirtualizing="True"
                              behaviors:ItemClickCommandBehavior.Command="{Binding PlayYouTubeVideoCommand}"
                              AutomationProperties.Name="{Binding Loc[YouTube_ResultListAutomation]}">
+                        <ListBox.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="{Binding PlacementTarget.DataContext.Loc[YouTube_Play], RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"
+                                          Command="{Binding PlacementTarget.DataContext.PlayYouTubeVideoCommand, RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"
+                                          CommandParameter="{Binding PlacementTarget.DataContext.SelectedYouTubeVideo, RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"/>
+                                <MenuItem Header="{Binding PlacementTarget.DataContext.Loc[YouTube_Stop], RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"
+                                          Command="{Binding PlacementTarget.DataContext.StopYouTubeVideoCommand, RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"
+                                          IsEnabled="{Binding PlacementTarget.DataContext.IsYouTubePlaying, RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"/>
+                                <MenuItem Header="{Binding PlacementTarget.DataContext.Loc[YouTube_PlayAll], RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"
+                                          Command="{Binding PlacementTarget.DataContext.PlayAllYouTubeVideosCommand, RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"/>
+                                <Separator/>
+                                <MenuItem Header="{Binding PlacementTarget.DataContext.SelectedYouTubeFavoriteMenuLabel, RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"
+                                          Command="{Binding PlacementTarget.DataContext.ToggleYouTubeFavoriteCommand, RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"
+                                          CommandParameter="{Binding PlacementTarget.DataContext.SelectedYouTubeVideo, RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"/>
+                                <Separator/>
+                                <MenuItem Header="{Binding PlacementTarget.DataContext.Loc[YouTube_CopyLink], RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"
+                                          Command="{Binding PlacementTarget.DataContext.CopyYouTubeLinkCommand, RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"
+                                          CommandParameter="{Binding PlacementTarget.DataContext.SelectedYouTubeVideo, RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"/>
+                                <MenuItem Header="{Binding PlacementTarget.DataContext.Loc[YouTube_OpenSource], RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"
+                                          Command="{Binding PlacementTarget.DataContext.OpenCurrentYouTubeVideoCommand, RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"/>
+                            </ContextMenu>
+                        </ListBox.ContextMenu>
                         <ListBox.ItemContainerStyle>
                             <Style TargetType="{x:Type ListBoxItem}">
                                 <Setter Property="Padding" Value="8"/>
@@ -1603,6 +1649,10 @@
                                                 <TextBlock Text="{Binding DataContext.Loc[YouTube_NowPlaying], RelativeSource={RelativeSource AncestorType={x:Type ListBox}}}"
                                                            Foreground="{StaticResource OnAccentBrush}" FontSize="9" FontWeight="Bold"/>
                                             </Border>
+                                            <TextBlock Text="★" Margin="8,0,0,0" FontSize="12" VerticalAlignment="Center"
+                                                       Foreground="{StaticResource AccentSecondaryBrush}"
+                                                       ToolTip="{Binding DataContext.Loc[YouTube_SavedMarker], RelativeSource={RelativeSource AncestorType={x:Type ListBox}}}"
+                                                       Visibility="{Binding IsFavorite, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                                         </DockPanel>
                                         <TextBlock Text="{Binding ChannelTitle}" Foreground="{StaticResource TextMutedBrush}"
                                                    FontSize="11" Margin="0,3,0,0" TextTrimming="CharacterEllipsis"/>

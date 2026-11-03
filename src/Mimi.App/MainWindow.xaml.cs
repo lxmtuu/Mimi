@@ -162,6 +162,7 @@ public partial class MainWindow : Window
         viewModel.StageToggleRequested += ViewModel_StageToggleRequested;
         viewModel.EmbeddedPlayerCommandRequested += OnEmbeddedPlayerCommandRequested;
         viewModel.EmbeddedPlayerDiagnosticRequested += OnEmbeddedPlayerDiagnosticRequested;
+        viewModel.YouTubeLinkCopyRequested += OnYouTubeLinkCopyRequested;
         viewModel.PropertyChanged += ViewModel_PropertyChanged;
 
         // The API key is read from disk, so a user who adds the key file while
@@ -501,6 +502,22 @@ public partial class MainWindow : Window
             youTubeBrowserReady);
 
         viewModel.ReportEmbeddedPlayerUnavailable();
+    }
+
+    private void OnYouTubeLinkCopyRequested(string link)
+    {
+        try
+        {
+            System.Windows.Clipboard.SetText(link);
+        }
+        catch (Exception ex) when (ex is System.Runtime.InteropServices.COMException)
+        {
+            // Another process can hold the clipboard; the status line already
+            // reported the copy, so only the log records the failure.
+            Serilog.Log.Debug(
+                "Could not put the YouTube link on the clipboard: {ExceptionType}",
+                ex.GetType().FullName);
+        }
     }
 
     /// <summary>

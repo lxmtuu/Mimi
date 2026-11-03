@@ -13,6 +13,13 @@ public sealed partial class YouTubeVideoItemViewModel : ObservableObject
     [ObservableProperty]
     private bool isCurrent;
 
+    /// <summary>
+    /// True when this video id is in the saved list. Kept on the row so the
+    /// same result can show a marker without a second lookup from XAML.
+    /// </summary>
+    [ObservableProperty]
+    private bool isFavorite;
+
     public YouTubeVideoItemViewModel(YouTubeVideo video)
     {
         Video = video;
@@ -35,4 +42,6 @@ public sealed partial class YouTubeVideoItemViewModel : ObservableObject
         Title.Length > 0 ? Title[..1].ToUpperInvariant() : "?";
 
     public void SetPlaybackState(bool current) => IsCurrent = current;
+
+    public void SetFavoriteState(bool favorite) => IsFavorite = favorite;
 }

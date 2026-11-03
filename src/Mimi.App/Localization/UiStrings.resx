@@ -429,4 +429,14 @@
   <data name="YouTube_Diagnose" xml:space="preserve"><value>Diagnose player</value></data>
   <data name="YouTube_DiagnosticFormat" xml:space="preserve"><value>Player report: {0}</value></data>
   <data name="YouTube_PlayAll" xml:space="preserve"><value>Play all</value></data>
+  <data name="YouTube_CopyLink" xml:space="preserve"><value>Copy link</value></data>
+  <data name="YouTube_FavoriteAdd" xml:space="preserve"><value>Add to saved</value></data>
+  <data name="YouTube_FavoriteRemove" xml:space="preserve"><value>Remove from saved</value></data>
+  <data name="YouTube_FavoriteAdded" xml:space="preserve"><value>Saved to your YouTube list.</value></data>
+  <data name="YouTube_FavoriteRemoved" xml:space="preserve"><value>Removed from your YouTube list.</value></data>
+  <data name="YouTube_SavedMarker" xml:space="preserve"><value>Saved</value></data>
+  <data name="YouTube_SavedTab" xml:space="preserve"><value>Saved ({0})</value></data>
+  <data name="YouTube_SearchTab" xml:space="preserve"><value>Results ({0})</value></data>
+  <data name="YouTube_NoSaved" xml:space="preserve"><value>Nothing saved yet. Right-click a result to save it.</value></data>
+  <data name="YouTube_LinkCopied" xml:space="preserve"><value>Link copied.</value></data>
 </root>

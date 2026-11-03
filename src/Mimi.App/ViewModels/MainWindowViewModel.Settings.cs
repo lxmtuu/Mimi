@@ -9,6 +9,7 @@ using Mimi.Localization;
 using Mimi.Models;
 using Mimi.Theming;
 using Serilog;
+using Mimi.YouTube;
 
 namespace Mimi.ViewModels;
 
@@ -110,6 +111,13 @@ public sealed partial class MainWindowViewModel
         InternetRadioEnabled = settings.InternetRadioEnabled;
         OnlineCatalogEnabled = settings.OnlineCatalogEnabled;
         YouTubeSearchEnabled = settings.YouTubeSearchEnabled;
+
+        SavedYouTubeVideos.Clear();
+        foreach (var favorite in settings.YouTubeFavorites)
+            SavedYouTubeVideos.Add(new YouTubeVideoItemViewModel(favorite.ToVideo()));
+
+        RefreshYouTubeFavoriteStates();
+        OnPropertyChanged(nameof(YouTubeListToggleLabel));
         WatchLibraryFolders = settings.WatchLibraryFolders;
         WatchedFolders.Clear();
         foreach (var folder in settings.WatchedFolders)
@@ -475,6 +483,14 @@ public sealed partial class MainWindowViewModel
         settings.InternetRadioEnabled = InternetRadioEnabled;
         settings.OnlineCatalogEnabled = OnlineCatalogEnabled;
         settings.YouTubeSearchEnabled = YouTubeSearchEnabled;
+        settings.YouTubeFavorites =
+        [
+            .. SavedYouTubeVideos.Select(saved => new SavedYouTubeVideo(
+                saved.VideoId,
+                saved.Title,
+                saved.ChannelTitle,
+                saved.ThumbnailUrl?.AbsoluteUri))
+        ];
         settings.WatchLibraryFolders = WatchLibraryFolders;
         settings.WatchedFolders = [.. WatchedFolders];
         settings.WindowPlacement = RestoreWindowPlacement
