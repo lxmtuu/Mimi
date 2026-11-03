@@ -54,6 +54,8 @@ public partial class MainWindow : Window
         <title>Mimi player</title>
         <meta name="referrer" content="strict-origin-when-cross-origin">
         <style>
+          /* Fallback only: the host repaints this from the active theme
+             as soon as the page finishes navigating. */
           html, body { margin: 0; height: 100%; background: #0b0b10; overflow: hidden; }
           #player, iframe { display: block; border: 0; width: 100%; height: 100%; }
           p { margin: 0; padding: 14px; color: #9aa0b4;
@@ -382,9 +384,13 @@ public partial class MainWindow : Window
                 initialized.WebResourceRequested += OnYouTubeResourceRequested;
 
                 // A navigation aborts any script call in progress, so the
-                // in-flight flag must not survive one.
+                // in-flight flag must not survive one. The same event paints
+                // the page with the active theme.
                 initialized.NavigationCompleted += (_, _) =>
+                {
                     youTubePollInFlight = false;
+                    _ = ApplyPlayerBackdropAsync();
+                };
 
                 youTubeBrowserReady = true;
             }
@@ -582,6 +588,41 @@ public partial class MainWindow : Window
     /// Three silent polls in a row means the page never created a player. That
     /// is worth saying out loud instead of leaving a dead progress bar.
     /// </summary>
+    /// <summary>
+    /// Paints the page that hosts the official player with the active theme.
+    /// The video belongs to YouTube, but the surface around it is Mimi: a fixed
+    /// near-black rectangle would be the one place every theme stops short.
+    /// </summary>
+    private async Task ApplyPlayerBackdropAsync()
+    {
+        var core = YouTubeBrowser.CoreWebView2;
+        if (core is null) return;
+
+        if (TryFindResource("AppBackgroundColor") is not System.Windows.Media.Color backdrop)
+            return;
+
+        var hex = "#"
+            + backdrop.R.ToString("X2")
+            + backdrop.G.ToString("X2")
+            + backdrop.B.ToString("X2");
+
+        try
+        {
+            await core.ExecuteScriptAsync(
+                "document.documentElement.style.background='"
+                + hex
+                + "';if(document.body){document.body.style.background='"
+                + hex
+                + "';}");
+        }
+        catch (Exception ex)
+        {
+            Serilog.Log.Debug(
+                "The player backdrop could not be themed: {Error}",
+                ex.GetType().FullName);
+        }
+    }
+
     private void NoteEmbeddedPlayerSilence()
     {
         embeddedPlayerSilences++;

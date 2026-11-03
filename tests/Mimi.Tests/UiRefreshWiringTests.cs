@@ -167,6 +167,36 @@ public sealed class UiRefreshWiringTests
         Assert.True(accent.B > accent.G + 0x20);
     }
 
+    [Fact]
+    public void NoSurfaceKeepsAHardCodedColour()
+    {
+        var root = FindRepositoryRoot();
+        var appRoot = Path.Combine(root, "src", "Mimi.App");
+        var hex = new System.Text.RegularExpressions.Regex(
+            "#[0-9A-Fa-f]{6}",
+            System.Text.RegularExpressions.RegexOptions.CultureInvariant);
+
+        // ThemeBrushes.xaml is the one place a colour literal is allowed: it is
+        // the layer that turns theme tokens into brushes. Any other screen or
+        // style that hard-codes a colour stops following the theme, which is
+        // exactly the "only some places change" complaint this guards.
+        var offenders = new List<string>();
+        foreach (var file in Directory.EnumerateFiles(
+                     appRoot,
+                     "*.xaml",
+                     SearchOption.AllDirectories))
+        {
+            var name = Path.GetFileName(file);
+            if (string.Equals(name, "ThemeBrushes.xaml", StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            if (hex.IsMatch(File.ReadAllText(file)))
+                offenders.Add(Path.GetRelativePath(root, file));
+        }
+
+        Assert.Empty(offenders);
+    }
+
     private static int CountOccurrences(string text, string value)
     {
         var count = 0;

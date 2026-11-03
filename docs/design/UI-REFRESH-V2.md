@@ -65,6 +65,11 @@ tooltip) vẫn là màu sáng của Windows. Nay:
 - `App.xaml` thêm lớp "wash" cho `Button`: hover là một lớp accent mờ **nằm
   dưới chữ**, nên nút accent vẫn giữ màu gốc và nhãn không bị nhoè; nhấn
   xuống thì tối lại một nhịp.
+- Không còn **màu viết cứng** nào ngoài `ThemeBrushes.xaml`. Khung phát video
+  YouTube (trước đây là `#FF0B0B10`) nay dùng `SunkenBackgroundBrush`, và
+  chính trang web bọc player được tô lại bằng `AppBackgroundColor` ngay khi
+  nạp xong — nên đổi theme thì cả khu vực video cũng đổi theo. Test
+  `NoSurfaceKeepsAHardCodedColour` quét mọi tệp `.xaml` để giữ luật này.
 
 ## 4. Điều hướng và bố cục
 
@@ -91,8 +96,9 @@ tooltip) vẫn là màu sáng của Windows. Nay:
 ## 6. Kiểm chứng
 
 - Unit test: `UiRefreshWiringTests` (style/brush wiring + mọi file XAML còn
-  parse được + theme mặc định đúng xanh dương), `ThemeServiceTests`
-  (màu dẫn xuất đúng công thức và độ sáng hover < 0,2 với cả 4 theme).
-- **Chưa kiểm chứng bằng mắt trên Windows**: ảnh chụp bản chạy mới vẫn cần
-  chủ dự án xác nhận, đặc biệt là độ tương phản hover và bảng Thư viện có
-  giữ đúng độ rộng cột sau khi đổi container.
+  parse được + theme mặc định đúng xanh dương + không còn màu viết cứng),
+  `ThemeServiceTests` (màu dẫn xuất đúng công thức và độ sáng hover < 0,2
+  với cả 4 theme).
+- Chủ dự án đã chạy bản nhánh trên Windows thật và xác nhận giao diện mới
+  ổn (03/11/2026). Ảnh chụp cho từng theme cộng đồng vẫn là việc tùy chọn,
+  không phải điều kiện đóng.

@@ -2088,7 +2088,7 @@
                                      visualizer and the video never share the frame, and the
                                      player is always visible while it plays. -->
                                 <Grid Visibility="{Binding IsYouTubePlaying, Converter={StaticResource BooleanToVisibilityConverter}}"
-                                      Background="#FF0B0B10">
+                                      Background="{DynamicResource SunkenBackgroundBrush}">
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto"/>
                                         <RowDefinition Height="*"/>

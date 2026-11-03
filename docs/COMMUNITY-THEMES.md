@@ -27,6 +27,9 @@ bản màu mới áp dụng ngay mà không cần khởi động lại. Bảng m
 sẵn có nằm tại `src/Mimi.Core/Theming/BuiltInThemes.cs` nếu bạn cần thêm
 điểm tham chiếu.
 
+Giá trị dưới đây lấy từ theme mặc định **Neon Stage** (nền navy đậm, nhấn
+xanh dương `#3E8BFF`) — chỉ là ví dụ, bạn đổi sang màu của mình.
+
 ### Định dạng tệp (schema v1)
 
 ```json
@@ -35,8 +38,8 @@ sẵn có nằm tại `src/Mimi.Core/Theming/BuiltInThemes.cs` nếu bạn cần
   "id": "my-theme",
   "name": "My Theme",
   "colors": {
-    "AppBackground": "#0B101B",
-    "Accent": "#47E6D0"
+    "AppBackground": "#070B14",
+    "Accent": "#3E8BFF"
   }
 }
 ```
@@ -142,6 +145,9 @@ colors. If that theme is currently selected, editing the file and pressing
 four built-in themes live in `src/Mimi.Core/Theming/BuiltInThemes.cs` as
 additional references.
 
+The values below come from the default **Neon Stage** theme (deep navy base,
+azure `#3E8BFF` accent) — they are an example, swap in your own colours.
+
 ### File format (schema v1)
 
 ```json
@@ -150,8 +156,8 @@ additional references.
   "id": "my-theme",
   "name": "My Theme",
   "colors": {
-    "AppBackground": "#0B101B",
-    "Accent": "#47E6D0"
+    "AppBackground": "#070B14",
+    "Accent": "#3E8BFF"
   }
 }
 ```
