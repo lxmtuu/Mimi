@@ -1,0 +1,73 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <!-- The versioned Windows target provides the built-in WinRT
+         projections used for System Media Transport Controls. The app is
+         still declared down to Windows 10 1809 below. -->
+    <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
+    <SupportedOSPlatformVersion>10.0.17763.0</SupportedOSPlatformVersion>
+    <RuntimeIdentifiers>win-x64;win-x86;win-arm64</RuntimeIdentifiers>
+    <UseWPF>true</UseWPF>
+    <AssemblyName>Mimi</AssemblyName>
+    <RootNamespace>Mimi</RootNamespace>
+    <Product>Mimi</Product>
+    <Title>Mimi</Title>
+    <Description>Mimi - a personal desktop music player.</Description>
+    <Version>0.6.0</Version>
+    <NeutralLanguage>en-US</NeutralLanguage>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets\mimi.ico</ApplicationIcon>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Mimi.Core\Mimi.Core.csproj" />
+    <ProjectReference Include="..\Mimi.Audio\Mimi.Audio.csproj" />
+    <ProjectReference Include="..\Mimi.Library\Mimi.Library.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.1" />
+    <PackageReference Include="Serilog" Version="4.2.0" />
+    <PackageReference Include="Serilog.Sinks.File" Version="6.0.0" />
+  </ItemGroup>
+
+  <!-- Be Vietnam Pro is loaded from the application assembly so Vietnamese
+       text renders consistently on machines that do not have the family
+       installed. The OFL license must travel with published builds. -->
+  <ItemGroup>
+    <Resource Include="Assets\Fonts\BeVietnamPro-*.ttf" />
+    <Resource Include="Assets\Mascot\*.png" />
+    <Resource Include="Assets\mimi-256.png" />
+    <Resource Include="Assets\mimi.ico" />
+    <Resource Include="Effects\AuroraGlowEffect.ps" />
+    <None Update="Assets\Fonts\OFL.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </None>
+  </ItemGroup>
+
+  <!-- SkiaSharp 4 exposes large native PDBs as runtime assets and the
+       cross-platform library reference also resolves non-Windows assets.
+       Remove them after package-asset resolution so the generated deps
+       file and app output only contain files Mimi can actually load. -->
+  <Target Name="TrimSkiaSharpRuntimeAssets" AfterTargets="ResolvePackageAssets">
+    <ItemGroup>
+      <_SkiaSharpPdbRuntimeAssets Include="@(RuntimeTargetsCopyLocalItems)"
+          Condition="$([System.String]::Copy('%(RuntimeTargetsCopyLocalItems.NuGetPackageId)').StartsWith('SkiaSharp')) And '%(RuntimeTargetsCopyLocalItems.Extension)' == '.pdb'" />
+      <_SkiaSharpNonWindowsRuntimeAssets Include="@(RuntimeTargetsCopyLocalItems)"
+          Condition="$([System.String]::Copy('%(RuntimeTargetsCopyLocalItems.NuGetPackageId)').StartsWith('SkiaSharp')) And '%(RuntimeTargetsCopyLocalItems.RuntimeIdentifier)' != '' And !$([System.String]::Copy('%(RuntimeTargetsCopyLocalItems.RuntimeIdentifier)').StartsWith('win'))" />
+      <RuntimeTargetsCopyLocalItems Remove="@(_SkiaSharpPdbRuntimeAssets)" />
+      <RuntimeTargetsCopyLocalItems Remove="@(_SkiaSharpNonWindowsRuntimeAssets)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="TrimSkiaSharpPublishAssets" AfterTargets="GenerateResolvedFileToPublishList">
+    <ItemGroup>
+      <_SkiaSharpPdbPublishAssets Include="@(ResolvedFileToPublish)"
+          Condition="$([System.String]::Copy('%(ResolvedFileToPublish.NuGetPackageId)').StartsWith('SkiaSharp')) And '%(ResolvedFileToPublish.Extension)' == '.pdb'" />
+      <_SkiaSharpNonWindowsPublishAssets Include="@(ResolvedFileToPublish)"
+          Condition="$([System.String]::Copy('%(ResolvedFileToPublish.NuGetPackageId)').StartsWith('SkiaSharp')) And '%(ResolvedFileToPublish.RuntimeIdentifier)' != '' And !$([System.String]::Copy('%(ResolvedFileToPublish.RuntimeIdentifier)').StartsWith('win'))" />
+      <ResolvedFileToPublish Remove="@(_SkiaSharpPdbPublishAssets)" />
+      <ResolvedFileToPublish Remove="@(_SkiaSharpNonWindowsPublishAssets)" />
+    </ItemGroup>
+  </Target>
+</Project>

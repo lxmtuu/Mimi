@@ -1,0 +1,158 @@
+name: Windows build
+
+on:
+  push:
+    branches:
+      - main
+      - "arena/**"
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      compile_pixel_shader:
+        description: Compile and upload the Aurora pixel shader
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build and test (Release)
+    runs-on: windows-latest
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v7.0.1
+
+      - name: Set up .NET 8
+        uses: actions/setup-dotnet@v6.0.0
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Validate PowerShell tools syntax
+        shell: powershell
+        run: |
+          $failed = $false
+          Get-ChildItem -Path tools -Filter *.ps1 | ForEach-Object {
+            $tokens = $null
+            $parseErrors = $null
+            [void][System.Management.Automation.Language.Parser]::ParseFile(
+              $_.FullName,
+              [ref]$tokens,
+              [ref]$parseErrors)
+            foreach ($parseError in $parseErrors) {
+              $failed = $true
+              Write-Host "::error file=tools/$($_.Name),line=$($parseError.Extent.StartLineNumber),col=$($parseError.Extent.StartColumnNumber)::$($parseError.Message)"
+            }
+          }
+          if ($failed) { exit 1 }
+
+      - name: Compile prototype pixel shader
+        if: ${{ inputs.compile_pixel_shader || contains(github.event.head_commit.message, '[compile-shader]') }}
+        shell: pwsh
+        run: ./tools/Compile-PixelShader.ps1 -InputPath src/Mimi.App/Effects/AuroraGlowEffect.fx -OutputPath artifacts/pixel-shader/AuroraGlowEffect.ps
+
+      - name: Upload prototype pixel shader
+        if: ${{ inputs.compile_pixel_shader || contains(github.event.head_commit.message, '[compile-shader]') }}
+        uses: actions/upload-artifact@v7.0.2
+        with:
+          name: Mimi-pixel-shader-${{ github.sha }}
+          path: artifacts/pixel-shader/AuroraGlowEffect.ps
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Restore packages
+        run: dotnet restore Mimi.sln
+
+      - name: Build solution
+        run: dotnet build Mimi.sln --configuration Release --no-restore
+
+      - name: Run unit tests
+        run: dotnet test tests/Mimi.Tests/Mimi.Tests.csproj --configuration Release --no-build --logger "trx;LogFileName=mimi-tests.trx" --results-directory TestResults
+
+      - name: Report failed tests
+        if: failure()
+        shell: pwsh
+        run: |
+          $trx = Get-ChildItem TestResults -Filter *.trx -ErrorAction SilentlyContinue | Select-Object -First 1
+          if ($null -eq $trx) { return }
+          [xml]$document = Get-Content -LiteralPath $trx.FullName
+          $namespaces = New-Object System.Xml.XmlNamespaceManager($document.NameTable)
+          $namespaces.AddNamespace(
+            "t",
+            "http://microsoft.com/schemas/VisualStudio/TeamTest/2010")
+          $failed = $document.SelectNodes(
+            "//t:UnitTestResult[@outcome='Failed']",
+            $namespaces)
+          foreach ($result in $failed) {
+            $name = $result.GetAttribute("testName")
+            $messageNode = $result.SelectSingleNode(".//t:Message", $namespaces)
+            $message = if ($null -ne $messageNode) {
+              $messageNode.InnerText -replace "%", "%25" -replace "[\r\n]+", " "
+            } else {
+              "No failure message"
+            }
+            Write-Host "::error title=Failed test::$name -- $message"
+          }
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v7.0.2
+        with:
+          name: Mimi-test-results-${{ github.sha }}
+          path: TestResults/**
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Upload build output
+        uses: actions/upload-artifact@v7.0.2
+        with:
+          name: Mimi-${{ github.sha }}
+          path: src/Mimi.App/bin/Release/net8.0-windows10.0.19041.0/**
+          if-no-files-found: error
+          retention-days: 14
+
+  generate-pixel-shader:
+    name: Generate Aurora pixel shader
+    if: ${{ (github.event_name == 'workflow_dispatch' && inputs.compile_pixel_shader) || (github.event_name == 'push' && contains(github.event.head_commit.message, '[compile-shader]')) }}
+    runs-on: windows-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v7.0.1
+
+      - name: Compile and commit Aurora pixel shader
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $shaderPath = 'src/Mimi.App/Effects/AuroraGlowEffect.ps'
+
+          ./tools/Compile-PixelShader.ps1 -InputPath src/Mimi.App/Effects/AuroraGlowEffect.fx -OutputPath $shaderPath
+          if ($LASTEXITCODE -ne 0) {
+            throw 'Pixel shader compilation failed.'
+          }
+
+          $changes = git status --porcelain -- $shaderPath
+          if ($LASTEXITCODE -ne 0) {
+            throw 'Could not inspect the generated pixel shader.'
+          }
+
+          if ([string]::IsNullOrWhiteSpace(($changes -join ''))) {
+            Write-Host 'Aurora pixel shader is unchanged.'
+            exit 0
+          }
+
+          git config user.name 'github-actions[bot]'
+          if ($LASTEXITCODE -ne 0) { throw 'Could not configure the bot git name.' }
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          if ($LASTEXITCODE -ne 0) { throw 'Could not configure the bot git email.' }
+          git add -- $shaderPath
+          if ($LASTEXITCODE -ne 0) { throw 'Could not stage the generated pixel shader.' }
+          git commit -m 'build: generate aurora pixel shader [skip ci]'
+          if ($LASTEXITCODE -ne 0) { throw 'Could not commit the generated pixel shader.' }
+          git push origin "HEAD:$env:GITHUB_REF_NAME"
+          if ($LASTEXITCODE -ne 0) { throw 'Could not push the generated pixel shader.' }

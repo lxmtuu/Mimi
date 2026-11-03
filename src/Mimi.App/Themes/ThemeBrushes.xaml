@@ -1,0 +1,128 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!-- Color values are published by ThemeService from Core theme
+         definitions. These shared brushes deliberately bind dynamically so
+         a live theme change reaches controls that reference them. -->
+    <SolidColorBrush x:Key="AppBackgroundBrush" Color="{DynamicResource AppBackgroundColor}"/>
+    <SolidColorBrush x:Key="PanelBackgroundBrush" Color="{DynamicResource PanelBackgroundColor}"/>
+    <SolidColorBrush x:Key="RaisedBackgroundBrush" Color="{DynamicResource RaisedBackgroundColor}"/>
+    <SolidColorBrush x:Key="SunkenBackgroundBrush" Color="{DynamicResource SunkenBackgroundColor}"/>
+    <SolidColorBrush x:Key="ControlBackgroundBrush" Color="{DynamicResource ControlBackgroundColor}"/>
+    <SolidColorBrush x:Key="SelectedBackgroundBrush" Color="{DynamicResource SelectedBackgroundColor}"/>
+    <SolidColorBrush x:Key="HeaderBackgroundBrush" Color="{DynamicResource HeaderBackgroundColor}"/>
+    <SolidColorBrush x:Key="BorderBrush" Color="{DynamicResource BorderColor}"/>
+    <SolidColorBrush x:Key="DividerBrush" Color="{DynamicResource DividerColor}"/>
+
+    <SolidColorBrush x:Key="AccentBrush" Color="{DynamicResource AccentColor}"/>
+    <SolidColorBrush x:Key="AccentSecondaryBrush" Color="{DynamicResource AccentSecondaryColor}"/>
+    <SolidColorBrush x:Key="AccentHotBrush" Color="{DynamicResource AccentHotColor}"/>
+    <SolidColorBrush x:Key="OnAccentBrush" Color="{DynamicResource OnAccentColor}"/>
+    <SolidColorBrush x:Key="AccentDecorSoftBrush" Color="{DynamicResource AccentDecorSoftColor}"/>
+    <SolidColorBrush x:Key="AccentDecorMediumBrush" Color="{DynamicResource AccentDecorMediumColor}"/>
+    <SolidColorBrush x:Key="AccentDecorStrongBrush" Color="{DynamicResource AccentDecorStrongColor}"/>
+    <SolidColorBrush x:Key="AccentDecorVividBrush" Color="{DynamicResource AccentDecorVividColor}"/>
+    <SolidColorBrush x:Key="AccentSecondaryDecorSoftBrush" Color="{DynamicResource AccentSecondaryDecorSoftColor}"/>
+    <SolidColorBrush x:Key="AccentSecondaryDecorMediumBrush" Color="{DynamicResource AccentSecondaryDecorMediumColor}"/>
+    <SolidColorBrush x:Key="AccentHotDecorSoftBrush" Color="{DynamicResource AccentHotDecorSoftColor}"/>
+    <SolidColorBrush x:Key="AccentHotDecorMediumBrush" Color="{DynamicResource AccentHotDecorMediumColor}"/>
+
+    <SolidColorBrush x:Key="TextPrimaryBrush" Color="{DynamicResource TextPrimaryColor}"/>
+    <SolidColorBrush x:Key="TextStrongBrush" Color="{DynamicResource TextStrongColor}"/>
+    <SolidColorBrush x:Key="TextSecondaryBrush" Color="{DynamicResource TextSecondaryColor}"/>
+    <SolidColorBrush x:Key="TextMutedBrush" Color="{DynamicResource TextMutedColor}"/>
+    <SolidColorBrush x:Key="TextFaintBrush" Color="{DynamicResource TextFaintColor}"/>
+    <SolidColorBrush x:Key="TextDisabledBrush" Color="{DynamicResource TextDisabledColor}"/>
+
+    <SolidColorBrush x:Key="WarningBrush" Color="{DynamicResource WarningColor}"/>
+    <SolidColorBrush x:Key="WarningTextBrush" Color="{DynamicResource WarningTextColor}"/>
+    <SolidColorBrush x:Key="WarningBackgroundBrush" Color="{DynamicResource WarningBackgroundColor}"/>
+    <SolidColorBrush x:Key="WarningBorderBrush" Color="{DynamicResource WarningBorderColor}"/>
+    <SolidColorBrush x:Key="DangerBackgroundBrush" Color="{DynamicResource DangerBackgroundColor}"/>
+    <SolidColorBrush x:Key="StageOverlayBrush" Color="{DynamicResource StageOverlayColor}"/>
+
+    <LinearGradientBrush x:Key="HeroGradientBrush" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Color="{DynamicResource HeroGradientStartColor}" Offset="0"/>
+        <GradientStop Color="{DynamicResource HeroGradientMiddleColor}" Offset="0.55"/>
+        <GradientStop Color="{DynamicResource HeroGradientEndColor}" Offset="1"/>
+    </LinearGradientBrush>
+
+    <LinearGradientBrush x:Key="StageGradientBrush" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Color="{DynamicResource StageGradientStartColor}" Offset="0"/>
+        <GradientStop Color="{DynamicResource StageGradientMiddleColor}" Offset="0.55"/>
+        <GradientStop Color="{DynamicResource StageGradientEndColor}" Offset="1"/>
+    </LinearGradientBrush>
+
+    <LinearGradientBrush x:Key="CoverGradientBrush" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Color="{DynamicResource CoverGradientStartColor}" Offset="0"/>
+        <GradientStop Color="{DynamicResource CoverGradientEndColor}" Offset="1"/>
+    </LinearGradientBrush>
+
+    <!-- Lighting & Glow v1: soft premium shading with clearly visible
+         neon focal points. Every stop is theme-derived, including the
+         transparent endpoints, so gradients fade through the theme hue
+         instead of through black/gray. -->
+    <LinearGradientBrush x:Key="NowPlayingPanelBrush" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Color="{DynamicResource RaisedBackgroundColor}" Offset="0"/>
+        <GradientStop Color="{DynamicResource PanelBackgroundColor}" Offset="0.38"/>
+        <GradientStop Color="{DynamicResource SunkenBackgroundColor}" Offset="1"/>
+    </LinearGradientBrush>
+
+    <RadialGradientBrush x:Key="HeroAccentGlowBrush"
+                         Center="0.82,0.34" GradientOrigin="0.82,0.34"
+                         RadiusX="0.58" RadiusY="0.88">
+        <GradientStop Color="{DynamicResource AccentDecorMediumColor}" Offset="0"/>
+        <GradientStop Color="{DynamicResource AccentDecorSoftColor}" Offset="0.42"/>
+        <GradientStop Color="{DynamicResource AccentTransparentColor}" Offset="1"/>
+    </RadialGradientBrush>
+
+    <RadialGradientBrush x:Key="HeroSecondaryGlowBrush"
+                         Center="0.08,0.02" GradientOrigin="0.08,0.02"
+                         RadiusX="0.52" RadiusY="0.82">
+        <GradientStop Color="{DynamicResource AccentSecondaryDecorMediumColor}" Offset="0"/>
+        <GradientStop Color="{DynamicResource AccentSecondaryDecorSoftColor}" Offset="0.38"/>
+        <GradientStop Color="{DynamicResource AccentSecondaryTransparentColor}" Offset="1"/>
+    </RadialGradientBrush>
+
+    <LinearGradientBrush x:Key="HeroTopHighlightBrush" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Color="{DynamicResource TextPrimaryDecorSoftColor}" Offset="0"/>
+        <GradientStop Color="{DynamicResource TextPrimaryTransparentColor}" Offset="0.34"/>
+    </LinearGradientBrush>
+
+    <RadialGradientBrush x:Key="NowPlayingGlowBrush"
+                         Center="0.5,0.3" GradientOrigin="0.5,0.3"
+                         RadiusX="0.72" RadiusY="0.72">
+        <GradientStop Color="{DynamicResource AccentDecorMediumColor}" Offset="0"/>
+        <GradientStop Color="{DynamicResource AccentSecondaryDecorSoftColor}" Offset="0.46"/>
+        <GradientStop Color="{DynamicResource AccentSecondaryTransparentColor}" Offset="1"/>
+    </RadialGradientBrush>
+
+    <LinearGradientBrush x:Key="CoverSheenBrush" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Color="{DynamicResource TextPrimaryDecorSoftColor}" Offset="0"/>
+        <GradientStop Color="{DynamicResource TextPrimaryTransparentColor}" Offset="0.42"/>
+        <GradientStop Color="{DynamicResource TextPrimaryTransparentColor}" Offset="1"/>
+    </LinearGradientBrush>
+
+    <RadialGradientBrush x:Key="StageAccentGlowBrush"
+                         Center="0.14,0.08" GradientOrigin="0.14,0.08"
+                         RadiusX="0.72" RadiusY="0.72">
+        <GradientStop Color="{DynamicResource AccentDecorMediumColor}" Offset="0"/>
+        <GradientStop Color="{DynamicResource AccentDecorSoftColor}" Offset="0.44"/>
+        <GradientStop Color="{DynamicResource AccentTransparentColor}" Offset="1"/>
+    </RadialGradientBrush>
+
+    <RadialGradientBrush x:Key="StageHotGlowBrush"
+                         Center="0.88,0.9" GradientOrigin="0.88,0.9"
+                         RadiusX="0.72" RadiusY="0.72">
+        <GradientStop Color="{DynamicResource AccentHotDecorMediumColor}" Offset="0"/>
+        <GradientStop Color="{DynamicResource AccentHotDecorSoftColor}" Offset="0.44"/>
+        <GradientStop Color="{DynamicResource AccentHotTransparentColor}" Offset="1"/>
+    </RadialGradientBrush>
+
+    <RadialGradientBrush x:Key="StageVignetteBrush"
+                         Center="0.5,0.46" GradientOrigin="0.5,0.46"
+                         RadiusX="0.74" RadiusY="0.74">
+        <GradientStop Color="{DynamicResource AppBackgroundTransparentColor}" Offset="0"/>
+        <GradientStop Color="{DynamicResource AppBackgroundTransparentColor}" Offset="0.58"/>
+        <GradientStop Color="{DynamicResource AppBackgroundColor}" Offset="1"/>
+    </RadialGradientBrush>
+</ResourceDictionary>

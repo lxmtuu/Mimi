@@ -1,0 +1,337 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="App_MusicInMotion" xml:space="preserve"><value>MUSIC IN MOTION</value></data>
+  <data name="App_MusicUniverse" xml:space="preserve"><value>MUSIC UNIVERSE</value></data>
+  <data name="App_StartupFailed" xml:space="preserve"><value>Mimi couldn't start. Details were written to the log in %LocalAppData%\Mimi\logs.</value></data>
+  <data name="App_Tagline" xml:space="preserve"><value>LOCAL PLAYER  |  YOUR MUSIC, YOUR WORLD</value></data>
+  <data name="App_UnexpectedProblem" xml:space="preserve"><value>Mimi hit an unexpected problem, but it will try to keep running. Details were written to the log in %LocalAppData%\Mimi\logs.</value></data>
+  <data name="Audio_CannotPlaySongNoOutput" xml:space="preserve"><value>Mimi can't play this song because no usable audio output is available.&#10;&#10;{0}</value></data>
+  <data name="Audio_CannotStartPlayback" xml:space="preserve"><value>Mimi can't start playback because no usable audio output is available.&#10;&#10;{0}</value></data>
+  <data name="Audio_MessageCheckedWhenPlaybackStarts" xml:space="preserve"><value>Audio output will be checked when playback starts.</value></data>
+  <data name="Audio_MessageNoOutputAvailable" xml:space="preserve"><value>No audio output is available.</value></data>
+  <data name="Audio_MessageNoOutputPressPlay" xml:space="preserve"><value>No audio output is available. Connect or enable an output device, then press Play.</value></data>
+  <data name="Audio_MessageOutputUnavailable" xml:space="preserve"><value>The audio output is unavailable.</value></data>
+  <data name="Audio_MessagePlaybackInterruptedOutputChanged" xml:space="preserve"><value>Playback was paused because the audio output changed or stopped. Current output: {0}. Press Play to continue.</value></data>
+  <data name="Audio_MessagePlaybackInterruptedOutputUnavailable" xml:space="preserve"><value>The audio output became unavailable, so playback is paused. Connect an output device, then press Play.</value></data>
+  <data name="Audio_MessageReady" xml:space="preserve"><value>Audio output is ready.</value></data>
+  <data name="Audio_MessageWasapiForcedReady" xml:space="preserve"><value>WASAPI shared output is ready (forced by MIMI_AUDIO_OUTPUT for diagnostics).</value></data>
+  <data name="Audio_MessageWasapiReady" xml:space="preserve"><value>WASAPI shared output is ready.</value></data>
+  <data name="Audio_MessageWasapiUnavailableFallbackDisabled" xml:space="preserve"><value>WASAPI shared output is unavailable, and MIMI_AUDIO_OUTPUT disables the WaveOut fallback for diagnostics.</value></data>
+  <data name="Audio_MessageWaveOutFallbackReady" xml:space="preserve"><value>WASAPI was unavailable, so Mimi is using the WaveOut fallback.</value></data>
+  <data name="Audio_MessageWaveOutForcedReady" xml:space="preserve"><value>WaveOut output is ready (forced by MIMI_AUDIO_OUTPUT for diagnostics).</value></data>
+  <data name="Audio_MessageWindowsDefaultAvailable" xml:space="preserve"><value>Windows default output is available.</value></data>
+  <data name="Audio_NoOutput" xml:space="preserve"><value>No audio output available</value></data>
+  <data name="Audio_NoOutputDevice" xml:space="preserve"><value>No output device</value></data>
+  <data name="Audio_OutputReady" xml:space="preserve"><value>Audio output is ready: {0}. Press Play to continue.</value></data>
+  <data name="Audio_SongLoadedNoOutput" xml:space="preserve"><value>This song is loaded, but Mimi can't start it because no usable audio output is available.&#10;&#10;{0}</value></data>
+  <data name="Audio_WasapiShared" xml:space="preserve"><value>WASAPI shared · {0}</value></data>
+  <data name="Audio_WaveOutDiagnostic" xml:space="preserve"><value>WaveOut diagnostic · {0}</value></data>
+  <data name="Audio_WaveOutFallback" xml:space="preserve"><value>WaveOut fallback · {0}</value></data>
+  <data name="Audio_WindowsAudioOutput" xml:space="preserve"><value>Windows audio output</value></data>
+  <data name="Audio_WindowsDefault" xml:space="preserve"><value>Windows default · {0}</value></data>
+  <data name="Audio_WindowsDefaultOutput" xml:space="preserve"><value>Windows default output</value></data>
+  <data name="Common_Cancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="Common_Clear" xml:space="preserve"><value>Clear</value></data>
+  <data name="Common_Delete" xml:space="preserve"><value>Delete</value></data>
+  <data name="Common_Next" xml:space="preserve"><value>Next</value></data>
+  <data name="Common_Ok" xml:space="preserve"><value>OK</value></data>
+  <data name="Common_Pause" xml:space="preserve"><value>Pause</value></data>
+  <data name="Common_Play" xml:space="preserve"><value>Play</value></data>
+  <data name="Common_Previous" xml:space="preserve"><value>Previous</value></data>
+  <data name="Common_Remove" xml:space="preserve"><value>Remove</value></data>
+  <data name="Common_RemoveSelected" xml:space="preserve"><value>Remove selected</value></data>
+  <data name="Common_Rename" xml:space="preserve"><value>Rename</value></data>
+  <data name="Dialog_AllFiles" xml:space="preserve"><value>All files</value></data>
+  <data name="Dialog_AudioFiles" xml:space="preserve"><value>Audio files</value></data>
+  <data name="Dialog_ChooseMusicFiles" xml:space="preserve"><value>Choose music files</value></data>
+  <data name="Dialog_ChooseMusicFolder" xml:space="preserve"><value>Choose a folder containing your music</value></data>
+  <data name="Dialog_LibraryWarning" xml:space="preserve"><value>Library warning</value></data>
+  <data name="Filter_AllAlbums" xml:space="preserve"><value>All albums</value></data>
+  <data name="Filter_AllArtists" xml:space="preserve"><value>All artists</value></data>
+  <data name="Filter_AllFormats" xml:space="preserve"><value>All formats</value></data>
+  <data name="Filter_AllGenres" xml:space="preserve"><value>All genres</value></data>
+  <data name="Filter_AllStates" xml:space="preserve"><value>All states</value></data>
+  <data name="Filter_HasError" xml:space="preserve"><value>Has error</value></data>
+  <data name="Filter_Missing" xml:space="preserve"><value>Missing</value></data>
+  <data name="Filter_Ready" xml:space="preserve"><value>Ready</value></data>
+  <data name="Footer_EarlyBuild" xml:space="preserve"><value>MIMI  |  EARLY DEVELOPMENT BUILD</value></data>
+  <data name="Footer_PersonalMusicSpace" xml:space="preserve"><value>A personal music space</value></data>
+  <data name="Home_AddFirstSongs" xml:space="preserve"><value>Add your first songs</value></data>
+  <data name="Home_HeroDescription" xml:space="preserve"><value>Build your library. Find your rhythm. Make this space yours.</value></data>
+  <data name="Home_HeroTitle" xml:space="preserve"><value>Every song tells&#10;a different story.</value></data>
+  <data name="Home_Welcome" xml:space="preserve"><value>WELCOME TO YOUR UNIVERSE</value></data>
+  <data name="Language_System" xml:space="preserve"><value>Use system language</value></data>
+  <data name="Library_AddSelectedSongsToQueue" xml:space="preserve"><value>Add selected songs to queue</value></data>
+  <data name="Library_AddSelectedToQueue" xml:space="preserve"><value>Add selected to queue</value></data>
+  <data name="Library_AddToFavorites" xml:space="preserve"><value>Add to favorites</value></data>
+  <data name="Library_AddToQueue" xml:space="preserve"><value>Add to queue</value></data>
+  <data name="Library_CancelScanAutomation" xml:space="preserve"><value>Cancel library scan</value></data>
+  <data name="Library_ClearFiltersAutomation" xml:space="preserve"><value>Clear search, filters, and sorting</value></data>
+  <data name="Library_CouldNotRemoveSong" xml:space="preserve"><value>Couldn't remove this song from the library.&#10;&#10;{0}</value></data>
+  <data name="Library_CouldNotRestore" xml:space="preserve"><value>Couldn't restore your library.&#10;&#10;{0}</value></data>
+  <data name="Library_CouldNotSave" xml:space="preserve"><value>Couldn't save your library.&#10;&#10;{0}</value></data>
+  <data name="Library_CouldNotSaveFavorites" xml:space="preserve"><value>Couldn't save favorites.&#10;&#10;{0}</value></data>
+  <data name="Library_CoverHeader" xml:space="preserve"><value>COVER</value></data>
+  <data name="Library_DownButton" xml:space="preserve"><value>↓ Down</value></data>
+  <data name="Library_EmptyStateHint" xml:space="preserve"><value>Add songs to build your library and start the show.</value></data>
+  <data name="Library_EmptyStateTitle" xml:space="preserve"><value>Your stage is still quiet</value></data>
+  <data name="Library_FavoriteSelected" xml:space="preserve"><value>♥ Favorite selected</value></data>
+  <data name="Library_FileCouldNotBePlayed" xml:space="preserve"><value>This file could not be played</value></data>
+  <data name="Library_FilterByAlbum" xml:space="preserve"><value>Filter by album</value></data>
+  <data name="Library_FilterByArtist" xml:space="preserve"><value>Filter by artist</value></data>
+  <data name="Library_FilterByFormat" xml:space="preserve"><value>Filter by format</value></data>
+  <data name="Library_FilterByGenre" xml:space="preserve"><value>Filter by genre</value></data>
+  <data name="Library_FilterByPlaybackState" xml:space="preserve"><value>Filter by playback state</value></data>
+  <data name="Library_Filters" xml:space="preserve"><value>Filters</value></data>
+  <data name="Library_MoveSelectedSongDown" xml:space="preserve"><value>Move selected song down in playlist</value></data>
+  <data name="Library_MoveSelectedSongUp" xml:space="preserve"><value>Move selected song up in playlist</value></data>
+  <data name="Library_NoResultsHint" xml:space="preserve"><value>Try a different search or clear the filters.</value></data>
+  <data name="Library_NoResultsTitle" xml:space="preserve"><value>No songs match this view</value></data>
+  <data name="Library_PlayNext" xml:space="preserve"><value>Play next</value></data>
+  <data name="Library_PlaySelectedNext" xml:space="preserve"><value>Play selected next</value></data>
+  <data name="Library_PlaySelectedSongsNext" xml:space="preserve"><value>Play selected songs next</value></data>
+  <data name="Library_RemoveFromFavorites" xml:space="preserve"><value>Remove from favorites</value></data>
+  <data name="Library_RemoveSelectedFromLibrary" xml:space="preserve"><value>Remove selected from library</value></data>
+  <data name="Library_RemoveSelectedSongs" xml:space="preserve"><value>Remove selected songs from library</value></data>
+  <data name="Library_SearchPlaceholder" xml:space="preserve"><value>Search songs…</value></data>
+  <data name="Library_SearchSongs" xml:space="preserve"><value>Search songs</value></data>
+  <data name="Library_SelectedCount" xml:space="preserve"><value>{0} selected</value></data>
+  <data name="Library_SkippedDirectories" xml:space="preserve"><value>{0} folder(s) could not be read and were skipped.</value></data>
+  <data name="Library_SortAlbumHeader" xml:space="preserve"><value>ALBUM</value></data>
+  <data name="Library_SortArtistHeader" xml:space="preserve"><value>ARTIST</value></data>
+  <data name="Library_SortByAlbum" xml:space="preserve"><value>Sort by album</value></data>
+  <data name="Library_SortByArtist" xml:space="preserve"><value>Sort by artist</value></data>
+  <data name="Library_SortByDuration" xml:space="preserve"><value>Sort by duration</value></data>
+  <data name="Library_SortByFormat" xml:space="preserve"><value>Sort by format</value></data>
+  <data name="Library_SortByGenre" xml:space="preserve"><value>Sort by genre</value></data>
+  <data name="Library_SortByTitle" xml:space="preserve"><value>Sort by title</value></data>
+  <data name="Library_SortByYear" xml:space="preserve"><value>Sort by year</value></data>
+  <data name="Library_SortDurationHeader" xml:space="preserve"><value>TIME</value></data>
+  <data name="Library_SortFormatHeader" xml:space="preserve"><value>FORMAT</value></data>
+  <data name="Library_SortGenreHeader" xml:space="preserve"><value>GENRE</value></data>
+  <data name="Library_SortTitleHeader" xml:space="preserve"><value>TITLE</value></data>
+  <data name="Library_SortYearHeader" xml:space="preserve"><value>YEAR</value></data>
+  <data name="Library_ToggleFavoritesSelected" xml:space="preserve"><value>Toggle favorites for selected songs</value></data>
+  <data name="Library_TrackList" xml:space="preserve"><value>Track list</value></data>
+  <data name="Library_UpButton" xml:space="preserve"><value>↑ Up</value></data>
+  <data name="Mascot_Automation" xml:space="preserve"><value>Mimi, the app mascot</value></data>
+  <data name="Metadata_LocalMusicSuffix" xml:space="preserve"><value>{0}  •  Local music</value></data>
+  <data name="Metadata_UnknownAlbum" xml:space="preserve"><value>Unknown album</value></data>
+  <data name="Metadata_UnknownArtist" xml:space="preserve"><value>Unknown artist</value></data>
+  <data name="Metadata_UnknownGenre" xml:space="preserve"><value>Unknown genre</value></data>
+  <data name="Nav_AddMusicFiles" xml:space="preserve"><value>Add music files</value></data>
+  <data name="Nav_BetaDescription" xml:space="preserve"><value>The first step toward your own anime music universe.</value></data>
+  <data name="Nav_Favorites" xml:space="preserve"><value>Favorites</value></data>
+  <data name="Nav_Home" xml:space="preserve"><value>Home</value></data>
+  <data name="Nav_MyLibrary" xml:space="preserve"><value>My Library</value></data>
+  <data name="Nav_Playlists" xml:space="preserve"><value>PLAYLISTS</value></data>
+  <data name="Nav_RecentlyPlayed" xml:space="preserve"><value>Recently played</value></data>
+  <data name="Nav_ScanFolder" xml:space="preserve"><value>Scan a folder</value></data>
+  <data name="Nav_Settings" xml:space="preserve"><value>Settings</value></data>
+  <data name="Nav_YourSpace" xml:space="preserve"><value>YOUR SPACE</value></data>
+  <data name="NowPlaying_ChooseSong" xml:space="preserve"><value>Choose a song</value></data>
+  <data name="NowPlaying_NextFavoriteWaiting" xml:space="preserve"><value>Your next favorite is waiting</value></data>
+  <data name="NowPlaying_PlaybackPosition" xml:space="preserve"><value>Playback position</value></data>
+  <data name="NowPlaying_Title" xml:space="preserve"><value>NOW PLAYING</value></data>
+  <data name="NowPlaying_UpNext" xml:space="preserve"><value>UP NEXT</value></data>
+  <data name="NowPlaying_VolumeHeader" xml:space="preserve"><value>VOLUME</value></data>
+  <data name="OpenWith_CouldNotOpenPaths" xml:space="preserve"><value>Couldn't open those paths with Mimi.&#10;&#10;{0}</value></data>
+  <data name="OpenWith_FilesNotFound" xml:space="preserve"><value>The opened file(s) could not be found.</value></data>
+  <data name="OpenWith_NoneOpenedSongsCouldBePlayed" xml:space="preserve"><value>None of the opened songs could be played.</value></data>
+  <data name="OpenWith_Title" xml:space="preserve"><value>Open with Mimi</value></data>
+  <data name="OpenWith_UnsupportedFileTypes" xml:space="preserve"><value>Mimi doesn't support the opened file type(s).</value></data>
+  <data name="Playback_Back10Seconds" xml:space="preserve"><value>Back 10 seconds</value></data>
+  <data name="Playback_CouldNotPlayFile" xml:space="preserve"><value>Couldn't play this file.&#10;&#10;{0}</value></data>
+  <data name="Playback_CycleRepeatMode" xml:space="preserve"><value>Cycle repeat mode</value></data>
+  <data name="Playback_ErrorTitle" xml:space="preserve"><value>Playback error</value></data>
+  <data name="Playback_Forward10Seconds" xml:space="preserve"><value>Forward 10 seconds</value></data>
+  <data name="Playback_Mute" xml:space="preserve"><value>Mute</value></data>
+  <data name="Playback_Muted" xml:space="preserve"><value>Muted</value></data>
+  <data name="Playback_MuteOrUnmute" xml:space="preserve"><value>Mute or unmute</value></data>
+  <data name="Playback_NextTrack" xml:space="preserve"><value>Next track</value></data>
+  <data name="Playback_NoneInQueue" xml:space="preserve"><value>None of the songs in this queue could be played.</value></data>
+  <data name="Playback_NonePreviousInQueue" xml:space="preserve"><value>None of the previous songs in this queue could be played.</value></data>
+  <data name="Playback_NowPlayingIndicator" xml:space="preserve"><value>Now playing</value></data>
+  <data name="Playback_PausedIndicator" xml:space="preserve"><value>Current song, paused</value></data>
+  <data name="Playback_PlayOrPause" xml:space="preserve"><value>Play or pause</value></data>
+  <data name="Playback_PreviousTrack" xml:space="preserve"><value>Previous track</value></data>
+  <data name="Playback_RepeatAll" xml:space="preserve"><value>Repeat All</value></data>
+  <data name="Playback_RepeatOff" xml:space="preserve"><value>Repeat Off</value></data>
+  <data name="Playback_RepeatOne" xml:space="preserve"><value>Repeat One</value></data>
+  <data name="Playback_ShuffleOff" xml:space="preserve"><value>Shuffle Off</value></data>
+  <data name="Playback_ShuffleOffStatus" xml:space="preserve"><value>Shuffle off</value></data>
+  <data name="Playback_ShuffleOn" xml:space="preserve"><value>Shuffle On</value></data>
+  <data name="Playback_ShuffleOnStatus" xml:space="preserve"><value>Shuffle on</value></data>
+  <data name="Playback_ToggleShuffle" xml:space="preserve"><value>Toggle shuffle</value></data>
+  <data name="Playback_Unmute" xml:space="preserve"><value>Unmute</value></data>
+  <data name="Playlist_AddSkippedMultiple" xml:space="preserve"><value>{0} song(s) were added to &quot;{1}&quot;; {2} were skipped because they were already there or not saved yet.</value></data>
+  <data name="Playlist_AddSkippedSingle" xml:space="preserve"><value>&quot;{0}&quot; could not be added. It may already be in the playlist or may not be saved in the catalog yet.</value></data>
+  <data name="Playlist_AddToPlaylist" xml:space="preserve"><value>Add to playlist</value></data>
+  <data name="Playlist_CatalogUnavailable" xml:space="preserve"><value>Playlists are unavailable because the SQLite library catalog could not be opened. Mimi is currently using the legacy JSON fallback.</value></data>
+  <data name="Playlist_CouldNotAddSelected" xml:space="preserve"><value>Couldn't add the selected song(s) to the playlist.&#10;&#10;{0}</value></data>
+  <data name="Playlist_CouldNotCreate" xml:space="preserve"><value>Couldn't create that playlist.&#10;&#10;{0}</value></data>
+  <data name="Playlist_CouldNotDelete" xml:space="preserve"><value>Couldn't delete that playlist.&#10;&#10;{0}</value></data>
+  <data name="Playlist_CouldNotOpen" xml:space="preserve"><value>Couldn't open that playlist.&#10;&#10;{0}</value></data>
+  <data name="Playlist_CouldNotRearrange" xml:space="preserve"><value>Couldn't rearrange that playlist.&#10;&#10;{0}</value></data>
+  <data name="Playlist_CouldNotRemoveSong" xml:space="preserve"><value>Couldn't remove that song from the playlist.&#10;&#10;{0}</value></data>
+  <data name="Playlist_CouldNotRename" xml:space="preserve"><value>Couldn't rename that playlist.&#10;&#10;{0}</value></data>
+  <data name="Playlist_Count" xml:space="preserve"><value>{0} song(s)</value></data>
+  <data name="Playlist_DeleteConfirm" xml:space="preserve"><value>Delete playlist &quot;{0}&quot;?&#10;&#10;The songs will stay in your library.</value></data>
+  <data name="Playlist_DeleteSelected" xml:space="preserve"><value>Delete selected playlist</value></data>
+  <data name="Playlist_DeleteTitle" xml:space="preserve"><value>Delete playlist</value></data>
+  <data name="Playlist_DragRearrange" xml:space="preserve"><value>Drag songs to rearrange this playlist.</value></data>
+  <data name="Playlist_Empty" xml:space="preserve"><value>No playlists yet. Use + to create your first mix.</value></data>
+  <data name="Playlist_EmptyPlayMessage" xml:space="preserve"><value>This playlist is empty. Add songs from the track list's &quot;Add to playlist&quot; menu.</value></data>
+  <data name="Playlist_List" xml:space="preserve"><value>Playlists</value></data>
+  <data name="Playlist_MoveDown" xml:space="preserve"><value>Move down in playlist</value></data>
+  <data name="Playlist_MoveUp" xml:space="preserve"><value>Move up in playlist</value></data>
+  <data name="Playlist_NameCannotBeEmpty" xml:space="preserve"><value>Playlist name cannot be empty.</value></data>
+  <data name="Playlist_NamePrompt" xml:space="preserve"><value>Name your new playlist:</value></data>
+  <data name="Playlist_New" xml:space="preserve"><value>New playlist</value></data>
+  <data name="Playlist_Play" xml:space="preserve"><value>Play playlist</value></data>
+  <data name="Playlist_PlaySelected" xml:space="preserve"><value>Play selected playlist</value></data>
+  <data name="Playlist_RemoveFromPlaylist" xml:space="preserve"><value>Remove from playlist</value></data>
+  <data name="Playlist_RemoveFromThisPlaylist" xml:space="preserve"><value>Remove from this playlist</value></data>
+  <data name="Playlist_RemoveSelectedSong" xml:space="preserve"><value>Remove selected song from playlist</value></data>
+  <data name="Playlist_RenamePrompt" xml:space="preserve"><value>Enter a new name for this playlist:</value></data>
+  <data name="Playlist_RenameSelected" xml:space="preserve"><value>Rename selected playlist</value></data>
+  <data name="Playlist_RenameTitle" xml:space="preserve"><value>Rename playlist</value></data>
+  <data name="Prompt_TextValue" xml:space="preserve"><value>Text value</value></data>
+  <data name="Queue_ClearUpcoming" xml:space="preserve"><value>Clear upcoming</value></data>
+  <data name="Queue_ClearUpcomingAutomation" xml:space="preserve"><value>Clear upcoming queue</value></data>
+  <data name="Queue_CountPlural" xml:space="preserve"><value>{0} songs</value></data>
+  <data name="Queue_CountSingular" xml:space="preserve"><value>1 song</value></data>
+  <data name="Queue_EmptyHint" xml:space="preserve"><value>Choose a song to start a queue, or right-click songs and choose Play selected next.</value></data>
+  <data name="Queue_EmptyState" xml:space="preserve"><value>Nothing queued yet</value></data>
+  <data name="Queue_ListAutomation" xml:space="preserve"><value>Up next queue</value></data>
+  <data name="Queue_MoveDown" xml:space="preserve"><value>Move down</value></data>
+  <data name="Queue_MoveSelectedDown" xml:space="preserve"><value>Move selected queue song down</value></data>
+  <data name="Queue_MoveSelectedUp" xml:space="preserve"><value>Move selected queue song up</value></data>
+  <data name="Queue_MoveUp" xml:space="preserve"><value>Move up</value></data>
+  <data name="Queue_PlayNow" xml:space="preserve"><value>Play now</value></data>
+  <data name="Queue_PlaySelectedAutomation" xml:space="preserve"><value>Play selected queue song now</value></data>
+  <data name="Queue_RemoveFromQueue" xml:space="preserve"><value>Remove from queue</value></data>
+  <data name="Queue_RemoveSelectedAutomation" xml:space="preserve"><value>Remove selected song from queue</value></data>
+  <data name="Queue_Status" xml:space="preserve"><value>{0} up next · {1} · {2}</value></data>
+  <data name="Scan_Canceled" xml:space="preserve"><value>Scan canceled</value></data>
+  <data name="Scan_Canceling" xml:space="preserve"><value>Canceling scan…</value></data>
+  <data name="Scan_CouldNotScanFiles" xml:space="preserve"><value>Couldn't scan those music files.&#10;&#10;{0}</value></data>
+  <data name="Scan_CouldNotScanFolder" xml:space="preserve"><value>Couldn't scan that folder.&#10;&#10;{0}</value></data>
+  <data name="Scan_Discovering" xml:space="preserve"><value>Discovering music files…</value></data>
+  <data name="Scan_Progress" xml:space="preserve"><value>Scanning {0}/{1}…</value></data>
+  <data name="Scan_ProgressWithFile" xml:space="preserve"><value>Scanning {0}/{1} — {2}</value></data>
+  <data name="Scan_ScanningMusic" xml:space="preserve"><value>Scanning your music…</value></data>
+  <data name="Scan_UpdatingWatchedFolders" xml:space="preserve"><value>Updating watched folders…</value></data>
+  <data name="Scan_WatchedFolderUpdateCanceled" xml:space="preserve"><value>Watched-folder update canceled</value></data>
+  <data name="Search_CatalogUnavailable" xml:space="preserve"><value>Catalog search unavailable; using local search</value></data>
+  <data name="Search_Searching" xml:space="preserve"><value>Searching your library…</value></data>
+  <data name="Section_PlaylistFallback" xml:space="preserve"><value>Playlist</value></data>
+  <data name="Section_RecentlyPlayed" xml:space="preserve"><value>Recently played</value></data>
+  <data name="Section_YourFavorites" xml:space="preserve"><value>Your favorites</value></data>
+  <data name="Section_YourLibrary" xml:space="preserve"><value>Your library</value></data>
+  <data name="Settings_AddWatchedFolder" xml:space="preserve"><value>Add watched folder…</value></data>
+  <data name="Settings_AddWatchedFolderAutomation" xml:space="preserve"><value>Add a watched music folder</value></data>
+  <data name="Settings_AppearanceSection" xml:space="preserve"><value>APPEARANCE &amp; LANGUAGE</value></data>
+  <data name="Settings_AudioOutput" xml:space="preserve"><value>Audio output</value></data>
+  <data name="Settings_AudioOutputDescription" xml:space="preserve"><value>Mimi follows Windows' default output through WASAPI shared mode (WaveOut is only a fallback). If that device changes or disappears during playback, Mimi pauses instead of moving sound unexpectedly; press Play to continue on the new output.</value></data>
+  <data name="Settings_AutoSaveNote" xml:space="preserve"><value>Changes save automatically to settings.json.</value></data>
+  <data name="Settings_Close" xml:space="preserve"><value>Close settings</value></data>
+  <data name="Settings_CommunityThemesHint" xml:space="preserve"><value>You can add your own themes: place .json theme files in the themes folder, then reload the list. See docs/COMMUNITY-THEMES.md in the Mimi repository for the file format.</value></data>
+  <data name="Settings_CouldNotOpenFolder" xml:space="preserve"><value>Couldn't open that folder.&#10;&#10;{0}</value></data>
+  <data name="Settings_CouldNotRegisterWindows" xml:space="preserve"><value>Couldn't register Mimi with Windows.&#10;&#10;{0}</value></data>
+  <data name="Settings_CouldNotRemoveWindowsRegistration" xml:space="preserve"><value>Couldn't remove Mimi's Windows registration.&#10;&#10;{0}</value></data>
+  <data name="Settings_CurrentSong" xml:space="preserve"><value>Current song: </value></data>
+  <data name="Settings_DataDiagnosticsSection" xml:space="preserve"><value>DATA &amp; DIAGNOSTICS</value></data>
+  <data name="Settings_DataFolder" xml:space="preserve"><value>Data folder</value></data>
+  <data name="Settings_DefaultsSection" xml:space="preserve"><value>DEFAULTS</value></data>
+  <data name="Settings_FolderPathCouldNotBeUsed" xml:space="preserve"><value>That folder path could not be used.</value></data>
+  <data name="Settings_KeyboardShortcutsSection" xml:space="preserve"><value>KEYBOARD SHORTCUTS</value></data>
+  <data name="Settings_Language" xml:space="preserve"><value>Interface language</value></data>
+  <data name="Settings_LanguageDescription" xml:space="preserve"><value>Changes apply immediately. Mimi will keep expanding translated areas as Phase 5 continues.</value></data>
+  <data name="Settings_LanguageSection" xml:space="preserve"><value>LANGUAGE</value></data>
+  <data name="Settings_LogFolder" xml:space="preserve"><value>Log folder</value></data>
+  <data name="Settings_ModeHaloAutomation" xml:space="preserve"><value>Settings Halo Circle visualizer mode</value></data>
+  <data name="Settings_ModeSpectrumAutomation" xml:space="preserve"><value>Settings Neon Spectrum visualizer mode</value></data>
+  <data name="Settings_ModeTwinWaveAutomation" xml:space="preserve"><value>Settings Twin Wave visualizer mode</value></data>
+  <data name="Settings_OpenDataFolder" xml:space="preserve"><value>Open data folder</value></data>
+  <data name="Settings_OpenDataFolderAutomation" xml:space="preserve"><value>Open Mimi data folder</value></data>
+  <data name="Settings_OpenLogs" xml:space="preserve"><value>Open logs</value></data>
+  <data name="Settings_OpenLogsAutomation" xml:space="preserve"><value>Open Mimi log folder</value></data>
+  <data name="Settings_OpenThemesFolder" xml:space="preserve"><value>Open themes folder</value></data>
+  <data name="Settings_OpenWithNotRegistered" xml:space="preserve"><value>Not registered. Supported types: {0}.</value></data>
+  <data name="Settings_OpenWithRegistered" xml:space="preserve"><value>Registered for {0}.</value></data>
+  <data name="Settings_OpenWithUnavailable" xml:space="preserve"><value>Explorer integration is unavailable in this build.</value></data>
+  <data name="Settings_OptimizeCoverCache" xml:space="preserve"><value>Optimize older cover-art cache files</value></data>
+  <data name="Settings_OptimizeCoverCacheDescription" xml:space="preserve"><value>Creates 96px and 512px variants in the background for covers cached by older builds.</value></data>
+  <data name="Settings_PlaybackSessionSection" xml:space="preserve"><value>PLAYBACK &amp; SESSION</value></data>
+  <data name="Settings_RegisterWindows" xml:space="preserve"><value>Register Mimi with Windows for this account</value></data>
+  <data name="Settings_RegisterWindowsDescription" xml:space="preserve"><value>Adds Mimi to Explorer's Open with menu and creates or updates a Start menu shortcut carrying Mimi's app identity, so Windows media controls can show Mimi's name and icon. It never changes your current default music app; you choose defaults in Windows.</value></data>
+  <data name="Settings_ReloadThemes" xml:space="preserve"><value>Reload themes</value></data>
+  <data name="Settings_RememberWindow" xml:space="preserve"><value>Remember window size and position</value></data>
+  <data name="Settings_RememberWindowDescription" xml:space="preserve"><value>Saved bounds are moved back on screen if a monitor is no longer available.</value></data>
+  <data name="Settings_RemoveWatchedFolderAutomation" xml:space="preserve"><value>Remove the selected watched folder</value></data>
+  <data name="Settings_ResetAutomation" xml:space="preserve"><value>Reset settings to defaults</value></data>
+  <data name="Settings_ResetConfirm" xml:space="preserve"><value>Reset Mimi's preferences to their defaults? Your library, favorites, playlists, and playback history will not be deleted.</value></data>
+  <data name="Settings_ResetDescription" xml:space="preserve"><value>Reset preferences without deleting your library, playlists, favorites, or listening history.</value></data>
+  <data name="Settings_ResetDone" xml:space="preserve"><value>Settings were reset. Restart Mimi if you also want the window to return to its default position.</value></data>
+  <data name="Settings_ResetSettings" xml:space="preserve"><value>Reset settings…</value></data>
+  <data name="Settings_ResetTitle" xml:space="preserve"><value>Reset settings</value></data>
+  <data name="Settings_RestoreLibraryView" xml:space="preserve"><value>Restore the last library view</value></data>
+  <data name="Settings_RestoreLibraryViewDescription" xml:space="preserve"><value>Restores the view or playlist, search, filters, sorting, and selected song.</value></data>
+  <data name="Settings_RestorePlaybackSessionAutomation" xml:space="preserve"><value>Restore the previous playback session</value></data>
+  <data name="Settings_RestorePreviousSession" xml:space="preserve"><value>Restore the previous session</value></data>
+  <data name="Settings_RestoreSessionDescription" xml:space="preserve"><value>Reopens the last song at its saved position, always paused. Mimi never starts sound automatically.</value></data>
+  <data name="Settings_StageEngineSection" xml:space="preserve"><value>STAGE ENGINE</value></data>
+  <data name="Settings_StartupLibrarySection" xml:space="preserve"><value>STARTUP &amp; LIBRARY</value></data>
+  <data name="Settings_StillLoading" xml:space="preserve"><value>Mimi is still loading your library. Try again in a moment.</value></data>
+  <data name="Settings_Theme" xml:space="preserve"><value>Interface theme</value></data>
+  <data name="Settings_ThemeDescription" xml:space="preserve"><value>Changes apply immediately and are restored the next time Mimi opens.</value></data>
+  <data name="Settings_Title" xml:space="preserve"><value>Settings</value></data>
+  <data name="Settings_VisualizerRestored" xml:space="preserve"><value>Your visualizer choice is restored on the next launch.</value></data>
+  <data name="Settings_Volume" xml:space="preserve"><value>Volume</value></data>
+  <data name="Settings_VolumeAutomation" xml:space="preserve"><value>Settings volume</value></data>
+  <data name="Settings_WatchedFoldersList" xml:space="preserve"><value>Watched music folders</value></data>
+  <data name="Settings_WatchedFoldersSection" xml:space="preserve"><value>WATCHED FOLDERS</value></data>
+  <data name="Settings_WatchFolders" xml:space="preserve"><value>Watch folders for music changes</value></data>
+  <data name="Settings_WatchFoldersDescription" xml:space="preserve"><value>New or changed songs are scanned in the background. Songs deleted outside Mimi stay in the library and are marked missing.</value></data>
+  <data name="Settings_WindowsIntegrationSection" xml:space="preserve"><value>WINDOWS INTEGRATION</value></data>
+  <data name="Settings_WindowsIntegrationUnavailable" xml:space="preserve"><value>Windows integration is unavailable in this build.</value></data>
+  <data name="Shortcut_CloseStageOrSettings" xml:space="preserve"><value>Close Stage or Settings</value></data>
+  <data name="Shortcut_DeleteDescription" xml:space="preserve"><value>Remove selected songs from the library</value></data>
+  <data name="Shortcut_DeleteKey" xml:space="preserve"><value>Delete in track list</value></data>
+  <data name="Shortcut_FocusSearch" xml:space="preserve"><value>Focus search</value></data>
+  <data name="Shortcut_MediaKeys" xml:space="preserve"><value>Media keys</value></data>
+  <data name="Shortcut_MediaKeysDescription" xml:space="preserve"><value>Control playback through Windows, even when Mimi is not focused</value></data>
+  <data name="Shortcut_Note" xml:space="preserve"><value>Space and arrow shortcuts step aside while you are typing or using lists, drop-downs and sliders. Use the −10s/+10s buttons in Now Playing for larger jumps.</value></data>
+  <data name="Shortcut_PlayPause" xml:space="preserve"><value>Play / pause</value></data>
+  <data name="Shortcut_PreviousNextQueue" xml:space="preserve"><value>Previous / next song in the queue</value></data>
+  <data name="Shortcut_Seek5Seconds" xml:space="preserve"><value>Seek back / forward 5 seconds</value></data>
+  <data name="Shortcut_Stage" xml:space="preserve"><value>Open / close fullscreen Stage</value></data>
+  <data name="Shortcut_StageModes" xml:space="preserve"><value>Neon Spectrum / Twin Wave / Halo Circle</value></data>
+  <data name="Shortcut_StageModesKey" xml:space="preserve"><value>1 / 2 / 3 in Stage</value></data>
+  <data name="Shortcut_Volume5Percent" xml:space="preserve"><value>Volume up / down by 5%</value></data>
+  <data name="Stage_Hint" xml:space="preserve"><value>ESC / F11 close  ·  1 Spectrum  ·  2 Twin Wave  ·  3 Halo</value></data>
+  <data name="Stage_ModeHalo" xml:space="preserve"><value>Halo</value></data>
+  <data name="Stage_ModeHaloAutomation" xml:space="preserve"><value>Halo Circle visualizer mode</value></data>
+  <data name="Stage_ModeSpectrum" xml:space="preserve"><value>Spectrum</value></data>
+  <data name="Stage_ModeSpectrumAutomation" xml:space="preserve"><value>Neon Spectrum visualizer mode</value></data>
+  <data name="Stage_ModeTwinWave" xml:space="preserve"><value>Twin Wave</value></data>
+  <data name="Stage_ModeTwinWaveAutomation" xml:space="preserve"><value>Twin Wave visualizer mode</value></data>
+  <data name="Stage_Open" xml:space="preserve"><value>Open Stage (F11)</value></data>
+  <data name="Stage_OpenAutomation" xml:space="preserve"><value>Open or close fullscreen Stage</value></data>
+  <data name="Theme_MidnightLive" xml:space="preserve"><value>Midnight Live</value></data>
+  <data name="Theme_MonoFocus" xml:space="preserve"><value>Mono Focus</value></data>
+  <data name="Theme_NeonStage" xml:space="preserve"><value>Neon Stage</value></data>
+  <data name="Theme_SakuraDream" xml:space="preserve"><value>Sakura Dream</value></data>
+  <data name="TrackCount_Favorites" xml:space="preserve"><value>{0} favorite song(s)</value></data>
+  <data name="TrackCount_FilteredSongs" xml:space="preserve"><value>{0} filtered song(s)</value></data>
+  <data name="TrackCount_Library" xml:space="preserve"><value>{0} song(s) in your library</value></data>
+  <data name="TrackCount_NoSongs" xml:space="preserve"><value>No songs yet - add some music to begin</value></data>
+  <data name="TrackCount_Playlist" xml:space="preserve"><value>{0} song(s) in this playlist</value></data>
+  <data name="TrackCount_RecentlyPlayed" xml:space="preserve"><value>{0} recently played song(s)</value></data>
+  <data name="TrackCount_SearchResults" xml:space="preserve"><value>{0} search result(s)</value></data>
+</root>
