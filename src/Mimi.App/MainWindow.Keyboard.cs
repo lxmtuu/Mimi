@@ -24,6 +24,13 @@ public partial class MainWindow
             return;
         }
 
+        if (e.Key == Key.Escape && isVideoStageOpen)
+        {
+            ExitVideoStage();
+            e.Handled = true;
+            return;
+        }
+
         if (e.Key == Key.Escape && viewModel.IsSettingsOpen)
         {
             ExecuteCommand(viewModel.CloseSettingsCommand);

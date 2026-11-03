@@ -278,7 +278,13 @@ public partial class MainWindow : Window
         // when the Stage window is closed, so this hook runs before the
         // Stage-specific early return.
         if (e.PropertyName == nameof(MainWindowViewModel.IsYouTubePlaying))
+        {
             _ = SyncYouTubePlayerAsync();
+
+            // Closing the player leaves nothing to stage.
+            if (!viewModel.IsYouTubePlaying)
+                ExitVideoStage();
+        }
 
         if (stageWindow is null) return;
 
@@ -422,6 +428,14 @@ public partial class MainWindow : Window
 
     private void ToggleStage()
     {
+        // A playing video is staged in this window (see MainWindow.VideoStage):
+        // the player cannot follow the user to a second window.
+        if (isVideoStageOpen || viewModel.IsYouTubePlaying)
+        {
+            ToggleVideoStage();
+            return;
+        }
+
         if (stageWindow is { IsLoaded: true })
         {
             stageWindow.Close();

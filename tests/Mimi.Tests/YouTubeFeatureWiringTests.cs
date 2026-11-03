@@ -484,6 +484,56 @@ public sealed class YouTubeFeatureWiringTests
         }
     }
 
+    [Fact]
+    public void TheVideoStageReusesTheOnePlayerInsteadOfMovingIt()
+    {
+        var root = FindRepositoryRoot();
+        var stage = Read(root, "src", "Mimi.App", "MainWindow.VideoStage.cs");
+        var shell = Read(root, "src", "Mimi.App", "MainWindow.xaml");
+        var main = Read(root, "src", "Mimi.App", "MainWindow.xaml.cs");
+        var keyboard = Read(root, "src", "Mimi.App", "MainWindow.Keyboard.cs");
+
+        // The shell has to be addressable: the stage collapses it around the
+        // player rather than building a second window with a second player.
+        foreach (var name in new[]
+                 {
+                     "ShellGrid",
+                     "AppHeader",
+                     "AppTransport",
+                     "NavRail",
+                     "MainContent",
+                     "NowPlayingPanel",
+                     "PlayerCard",
+                     "NavColumn",
+                     "MainColumn",
+                     "NowPlayingColumn",
+                     "AppHeaderRow",
+                     "AppTransportRow"
+                 })
+        {
+            Assert.Contains("x:Name=\"" + name + "\"", shell, StringComparison.Ordinal);
+        }
+
+        Assert.Contains("private void EnterVideoStage()", stage, StringComparison.Ordinal);
+        Assert.Contains("private void ExitVideoStage()", stage, StringComparison.Ordinal);
+
+        // Leaving the stage must restore the shell and the card's own height,
+        // otherwise every later layout change stays full-screen.
+        Assert.Contains(
+            "PlayerCard.ClearValue(FrameworkElement.HeightProperty)",
+            stage,
+            StringComparison.Ordinal);
+        Assert.Contains("WindowState = videoStageRestoreState;", stage, StringComparison.Ordinal);
+        Assert.Contains("NowPlayingColumn.Width = new GridLength(270);", stage, StringComparison.Ordinal);
+
+        // The Stage shortcut and the Stage button both go through it.
+        Assert.Contains("ToggleVideoStage();", main, StringComparison.Ordinal);
+        Assert.Contains("if (isVideoStageOpen || viewModel.IsYouTubePlaying)", main, StringComparison.Ordinal);
+
+        // Esc leaves the video before it means anything else.
+        Assert.Contains("Key.Escape && isVideoStageOpen", keyboard, StringComparison.Ordinal);
+    }
+
     private static string Read(string root, params string[] pathParts) =>
         File.ReadAllText(Path.Combine([root, .. pathParts]));
 

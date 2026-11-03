@@ -105,8 +105,11 @@ tooltip) vẫn là màu sáng của Windows. Nay:
 
 - Chưa có chuyển động chuyển cảnh giữa các màn hình (fade 120 ms) vì phải
   kiểm tra ảnh hưởng tới hiệu năng WebView2/visualizer.
-- Video YouTube hiện chỉ nằm trong cửa sổ chính; Stage vẫn chỉ có visualizer
-  (xem mục 7 khi được làm).
+- Stage video đã có: khi đang phát video YouTube, `F11`/nút Stage đưa cửa sổ
+  chính sang toàn màn hình quanh thẻ phát thay vì mở cửa sổ Stage visualizer
+  (chi tiết và lý do kỹ thuật ở `docs/design/YOUTUBE.md`). Chưa hỗ trợ đưa
+  video sang màn hình thứ hai — muốn vậy phải tạo player thứ hai và đồng bộ
+  âm thanh/timeline, là việc riêng cần chủ dự án quyết.
 
 ## 7. Kiểm chứng
 

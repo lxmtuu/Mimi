@@ -131,6 +131,15 @@ quy trình của Google.
   (`api-missing` / `player-missing`) thay vì `null` để log nói rõ vì sao.
 - Nút Play/Pause gửi lệnh **`toggle`**: trang tự đọc trạng thái và lật, nên báo
   cáo cũ không thể biến nút thành nút không làm gì.
+- **Stage video (03/11/2026)**: khi đang phát video YouTube, phím `F11` hoặc
+  nút Stage đưa cửa sổ chính sang chế độ toàn màn hình: phần còn lại của shell
+  (thanh bên, thư viện, header, thanh transport dưới) thu về 0 và thẻ phát
+  chiếm gần trọn cửa sổ. `Esc` hoặc `F11` lần nữa để thoát; đóng player cũng
+  tự thoát. Đây **không phải** cửa sổ Stage thứ hai: WebView2 không thể
+  chuyển sang cửa sổ khác, nên làm vậy sẽ phải tạo player thứ hai — tải lại
+  video, hai nguồn âm thanh và hai timeline phải đồng bộ. Stage video dùng
+  đúng player đang chạy nên hình to hơn mà âm thanh và timeline không đứt.
+  Đánh đổi: chưa đưa được video sang màn hình thứ hai.
 - Không còn chuyện đồng hồ NAudio ghi đè lên timeline của video:
   `RefreshPlaybackPosition` thoát sớm khi `IsYouTubePlaying`.
 - Video chạy hết → player báo `state = 0` → Mimi đóng player, visualizer trở
