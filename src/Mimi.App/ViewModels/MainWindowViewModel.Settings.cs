@@ -83,6 +83,12 @@ public sealed partial class MainWindowViewModel
     /// </summary>
     public ObservableCollection<ThemeOptionViewModel> ThemeOptions { get; } = [];
 
+    /// <summary>
+    /// The colours of the theme currently in use, shown as a small strip in
+    /// Settings. Reading the palette beats discovering it by switching themes.
+    /// </summary>
+    public ObservableCollection<ThemeSwatch> ThemeSwatches { get; } = [];
+
     public string AppVersionLabel =>
         $"Mimi {GetType().Assembly.GetName().Version?.ToString(3) ?? "0.6.0"}";
 
@@ -160,8 +166,24 @@ public sealed partial class MainWindowViewModel
             SaveSettings(force: true);
     }
 
-    private string ApplyUiTheme(string? value) =>
-        themeService?.Apply(value) ?? BuiltInThemes.NormalizeId(value);
+    private string ApplyUiTheme(string? value)
+    {
+        var applied = themeService?.Apply(value) ?? BuiltInThemes.NormalizeId(value);
+        RefreshThemeSwatches();
+        return applied;
+    }
+
+    private void RefreshThemeSwatches()
+    {
+        ThemeSwatches.Clear();
+
+        var theme = themeService?.CurrentTheme ?? BuiltInThemes.Default;
+        foreach (var token in ThemeSwatch.PreviewTokens)
+        {
+            if (theme.TryGetColor(token, out var color))
+                ThemeSwatches.Add(new ThemeSwatch(token, color));
+        }
+    }
 
     /// <summary>
     /// Aligns <see cref="ThemeOptions"/> with the themes the service can
@@ -193,18 +215,16 @@ public sealed partial class MainWindowViewModel
                     option.Id,
                     theme.Id,
                     StringComparison.OrdinalIgnoreCase));
+            var displayName = GetThemeDisplayName(theme);
             if (existing is null)
             {
-                ThemeOptions.Insert(
-                    i,
-                    new ThemeOptionViewModel(
-                        theme.Id,
-                        GetThemeDisplayName(theme),
-                        ThemeCatalog.IsBuiltIn(theme)));
+                ThemeOptions.Insert(i, new ThemeOptionViewModel(theme, displayName));
             }
             else
             {
-                existing.Name = GetThemeDisplayName(theme);
+                // A reloaded community theme can change its colours without
+                // changing its id, so the sample is refreshed too.
+                existing.Apply(theme, displayName);
                 var currentIndex = ThemeOptions.IndexOf(existing);
                 if (currentIndex != i)
                     ThemeOptions.Move(currentIndex, i);
@@ -416,6 +436,7 @@ public sealed partial class MainWindowViewModel
 
         themeService.ReloadCommunityThemes();
         RefreshThemeOptions();
+        RefreshThemeSwatches();
 
         // If the previously selected community theme was removed or became
         // invalid, the service has already fallen back; mirror that here

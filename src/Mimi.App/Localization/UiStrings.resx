@@ -81,6 +81,11 @@
   <data name="Library_EmptyStateTitle" xml:space="preserve"><value>Your stage is still quiet</value></data>
   <data name="Library_FavoriteSelected" xml:space="preserve"><value>♥ Favorite selected</value></data>
   <data name="Library_FileCouldNotBePlayed" xml:space="preserve"><value>This file could not be played</value></data>
+  <data name="Library_FilterArtistChip" xml:space="preserve"><value>Artist</value></data>
+  <data name="Library_FilterAlbumChip" xml:space="preserve"><value>Album</value></data>
+  <data name="Library_FilterGenreChip" xml:space="preserve"><value>Genre</value></data>
+  <data name="Library_FilterFormatChip" xml:space="preserve"><value>Format</value></data>
+  <data name="Library_FilterStateChip" xml:space="preserve"><value>State</value></data>
   <data name="Library_FilterByAlbum" xml:space="preserve"><value>Filter by album</value></data>
   <data name="Library_FilterByArtist" xml:space="preserve"><value>Filter by artist</value></data>
   <data name="Library_FilterByFormat" xml:space="preserve"><value>Filter by format</value></data>

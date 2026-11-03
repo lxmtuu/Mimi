@@ -81,6 +81,11 @@
   <data name="Library_EmptyStateTitle" xml:space="preserve"><value>Sân khấu của bạn vẫn đang yên lặng</value></data>
   <data name="Library_FavoriteSelected" xml:space="preserve"><value>♥ Yêu thích mục đã chọn</value></data>
   <data name="Library_FileCouldNotBePlayed" xml:space="preserve"><value>Không thể phát file này</value></data>
+  <data name="Library_FilterArtistChip" xml:space="preserve"><value>Nghệ sĩ</value></data>
+  <data name="Library_FilterAlbumChip" xml:space="preserve"><value>Album</value></data>
+  <data name="Library_FilterGenreChip" xml:space="preserve"><value>Thể loại</value></data>
+  <data name="Library_FilterFormatChip" xml:space="preserve"><value>Định dạng</value></data>
+  <data name="Library_FilterStateChip" xml:space="preserve"><value>Trạng thái</value></data>
   <data name="Library_FilterByAlbum" xml:space="preserve"><value>Lọc theo album</value></data>
   <data name="Library_FilterByArtist" xml:space="preserve"><value>Lọc theo nghệ sĩ</value></data>
   <data name="Library_FilterByFormat" xml:space="preserve"><value>Lọc theo định dạng</value></data>

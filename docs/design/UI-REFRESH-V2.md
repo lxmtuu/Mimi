@@ -85,15 +85,30 @@ tooltip) vẫn là màu sáng của Windows. Nay:
 - Nút điều hướng: padding `9,7`, chữ 12.5, màu `TextSecondary` để mục đang
   chọn (accent) nổi bật hơn.
 
-## 5. Chưa làm / đề xuất tiếp
+## 5. Bộ lọc Thư viện và bảng màu theme (03/11/2026)
 
-- Thanh lọc Thư viện hiện vẫn là 5 combobox trên một hàng; có thể thu thành
-  nút "Bộ lọc" mở panel, hoặc chip lọc đang bật — cần chủ dự án chọn hướng.
+- **Bộ lọc gọn lại một nút**: năm combobox luôn mở chiếm hai hàng toolbar và
+  không cho biết đang lọc gì. Nay là nút **Bộ lọc** (icon + số bộ lọc đang
+  bật + mũi tên xoay khi mở); bấm mở panel chứa đủ năm bộ lọc kèm nhãn, và
+  panel đóng lại thì **chip** của từng bộ lọc đang bật vẫn nằm trên toolbar,
+  mỗi chip có nút ✕ bỏ riêng bộ lọc đó (`ClearLibraryFilterCommand`). Chip
+  được dựng lại trong `RefreshActiveLibraryFilters()` nên đổi ngôn ngữ hay
+  khôi phục phiên đều khớp.
+- **Chọn theme có màu xem trước**: mỗi dòng trong danh sách theme mang theo
+  nền + accent + accent phụ của chính theme đó, và dưới ô chọn là dải 9 ô màu
+  của theme đang dùng (nền → panel → raised → selected → border → accent →
+  accent phụ → accent nóng → chữ chính). Theme cộng đồng sửa tệp rồi bấm
+  **Tải lại theme** thì cả mẫu màu trong danh sách lẫn dải màu đều cập nhật
+  tại chỗ, không cần chọn lại.
+
+## 6. Chưa làm / đề xuất tiếp
+
 - Chưa có chuyển động chuyển cảnh giữa các màn hình (fade 120 ms) vì phải
   kiểm tra ảnh hưởng tới hiệu năng WebView2/visualizer.
-- Chưa có bảng "theme preview" (ô màu) trong Cài đặt; hiện chỉ có tên theme.
+- Video YouTube hiện chỉ nằm trong cửa sổ chính; Stage vẫn chỉ có visualizer
+  (xem mục 7 khi được làm).
 
-## 6. Kiểm chứng
+## 7. Kiểm chứng
 
 - Unit test: `UiRefreshWiringTests` (style/brush wiring + mọi file XAML còn
   parse được + theme mặc định đúng xanh dương + không còn màu viết cứng),

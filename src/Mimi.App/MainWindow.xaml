@@ -57,6 +57,8 @@
         <StreamGeometry x:Key="ShuffleIconGeometry">M3,6.5 H14 V4 L21,8 L14,12 V9.5 H3 Z M21,14.5 H10 V12 L3,16 L10,20 V17.5 H21 Z</StreamGeometry>
         <StreamGeometry x:Key="RepeatIconGeometry">M17,3 L21,7 L17,11 V8.5 H8 A2.5,2.5 0 0 0 5.5,11 V12 H3 V11 A5,5 0 0 1 8,6 H17 Z M7,21 L3,17 L7,13 V15.5 H16 A2.5,2.5 0 0 0 18.5,13 V12 H21 V13 A5,5 0 0 1 16,18 H7 Z</StreamGeometry>
         <StreamGeometry x:Key="SpeakerIconGeometry">M4,9 V15 H8 L13,19 V5 L8,9 Z M16,9 C17.2,10.6 17.2,13.4 16,15 L14.8,13.8 C15.5,12.7 15.5,11.3 14.8,10.2 Z M18.5,6.5 C21,9.5 21,14.5 18.5,17.5 L17.2,16.2 C19,13.8 19,10.2 17.2,7.8 Z</StreamGeometry>
+        <StreamGeometry x:Key="FilterIconGeometry">M3,5 H21 L14,12.6 V20 L10,17.4 V12.6 Z</StreamGeometry>
+        <StreamGeometry x:Key="ChevronDownIconGeometry">M6,9.4 L12,15.4 L18,9.4 L19.4,10.8 L12,18.2 L4.6,10.8 Z</StreamGeometry>
         <StreamGeometry x:Key="SpeakerMutedIconGeometry">M4,9 V15 H8 L13,19 V5 L8,9 Z M16.5,9 L18,10.5 L19.5,9 L21,10.5 L19.5,12 L21,13.5 L19.5,15 L18,13.5 L16.5,15 L15,13.5 L16.5,12 L15,10.5 Z</StreamGeometry>
 
         <Style x:Key="IconPathStyle" TargetType="{x:Type Path}">
@@ -731,67 +733,168 @@
                     </Border>
                 </DockPanel>
 
-                <WrapPanel Grid.Row="2" Margin="2,0,2,10" VerticalAlignment="Center">
-                    <TextBlock Text="{Binding Loc[Library_Filters]}" Foreground="{StaticResource TextMutedBrush}" FontSize="11"
-                               FontWeight="SemiBold" VerticalAlignment="Center"
-                               Margin="0,0,8,4"/>
-                    <ComboBox ItemsSource="{Binding ArtistFilterOptions}"
-                              SelectedItem="{Binding SelectedArtistFilter, Mode=TwoWay}"
-                              Width="132" Height="30" Margin="0,0,6,4" Padding="6,2"
-                              Background="{StaticResource RaisedBackgroundBrush}" Foreground="{StaticResource TextPrimaryBrush}" BorderThickness="0"
-                              ToolTip="{Binding Loc[Library_FilterByArtist]}"
-                              AutomationProperties.Name="{Binding Loc[Library_FilterByArtist]}"/>
-                    <ComboBox ItemsSource="{Binding AlbumFilterOptions}"
-                              SelectedItem="{Binding SelectedAlbumFilter, Mode=TwoWay}"
-                              Width="132" Height="30" Margin="0,0,6,4" Padding="6,2"
-                              Background="{StaticResource RaisedBackgroundBrush}" Foreground="{StaticResource TextPrimaryBrush}" BorderThickness="0"
-                              ToolTip="{Binding Loc[Library_FilterByAlbum]}"
-                              AutomationProperties.Name="{Binding Loc[Library_FilterByAlbum]}"/>
-                    <ComboBox ItemsSource="{Binding GenreFilterOptions}"
-                              SelectedItem="{Binding SelectedGenreFilter, Mode=TwoWay}"
-                              Width="118" Height="30" Margin="0,0,6,4" Padding="6,2"
-                              Background="{StaticResource RaisedBackgroundBrush}" Foreground="{StaticResource TextPrimaryBrush}" BorderThickness="0"
-                              ToolTip="{Binding Loc[Library_FilterByGenre]}"
-                              AutomationProperties.Name="{Binding Loc[Library_FilterByGenre]}"/>
-                    <ComboBox ItemsSource="{Binding FormatFilterOptions}"
-                              SelectedItem="{Binding SelectedFormatFilter, Mode=TwoWay}"
-                              Width="108" Height="30" Margin="0,0,6,4" Padding="6,2"
-                              Background="{StaticResource RaisedBackgroundBrush}" Foreground="{StaticResource TextPrimaryBrush}" BorderThickness="0"
-                              ToolTip="{Binding Loc[Library_FilterByFormat]}"
-                              AutomationProperties.Name="{Binding Loc[Library_FilterByFormat]}"/>
-                    <ComboBox ItemsSource="{Binding PlaybackStateFilterOptions}"
-                              SelectedItem="{Binding SelectedPlaybackStateFilter, Mode=TwoWay}"
-                              Width="112" Height="30" Margin="0,0,6,4" Padding="6,2"
-                              Background="{StaticResource RaisedBackgroundBrush}" Foreground="{StaticResource TextPrimaryBrush}" BorderThickness="0"
-                              ToolTip="{Binding Loc[Library_FilterByPlaybackState]}"
-                              AutomationProperties.Name="{Binding Loc[Library_FilterByPlaybackState]}"/>
-                    <Button Content="{Binding Loc[Common_Clear]}" Command="{Binding ClearLibraryFiltersCommand}"
-                            Padding="9,5" Margin="0,0,10,4" FontSize="11"
-                            AutomationProperties.Name="{Binding Loc[Library_ClearFiltersAutomation]}"/>
-                    <TextBlock Text="{Binding SelectedTracksCountLabel}" Foreground="{StaticResource TextSecondaryBrush}"
-                               FontSize="11" VerticalAlignment="Center" Margin="2,0,6,4"
-                               Visibility="{Binding HasSelectedTracks, Converter={StaticResource BooleanToVisibilityConverter}}"/>
-                    <Button Content="{Binding Loc[Library_PlayNext]}"
-                            Command="{Binding PlayNextSelectedCommand}"
-                            Padding="9,5" Margin="0,0,6,4" FontSize="11"
-                            Visibility="{Binding HasSelectedTracks, Converter={StaticResource BooleanToVisibilityConverter}}"
-                            AutomationProperties.Name="{Binding Loc[Library_PlaySelectedSongsNext]}"/>
-                    <Button Content="{Binding Loc[Library_AddToQueue]}"
-                            Command="{Binding AddSelectedToQueueCommand}"
-                            Padding="9,5" Margin="0,0,6,4" FontSize="11"
-                            Visibility="{Binding HasSelectedTracks, Converter={StaticResource BooleanToVisibilityConverter}}"
-                            AutomationProperties.Name="{Binding Loc[Library_AddSelectedSongsToQueue]}"/>
-                    <Button Content="{Binding Loc[Library_FavoriteSelected]}"
-                            Command="{Binding ToggleSelectedFavoritesCommand}"
-                            Padding="9,5" Margin="0,0,6,4" FontSize="11"
-                            Visibility="{Binding HasMultipleSelectedTracks, Converter={StaticResource BooleanToVisibilityConverter}}"
-                            AutomationProperties.Name="{Binding Loc[Library_ToggleFavoritesSelected]}"/>
-                    <Button Content="{Binding Loc[Common_RemoveSelected]}"
-                            Command="{Binding RemoveSelectedTrackCommand}"
-                            Padding="9,5" Margin="0,0,0,4" FontSize="11"
-                            Visibility="{Binding HasMultipleSelectedTracks, Converter={StaticResource BooleanToVisibilityConverter}}"
-                            AutomationProperties.Name="{Binding Loc[Library_RemoveSelectedSongs]}"/>
-                </WrapPanel>
+                <!-- Five always-open comboboxes pushed the toolbar onto two
+                     rows and never showed which filters were on. The filters
+                     now sit behind one button, and anything active stays
+                     visible as a chip that can be removed without opening the
+                     panel. -->
+                <StackPanel Grid.Row="2" Margin="2,0,2,10">
+                    <WrapPanel VerticalAlignment="Center">
+                        <Button Command="{Binding ToggleFilterPanelCommand}"
+                                Padding="10,5" Margin="0,0,8,4" FontSize="11"
+                                ToolTip="{Binding Loc[Library_Filters]}"
+                                AutomationProperties.Name="{Binding Loc[Library_Filters]}">
+                            <StackPanel Orientation="Horizontal">
+                                <Path Data="{StaticResource FilterIconGeometry}" Width="13" Height="13"
+                                      Stretch="Uniform" VerticalAlignment="Center"
+                                      Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}"/>
+                                <TextBlock Text="{Binding Loc[Library_Filters]}" Margin="7,0,0,0" VerticalAlignment="Center"/>
+                                <Border Background="{StaticResource AccentBrush}" CornerRadius="6" Padding="5,0"
+                                        Margin="6,0,0,0" VerticalAlignment="Center"
+                                        Visibility="{Binding HasActiveLibraryFilters, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                    <TextBlock Text="{Binding ActiveLibraryFilterCount}" FontSize="9" FontWeight="Bold"
+                                               Foreground="{StaticResource OnAccentBrush}"/>
+                                </Border>
+                                <Path Data="{StaticResource ChevronDownIconGeometry}" Width="10" Height="10"
+                                      Stretch="Uniform" Margin="6,1,0,0" VerticalAlignment="Center"
+                                      Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}">
+                                    <Path.Style>
+                                        <Style TargetType="{x:Type Path}">
+                                            <Setter Property="RenderTransform">
+                                                <Setter.Value>
+                                                    <RotateTransform CenterX="5" CenterY="5" Angle="0"/>
+                                                </Setter.Value>
+                                            </Setter>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsFilterPanelOpen}" Value="True">
+                                                    <Setter Property="RenderTransform">
+                                                        <Setter.Value>
+                                                            <RotateTransform CenterX="5" CenterY="5" Angle="180"/>
+                                                        </Setter.Value>
+                                                    </Setter>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Path.Style>
+                                </Path>
+                            </StackPanel>
+                        </Button>
+                        <ItemsControl ItemsSource="{Binding ActiveLibraryFilters}" Margin="0,0,4,4"
+                                      VerticalAlignment="Center">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Background="{StaticResource SelectedBackgroundBrush}"
+                                            BorderBrush="{StaticResource SelectedBorderBrush}" BorderThickness="1"
+                                            CornerRadius="9" Padding="9,2,3,2" Margin="0,0,6,0">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{Binding Text}" FontSize="11"
+                                                       Foreground="{StaticResource TextStrongBrush}"
+                                                       VerticalAlignment="Center"/>
+                                            <Button Content="✕" Padding="4,0" Margin="5,0,0,0" FontSize="9"
+                                                    Background="Transparent" BorderThickness="0"
+                                                    Command="{Binding DataContext.ClearLibraryFilterCommand, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}"
+                                                    CommandParameter="{Binding Kind}"
+                                                    ToolTip="{Binding Text}"
+                                                    AutomationProperties.Name="{Binding Text}"/>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <TextBlock Text="{Binding SelectedTracksCountLabel}" Foreground="{StaticResource TextSecondaryBrush}"
+                                   FontSize="11" VerticalAlignment="Center" Margin="2,0,6,4"
+                                   Visibility="{Binding HasSelectedTracks, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                        <Button Content="{Binding Loc[Library_PlayNext]}"
+                                Command="{Binding PlayNextSelectedCommand}"
+                                Padding="9,5" Margin="0,0,6,4" FontSize="11"
+                                Visibility="{Binding HasSelectedTracks, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                AutomationProperties.Name="{Binding Loc[Library_PlaySelectedSongsNext]}"/>
+                        <Button Content="{Binding Loc[Library_AddToQueue]}"
+                                Command="{Binding AddSelectedToQueueCommand}"
+                                Padding="9,5" Margin="0,0,6,4" FontSize="11"
+                                Visibility="{Binding HasSelectedTracks, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                AutomationProperties.Name="{Binding Loc[Library_AddSelectedSongsToQueue]}"/>
+                        <Button Content="{Binding Loc[Library_FavoriteSelected]}"
+                                Command="{Binding ToggleSelectedFavoritesCommand}"
+                                Padding="9,5" Margin="0,0,6,4" FontSize="11"
+                                Visibility="{Binding HasMultipleSelectedTracks, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                AutomationProperties.Name="{Binding Loc[Library_ToggleFavoritesSelected]}"/>
+                        <Button Content="{Binding Loc[Common_RemoveSelected]}"
+                                Command="{Binding RemoveSelectedTrackCommand}"
+                                Padding="9,5" Margin="0,0,0,4" FontSize="11"
+                                Visibility="{Binding HasMultipleSelectedTracks, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                AutomationProperties.Name="{Binding Loc[Library_RemoveSelectedSongs]}"/>
+                    </WrapPanel>
+
+                    <Border Background="{StaticResource RaisedBackgroundBrush}"
+                            BorderBrush="{StaticResource BorderBrush}" BorderThickness="1"
+                            CornerRadius="12" Padding="12,10,12,6" Margin="0,2,0,0"
+                            Visibility="{Binding IsFilterPanelOpen, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <StackPanel>
+                            <WrapPanel>
+                                <StackPanel Width="196" Margin="0,0,10,6">
+                                    <TextBlock Text="{Binding Loc[Library_FilterByArtist]}"
+                                               Foreground="{StaticResource TextMutedBrush}" FontSize="10" Margin="0,0,0,4"/>
+                                    <ComboBox ItemsSource="{Binding ArtistFilterOptions}"
+                                              SelectedItem="{Binding SelectedArtistFilter, Mode=TwoWay}"
+                                              Height="30" Padding="6,2"
+                                              Background="{StaticResource SunkenBackgroundBrush}"
+                                              Foreground="{StaticResource TextPrimaryBrush}" BorderThickness="0"
+                                              AutomationProperties.Name="{Binding Loc[Library_FilterByArtist]}"/>
+                                </StackPanel>
+                                <StackPanel Width="196" Margin="0,0,10,6">
+                                    <TextBlock Text="{Binding Loc[Library_FilterByAlbum]}"
+                                               Foreground="{StaticResource TextMutedBrush}" FontSize="10" Margin="0,0,0,4"/>
+                                    <ComboBox ItemsSource="{Binding AlbumFilterOptions}"
+                                              SelectedItem="{Binding SelectedAlbumFilter, Mode=TwoWay}"
+                                              Height="30" Padding="6,2"
+                                              Background="{StaticResource SunkenBackgroundBrush}"
+                                              Foreground="{StaticResource TextPrimaryBrush}" BorderThickness="0"
+                                              AutomationProperties.Name="{Binding Loc[Library_FilterByAlbum]}"/>
+                                </StackPanel>
+                                <StackPanel Width="196" Margin="0,0,10,6">
+                                    <TextBlock Text="{Binding Loc[Library_FilterByGenre]}"
+                                               Foreground="{StaticResource TextMutedBrush}" FontSize="10" Margin="0,0,0,4"/>
+                                    <ComboBox ItemsSource="{Binding GenreFilterOptions}"
+                                              SelectedItem="{Binding SelectedGenreFilter, Mode=TwoWay}"
+                                              Height="30" Padding="6,2"
+                                              Background="{StaticResource SunkenBackgroundBrush}"
+                                              Foreground="{StaticResource TextPrimaryBrush}" BorderThickness="0"
+                                              AutomationProperties.Name="{Binding Loc[Library_FilterByGenre]}"/>
+                                </StackPanel>
+                                <StackPanel Width="196" Margin="0,0,10,6">
+                                    <TextBlock Text="{Binding Loc[Library_FilterByFormat]}"
+                                               Foreground="{StaticResource TextMutedBrush}" FontSize="10" Margin="0,0,0,4"/>
+                                    <ComboBox ItemsSource="{Binding FormatFilterOptions}"
+                                              SelectedItem="{Binding SelectedFormatFilter, Mode=TwoWay}"
+                                              Height="30" Padding="6,2"
+                                              Background="{StaticResource SunkenBackgroundBrush}"
+                                              Foreground="{StaticResource TextPrimaryBrush}" BorderThickness="0"
+                                              AutomationProperties.Name="{Binding Loc[Library_FilterByFormat]}"/>
+                                </StackPanel>
+                                <StackPanel Width="196" Margin="0,0,10,6">
+                                    <TextBlock Text="{Binding Loc[Library_FilterByPlaybackState]}"
+                                               Foreground="{StaticResource TextMutedBrush}" FontSize="10" Margin="0,0,0,4"/>
+                                    <ComboBox ItemsSource="{Binding PlaybackStateFilterOptions}"
+                                              SelectedItem="{Binding SelectedPlaybackStateFilter, Mode=TwoWay}"
+                                              Height="30" Padding="6,2"
+                                              Background="{StaticResource SunkenBackgroundBrush}"
+                                              Foreground="{StaticResource TextPrimaryBrush}" BorderThickness="0"
+                                              AutomationProperties.Name="{Binding Loc[Library_FilterByPlaybackState]}"/>
+                                </StackPanel>
+                            </WrapPanel>
+                            <Button Content="{Binding Loc[Common_Clear]}"
+                                    Command="{Binding ClearLibraryFiltersCommand}"
+                                    HorizontalAlignment="Right" Padding="9,4" FontSize="11"
+                                    AutomationProperties.Name="{Binding Loc[Library_ClearFiltersAutomation]}"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
 
                 <Border Grid.Row="3" Background="{StaticResource PanelBackgroundBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="16" Padding="8">
                     <Grid>
@@ -1718,16 +1821,49 @@
                                 <TextBlock Text="{Binding Loc[Settings_LanguageDescription]}"
                                            Foreground="{StaticResource TextMutedBrush}" FontSize="11" TextWrapping="Wrap" Margin="0,8,0,0"/>
                                 <TextBlock Text="{Binding Loc[Settings_Theme]}" Margin="0,18,0,6"/>
+                                <!-- Each entry carries its own colours, so a
+                                     theme can be judged before it is applied. -->
                                 <ComboBox ItemsSource="{Binding ThemeOptions}"
-                                          DisplayMemberPath="Name"
                                           SelectedValuePath="Id"
                                           SelectedValue="{Binding UiTheme, Mode=TwoWay}"
-                                          AutomationProperties.Name="{Binding Loc[Settings_Theme]}"/>
-                                <StackPanel Orientation="Horizontal" Margin="0,10,0,0" IsHitTestVisible="False">
-                                    <Ellipse Width="12" Height="12" Fill="{StaticResource AccentBrush}"/>
-                                    <Ellipse Width="12" Height="12" Fill="{StaticResource AccentSecondaryBrush}" Margin="6,0,0,0"/>
-                                    <Ellipse Width="12" Height="12" Fill="{StaticResource AccentHotBrush}" Margin="6,0,0,0"/>
-                                </StackPanel>
+                                          AutomationProperties.Name="{Binding Loc[Settings_Theme]}">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal">
+                                                <Border Width="44" Height="14" CornerRadius="4"
+                                                        Background="{Binding Background}"
+                                                        BorderBrush="{StaticResource BorderBrush}"
+                                                        BorderThickness="1"/>
+                                                <Border Width="14" Height="14" CornerRadius="4" Margin="3,0,0,0"
+                                                        Background="{Binding Accent}"/>
+                                                <Border Width="14" Height="14" CornerRadius="4" Margin="3,0,0,0"
+                                                        Background="{Binding AccentSecondary}"/>
+                                                <TextBlock Text="{Binding Name}" Margin="8,0,0,0"
+                                                           VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+                                <!-- Palette of the theme in use: surfaces first,
+                                     then accents, so switching is less blind. -->
+                                <ItemsControl ItemsSource="{Binding ThemeSwatches}" Margin="0,10,0,0"
+                                              IsHitTestVisible="False"
+                                              AutomationProperties.Name="{Binding Loc[Settings_Theme]}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <StackPanel Orientation="Horizontal"/>
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Width="26" Height="12" CornerRadius="3" Margin="0,0,4,0"
+                                                    Background="{Binding Brush}"
+                                                    BorderBrush="{StaticResource BorderBrush}"
+                                                    BorderThickness="1"
+                                                    ToolTip="{Binding Token}"/>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
                                 <TextBlock Text="{Binding Loc[Settings_ThemeDescription]}"
                                            Foreground="{StaticResource TextMutedBrush}" FontSize="11" TextWrapping="Wrap" Margin="0,8,0,0"/>
                                 <WrapPanel Margin="0,10,0,0">

@@ -1,5 +1,6 @@
 using System.Xml.Linq;
 using Mimi.Theming;
+using Mimi.ViewModels;
 
 namespace Mimi.Tests;
 
@@ -165,6 +166,108 @@ public sealed class UiRefreshWiringTests
         var accent = theme.GetColor(ThemeTokens.Accent);
         Assert.True(accent.B > accent.R + 0x40);
         Assert.True(accent.B > accent.G + 0x20);
+    }
+
+    [Fact]
+    public void FiltersHideBehindOneButtonAndStayVisibleAsChips()
+    {
+        var root = FindRepositoryRoot();
+        var shell = Read(root, "src", "Mimi.App", "MainWindow.xaml");
+        var viewModel = Read(
+            root,
+            "src",
+            "Mimi.App",
+            "ViewModels",
+            "MainWindowViewModel.cs");
+
+        // One button instead of five always-open comboboxes.
+        Assert.Contains("ToggleFilterPanelCommand", shell, StringComparison.Ordinal);
+        Assert.Contains("Loc[Library_Filters]", shell, StringComparison.Ordinal);
+
+        // Whatever is filtering the list stays readable without the panel.
+        Assert.Contains(
+            "ItemsSource=\"{Binding ActiveLibraryFilters}\"",
+            shell,
+            StringComparison.Ordinal);
+        Assert.Contains("ClearLibraryFilterCommand", shell, StringComparison.Ordinal);
+        Assert.Contains("ActiveLibraryFilterCount", shell, StringComparison.Ordinal);
+
+        // The panel itself still holds all five, so nothing was lost.
+        foreach (var option in new[]
+                 {
+                     "ArtistFilterOptions",
+                     "AlbumFilterOptions",
+                     "GenreFilterOptions",
+                     "FormatFilterOptions",
+                     "PlaybackStateFilterOptions"
+                 })
+        {
+            Assert.Contains(
+                "ItemsSource=\"{Binding " + option + "}\"",
+                shell,
+                StringComparison.Ordinal);
+        }
+
+        // Chips are rebuilt from the filters that are actually set.
+        Assert.Contains(
+            "private void RefreshActiveLibraryFilters()",
+            viewModel,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "RefreshActiveLibraryFilters();",
+            viewModel,
+            StringComparison.Ordinal);
+        foreach (var key in new[]
+                 {
+                     "Library_FilterArtistChip",
+                     "Library_FilterAlbumChip",
+                     "Library_FilterGenreChip",
+                     "Library_FilterFormatChip",
+                     "Library_FilterStateChip"
+                 })
+        {
+            Assert.Contains(key, viewModel, StringComparison.Ordinal);
+        }
+    }
+
+    [Fact]
+    public void ThemePickerShowsItsColoursBeforeTheyAreApplied()
+    {
+        var root = FindRepositoryRoot();
+        var shell = Read(root, "src", "Mimi.App", "MainWindow.xaml");
+
+        // Each entry carries a sample of the theme it would apply.
+        Assert.Contains("ItemsSource=\"{Binding ThemeOptions}\"", shell, StringComparison.Ordinal);
+        Assert.Contains("Background=\"{Binding Background}\"", shell, StringComparison.Ordinal);
+        Assert.Contains("Background=\"{Binding Accent}\"", shell, StringComparison.Ordinal);
+        Assert.Contains("Background=\"{Binding AccentSecondary}\"", shell, StringComparison.Ordinal);
+
+        // And the theme in use shows its whole palette, not three dots.
+        Assert.Contains("ItemsSource=\"{Binding ThemeSwatches}\"", shell, StringComparison.Ordinal);
+
+        var option = new ThemeOptionViewModel(Mimi.Theming.BuiltInThemes.Default, "Neon Stage");
+        var accent = Assert.IsType<System.Windows.Media.SolidColorBrush>(option.Accent);
+        Assert.Equal(
+            System.Windows.Media.Color.FromRgb(0x3E, 0x8B, 0xFF),
+            accent.Color);
+        Assert.True(accent.IsFrozen);
+
+        // A reloaded theme keeps the option object but repaints its sample.
+        var reloadedColors = new Dictionary<string, string>(
+            Mimi.Theming.BuiltInThemes.Default.Colors,
+            StringComparer.OrdinalIgnoreCase)
+        {
+            [Mimi.Theming.ThemeTokens.Accent] = "#FF0000"
+        };
+        var reloaded = new Mimi.Theming.ThemeDefinition(
+            Mimi.Theming.BuiltInThemes.Default.Id,
+            "Neon Stage",
+            reloadedColors);
+
+        option.Apply(reloaded, "Neon Stage");
+
+        var repainted = Assert.IsType<System.Windows.Media.SolidColorBrush>(option.Accent);
+        Assert.Equal(System.Windows.Media.Color.FromRgb(0xFF, 0x00, 0x00), repainted.Color);
     }
 
     [Fact]
