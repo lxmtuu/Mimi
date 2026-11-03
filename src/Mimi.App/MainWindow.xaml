@@ -339,10 +339,10 @@
         </Grid.RowDefinitions>
         <DockPanel Grid.Row="0" Margin="6,2,6,18">
             <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
-                <Border Width="42" Height="42" CornerRadius="14" Background="{StaticResource AccentBrush}">
-                    <TextBlock Text="M" Foreground="{StaticResource OnAccentBrush}" FontSize="25" FontWeight="Bold"
-                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                </Border>
+                <Image Width="42" Height="42"
+                       Source="pack://application:,,,/Assets/mimi-256.png"
+                       Stretch="Uniform"
+                       RenderOptions.BitmapScalingMode="HighQuality"/>
                 <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
                     <TextBlock Text="MIMI" FontSize="18" FontWeight="Bold"/>
                     <TextBlock Text="{Binding Loc[App_MusicUniverse]}" FontSize="10" Foreground="{StaticResource TextMutedBrush}"/>

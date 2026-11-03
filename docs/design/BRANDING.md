@@ -21,8 +21,10 @@ sở hữu trí tuệ của bên thứ ba.
 - `src/Mimi.App/Assets/mimi-logo.png`: file gốc (master) 870×870
   RGBA sau khi xử lý, góc bo trong suốt. Đây là nguồn sự thật để
   xuất lại các cỡ khác.
-- `src/Mimi.App/Assets/mimi-256.png`: bản 256×256 dùng cho hiển
-  thị/tài liệu.
+- `src/Mimi.App/Assets/mimi-256.png`: bản 256×256 được đóng
+  gói dạng WPF `Resource` và dùng làm dấu hiệu thương hiệu ở
+  góc trái header trong cửa sổ chính, đồng thời dùng cho tài
+  liệu khi cần bản xem trước.
 - `src/Mimi.App/Assets/mimi.ico`: icon ứng dụng dạng ICO gồm 9
   cỡ 16, 20, 24, 32, 40, 48, 64, 128, 256 px, được nối bằng
   `<ApplicationIcon>Assets\mimi.ico</ApplicationIcon>` trong

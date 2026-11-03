@@ -69,6 +69,22 @@ public sealed class AppIconTests
             "<ApplicationIcon>Assets\\mimi.ico</ApplicationIcon>",
             project,
             StringComparison.Ordinal);
+        Assert.Contains(
+            "<Resource Include=\"Assets\\mimi-256.png\" />",
+            project,
+            StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void InAppBrandMarkUsesTheMascotLogo()
+    {
+        var mainWindowPath = Path.Combine(
+            FindRepositoryRoot(), "src", "Mimi.App", "MainWindow.xaml");
+        var mainWindow = File.ReadAllText(mainWindowPath);
+        Assert.Contains(
+            "pack://application:,,,/Assets/mimi-256.png",
+            mainWindow,
+            StringComparison.Ordinal);
     }
 
     private static (int Width, int Height) ReadPngSize(string path)
