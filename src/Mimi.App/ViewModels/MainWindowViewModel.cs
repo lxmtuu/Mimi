@@ -839,7 +839,6 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         SaveSettings();
     }
 
-    [RelayCommand]
     /// <summary>
     /// The five filters live behind one button: keeping them all on screen
     /// pushed the toolbar onto two rows and showed no state at all.
@@ -905,6 +904,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         ActiveLibraryFilters.Add(new LibraryFilterChip(kind, Loc[labelKey], value));
     }
 
+    [RelayCommand]
     private void ClearLibraryFilters()
     {
         SelectedArtistFilter = AllArtistsFilter;
