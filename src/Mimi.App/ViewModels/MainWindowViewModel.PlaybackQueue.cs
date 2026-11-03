@@ -117,13 +117,13 @@ public sealed partial class MainWindowViewModel
     public double TaskbarProgressValue =>
         Math.Clamp(ProgressPercent / 100d, 0, 1);
 
-    public TaskbarItemProgressState TaskbarProgressState => CurrentTrack is null
+    public TaskbarItemProgressState TaskbarProgressState => !HasCurrentPlaybackSource
         ? TaskbarItemProgressState.None
         : IsPlaying
             ? TaskbarItemProgressState.Normal
             : TaskbarItemProgressState.Paused;
 
-    public string TaskbarDescription => CurrentTrack is null
+    public string TaskbarDescription => !HasCurrentPlaybackSource
         ? "Mimi"
         : $"{NowPlayingTitle} — {NowPlayingSubtitle}";
 
@@ -170,10 +170,13 @@ public sealed partial class MainWindowViewModel
             AudioOutputNotice = string.Empty;
     }
 
-    partial void OnIsPlayingChanged(bool value) =>
+    partial void OnIsPlayingChanged(bool value)
+    {
         CurrentTrack?.SetCurrentPlaybackState(
             isCurrentTrack: true,
             isPlaying: value);
+        RefreshRadioStationPlaybackStates();
+    }
 
     private void AudioPlayer_OutputStatusChanged(
         object? sender,
@@ -274,7 +277,7 @@ public sealed partial class MainWindowViewModel
     {
         RefreshAudioOutputStatus(
             ex.Status,
-            playbackInterrupted: CurrentTrack is not null);
+            playbackInterrupted: HasCurrentPlaybackSource);
         RefreshPlaybackState();
         Log.Warning(
             ex,
@@ -375,7 +378,7 @@ public sealed partial class MainWindowViewModel
     [RelayCommand]
     private void PausePlayback()
     {
-        if (CurrentTrack is not null && audioPlayer.IsPlaying)
+        if (HasCurrentPlaybackSource && audioPlayer.IsPlaying)
             audioPlayer.Pause();
 
         RefreshPlaybackState();

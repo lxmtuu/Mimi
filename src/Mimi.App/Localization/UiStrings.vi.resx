@@ -143,6 +143,7 @@
   <data name="Nav_Home" xml:space="preserve"><value>Trang chủ</value></data>
   <data name="Nav_MyLibrary" xml:space="preserve"><value>Thư viện của tôi</value></data>
   <data name="Nav_Playlists" xml:space="preserve"><value>DANH SÁCH PHÁT</value></data>
+  <data name="Nav_Radio" xml:space="preserve"><value>Radio trực tuyến</value></data>
   <data name="Nav_RecentlyPlayed" xml:space="preserve"><value>Đã nghe gần đây</value></data>
   <data name="Nav_ScanFolder" xml:space="preserve"><value>Quét thư mục</value></data>
   <data name="Nav_Settings" xml:space="preserve"><value>Cài đặt</value></data>
@@ -231,6 +232,27 @@
   <data name="Queue_RemoveFromQueue" xml:space="preserve"><value>Xoá khỏi hàng đợi</value></data>
   <data name="Queue_RemoveSelectedAutomation" xml:space="preserve"><value>Xoá bài đã chọn khỏi hàng đợi</value></data>
   <data name="Queue_Status" xml:space="preserve"><value>{0} sắp phát · {1} · {2}</value></data>
+  <data name="Radio_Connecting" xml:space="preserve"><value>Đang kết nối…</value></data>
+  <data name="Radio_Description" xml:space="preserve"><value>Các đài phát trực tiếp từ danh mục Radio Browser. Thư viện cục bộ của bạn vẫn hoạt động khi ngoại tuyến.</value></data>
+  <data name="Radio_Homepage" xml:space="preserve"><value>Trang chủ</value></data>
+  <data name="Radio_HomepageOpenFailed" xml:space="preserve"><value>Không thể mở trang chủ của đài này.</value></data>
+  <data name="Radio_Live" xml:space="preserve"><value>TRỰC TIẾP</value></data>
+  <data name="Radio_LoadFailed" xml:space="preserve"><value>Không thể tải danh sách đài. Hãy kiểm tra kết nối và thử lại.</value></data>
+  <data name="Radio_LoadingStations" xml:space="preserve"><value>Đang tải các đài trực tiếp…</value></data>
+  <data name="Radio_NoSearchResults" xml:space="preserve"><value>Không có đài trực tiếp nào khớp với tìm kiếm của bạn.</value></data>
+  <data name="Radio_NoStations" xml:space="preserve"><value>Hiện không có đài trực tiếp nào khả dụng.</value></data>
+  <data name="Radio_PlayFailed" xml:space="preserve"><value>Không thể phát đài này. Đài có thể đang ngoại tuyến, hoặc Windows không mở được định dạng stream của đài.</value></data>
+  <data name="Radio_PlayStationAutomation" xml:space="preserve"><value>Phát hoặc tạm dừng đài này</value></data>
+  <data name="Radio_ProviderAttribution" xml:space="preserve"><value>Danh mục đài do Radio Browser cung cấp</value></data>
+  <data name="Radio_Refresh" xml:space="preserve"><value>Làm mới</value></data>
+  <data name="Radio_RefreshAutomation" xml:space="preserve"><value>Làm mới danh sách đài radio</value></data>
+  <data name="Radio_Search" xml:space="preserve"><value>Tìm kiếm</value></data>
+  <data name="Radio_SearchAutomation" xml:space="preserve"><value>Tìm kiếm đài radio</value></data>
+  <data name="Radio_SearchLabel" xml:space="preserve"><value>Tìm kiếm đài</value></data>
+  <data name="Radio_StationListAutomation" xml:space="preserve"><value>Các đài radio trực tuyến</value></data>
+  <data name="Radio_StationsAvailable" xml:space="preserve"><value>{0} đài trực tiếp khả dụng</value></data>
+  <data name="Radio_Title" xml:space="preserve"><value>Radio trực tuyến</value></data>
+  <data name="Radio_Unavailable" xml:space="preserve"><value>Radio trực tuyến không khả dụng trong bản này.</value></data>
   <data name="Scan_Canceled" xml:space="preserve"><value>Đã huỷ quét</value></data>
   <data name="Scan_Canceling" xml:space="preserve"><value>Đang huỷ quét…</value></data>
   <data name="Scan_CouldNotScanFiles" xml:space="preserve"><value>Không thể quét các file nhạc đó.&#10;&#10;{0}</value></data>

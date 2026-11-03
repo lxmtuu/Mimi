@@ -143,6 +143,7 @@
   <data name="Nav_Home" xml:space="preserve"><value>Home</value></data>
   <data name="Nav_MyLibrary" xml:space="preserve"><value>My Library</value></data>
   <data name="Nav_Playlists" xml:space="preserve"><value>PLAYLISTS</value></data>
+  <data name="Nav_Radio" xml:space="preserve"><value>Internet Radio</value></data>
   <data name="Nav_RecentlyPlayed" xml:space="preserve"><value>Recently played</value></data>
   <data name="Nav_ScanFolder" xml:space="preserve"><value>Scan a folder</value></data>
   <data name="Nav_Settings" xml:space="preserve"><value>Settings</value></data>
@@ -231,6 +232,27 @@
   <data name="Queue_RemoveFromQueue" xml:space="preserve"><value>Remove from queue</value></data>
   <data name="Queue_RemoveSelectedAutomation" xml:space="preserve"><value>Remove selected song from queue</value></data>
   <data name="Queue_Status" xml:space="preserve"><value>{0} up next · {1} · {2}</value></data>
+  <data name="Radio_Connecting" xml:space="preserve"><value>Connecting…</value></data>
+  <data name="Radio_Description" xml:space="preserve"><value>Live stations from the Radio Browser directory. Your local library keeps working offline.</value></data>
+  <data name="Radio_Homepage" xml:space="preserve"><value>Homepage</value></data>
+  <data name="Radio_HomepageOpenFailed" xml:space="preserve"><value>Couldn't open this station's homepage.</value></data>
+  <data name="Radio_Live" xml:space="preserve"><value>LIVE</value></data>
+  <data name="Radio_LoadFailed" xml:space="preserve"><value>Couldn't load stations. Check your connection and try again.</value></data>
+  <data name="Radio_LoadingStations" xml:space="preserve"><value>Loading live stations…</value></data>
+  <data name="Radio_NoSearchResults" xml:space="preserve"><value>No live stations match your search.</value></data>
+  <data name="Radio_NoStations" xml:space="preserve"><value>No live stations are available right now.</value></data>
+  <data name="Radio_PlayFailed" xml:space="preserve"><value>Couldn't play this station. It may be offline, or Windows cannot open its stream format.</value></data>
+  <data name="Radio_PlayStationAutomation" xml:space="preserve"><value>Play or pause this station</value></data>
+  <data name="Radio_ProviderAttribution" xml:space="preserve"><value>Station directory by Radio Browser</value></data>
+  <data name="Radio_Refresh" xml:space="preserve"><value>Refresh</value></data>
+  <data name="Radio_RefreshAutomation" xml:space="preserve"><value>Refresh radio stations</value></data>
+  <data name="Radio_Search" xml:space="preserve"><value>Search</value></data>
+  <data name="Radio_SearchAutomation" xml:space="preserve"><value>Search radio stations</value></data>
+  <data name="Radio_SearchLabel" xml:space="preserve"><value>Search stations</value></data>
+  <data name="Radio_StationListAutomation" xml:space="preserve"><value>Internet radio stations</value></data>
+  <data name="Radio_StationsAvailable" xml:space="preserve"><value>{0} live station(s) available</value></data>
+  <data name="Radio_Title" xml:space="preserve"><value>Internet Radio</value></data>
+  <data name="Radio_Unavailable" xml:space="preserve"><value>Internet Radio is unavailable in this build.</value></data>
   <data name="Scan_Canceled" xml:space="preserve"><value>Scan canceled</value></data>
   <data name="Scan_Canceling" xml:space="preserve"><value>Canceling scan…</value></data>
   <data name="Scan_CouldNotScanFiles" xml:space="preserve"><value>Couldn't scan those music files.&#10;&#10;{0}</value></data>

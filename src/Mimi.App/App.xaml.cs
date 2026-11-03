@@ -132,6 +132,7 @@ public partial class App : Application
         services.AddSingleton<ILibraryService, LibraryService>();
         services.AddSingleton<ILibraryCatalog, SqliteLibraryCatalog>();
         services.AddSingleton<ILyricsService, FileLyricsService>();
+        services.AddSingleton<IRadioStationService, RadioBrowserService>();
         services.AddSingleton<ICoverArtOptimizer, CoverArtOptimizer>();
         services.AddSingleton<ILibraryFolderWatcher, FileSystemLibraryFolderWatcher>();
         services.AddSingleton<IFileAssociationService, WindowsFileAssociationService>();

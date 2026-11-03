@@ -1,11 +1,13 @@
 # Thiết kế cổng Streaming Provider
 
-Trạng thái: **thiết kế nghiên cứu — chưa có provider production**
+Trạng thái: **Radio Browser đã có prototype trên nhánh làm việc; chưa có provider production**
 
 Tài liệu này cụ thể hóa mục 8.5 của ROADMAP. Hồ sơ điều khoản tương ứng nằm
 tại [`docs/legal/`](../legal/README.md). Không phần nào trong tài liệu này
 tự nó cấp phép triển khai; từng provider vẫn phải qua cổng pháp lý và được
-chủ dự án chọn riêng trước khi viết code phát hành.
+chủ dự án chọn riêng trước khi viết code phát hành. Chủ dự án đã chọn riêng
+Radio Browser cho lát prototype hiện tại; lựa chọn này không phê duyệt
+Audius, Navidrome/Jellyfin hay bất kỳ provider nào khác.
 
 ## Nguyên tắc
 
@@ -35,6 +37,45 @@ chủ dự án chọn riêng trước khi viết code phát hành.
 
 Jamendo và Internet Archive đang ở trạng thái hoãn trong hồ sơ pháp lý.
 Spotify và YouTube bị loại cho mô hình full-track player của Mimi.
+
+## Hiện trạng prototype Radio Browser
+
+Prototype hiện tại cố ý hẹp hơn hợp đồng `IStreamingProvider` đích ở phần
+sau:
+
+- Core có `RadioStation` bất biến và `IRadioStationService` chỉ gồm top
+  stations, search theo tên và đăng ký station click. Station không dùng
+  `Track`, file path hoặc khóa của thư viện local.
+- `RadioBrowserService` khám phá mirror HTTPS qua DNS
+  `all.api.radio-browser.info`, có mirror dự phòng, timeout 12 giây,
+  backoff ngắn, response tối đa 2 MiB và tối đa 60 kết quả. Adapter loại
+  đài `lastcheckok != 1`, HLS, URL không phải HTTP(S) và URL chứa user-info.
+- Click-counter dùng đúng một request, không retry/failover, và chỉ được
+  ViewModel gọi sau khi `Play()` thành công cho một đài mới do người dùng
+  chọn. Pause/resume cùng đài không tạo click mới.
+- `IAudioPlayer.LoadStream(Uri)` mở `url_resolved` trực tiếp bằng
+  `MediaFoundationReader`, đưa mẫu đã decode qua visualizer/volume/output
+  hiện có và đánh dấu nguồn là live. Live duration luôn bằng 0; seek, stop
+  reposition và natural-end của file finite bị chặn cho nguồn này. Log load
+  chỉ ghi host của stream, không ghi toàn bộ URL.
+- ViewModel giữ `CurrentRadioStation` tách khỏi `CurrentTrack`, queue,
+  history, favorites, lyrics và saved playback session. Kết quả Radio chỉ
+  nằm trong bộ nhớ phiên; prototype không tải favicon mà dùng ô chữ cái
+  đầu được tạo tại client. Khi Radio đang là nguồn hiện tại, capture
+  settings giữ nguyên phiên local đã lưu trước đó thay vì ghi stream URL,
+  nhưng đài không bao giờ được khôi phục ở lần mở app sau.
+- UI có attribution Radio Browser, metadata/tag và homepage của đài; seek
+  slider/nút ±10 giây bị tắt khi live. Next/Previous chuyển đài trong danh
+  sách hiện tại, còn resume tạo kết nối mới tới live edge. SMTC nhận
+  metadata và nút Play/Pause/Next/Previous nhưng timeline không cho seek.
+
+Giới hạn còn mở của prototype: chưa có nghiệm thu runtime trên Windows
+thật; đài chết, geo-block hoặc định dạng Media Foundation không mở được
+chỉ báo lỗi để người dùng chọn đài khác; chưa tự reconnect khi network
+stall ngoài thao tác Play/resume; chưa có kill switch trong Settings,
+trang privacy/attribution hoàn chỉnh hoặc cơ chế tắt provider từ xa. Các
+mục này vẫn là cổng production, không được suy ra là đã hoàn thành từ
+việc prototype chạy được ở mức code/test tự động.
 
 ## Interface đích
 
@@ -188,8 +229,8 @@ chặn, không dùng placeholder chung chung để lấp.
 
 ## Thứ tự prototype khuyến nghị
 
-1. **Radio Browser** — nhỏ nhất, không credential, chứng minh network
-   playback/live UI.
+1. **Radio Browser** — đã có prototype nhỏ nhất, không credential; đang
+   chờ nghiệm thu network playback/live UI trên Windows thật.
 2. **Navidrome/OpenSubsonic hoặc Jellyfin** — chứng minh đăng nhập, DPAPI,
    remote library và seek trên server của người dùng.
 3. **Audius** — catalog on-demand, chỉ sau khi session-cache, attribution,

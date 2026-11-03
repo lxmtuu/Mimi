@@ -28,6 +28,7 @@ public sealed partial class MainWindowViewModel
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsLibraryContentVisible))]
+    [NotifyPropertyChangedFor(nameof(IsRadioContentVisible))]
     private bool isSettingsOpen;
 
     [ObservableProperty]
@@ -51,7 +52,7 @@ public sealed partial class MainWindowViewModel
     [ObservableProperty]
     private WindowPlacementSettings windowPlacement = new();
 
-    public bool IsLibraryContentVisible => !IsSettingsOpen;
+    public bool IsLibraryContentVisible => !IsSettingsOpen && !IsRadioOpen;
 
     public string VolumePercentLabel => $"{Volume:P0}";
 
@@ -209,6 +210,7 @@ public sealed partial class MainWindowViewModel
         OnPropertyChanged(nameof(QueueStatusLabel));
         OnPropertyChanged(nameof(OpenWithMimiStatusLabel));
         RefreshLyricsLocalizedLabels();
+        RefreshRadioStatusLabel();
         NotifySortLabelsChanged();
         RefreshPlaybackStateFilterOptions();
         RefreshFilterOptions();
@@ -222,7 +224,11 @@ public sealed partial class MainWindowViewModel
         foreach (var playlist in Playlists)
             playlist.RefreshLocalizedLabels();
 
-        if (CurrentTrack is null)
+        if (CurrentRadioStation is not null)
+        {
+            RefreshRadioLocalizedLabels();
+        }
+        else if (CurrentTrack is null)
         {
             NowPlayingTitle = Loc["NowPlaying_ChooseSong"];
             NowPlayingSubtitle = Loc["NowPlaying_NextFavoriteWaiting"];
@@ -282,7 +288,11 @@ public sealed partial class MainWindowViewModel
     }
 
     [RelayCommand]
-    private void OpenSettings() => IsSettingsOpen = true;
+    private void OpenSettings()
+    {
+        IsRadioOpen = false;
+        IsSettingsOpen = true;
+    }
 
     [RelayCommand]
     private void CloseSettings() => IsSettingsOpen = false;
@@ -461,10 +471,13 @@ public sealed partial class MainWindowViewModel
                 UpcomingTrackPaths = queueSnapshot.UpcomingPaths
             };
         }
-        else
+        else if (CurrentRadioStation is null)
         {
             settings.PlaybackSession = null;
         }
+        // Internet Radio is session-only. While a station is current, keep
+        // any previously saved local session untouched instead of writing a
+        // stream URL or erasing the local song merely because Radio opened.
     }
 
     private void RestorePersistedState()

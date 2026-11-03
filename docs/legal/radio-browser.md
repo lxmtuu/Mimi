@@ -28,8 +28,8 @@ nghe ngay, nhưng đây là radio tuyến tính chứ không phải catalog ch�
   không quét toàn bộ database vô hạn.
 - Khi người dùng bấm phát, gọi click-counter đúng một lần cho lần phát đó;
   không tự vote và không tạo click giả từ thao tác hover/preload.
-- Phát trực tiếp `url_resolved` sau khi click endpoint trả về thông tin;
-  không proxy, ghi lại, tải xuống hoặc phân phối lại stream.
+- Phát trực tiếp `url_resolved`; không proxy, ghi lại, tải xuống hoặc
+  phân phối lại stream.
 - Ẩn hoặc đánh dấu station có `lastcheckok = 0`, hỗ trợ codec/HLS theo khả
   năng thật của engine và báo lỗi stream rõ ràng.
 - Hiển thị tên đài và liên kết homepage khi có. Favicon chỉ nên cache tạm
@@ -47,6 +47,33 @@ nghe ngay, nhưng đây là radio tuyến tính chứ không phải catalog ch�
   không lưu trữ hay tái phân phối nội dung.
 - Không có cam kết uptime. Mimi phải giữ Online là tính năng opt-in và thư
   viện local vẫn hoạt động khi API/mirror lỗi.
+
+## Hiện trạng triển khai ngày 03/11/2026
+
+Chủ dự án đã chọn Radio Browser cho prototype Online đầu tiên trên nhánh
+làm việc. Bản prototype áp dụng các điều kiện trên như sau:
+
+- Mọi request API đi qua mirror HTTPS được khám phá từ DNS của Radio
+  Browser (có mirror dự phòng), kèm `User-Agent: Mimi/<version>`, timeout,
+  backoff và giới hạn 60 kết quả/response tối đa 2 MiB.
+- Chỉ hiển thị đài có `lastcheckok = 1`, không HLS và có `url_resolved`
+  HTTP(S) không chứa thông tin đăng nhập nhúng. Stream được mở trực tiếp
+  bằng Media Foundation; Mimi không proxy, ghi, tải xuống, lưu vào thư
+  viện/history/session hoặc tìm cách vượt giới hạn của đài.
+- Click-counter được gọi đúng một request sau khi một đài mới do người
+  dùng chọn đã bắt đầu phát thành công. Request này không retry/failover
+  để tránh đếm trùng; hover, preload, pause/resume và tự vote không tạo
+  click.
+- UI ghi attribution Radio Browser, hiển thị tên/metadata/tag và mở
+  homepage của đài khi có. Prototype không tải favicon, nên không phát
+  sinh cache favicon; ô đại diện dùng chữ cái đầu do client tạo.
+- Log không ghi search query hoặc toàn bộ stream URL; lỗi stream chỉ ghi
+  station UUID/loại exception và log load chỉ ghi host.
+
+Trạng thái này chưa phải phê duyệt production. Còn cần chủ dự án nghiệm
+thu runtime trên Windows thật với mạng/đài thật, đồng thời hoàn thành các
+cổng phát hành còn thiếu như kill switch trong Settings và nội dung
+privacy/attribution trước khi bật mặc định cho người dùng cuối.
 
 ## Nguồn
 

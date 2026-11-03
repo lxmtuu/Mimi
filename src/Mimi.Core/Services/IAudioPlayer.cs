@@ -22,6 +22,14 @@ public interface IAudioPlayer : IDisposable
     long PlaybackGeneration { get; }
 
     bool IsPlaying { get; }
+
+    /// <summary>
+    /// Whether the loaded source is a live network stream. Live streams do
+    /// not expose a reliable duration and must never be seeked or treated as
+    /// finite local tracks.
+    /// </summary>
+    bool IsLiveStream { get; }
+
     TimeSpan CurrentTime { get; }
     TimeSpan Duration { get; }
     float Volume { get; set; }
@@ -32,6 +40,13 @@ public interface IAudioPlayer : IDisposable
     /// itself prove that an output device is currently usable.
     /// </summary>
     void Load(string path);
+
+    /// <summary>
+    /// Opens a direct HTTP(S) live-stream URL and prepares it paused. The
+    /// implementation must stream directly to the output and must not save,
+    /// record, proxy, or persist the streamed audio.
+    /// </summary>
+    void LoadStream(Uri streamUrl);
 
     /// <summary>Starts or resumes the loaded file.</summary>
     /// <exception cref="AudioOutputUnavailableException">
