@@ -180,6 +180,17 @@ public sealed partial class MainWindowViewModel
         YouTubeStatusLabel = Loc["YouTube_EmbeddingBlocked"];
     }
 
+    /// <summary>
+    /// The page never produced a player, so the transport cannot describe it.
+    /// Saying so is better than leaving a progress bar that never moves.
+    /// </summary>
+    public void ReportEmbeddedPlayerUnavailable()
+    {
+        if (disposed || !IsYouTubePlaying) return;
+
+        YouTubeStatusLabel = Loc["YouTube_BridgeUnavailable"];
+    }
+
     private void RequestEmbeddedPlayer(
         EmbeddedPlayerCommandKind kind,
         double seconds = 0)

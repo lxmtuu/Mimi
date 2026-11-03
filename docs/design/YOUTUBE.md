@@ -95,9 +95,11 @@ quy trình của Google.
 - Chọn video → Mimi **pause nhạc local**, **dừng Radio**, **bỏ track online**
   để chỉ còn một nguồn âm thanh.
 - **Transport điều khiển được player.** Trang phát dùng **IFrame Player API
-  chính thức** (`youtube.com/iframe_api`), báo `state`/`position`/`duration` về
-  Mimi qua WebMessage mỗi 250 ms; Mimi gửi lệnh `play`/`pause`/`seek` ngược
-  lại. Nhờ vậy:
+  chính thức** (`youtube.com/iframe_api`), phơi ra `window.mimi.report()` và
+  `window.mimi.command(...)`. Mimi lấy `state`/`position`/`duration` bằng
+  `ExecuteScriptAsync` mỗi 500 ms (cùng nhịp với timer visualizer) và gửi lệnh
+  `play`/`pause`/`seek` cũng bằng `ExecuteScriptAsync` — một đường duy nhất, dễ
+  thấy khi hỏng, không phụ thuộc cấu hình message channel. Nhờ vậy:
   - nút Play/Pause ở Now Playing **toggle video** (trước đây nó dừng hẳn video);
   - thanh tiến trình **chạy theo video** và kéo/click để seek được;
   - `-10s` / `+10s` seek đúng 10 giây trong video;
@@ -117,6 +119,42 @@ quy trình của Google.
   automation làm nhãn hiển thị.
 - Nội dung YouTube **không** vào `Track`, queue, history, favorites, lyrics hay
   phiên lưu; không có cache media của Mimi.
+
+## Vì sao không ẩn điều khiển của YouTube
+
+Yêu cầu "đừng hiện thanh tiêu đề / nút play của YouTube, thay bằng nút của Mimi"
+**không được làm**, và đây không phải sở thích kỹ thuật. YouTube API Services –
+Required Minimum Functionality quy định nguyên văn:
+
+> You must not display overlays, frames, or other visual elements in front of any
+> part of a YouTube embedded player, including player controls. Similarly, you
+> must not use overlays, frames or other visual elements to obscure any part of
+> an embedded player, including player controls.
+
+> Attributes and parameters of the YouTube player, including the appearance of
+> YouTube branding in the player, are specified in YouTube API documentation …
+> You must not make changes to the YouTube player that are not explicitly
+> described by the API documentation.
+
+Nghĩa là: không phủ lớp nào lên player, không che, không thay giao diện của nó,
+kể cả thanh tiêu đề, logo và nút play lớn của YouTube. Đây cùng nhóm lý do với
+việc Mimi từ chối chặn quảng cáo và từ chối phát nền.
+
+Cùng tài liệu đó cũng yêu cầu viewport tối thiểu **200×200 px**, và nếu player
+hiện điều khiển thì phải đủ chỗ để hiện đủ điều khiển; khuyến nghị 16:9 là
+**480×270**. Khung visualizer 210 px để lại chưa tới 200 px cho video, nên khi
+phát video thẻ này **cao lên 300 px** và `WebView2` có `MinHeight/MinWidth = 200`.
+Đó là cách hợp lệ duy nhất để phần điều khiển của YouTube bớt chật: cho nó nhiều
+chỗ hơn, chứ không che nó đi.
+
+Các hướng hợp lệ khác nếu vẫn thấy vướng:
+
+- Đăng nhập **YouTube Premium** của chính mình trong profile WebView2 của Mimi
+  để bớt quảng cáo (Mimi không chặn gì cả; đây là tài khoản của người dùng).
+- Transport của Mimi: nút Play/Pause, thanh tiến trình, `±10s` vẫn điều khiển
+  được video — điều khiển **song song**, không thay thế.
+- Stage fullscreen (chưa làm) khi mở cũng phải giữ nguyên điều khiển của
+  YouTube; không được dựng overlay riêng.
 
 ## Giới hạn phải nói thật
 

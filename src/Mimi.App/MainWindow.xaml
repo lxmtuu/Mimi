@@ -1958,7 +1958,21 @@
                 <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                     <StackPanel>
                         <TextBlock Text="{Binding Loc[NowPlaying_Title]}" Foreground="{StaticResource TextMutedBrush}" FontSize="11"/>
-                        <Border Height="210" Margin="0,14,0,16" CornerRadius="16" ClipToBounds="True">
+                        <Border Margin="0,14,0,16" CornerRadius="16" ClipToBounds="True">
+                            <!-- YouTube requires an embedded player to be at least
+                                 200x200 so its own controls fit. The visualizer card is
+                                 210 tall, which leaves the video less than that, so the
+                                 card grows while a video plays. -->
+                            <Border.Style>
+                                <Style TargetType="{x:Type Border}">
+                                    <Setter Property="Height" Value="210"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsYouTubePlaying}" Value="True">
+                                            <Setter Property="Height" Value="300"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
                             <Border.Effect>
                                 <DropShadowEffect Color="{DynamicResource AccentColor}" BlurRadius="20" ShadowDepth="0" Opacity="0.26"/>
                             </Border.Effect>
@@ -2027,7 +2041,8 @@
                                                    VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
                                                    Foreground="{StaticResource TextSecondaryBrush}"/>
                                     </DockPanel>
-                                    <wv2:WebView2 x:Name="YouTubeBrowser" Grid.Row="1" Margin="0,0,0,0"/>
+                                    <wv2:WebView2 x:Name="YouTubeBrowser" Grid.Row="1" Margin="0,0,0,0"
+                                                  MinWidth="200" MinHeight="200"/>
                                 </Grid>
                             </Grid>
                         </Border>

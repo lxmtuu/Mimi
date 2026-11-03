@@ -425,4 +425,5 @@
   <data name="YouTube_Play" xml:space="preserve"><value>Play</value></data>
   <data name="YouTube_StopRow" xml:space="preserve"><value>Stop</value></data>
   <data name="YouTube_EmbeddingBlocked" xml:space="preserve"><value>This video cannot be played inside Mimi because its owner turned off embedding. Use Open to watch it on YouTube.</value></data>
+  <data name="YouTube_BridgeUnavailable" xml:space="preserve"><value>The player did not report its position, so the timeline stays empty. Reopen the video; if it repeats, the log records why.</value></data>
 </root>

@@ -195,8 +195,14 @@ public sealed class YouTubeFeatureWiringTests
         Assert.Contains("RequestEmbeddedPlayer(EmbeddedPlayerCommandKind.Seek", queue, StringComparison.Ordinal);
 
         var codeBehind = Read(root, "src", "Mimi.App", "MainWindow.xaml.cs");
-        Assert.Contains("WebMessageReceived", codeBehind, StringComparison.Ordinal);
-        Assert.Contains("PostWebMessageAsJson", codeBehind, StringComparison.Ordinal);
+        // One synchronous bridge: the host asks the page for a state object and
+        // sends commands as script calls. No message channel to configure.
+        Assert.Contains("ExecuteScriptAsync", codeBehind, StringComparison.Ordinal);
+        Assert.Contains("window.mimi.report", codeBehind, StringComparison.Ordinal);
+        Assert.Contains("window.mimi.command", codeBehind, StringComparison.Ordinal);
+        // The player must be big enough for YouTube's own controls, and Mimi may
+        // not cover them.
+        Assert.Contains("MinHeight=\"200\"", Read(root, "src", "Mimi.App", "MainWindow.xaml"), StringComparison.Ordinal);
     }
 
     [Fact]
