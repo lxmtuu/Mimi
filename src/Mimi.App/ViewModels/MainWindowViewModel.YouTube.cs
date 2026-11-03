@@ -658,6 +658,9 @@ public sealed partial class MainWindowViewModel
                     : YouTubeSearchStatus.Ready,
                 YouTubeVideos.Count);
             RefreshYouTubePlaybackStates();
+
+            // The Results (n) counter lives in the list toggle.
+            OnPropertyChanged(nameof(YouTubeListToggleLabel));
         }
         catch (OperationCanceledException) when (
             cancellation.IsCancellationRequested ||
