@@ -55,6 +55,12 @@ public sealed partial class MainWindowViewModel
     [ObservableProperty]
     private LyricLineViewModel? currentLyricLine;
 
+    [ObservableProperty]
+    private LyricLineViewModel? previousLyricLine;
+
+    [ObservableProperty]
+    private LyricLineViewModel? nextLyricLine;
+
     public ObservableCollection<LyricLineViewModel> LyricLines { get; } = [];
 
     public bool CanAdjustLyricsOffset =>
@@ -118,6 +124,8 @@ public sealed partial class MainWindowViewModel
         currentLyricsDocument = null;
         currentLyricLineIndex = -1;
         CurrentLyricLine = null;
+        PreviousLyricLine = null;
+        NextLyricLine = null;
         LyricLines.Clear();
         HasLyrics = false;
         IsLyricsSynchronized = false;
@@ -222,18 +230,13 @@ public sealed partial class MainWindowViewModel
         TimeSpan position,
         bool force = false)
     {
-        if (currentLyricsDocument is not { IsSynchronized: true } document)
-        {
-            if (!force && CurrentLyricLine is null) return;
-
-            currentLyricLineIndex = -1;
-            CurrentLyricLine = null;
-            return;
-        }
-
-        var index = document.FindCurrentLineIndex(
+        var synchronizedDocument =
+            currentLyricsDocument is { IsSynchronized: true } document
+                ? document
+                : null;
+        var index = synchronizedDocument?.FindCurrentLineIndex(
             position,
-            TimeSpan.FromMilliseconds(LyricsOffsetMilliseconds));
+            TimeSpan.FromMilliseconds(LyricsOffsetMilliseconds)) ?? -1;
         if (!force && index == currentLyricLineIndex) return;
 
         currentLyricLineIndex = index;
@@ -245,6 +248,13 @@ public sealed partial class MainWindowViewModel
 
         CurrentLyricLine = index >= 0 && index < LyricLines.Count
             ? LyricLines[index]
+            : null;
+        PreviousLyricLine = synchronizedDocument is not null && index > 0
+            ? LyricLines[index - 1]
+            : null;
+        NextLyricLine = synchronizedDocument is not null &&
+                        index + 1 < LyricLines.Count
+            ? LyricLines[index + 1]
             : null;
     }
 

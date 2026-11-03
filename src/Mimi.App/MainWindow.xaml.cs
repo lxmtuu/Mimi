@@ -124,6 +124,13 @@ public partial class MainWindow : Window
         {
             stageWindow.SetTrack(viewModel.NowPlayingTitle, viewModel.NowPlayingSubtitle);
         }
+        else if (e.PropertyName is
+                 nameof(MainWindowViewModel.CurrentLyricLine) or
+                 nameof(MainWindowViewModel.PreviousLyricLine) or
+                 nameof(MainWindowViewModel.NextLyricLine))
+        {
+            PushStageLyrics();
+        }
     }
 
     private void ToggleStage()
@@ -153,10 +160,17 @@ public partial class MainWindow : Window
             Owner = this
         };
         stageWindow.SetTrack(viewModel.NowPlayingTitle, viewModel.NowPlayingSubtitle);
+        PushStageLyrics();
         stageWindow.ModeChanged += StageWindow_ModeChanged;
         stageWindow.Closed += StageWindow_Closed;
         stageWindow.Show();
     }
+
+    private void PushStageLyrics() =>
+        stageWindow?.SetLyrics(
+            viewModel.PreviousLyricLine?.Text,
+            viewModel.CurrentLyricLine?.Text,
+            viewModel.NextLyricLine?.Text);
 
     private void StageWindow_ModeChanged(VisualizerDisplayMode mode) =>
         viewModel.VisualizerMode = mode;

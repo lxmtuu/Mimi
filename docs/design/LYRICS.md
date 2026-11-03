@@ -68,9 +68,17 @@ chuyển bài.
 Việc nạp lyrics chạy bất đồng bộ theo `CurrentTrack`, có huỷ lượt nạp
 của bài trước và không chặn đường phát nhạc nếu file lời hoặc tag bị lỗi.
 
+Trên Stage toàn màn hình, panel lời lớn ở cạnh dưới hiển thị ba dòng
+quanh vị trí phát: dòng trước và dòng kế tiếp nhỏ/mờ hơn, dòng hiện
+tại lớn và phát sáng theo accent của theme. ViewModel phơi
+`PreviousLyricLine`/`NextLyricLine` cùng nhịp cập nhật với dòng hiện
+tại; `MainWindow` đẩy các dòng này sang `StageWindow.SetLyrics(...)`.
+Panel chỉ xuất hiện với lyrics có timestamp — lyrics thường không
+đồng bộ vẫn đọc tại thẻ Lyrics trong Now Playing. Giai đoạn intro
+trước dòng đầu tiên hiển thị trước dòng sắp hát ở vị trí "kế tiếp".
+
 ## Chưa thuộc lát này
 
-- Chế độ lời lớn trên Stage.
 - Tô sáng từng từ/theo âm tiết của Enhanced LRC.
 - Tải lyrics trực tuyến hoặc bất kỳ nguồn nhạc trực tuyến nào.
 - Chỉnh sửa/tạo file `.lrc` trong app.
@@ -100,6 +108,7 @@ logic theo item nên `VerticalOffset`/`ViewportHeight` tính bằng số
 dòng, trong khi behavior cộng chúng với tọa độ pixel từ
 `TransformToAncestor`; kết quả bị clamp về cuối danh sách. Fix ép
 `VirtualizingPanel.ScrollUnit="Pixel"` cho danh sách lời và behavior
-tự bỏ qua bước căn giữa bằng pixel khi gặp cuộn logic. Cần chủ dự án
-kiểm tra lại hành vi cuộn trên Windows thật, cùng một bài chỉ có
-lyrics nhúng không đồng bộ.
+tự bỏ qua bước căn giữa bằng pixel khi gặp cuộn logic. Chủ dự án đã
+kiểm tra lại trên Windows thật và xác nhận hành vi cuộn đã ổn. Panel
+lời lớn trên Stage là lát kế tiếp cần nghiệm thu runtime; một bài
+chỉ có lyrics nhúng không đồng bộ cũng vẫn nên được thử riêng.

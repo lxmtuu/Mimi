@@ -120,6 +120,41 @@ public sealed class LyricsFeatureWiringTests
             scrollBehavior,
             StringComparison.Ordinal);
 
+        Assert.Contains(
+            "PreviousLyricLine = synchronizedDocument is not null",
+            lyricsViewModel,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "NextLyricLine = synchronizedDocument is not null",
+            lyricsViewModel,
+            StringComparison.Ordinal);
+
+        var mainWindowCode = Read(root, "src", "Mimi.App", "MainWindow.xaml.cs");
+        Assert.Contains(
+            "nameof(MainWindowViewModel.CurrentLyricLine)",
+            mainWindowCode,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "stageWindow?.SetLyrics(",
+            mainWindowCode,
+            StringComparison.Ordinal);
+
+        var stageWindow = Read(root, "src", "Mimi.App", "StageWindow.xaml");
+        Assert.Contains(
+            "x:Name=\"StageLyricsPanel\"",
+            stageWindow,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "x:Name=\"StageLyricCurrent\"",
+            stageWindow,
+            StringComparison.Ordinal);
+
+        var stageCode = Read(root, "src", "Mimi.App", "StageWindow.xaml.cs");
+        Assert.Contains(
+            "public void SetLyrics",
+            stageCode,
+            StringComparison.Ordinal);
+
         var settingsModel = Read(
             root,
             "src",
