@@ -54,13 +54,14 @@ public sealed partial class MainWindowViewModel
     private bool internetRadioEnabled = true;
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(IsOnlineMusicAvailable))]
-    private bool onlineMusicEnabled = true;
+    [NotifyPropertyChangedFor(nameof(IsOnlineAvailable))]
+    private bool onlineCatalogEnabled = true;
 
     [ObservableProperty]
     private WindowPlacementSettings windowPlacement = new();
 
-    public bool IsLibraryContentVisible => !IsSettingsOpen && !IsRadioOpen;
+    public bool IsLibraryContentVisible =>
+        !IsSettingsOpen && !IsRadioOpen && !IsOnlineOpen;
 
     public string VolumePercentLabel => $"{Volume:P0}";
 
@@ -103,7 +104,7 @@ public sealed partial class MainWindowViewModel
         RestoreWindowPlacement = settings.RestoreWindowPlacement;
         AutoUpgradeLegacyCoverArt = settings.AutoUpgradeLegacyCoverArt;
         InternetRadioEnabled = settings.InternetRadioEnabled;
-        OnlineMusicEnabled = settings.OnlineMusicEnabled;
+        OnlineCatalogEnabled = settings.OnlineCatalogEnabled;
         WatchLibraryFolders = settings.WatchLibraryFolders;
         WatchedFolders.Clear();
         foreach (var folder in settings.WatchedFolders)
@@ -287,10 +288,10 @@ public sealed partial class MainWindowViewModel
             SaveSettings();
     }
 
-    partial void OnOnlineMusicEnabledChanged(bool value)
+    partial void OnOnlineCatalogEnabledChanged(bool value)
     {
         if (!value)
-            DisableOnlineMusic();
+            DisableOnlineCatalog();
 
         if (settingsLoaded && !isRestoringSettings)
             SaveSettings();
@@ -452,7 +453,7 @@ public sealed partial class MainWindowViewModel
         settings.RestoreWindowPlacement = RestoreWindowPlacement;
         settings.AutoUpgradeLegacyCoverArt = AutoUpgradeLegacyCoverArt;
         settings.InternetRadioEnabled = InternetRadioEnabled;
-        settings.OnlineMusicEnabled = OnlineMusicEnabled;
+        settings.OnlineCatalogEnabled = OnlineCatalogEnabled;
         settings.WatchLibraryFolders = WatchLibraryFolders;
         settings.WatchedFolders = [.. WatchedFolders];
         settings.WindowPlacement = RestoreWindowPlacement

@@ -37,7 +37,7 @@ kiện sau:
 | [Internet Archive](internet-archive.md) | Kho lưu trữ cộng đồng | **HOÃN / KHÔNG cho catalog giải trí phổ thông** | Điều khoản giới hạn scholarship/research và quyền từng item không đồng nhất; chỉ cân nhắc bộ lọc giấy phép rất hẹp sau khi có xác nhận rõ hơn |
 | [Navidrome/OpenSubsonic và Jellyfin](self-hosted-servers.md) | Máy chủ nhạc do người dùng tự quản lý | **ĐẠT theo mô hình BYO server** | Người dùng tự cung cấp server/quyền nội dung; HTTPS được khuyến nghị; credential mã hóa DPAPI; không log token |
 | [Spotify](rejected-platforms.md#spotify) | Catalog thương mại | **KHÔNG** | Không có đường chính thức phù hợp cho Mimi như native Windows player tích hợp nguồn khác nếu không có phê duyệt/Approved Device riêng |
-| [YouTube Music dạng host player](youtube-music-player.md) | Nhúng trang web chính thức trong cửa sổ riêng | **ĐẠT CÓ ĐIỀU KIỆN** | Chỉ điều hướng WebView2 tới trang chính thức, hiển thị công khai; không chặn quảng cáo, không sửa player, không trích xuất/tải/cache audio, không đưa nội dung vào thư viện cục bộ |
+| [YouTube Music (nhúng player chính thức)](youtube-music-player.md) | Cửa sổ nhúng trang web chính thức | **ĐÃ XEM XÉT — KHÔNG CHỌN** | Hợp lệ về điều khoản nhưng không đáp ứng yêu cầu phát trong engine Mimi (không seek/queue/visualizer/SMTC); đã dựng thử rồi gỡ |
 | [YouTube](rejected-platforms.md#youtube) | Video/audiovisual | **KHÔNG** | Chính sách cấm tách/phát riêng audio, background player và offline/cache trái phép |
 
 ## Thứ tự prototype được khuyến nghị
@@ -54,11 +54,10 @@ kiện sau:
    streaming-only, session-only cache và attribution theo từng track.
 4. Jamendo/Internet Archive chỉ mở lại khi có xác nhận bổ sung. Spotify và
    YouTube vẫn không nằm trong lộ trình phát full-track trong Mimi.
-5. **YouTube Music dạng host player** là hướng đã chọn cho nhu cầu "tìm bài
-   và nghe ngay trong Mimi" mà vẫn hợp lệ: nội dung do chính trang
-   `music.youtube.com` phục vụ trong một cửa sổ hiển thị của Mimi. Đây là
-   player nhúng, **không** phải nguồn audio của engine Mimi; xem
-   [youtube-music-player.md](youtube-music-player.md).
+5. **Online catalog (Audius)** là hướng đã chọn cho nhu cầu "tìm bài và nghe
+   ngay trong Mimi": tìm và stream trực tiếp trong app, không credential, không
+   tải/cache, lọc quyền trước khi hiển thị. Thiết kế ở
+   [`../design/ONLINE-CATALOG.md`](../design/ONLINE-CATALOG.md).
 
 ## Phạm vi chưa đánh giá
 

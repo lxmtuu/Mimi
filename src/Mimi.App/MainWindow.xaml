@@ -122,9 +122,9 @@
                 </DataTrigger>
             </Style.Triggers>
         </Style>
-        <Style x:Key="NavOnlineMusicButtonStyle" TargetType="{x:Type Button}" BasedOn="{StaticResource NavButtonStyle}">
+        <Style x:Key="NavOnlineButtonStyle" TargetType="{x:Type Button}" BasedOn="{StaticResource NavButtonStyle}">
             <Style.Triggers>
-                <DataTrigger Binding="{Binding IsOnlineMusicOpen}" Value="True">
+                <DataTrigger Binding="{Binding IsOnlineOpen}" Value="True">
                     <Setter Property="Background" Value="{StaticResource SelectedBackgroundBrush}"/>
                     <Setter Property="Foreground" Value="{StaticResource AccentBrush}"/>
                     <Setter Property="FontWeight" Value="SemiBold"/>
@@ -423,12 +423,12 @@
                                 <TextBlock Text="{Binding Loc[Nav_Radio]}" Margin="10,0,0,0" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
-                        <Button Command="{Binding ToggleOnlineMusicCommand}" Style="{StaticResource NavOnlineMusicButtonStyle}"
-                                Visibility="{Binding IsOnlineMusicAvailable, Converter={StaticResource BooleanToVisibilityConverter}}"
-                                AutomationProperties.Name="{Binding Loc[Nav_OnlineMusic]}">
+                        <Button Command="{Binding ShowOnlineCommand}" Style="{StaticResource NavOnlineButtonStyle}"
+                                Visibility="{Binding IsOnlineAvailable, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                AutomationProperties.Name="{Binding Loc[Nav_Online]}">
                             <StackPanel Orientation="Horizontal">
                                 <Path Data="{StaticResource OnlineMusicIconGeometry}" Style="{StaticResource IconPathStyle}"/>
-                                <TextBlock Text="{Binding Loc[Nav_OnlineMusic]}" Margin="10,0,0,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="{Binding Loc[Nav_Online]}" Margin="10,0,0,0" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
                         <Button Command="{Binding AddFilesCommand}" Style="{StaticResource NavButtonStyle}" Margin="2,10,2,2"
@@ -1294,6 +1294,174 @@
 
             <Border Grid.Column="1" Background="{StaticResource PanelBackgroundBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="18"
                     Padding="20" Margin="0,0,14,0"
+                    Visibility="{Binding IsOnlineContentVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <DockPanel Grid.Row="0" LastChildFill="False">
+                        <StackPanel DockPanel.Dock="Left" MaxWidth="520">
+                            <TextBlock Text="{Binding Loc[Online_Title]}" FontSize="23" FontWeight="Bold"/>
+                            <TextBlock Text="{Binding Loc[Online_Description]}"
+                                       Foreground="{StaticResource TextMutedBrush}" FontSize="12"
+                                       Margin="0,5,0,0" TextWrapping="Wrap"/>
+                        </StackPanel>
+                        <Border DockPanel.Dock="Right" Background="{StaticResource RaisedBackgroundBrush}"
+                                CornerRadius="10" Padding="10,7" VerticalAlignment="Top">
+                            <TextBlock Text="{Binding Loc[Online_Source]}"
+                                       Foreground="{StaticResource AccentBrush}" FontSize="11" FontWeight="SemiBold"/>
+                        </Border>
+                    </DockPanel>
+
+                    <Grid Grid.Row="1" Margin="0,18,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                            <TextBlock Text="{Binding Loc[Online_SearchLabel]}"
+                                       Foreground="{StaticResource TextMutedBrush}" FontSize="11" Margin="2,0,0,5"/>
+                            <TextBox Text="{Binding OnlineSearchText, UpdateSourceTrigger=PropertyChanged}"
+                                     AutomationProperties.Name="{Binding Loc[Online_SearchAutomation]}">
+                                <TextBox.InputBindings>
+                                    <KeyBinding Key="Enter" Command="{Binding SearchOnlineCommand}"/>
+                                </TextBox.InputBindings>
+                            </TextBox>
+                        </StackPanel>
+                        <Button Grid.Column="1" Content="{Binding Loc[Online_Search]}"
+                                Command="{Binding SearchOnlineCommand}" Padding="14,8" Margin="0,21,0,0"
+                                VerticalAlignment="Top"
+                                AutomationProperties.Name="{Binding Loc[Online_SearchAutomation]}"/>
+                    </Grid>
+
+                    <StackPanel Grid.Row="2" Margin="0,12,0,10">
+                        <TextBlock Text="{Binding OnlineStatusLabel}" Foreground="{StaticResource TextMutedBrush}"
+                                   FontSize="11" TextWrapping="Wrap"/>
+                        <ProgressBar Height="3" Margin="0,7,0,0" IsIndeterminate="True"
+                                     Visibility="{Binding IsOnlineLoading, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                    </StackPanel>
+
+                    <ListBox Grid.Row="3"
+                             ItemsSource="{Binding OnlineTracks}"
+                             behaviors:ItemClickCommandBehavior.Command="{Binding PlayOnlineTrackCommand}"
+                             SelectedItem="{Binding SelectedOnlineTrack, Mode=TwoWay}"
+                             Background="Transparent" BorderThickness="0"
+                             Foreground="{StaticResource TextStrongBrush}"
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                             VirtualizingPanel.IsVirtualizing="True"
+                             AutomationProperties.Name="{Binding Loc[Online_ResultListAutomation]}">
+                        <ListBox.ItemContainerStyle>
+                            <Style TargetType="{x:Type ListBoxItem}">
+                                <Setter Property="Padding" Value="8"/>
+                                <Setter Property="Margin" Value="2"/>
+                                <Setter Property="Background" Value="Transparent"/>
+                                <Setter Property="Foreground" Value="{StaticResource TextStrongBrush}"/>
+                                <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                <Setter Property="FocusVisualStyle" Value="{StaticResource MimiFocusVisualStyle}"/>
+                                <Style.Triggers>
+                                    <Trigger Property="IsSelected" Value="True">
+                                        <Setter Property="Background" Value="{StaticResource SelectedBackgroundBrush}"/>
+                                    </Trigger>
+                                    <DataTrigger Binding="{Binding IsCurrent}" Value="True">
+                                        <Setter Property="Background" Value="{StaticResource SelectedBackgroundBrush}"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ListBox.ItemContainerStyle>
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Margin="4,5">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Border Grid.Column="0" Width="42" Height="42" CornerRadius="12"
+                                            Background="{StaticResource RaisedBackgroundBrush}" VerticalAlignment="Center"
+                                            ClipToBounds="True">
+                                        <Grid>
+                                            <TextBlock Text="{Binding Initial}" FontSize="17" FontWeight="Bold"
+                                                       Foreground="{StaticResource AccentBrush}"
+                                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            <Image Source="{Binding ArtworkUrl}" Stretch="UniformToFill"
+                                                   Visibility="{Binding HasArtwork, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                        </Grid>
+                                    </Border>
+                                    <StackPanel Grid.Column="1" Margin="12,0,10,0" MinWidth="0" VerticalAlignment="Center">
+                                        <DockPanel LastChildFill="False">
+                                            <TextBlock Text="{Binding Title}" FontSize="14" FontWeight="SemiBold"
+                                                       TextTrimming="CharacterEllipsis"/>
+                                            <Border Background="{StaticResource AccentBrush}" CornerRadius="7"
+                                                    Padding="6,2" Margin="8,0,0,0" VerticalAlignment="Center"
+                                                    Visibility="{Binding IsCurrent, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                                <TextBlock Text="{Binding DataContext.Loc[Online_NowPlaying], RelativeSource={RelativeSource AncestorType={x:Type ListBox}}}"
+                                                           Foreground="{StaticResource OnAccentBrush}" FontSize="9" FontWeight="Bold"/>
+                                            </Border>
+                                        </DockPanel>
+                                        <TextBlock Text="{Binding MetadataLabel}" Foreground="{StaticResource TextMutedBrush}"
+                                                   FontSize="11" Margin="0,3,0,0" TextTrimming="CharacterEllipsis"/>
+                                        <StackPanel Orientation="Horizontal" Margin="0,2,0,0"
+                                                    Visibility="{Binding HasLicense, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                            <TextBlock Text="{Binding DataContext.Loc[Online_LicensePrefix], RelativeSource={RelativeSource AncestorType={x:Type ListBox}}}"
+                                                       Foreground="{StaticResource TextSecondaryBrush}" FontSize="10"/>
+                                            <TextBlock Text="{Binding LicenseLabel}" Margin="4,0,0,0"
+                                                       Foreground="{StaticResource TextMutedBrush}" FontSize="10"
+                                                       TextTrimming="CharacterEllipsis"/>
+                                        </StackPanel>
+                                        <TextBlock Text="{Binding DataContext.Loc[Online_Connecting], RelativeSource={RelativeSource AncestorType={x:Type ListBox}}}"
+                                                   Foreground="{StaticResource AccentBrush}" FontSize="10" Margin="0,3,0,0"
+                                                   Visibility="{Binding IsConnecting, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                    </StackPanel>
+                                    <Button Grid.Column="2" Padding="9,6" Margin="0,0,8,0" VerticalAlignment="Center"
+                                            Content="{Binding DataContext.Loc[Online_OpenSource], RelativeSource={RelativeSource AncestorType={x:Type ListBox}}}"
+                                            Command="{Binding DataContext.OpenOnlineTrackPageCommand, RelativeSource={RelativeSource AncestorType={x:Type ListBox}}}"
+                                            CommandParameter="{Binding}"
+                                            AutomationProperties.Name="{Binding DataContext.Loc[Online_OpenSource], RelativeSource={RelativeSource AncestorType={x:Type ListBox}}}"/>
+                                    <Button Grid.Column="3" Padding="10,8" VerticalAlignment="Center"
+                                            Command="{Binding DataContext.PlayOnlineTrackCommand, RelativeSource={RelativeSource AncestorType={x:Type ListBox}}}"
+                                            CommandParameter="{Binding}"
+                                            ToolTip="{Binding DataContext.Loc[Online_PlayAutomation], RelativeSource={RelativeSource AncestorType={x:Type ListBox}}}"
+                                            AutomationProperties.Name="{Binding DataContext.Loc[Online_PlayAutomation], RelativeSource={RelativeSource AncestorType={x:Type ListBox}}}">
+                                        <Grid Width="18" Height="18">
+                                            <Path Data="{StaticResource PlayIconGeometry}">
+                                                <Path.Style>
+                                                    <Style TargetType="{x:Type Path}" BasedOn="{StaticResource IconPathStyle}">
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsPlaying}" Value="True">
+                                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Path.Style>
+                                            </Path>
+                                            <Path Data="{StaticResource PauseIconGeometry}">
+                                                <Path.Style>
+                                                    <Style TargetType="{x:Type Path}" BasedOn="{StaticResource IconPathStyle}">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsPlaying}" Value="True">
+                                                                <Setter Property="Visibility" Value="Visible"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Path.Style>
+                                            </Path>
+                                        </Grid>
+                                    </Button>
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </Grid>
+            </Border>
+
+            <Border Grid.Column="1" Background="{StaticResource PanelBackgroundBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="18"
+                    Padding="20" Margin="0,0,14,0"
                     Visibility="{Binding IsSettingsOpen, Converter={StaticResource BooleanToVisibilityConverter}}">
                 <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                     <StackPanel Margin="0,0,6,0">
@@ -1399,14 +1567,15 @@
                             </StackPanel>
                         </Border>
 
-                        <Border Background="{StaticResource RaisedBackgroundBrush}" CornerRadius="12" Padding="14" Margin="0,14,0,0">
+                        <Border Background="{StaticResource RaisedBackgroundBrush}" CornerRadius="12" Padding="14" Margin="0,14,0,0"
+                                Visibility="{Binding IsOnlineCatalogInstalled, Converter={StaticResource BooleanToVisibilityConverter}}">
                             <StackPanel>
-                                <TextBlock Text="{Binding Loc[Settings_OnlineMusicSection]}" Foreground="{StaticResource AccentBrush}"
+                                <TextBlock Text="{Binding Loc[Settings_OnlineSection]}" Foreground="{StaticResource AccentBrush}"
                                            FontSize="11" FontWeight="Bold"/>
-                                <CheckBox IsChecked="{Binding OnlineMusicEnabled, Mode=TwoWay}"
-                                          Content="{Binding Loc[Settings_EnableOnlineMusic]}"
-                                          AutomationProperties.Name="{Binding Loc[Settings_EnableOnlineMusic]}"/>
-                                <TextBlock Text="{Binding Loc[Settings_OnlineMusicDescription]}"
+                                <CheckBox IsChecked="{Binding OnlineCatalogEnabled, Mode=TwoWay}"
+                                          Content="{Binding Loc[Settings_EnableOnline]}"
+                                          AutomationProperties.Name="{Binding Loc[Settings_EnableOnline]}"/>
+                                <TextBlock Text="{Binding Loc[Settings_OnlineDescription]}"
                                            Foreground="{StaticResource TextMutedBrush}" FontSize="11" TextWrapping="Wrap" Margin="24,0,0,4"/>
                                 <TextBlock Text="{Binding Loc[Online_ProviderAttribution]}"
                                            Foreground="{StaticResource TextMutedBrush}" FontSize="11" TextWrapping="Wrap" Margin="24,0,0,2"/>

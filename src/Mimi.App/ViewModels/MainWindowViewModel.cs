@@ -14,6 +14,7 @@ using Mimi.Core.Playback;
 using Mimi.Core.Text;
 using Mimi.Localization;
 using Mimi.Models;
+using Mimi.Online;
 using Mimi.Services;
 using Serilog;
 
@@ -237,7 +238,8 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         LocalizationService? localizationService = null,
         ThemeService? themeService = null,
         ILyricsService? lyricsService = null,
-        IRadioStationService? radioStationService = null)
+        IRadioStationService? radioStationService = null,
+        IOnlineCatalogService? onlineCatalogService = null)
     {
         this.audioPlayer = audioPlayer;
         this.libraryService = libraryService;
@@ -250,6 +252,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         this.themeService = themeService;
         this.lyricsService = lyricsService;
         this.radioStationService = radioStationService;
+        this.onlineCatalogService = onlineCatalogService;
         Loc = localizationService ?? new LocalizationService();
 
         TracksView = CollectionViewSource.GetDefaultView(Tracks);
@@ -954,15 +957,17 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     [RelayCommand]
     private void Previous()
     {
-        if (!TryHandleRadioStationNavigation(-1))
-            TryPlayPreviousFromQueue();
+        if (TryHandleRadioStationNavigation(-1)) return;
+        if (TryHandleOnlineTrackNavigation(-1)) return;
+        TryPlayPreviousFromQueue();
     }
 
     [RelayCommand]
     private void Next()
     {
-        if (!TryHandleRadioStationNavigation(1))
-            TryPlayNextFromQueue(showErrors: true);
+        if (TryHandleRadioStationNavigation(1)) return;
+        if (TryHandleOnlineTrackNavigation(1)) return;
+        TryPlayNextFromQueue(showErrors: true);
     }
 
     [RelayCommand]
@@ -2722,6 +2727,11 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
 
     private void AdvanceAfterPlaybackEnded(TrackItemViewModel? endedTrack)
     {
+        // An online track is not a local track, but it is finite: finishing it
+        // should move on to the next visible result instead of stopping.
+        if (endedTrack is null && TryAdvanceOnlineTrack())
+            return;
+
         if (disposed || endedTrack is null ||
             !ReferenceEquals(CurrentTrack, endedTrack))
         {

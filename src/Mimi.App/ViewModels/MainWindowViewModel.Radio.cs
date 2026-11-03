@@ -73,7 +73,9 @@ public sealed partial class MainWindowViewModel
     public bool IsRadioContentVisible => IsRadioOpen && !IsSettingsOpen;
 
     public bool HasCurrentPlaybackSource =>
-        CurrentTrack is not null || CurrentRadioStation is not null;
+        CurrentTrack is not null ||
+        CurrentRadioStation is not null ||
+        CurrentOnlineTrack is not null;
 
     public bool IsLivePlayback => CurrentRadioStation is not null;
 
@@ -93,7 +95,7 @@ public sealed partial class MainWindowViewModel
         }
 
         IsSettingsOpen = false;
-        IsOnlineMusicOpen = false;
+        IsOnlineOpen = false;
         IsRadioOpen = true;
 
         if (!radioCatalogLoaded && !IsRadioLoading)
@@ -291,6 +293,10 @@ public sealed partial class MainWindowViewModel
         connectingRadioStation = station;
         IsRadioConnecting = true;
         SelectedRadioStation = station;
+        connectingOnlineTrack = null;
+        IsOnlineConnecting = false;
+        CurrentOnlineTrack = null;
+        RefreshOnlineTrackPlaybackStates();
         RefreshRadioStationPlaybackStates();
 
         var loaded = false;
@@ -447,17 +453,30 @@ public sealed partial class MainWindowViewModel
         return true;
     }
 
-    private void BeginLocalPlaybackAttempt()
+    /// <summary>
+    /// Claims playback for a non-radio source (a local file or an online
+    /// track). The returned version must be compared with
+    /// <see cref="IsCurrentPlaybackVersion"/> after the load completes, and the
+    /// radio adoption is abandoned so a pending station can never take the
+    /// engine back.
+    /// </summary>
+    private int BeginLocalPlaybackAttempt()
     {
+        int version;
         lock (playbackSourceLoadSync)
         {
-            Interlocked.Increment(ref playbackSourceVersion);
+            version = Interlocked.Increment(ref playbackSourceVersion);
         }
 
         connectingRadioStation = null;
         IsRadioConnecting = false;
         CurrentRadioStation = null;
+        connectingOnlineTrack = null;
+        IsOnlineConnecting = false;
+        CurrentOnlineTrack = null;
         RefreshRadioStationPlaybackStates();
+        RefreshOnlineTrackPlaybackStates();
+        return version;
     }
 
     private void ClearPlaybackAfterFailedRadioLoad()

@@ -226,34 +226,58 @@ public sealed class AudioService : IAudioPlayer
 
     public void LoadStream(Uri streamUrl)
     {
-        ArgumentNullException.ThrowIfNull(streamUrl);
-        if (!streamUrl.IsAbsoluteUri ||
-            (streamUrl.Scheme != Uri.UriSchemeHttp &&
-             streamUrl.Scheme != Uri.UriSchemeHttps) ||
-            !string.IsNullOrEmpty(streamUrl.UserInfo))
-        {
-            throw new ArgumentException(
-                "A direct HTTP(S) stream URL without embedded credentials is required.",
-                nameof(streamUrl));
-        }
+        ValidateRemoteUri(streamUrl);
 
         LoadSource(
             streamUrl.AbsoluteUri,
-            () =>
-            {
-                var streamReader = new MediaFoundationReader(streamUrl.AbsoluteUri);
-                try
-                {
-                    return (streamReader, streamReader.ToSampleProvider());
-                }
-                catch
-                {
-                    streamReader.Dispose();
-                    throw;
-                }
-            },
+            () => CreateRemoteReader(streamUrl),
             isLiveStream: true,
             logSource: $"live stream host {streamUrl.Host}");
+    }
+
+    /// <summary>
+    /// Online catalog tracks are finite and seekable, unlike live radio, so
+    /// they keep their reported duration and may be repositioned. The audio is
+    /// still streamed directly: nothing is downloaded or written to disk.
+    /// </summary>
+    public void LoadRemoteAudio(Uri audioUrl)
+    {
+        ValidateRemoteUri(audioUrl);
+
+        LoadSource(
+            audioUrl.AbsoluteUri,
+            () => CreateRemoteReader(audioUrl),
+            isLiveStream: false,
+            logSource: $"online audio host {audioUrl.Host}");
+    }
+
+    private static void ValidateRemoteUri(Uri? remoteUri)
+    {
+        ArgumentNullException.ThrowIfNull(remoteUri);
+        if (!remoteUri.IsAbsoluteUri ||
+            (remoteUri.Scheme != Uri.UriSchemeHttp &&
+             remoteUri.Scheme != Uri.UriSchemeHttps) ||
+            !string.IsNullOrEmpty(remoteUri.UserInfo))
+        {
+            throw new ArgumentException(
+                "A direct HTTP(S) URL without embedded credentials is required.",
+                nameof(remoteUri));
+        }
+    }
+
+    private static (WaveStream Reader, ISampleProvider Source) CreateRemoteReader(
+        Uri remoteUri)
+    {
+        var remoteReader = new MediaFoundationReader(remoteUri.AbsoluteUri);
+        try
+        {
+            return (remoteReader, remoteReader.ToSampleProvider());
+        }
+        catch
+        {
+            remoteReader.Dispose();
+            throw;
+        }
     }
 
     private void LoadSource(

@@ -260,31 +260,19 @@ một provider không tự phê duyệt provider tiếp theo.
 - Không bật provider mặc định trong bản phát hành cho tới khi có nghiệm
   thu runtime và trang attribution/privacy trong app.
 
-## Online Music — host player chính thức (schema v8)
+## Online catalog — Audius (schema v8)
 
-Đây không phải một provider của `IStreamingProvider`: Mimi không nhận stream,
-không có metadata model, không có rights filter riêng. Nó là một **cửa sổ nhúng
-trang chính thức** cho nhu cầu "gõ tên bài rồi nghe ngay trong Mimi".
+Lát đầu tiên của catalog on-demand, chạy trong engine của Mimi. Thiết kế đầy
+đủ ở [`ONLINE-CATALOG.md`](ONLINE-CATALOG.md).
 
-- `OnlineMusicWindow` chứa `WebView2` điều hướng duy nhất tới
-  `https://music.youtube.com/`; profile WebView2 giữ phiên của chính người
-  dùng.
-- Cửa sổ luôn hiển thị: không có chế độ ẩn, không có player nền, không điều
-  khiển phát bằng script từ ngoài.
-- `DownloadStarting` bị huỷ; `NewWindowRequested` chuyển sang trình duyệt mặc
-  định của người dùng.
-- Mở panel sẽ dừng Internet Radio và tạm dừng phát cục bộ để hai nguồn âm
-  thanh không cùng phát; đóng cửa sổ là dừng.
-- Nội dung online **không** đi vào `Track`, queue, history, favorites, lyrics
-  hay phiên lưu tự động.
-- `AppSettings.OnlineMusicEnabled` (mặc định bật) là công tắc cục bộ: tắt sẽ
-  đóng cửa sổ và ẩn mục điều hướng.
-- Thiếu WebView2 Runtime thì hiện thông báo rõ kèm nút mở trang tải; không im
-  lặng thất bại.
+- `IOnlineCatalogService` chỉ có đúng một việc: tìm track. Kết quả trả về đã
+  được lọc quyền/khả dụng, nên UI không bao giờ phải tự quyết định chặn.
+- `AudiusCatalogService` dùng REST công khai với `app_name=Mimi`; không
+  credential, không bearer token, giới hạn kích thước response.
+- `AudioService.LoadRemoteAudio` là nguồn **hữu hạn**: giữ duration và cho phép
+  seek, khác `LoadStream` (live radio, duration 0, không seek).
+- Item online không đi vào `Track`, queue, history, favorites, lyrics hay phiên
+  lưu; kill switch cục bộ trong Cài đặt.
 
-Giới hạn phải nói thật: audio chạy trong player của trang, nên visualizer,
-queue, crossfade, gapless, SMTC và seek của Mimi **không** áp dụng. Không có
-quảng cáo chỉ khi người dùng tự đăng nhập Premium của họ.
-
-Chi tiết điều khoản và ranh giới "không trích xuất audio":
-`docs/legal/youtube-music-player.md`.
+Giới hạn phải nói thật: catalog Audius không phải toàn bộ nhạc thương mại;
+YouTube/Spotify không nằm trong đường phát của Mimi.

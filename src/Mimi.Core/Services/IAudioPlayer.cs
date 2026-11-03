@@ -48,6 +48,14 @@ public interface IAudioPlayer : IDisposable
     /// </summary>
     void LoadStream(Uri streamUrl);
 
+    /// <summary>
+    /// Opens a direct HTTP(S) URL for a finite, seekable online track and
+    /// prepares it paused. Unlike <see cref="LoadStream"/> the source reports
+    /// a real duration, so the transport may seek it. The implementation must
+    /// stream directly and must not save, record, proxy, or persist the audio.
+    /// </summary>
+    void LoadRemoteAudio(Uri audioUrl);
+
     /// <summary>Starts or resumes the loaded file.</summary>
     /// <exception cref="AudioOutputUnavailableException">
     /// The file is loaded, but no usable Windows audio output is available.

@@ -83,3 +83,14 @@ các giới hạn credential, cache và attribution dưới đây.
 - Audius Terms of Use: <https://audius.co/documents/TermsOfUse.pdf>
 - Audius Developer Docs: <https://docs.audius.co/>
 - Audius SDK credentials: <https://docs.audius.co/sdk/>
+
+## Trạng thái triển khai — 03/11/2026
+
+Lát đầu tiên đã có trên nhánh làm việc: tìm kiếm và stream trong engine Mimi
+(`AudiusCatalogService` + `AudioService.LoadRemoteAudio`), không credential,
+không tải/cache, lọc `is_streamable`/`is_stream_gated`/`is_available`/
+`allowed_api_keys`/`access.stream` trước khi hiển thị, công tắc cục bộ trong
+Cài đặt. Chưa có tài khoản/OAuth, favorite, playlist, upload hay offline mode.
+Đây chưa phải phê duyệt production: còn thiếu nghiệm thu runtime trên Windows
+thật, trang privacy/attribution đầy đủ trong app, và kill switch từ xa.
+Chi tiết thiết kế: [`../design/ONLINE-CATALOG.md`](../design/ONLINE-CATALOG.md).
