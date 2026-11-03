@@ -101,7 +101,16 @@ public sealed class YouTubeFeatureWiringTests
 
         var main = Read(root, "src", "Mimi.App", "ViewModels", "MainWindowViewModel.cs");
         Assert.Contains("if (IsYouTubePlaying)", main, StringComparison.Ordinal);
-        Assert.Contains("StopYouTubeVideo();", main, StringComparison.Ordinal);
+        // The transport hands playback to the video; the Stop button and the
+        // row toggle are what tear the player down.
+        Assert.Contains(
+            "RequestEmbeddedPlayer(isYouTubeVideoPlaying",
+            main,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "private void StopYouTubeVideo()",
+            viewModel,
+            StringComparison.Ordinal);
 
         var settings = Read(
             root,
@@ -270,7 +279,7 @@ public sealed class YouTubeFeatureWiringTests
                      "YouTube_Stop",
                      "YouTube_NowPlaying",
                      "YouTube_Source",
-                     "YouTube_ExternalTimeline",
+                     "YouTube_EmbeddingBlocked",
                      "YouTube_ProviderAttribution",
                      "Settings_YouTubeSection",
                      "Settings_EnableYouTube",
