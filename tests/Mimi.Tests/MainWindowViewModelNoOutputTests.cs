@@ -1126,6 +1126,105 @@ public sealed class MainWindowViewModelNoOutputTests
         });
     }
 
+    [Fact]
+    public void RadioPlayback_StaleStreamLoadCannotOverwriteLocalTrackThatRetakesPlayback()
+    {
+        RunOnSta(() =>
+        {
+            var stationUuid = Guid.Parse("22222222-2222-2222-2222-222222222222");
+            var station = new RadioStation(
+                stationUuid,
+                "Slow Wave",
+                new Uri("https://stream.example/slow.mp3"),
+                new Uri("https://station.example/"),
+                null,
+                "Japan",
+                "Japanese",
+                ["anime"],
+                "MP3",
+                128,
+                10,
+                20);
+            var radio = new FakeRadioStationService
+            {
+                TopStations = [station]
+            };
+            using var streamLoadStarted = new ManualResetEventSlim(false);
+            using var streamLoadRelease = new ManualResetEventSlim(false);
+            var audio = new FakeAudioPlayer
+            {
+                OutputStatus = new AudioOutputStatus(
+                    isAvailable: true,
+                    AudioOutputKind.WasapiShared,
+                    "Test Speakers",
+                    "Audio output is ready."),
+                StreamLoadStarted = streamLoadStarted,
+                StreamLoadRelease = streamLoadRelease
+            };
+            var viewModel = new MainWindowViewModel(
+                audio,
+                new FakeLibraryService(),
+                new FakeLibraryCatalog(),
+                new FakeUserDataService(),
+                new FakeDialogService(),
+                radioStationService: radio);
+
+            try
+            {
+                viewModel.InitializationTask.GetAwaiter().GetResult();
+
+                PumpDispatcherUntilCompleted(
+                    viewModel.ShowRadioCommand.ExecuteAsync(null));
+                var stationViewModel = Assert.Single(viewModel.RadioStations);
+
+                var localTrack = new TrackItemViewModel(
+                    new Track
+                    {
+                        FilePath = @"C:\fixtures\retake.wav",
+                        MetadataTitle = "Local Retake",
+                        Duration = TimeSpan.FromSeconds(30)
+                    },
+                    isFavorite: false);
+                viewModel.Tracks.Add(localTrack);
+
+                var radioTask =
+                    viewModel.PlayRadioStationCommand.ExecuteAsync(stationViewModel);
+                PumpDispatcherUntil(() => streamLoadStarted.IsSet);
+
+                // Release the blocked stream load from another thread. The
+                // local retake may have to wait for that in-flight load, but
+                // it must be the final source loaded into the player.
+                var releaseTask = Task.Run(async () =>
+                {
+                    await Task.Delay(100);
+                    streamLoadRelease.Set();
+                });
+
+                viewModel.PlayTrackCommand.Execute(localTrack);
+                PumpDispatcherUntilCompleted(radioTask);
+                releaseTask.GetAwaiter().GetResult();
+
+                Assert.Same(localTrack, viewModel.CurrentTrack);
+                Assert.Null(viewModel.CurrentRadioStation);
+                Assert.False(viewModel.IsLivePlayback);
+                Assert.True(viewModel.IsPlaying);
+                Assert.Equal(1, audio.StreamLoadCalls);
+                Assert.Equal(1, audio.LoadCalls);
+                Assert.Equal(1, audio.PlayCalls);
+                Assert.False(audio.IsLiveStream);
+                Assert.Null(audio.LoadedStreamUrl);
+                Assert.Empty(radio.Clicks);
+                Assert.False(stationViewModel.IsCurrent);
+                Assert.False(stationViewModel.IsPlaying);
+            }
+            finally
+            {
+                streamLoadRelease.Set();
+                viewModel.Dispose();
+            }
+        });
+    }
+
     private static void RunOnSta(Action action)
     {
         Exception? failure = null;
@@ -1242,6 +1341,8 @@ public sealed class MainWindowViewModelNoOutputTests
         public int PlayCalls { get; private set; }
         public Uri? LoadedStreamUrl { get; private set; }
         public Exception? StreamLoadFailure { get; set; }
+        public ManualResetEventSlim? StreamLoadStarted { get; set; }
+        public ManualResetEventSlim? StreamLoadRelease { get; set; }
 
         public void Load(string path)
         {
@@ -1257,6 +1358,8 @@ public sealed class MainWindowViewModelNoOutputTests
         public void LoadStream(Uri streamUrl)
         {
             StreamLoadCalls++;
+            StreamLoadStarted?.Set();
+            StreamLoadRelease?.Wait(TimeSpan.FromSeconds(10));
             if (StreamLoadFailure is not null)
                 throw StreamLoadFailure;
 

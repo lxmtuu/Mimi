@@ -34,6 +34,7 @@ public sealed partial class MainWindowViewModel
     private bool radioCatalogLoaded;
     private int radioSearchVersion;
     private int playbackSourceVersion;
+    private readonly object playbackSourceLoadSync = new();
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsLibraryContentVisible))]
@@ -267,7 +268,7 @@ public sealed partial class MainWindowViewModel
             return;
         }
 
-        var version = ++playbackSourceVersion;
+        var version = Interlocked.Increment(ref playbackSourceVersion);
         connectingRadioStation = station;
         IsRadioConnecting = true;
         SelectedRadioStation = station;
@@ -277,10 +278,25 @@ public sealed partial class MainWindowViewModel
         try
         {
             var streamUrl = station.StreamUrl;
-            await Task.Run(() => audioPlayer.LoadStream(streamUrl));
-            loaded = true;
 
-            if (!IsCurrentPlaybackVersion(version)) return;
+            // Keep the version check and the side-effectful stream load
+            // atomic with respect to BeginLocalPlaybackAttempt. Otherwise a
+            // radio task scheduled before a local click could finish loading
+            // after the local file and leave the audio engine pointing at a
+            // station the UI has already discarded.
+            loaded = await Task.Run(() =>
+            {
+                lock (playbackSourceLoadSync)
+                {
+                    if (Volatile.Read(ref playbackSourceVersion) != version)
+                        return false;
+
+                    audioPlayer.LoadStream(streamUrl);
+                    return true;
+                }
+            });
+
+            if (!loaded || !IsCurrentPlaybackVersion(version)) return;
 
             CurrentRadioStation = station;
             CurrentTrack = null;
@@ -352,7 +368,7 @@ public sealed partial class MainWindowViewModel
         }
         finally
         {
-            if (version == playbackSourceVersion)
+            if (version == Volatile.Read(ref playbackSourceVersion))
             {
                 connectingRadioStation = null;
                 IsRadioConnecting = false;
@@ -414,7 +430,11 @@ public sealed partial class MainWindowViewModel
 
     private void BeginLocalPlaybackAttempt()
     {
-        playbackSourceVersion++;
+        lock (playbackSourceLoadSync)
+        {
+            Interlocked.Increment(ref playbackSourceVersion);
+        }
+
         connectingRadioStation = null;
         IsRadioConnecting = false;
         CurrentRadioStation = null;
@@ -438,7 +458,7 @@ public sealed partial class MainWindowViewModel
     }
 
     private bool IsCurrentPlaybackVersion(int version) =>
-        !disposed && version == playbackSourceVersion;
+        !disposed && version == Volatile.Read(ref playbackSourceVersion);
 
     private void RefreshRadioStationPlaybackStates()
     {
@@ -519,7 +539,7 @@ public sealed partial class MainWindowViewModel
 
     private void CancelRadioWork()
     {
-        playbackSourceVersion++;
+        Interlocked.Increment(ref playbackSourceVersion);
         radioSearchVersion++;
         radioSearchCancellation?.Cancel();
     }
