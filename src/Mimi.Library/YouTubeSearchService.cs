@@ -57,47 +57,6 @@ public sealed class YouTubeSearchService : IYouTubeSearchService
 
     public bool IsConfigured => ResolveApiKey() is not null;
 
-    /// <summary>
-    /// Stores the key the user pasted into Settings. The value is validated by
-    /// shape first, so a stray space or a smart quote is reported immediately
-    /// rather than turning into a mysterious failed search.
-    /// </summary>
-    public bool TrySaveApiKey(string apiKey)
-    {
-        var normalized = YouTubeApiKey.Normalize(apiKey);
-        if (normalized is null) return false;
-
-        try
-        {
-            Directory.CreateDirectory(userDataService.DataDirectory);
-            File.WriteAllText(KeyFilePath, normalized);
-            return true;
-        }
-        catch (Exception ex) when (
-            ex is IOException or UnauthorizedAccessException or NotSupportedException)
-        {
-            // Never log the key: only the fact that writing failed.
-            return false;
-        }
-    }
-
-    public bool TryClearApiKey()
-    {
-        try
-        {
-            var path = KeyFilePath;
-            if (!File.Exists(path)) return true;
-
-            File.Delete(path);
-            return true;
-        }
-        catch (Exception ex) when (
-            ex is IOException or UnauthorizedAccessException)
-        {
-            return false;
-        }
-    }
-
     public async Task<IReadOnlyList<YouTubeVideo>> SearchAsync(
         string query,
         CancellationToken cancellationToken)
@@ -163,17 +122,19 @@ public sealed class YouTubeSearchService : IYouTubeSearchService
     /// </summary>
     private string? ResolveApiKey()
     {
-        var fromEnvironment = environmentReader(EnvironmentVariable);
-        if (!string.IsNullOrWhiteSpace(fromEnvironment))
-            return fromEnvironment.Trim();
+        var fromEnvironment = YouTubeApiKey.Normalize(environmentReader(EnvironmentVariable));
+        if (fromEnvironment is not null)
+            return fromEnvironment;
 
         try
         {
             var path = KeyFilePath;
             if (!File.Exists(path)) return null;
 
-            var fromFile = File.ReadAllText(path).Trim();
-            return fromFile.Length == 0 ? null : fromFile;
+            // The file is written by the user from a terminal, so reject the
+            // copy/paste damage here: a key with a stray space or a smart
+            // quote would otherwise be sent and answered with a 400.
+            return YouTubeApiKey.Normalize(File.ReadAllText(path));
         }
         catch (Exception ex) when (
             ex is IOException or UnauthorizedAccessException)

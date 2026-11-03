@@ -1,7 +1,6 @@
 using System.ComponentModel;
 using System.IO;
 using System.Windows;
-using System.Windows.Input;
 using Microsoft.Web.WebView2.Core;
 using System.Windows.Controls.Primitives;
 using System.Windows.Interop;
@@ -28,6 +27,56 @@ public partial class MainWindow : Window
     private WindowsMediaControlsService? mediaControls;
     private IntPtr mainWindowHandle;
     private bool youTubeBrowserReady;
+
+    /// <summary>
+    /// Virtual host mapped to a folder Mimi controls. YouTube's embedded player
+    /// requires a Referer that identifies the embedding page, and a top-level
+    /// navigation straight to /embed/ sends none — that is exactly what shows
+    /// "Error 153: video player configuration error". Serving one small page
+    /// from an https host gives the iframe a real origin and referrer while the
+    /// player itself is still YouTube's own.
+    /// </summary>
+    private const string YouTubePlayerHost = "mimi-player.local";
+
+    private const string YouTubePlayerPageName = "player.html";
+
+    private const string YouTubePlayerFolderName = "YouTubePlayerPage";
+
+    private const string YouTubePlayerMarkup = """
+        <!doctype html>
+        <html lang="en">
+        <head>
+        <meta charset="utf-8">
+        <title>Mimi player</title>
+        <meta name="referrer" content="strict-origin-when-cross-origin">
+        <style>
+          html, body { margin: 0; height: 100%; background: #0b0b10; overflow: hidden; }
+          iframe { display: block; border: 0; width: 100%; height: 100%; }
+          p { margin: 0; padding: 14px; color: #9aa0b4;
+              font: 13px "Segoe UI", system-ui, sans-serif; }
+        </style>
+        </head>
+        <body>
+        <p id="fallback" hidden>No YouTube video is selected.</p>
+        <iframe id="player" title="YouTube video player"
+                allow="autoplay; encrypted-media; picture-in-picture; web-share"
+                allowfullscreen
+                referrerpolicy="strict-origin-when-cross-origin"></iframe>
+        <script>
+          (function () {
+            var id = new URLSearchParams(window.location.search).get('v') || '';
+            if (!/^[A-Za-z0-9_-]{11}$/.test(id)) {
+              document.getElementById('fallback').hidden = false;
+              return;
+            }
+            document.getElementById('player').src =
+              'https://www.youtube.com/embed/' + encodeURIComponent(id) +
+              '?autoplay=1&rel=0&playsinline=1';
+          }());
+        </script>
+        </body>
+        </html>
+        """;
 
     public MainWindow(MainWindowViewModel viewModel, IAudioPlayer audioPlayer)
     {
@@ -177,6 +226,12 @@ public partial class MainWindow : Window
                 return;
             }
 
+            // The property change that started this runs before layout, so the
+            // player pane can still be collapsed here. WebView2 refuses to
+            // initialise outside the visual tree, so let layout catch up first.
+            for (var attempt = 0; attempt < 10 && !YouTubeBrowser.IsVisible; attempt++)
+                await Dispatcher.Yield(DispatcherPriority.Loaded);
+
             if (!youTubeBrowserReady)
             {
                 // A dedicated profile keeps the user's own YouTube session
@@ -188,9 +243,39 @@ public partial class MainWindow : Window
                     "YouTubeBrowserProfile");
                 Directory.CreateDirectory(userDataFolder);
 
+                // The click that started this happened in WPF, not in the page,
+                // so Chromium would otherwise treat playback as gesture-less
+                // and refuse to start it with sound.
+                var options = new CoreWebView2EnvironmentOptions(
+                    "--autoplay-policy=no-user-gesture-required");
+
                 var environment = await CoreWebView2Environment.CreateAsync(
-                    userDataFolder: userDataFolder);
+                    browserExecutableFolder: null,
+                    userDataFolder: userDataFolder,
+                    options: options);
                 await YouTubeBrowser.EnsureCoreWebView2Async(environment);
+
+                var initialized = YouTubeBrowser.CoreWebView2;
+                if (initialized is null) return;
+
+                // A folder of its own, next to (not inside) the Chromium
+                // profile: the profile is browser state, this is one static
+                // page that Mimi regenerates on every start.
+                var pageFolder = Path.Combine(
+                    Environment.GetFolderPath(
+                        Environment.SpecialFolder.LocalApplicationData),
+                    "Mimi",
+                    YouTubePlayerFolderName);
+                Directory.CreateDirectory(pageFolder);
+                File.WriteAllText(
+                    Path.Combine(pageFolder, YouTubePlayerPageName),
+                    YouTubePlayerMarkup);
+
+                initialized.SetVirtualHostNameToFolderMapping(
+                    YouTubePlayerHost,
+                    pageFolder,
+                    CoreWebView2HostResourceAccessKind.DenyCors);
+
                 youTubeBrowserReady = true;
             }
 
@@ -200,7 +285,9 @@ public partial class MainWindow : Window
             var video = viewModel.CurrentYouTubeVideo?.Video;
             if (video is null) return;
 
-            core.Navigate(video.EmbedUrl.AbsoluteUri);
+            core.Navigate(
+                $"https://{YouTubePlayerHost}/{YouTubePlayerPageName}" +
+                $"?v={Uri.EscapeDataString(video.VideoId)}");
         }
         catch (Exception ex)
         {
@@ -242,29 +329,6 @@ public partial class MainWindow : Window
         stageWindow.ModeChanged += StageWindow_ModeChanged;
         stageWindow.Closed += StageWindow_Closed;
         stageWindow.Show();
-    }
-
-    // PasswordBox deliberately has no bindable Password property, so the key
-    // typed into Settings is handed to the view model here and the box is
-    // cleared immediately afterwards. The key never lives on the view model.
-    private void SaveYouTubeApiKey_Click(object sender, RoutedEventArgs e) =>
-        SubmitYouTubeApiKey();
-
-    private void YouTubeApiKeyBox_KeyDown(object sender, KeyEventArgs e)
-    {
-        if (e.Key != Key.Enter) return;
-
-        SubmitYouTubeApiKey();
-        e.Handled = true;
-    }
-
-    private void SubmitYouTubeApiKey()
-    {
-        var key = YouTubeApiKeyBox.Password;
-        if (string.IsNullOrWhiteSpace(key)) return;
-
-        viewModel.SaveYouTubeApiKeyCommand.Execute(key);
-        YouTubeApiKeyBox.Clear();
     }
 
     private void PushStageLyrics() =>

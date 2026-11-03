@@ -19,19 +19,6 @@ public interface IYouTubeSearchService
     /// </summary>
     string KeyFilePath { get; }
 
-    /// <summary>
-    /// Writes the user's key to <see cref="KeyFilePath"/>, replacing whatever
-    /// was there. Returns false when the text is not a plausible key or the
-    /// file cannot be written.
-    /// </summary>
-    bool TrySaveApiKey(string apiKey);
-
-    /// <summary>
-    /// Deletes the stored key file. Returns false only when the file exists but
-    /// cannot be removed.
-    /// </summary>
-    bool TryClearApiKey();
-
     /// <exception cref="YouTubeQuotaExceededException">
     /// The daily quota for this key is used up.
     /// </exception>

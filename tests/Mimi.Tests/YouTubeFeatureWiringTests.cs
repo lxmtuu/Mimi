@@ -40,8 +40,18 @@ public sealed class YouTubeFeatureWiringTests
         Assert.DoesNotContain("AIza", service, StringComparison.Ordinal);
 
         var videoModel = Read(root, "src", "Mimi.Core", "YouTube", "YouTubeVideo.cs");
-        Assert.Contains("youtube.com/embed/", videoModel, StringComparison.Ordinal);
         Assert.Contains("youtube.com/watch?v=", videoModel, StringComparison.Ordinal);
+        Assert.Contains("HasValidVideoId", videoModel, StringComparison.Ordinal);
+
+        // The embed URL is built by the page Mimi serves to the official
+        // player, so the iframe carries an origin and a referrer.
+        var codeBehind = Read(root, "src", "Mimi.App", "MainWindow.xaml.cs");
+        Assert.Contains("youtube.com/embed/", codeBehind, StringComparison.Ordinal);
+        Assert.Contains(
+            "referrerpolicy=\"strict-origin-when-cross-origin\"",
+            codeBehind,
+            StringComparison.Ordinal);
+        Assert.Contains("SetVirtualHostNameToFolderMapping", codeBehind, StringComparison.Ordinal);
 
         var xaml = Read(root, "src", "Mimi.App", "MainWindow.xaml");
         Assert.Contains("Microsoft.Web.WebView2.Wpf", xaml, StringComparison.Ordinal);
@@ -127,15 +137,15 @@ public sealed class YouTubeFeatureWiringTests
     }
 
     [Fact]
-    public void TheKeyIsConfiguredInSettingsInsteadOfByHuntingForTheDataFolder()
+    public void TheKeyIsConfiguredFromATerminalAndNeverInTheUi()
     {
         var root = FindRepositoryRoot();
 
+        // Owner requirement: no API key field anywhere in the interface.
         var xaml = Read(root, "src", "Mimi.App", "MainWindow.xaml");
-        Assert.Contains("YouTubeApiKeyBox", xaml, StringComparison.Ordinal);
-        Assert.Contains("SaveYouTubeApiKey_Click", xaml, StringComparison.Ordinal);
-        Assert.Contains("ClearYouTubeApiKeyCommand", xaml, StringComparison.Ordinal);
-        Assert.Contains("YouTubeKeyFilePath", xaml, StringComparison.Ordinal);
+        Assert.DoesNotContain("PasswordBox", xaml, StringComparison.Ordinal);
+        Assert.DoesNotContain("Settings_YouTubeKey", xaml, StringComparison.Ordinal);
+        Assert.DoesNotContain("YouTubeApiKeyBox", xaml, StringComparison.Ordinal);
 
         var viewModel = Read(
             root,
@@ -143,28 +153,14 @@ public sealed class YouTubeFeatureWiringTests
             "Mimi.App",
             "ViewModels",
             "MainWindowViewModel.YouTube.cs");
-        Assert.Contains(
-            "private void SaveYouTubeApiKey(string? apiKey)",
-            viewModel,
-            StringComparison.Ordinal);
-        Assert.Contains("youtubeSearchService.TrySaveApiKey", viewModel, StringComparison.Ordinal);
-        Assert.Contains("youtubeSearchService.TryClearApiKey", viewModel, StringComparison.Ordinal);
-        // The pasted key is written to disk and never kept as view model state;
-        // only the feedback message lives there.
-        Assert.DoesNotContain("private string youTubeApiKey =", viewModel, StringComparison.Ordinal);
-        Assert.Contains(
-            "private string youTubeApiKeyMessage = string.Empty;",
-            viewModel,
-            StringComparison.Ordinal);
+        Assert.DoesNotContain("SaveYouTubeApiKey", viewModel, StringComparison.Ordinal);
+        Assert.DoesNotContain("TrySaveApiKey", viewModel, StringComparison.Ordinal);
 
-        var codeBehind = Read(root, "src", "Mimi.App", "MainWindow.xaml.cs");
-        Assert.Contains("YouTubeApiKeyBox.Clear();", codeBehind, StringComparison.Ordinal);
-
-        var service = Read(root, "src", "Mimi.Library", "YouTubeSearchService.cs");
-        Assert.Contains(
-            "public bool TrySaveApiKey(string apiKey)",
-            service,
-            StringComparison.Ordinal);
+        // The terminal script is the supported way to set the key.
+        var script = Read(root, "tools", "Set-YouTubeKey.ps1");
+        Assert.Contains("youtube-api-key.txt", script, StringComparison.Ordinal);
+        Assert.Contains("MIMI_YOUTUBE_API_KEY", script, StringComparison.Ordinal);
+        Assert.Contains("AsSecureString", script, StringComparison.Ordinal);
     }
 
     [Fact]

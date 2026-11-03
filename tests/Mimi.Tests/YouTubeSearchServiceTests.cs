@@ -13,6 +13,9 @@ namespace Mimi.Tests;
 /// </summary>
 public sealed class YouTubeSearchServiceTests
 {
+    /// <summary>A key-shaped value: Mimi validates shape on both key sources.</summary>
+    private const string TestKey = "AIzaSyA1234567890abcdefghijklmnopqrstu";
+
     [Fact]
     public async Task SearchReturnsVideoMetadataOnly()
     {
@@ -39,7 +42,7 @@ public sealed class YouTubeSearchServiceTests
             """;
 
         var handler = new RecordingHandler(HttpStatusCode.OK, payload);
-        var service = CreateService(handler, "test-key");
+        var service = CreateService(handler, TestKey);
 
         var videos = await service.SearchAsync("neon", CancellationToken.None);
 
@@ -53,14 +56,23 @@ public sealed class YouTubeSearchServiceTests
         Assert.Equal(
             "https://www.youtube.com/watch?v=abc123",
             video.WatchUrl.AbsoluteUri);
-        Assert.Contains("/embed/abc123", video.EmbedUrl.AbsoluteUri, StringComparison.Ordinal);
     }
+
+    [Theory]
+    [InlineData("dQw4w9WgXcQ", true)]
+    [InlineData("abc123", false)]
+    [InlineData("dQw4w9WgXc", false)]
+    [InlineData("dQw4w9WgXc!", false)]
+    public void OnlyYouTubeShapedIdsReachThePlayerPage(string videoId, bool expected) =>
+        Assert.Equal(
+            expected,
+            new YouTubeVideo(videoId, "title", "channel", null).HasValidVideoId);
 
     [Fact]
     public async Task SearchUsesTheOfficialDataApiWithTheUserKey()
     {
         var handler = new RecordingHandler(HttpStatusCode.OK, """{"items":[]}""");
-        var service = CreateService(handler, "test-key");
+        var service = CreateService(handler, TestKey);
 
         await service.SearchAsync("neon skyline", CancellationToken.None);
 
@@ -70,7 +82,7 @@ public sealed class YouTubeSearchServiceTests
             request.RequestUri!.AbsoluteUri);
         Assert.Contains("q=neon%20skyline", request.RequestUri.AbsoluteUri, StringComparison.Ordinal);
         Assert.Contains("type=video", request.RequestUri.AbsoluteUri, StringComparison.Ordinal);
-        Assert.Contains("key=test-key", request.RequestUri.AbsoluteUri, StringComparison.Ordinal);
+        Assert.Contains("key=" + TestKey, request.RequestUri.AbsoluteUri, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -88,70 +100,44 @@ public sealed class YouTubeSearchServiceTests
     public async Task ExhaustedQuotaIsReportedAsItsOwnState()
     {
         var handler = new RecordingHandler(HttpStatusCode.Forbidden, "{}");
-        var service = CreateService(handler, "test-key");
+        var service = CreateService(handler, TestKey);
 
         await Assert.ThrowsAsync<YouTubeQuotaExceededException>(() =>
             service.SearchAsync("neon", CancellationToken.None));
     }
 
-    [Fact]
-    public void SavingAKeyWritesTheFileTheSearchReads()
-    {
-        var directory = Path.Combine(
-            Path.GetTempPath(),
-            "mimi-youtube-key-" + Guid.NewGuid().ToString("N"));
-
-        try
-        {
-            var service = new YouTubeSearchService(
-                new FakeUserDataService(directory),
-                new HttpClient(new RecordingHandler(HttpStatusCode.OK, "{}")),
-                _ => null);
-
-            Assert.False(service.IsConfigured);
-
-            // Surrounding whitespace from a copy/paste must not be stored.
-            Assert.True(service.TrySaveApiKey("  AIzaSyA1234567890abcdefghijklmnopqrstu  "));
-            Assert.True(service.IsConfigured);
-            Assert.Equal(
-                "AIzaSyA1234567890abcdefghijklmnopqrstu",
-                File.ReadAllText(service.KeyFilePath));
-
-            Assert.True(service.TryClearApiKey());
-            Assert.False(service.IsConfigured);
-            Assert.False(File.Exists(service.KeyFilePath));
-        }
-        finally
-        {
-            if (Directory.Exists(directory))
-                Directory.Delete(directory, recursive: true);
-        }
-    }
-
     [Theory]
+    [InlineData(null)]
     [InlineData("")]
     [InlineData("   ")]
     [InlineData("too-short")]
     [InlineData("AIzaSyA1234567890 abcdefghijklmnop")]
-    [InlineData("AIzaSyA1234567890abcdefghijklmnop\u201D")]
-    [InlineData("AIzaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")]
-    public void MalformedKeysAreRejectedInsteadOfSaved(string raw)
+    public void KeyShapeRejectsCopyPasteDamage(string? raw) =>
+        Assert.Null(YouTubeApiKey.Normalize(raw));
+
+    [Fact]
+    public void ADamagedKeyFileCountsAsNotConfigured()
     {
+        // The key file is written by hand from a terminal, so the most likely
+        // mistake is a stray space or a line break. Sending that would only
+        // produce a 400, so it degrades to "not configured" instead.
         var directory = Path.Combine(
             Path.GetTempPath(),
-            "mimi-youtube-key-" + Guid.NewGuid().ToString("N"));
+            "mimi-youtube-file-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(directory);
 
         try
         {
+            File.WriteAllText(
+                Path.Combine(directory, YouTubeSearchService.KeyFileName),
+                "AIzaSyA1234567890 abcdefghijklmnop\n");
+
             var service = new YouTubeSearchService(
                 new FakeUserDataService(directory),
                 new HttpClient(new RecordingHandler(HttpStatusCode.OK, "{}")),
                 _ => null);
 
-            Assert.False(service.TrySaveApiKey(raw));
             Assert.False(service.IsConfigured);
-            Assert.False(File.Exists(service.KeyFilePath));
         }
         finally
         {

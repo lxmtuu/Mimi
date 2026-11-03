@@ -19,22 +19,31 @@ thị thì mới hợp lệ, nên không có "chạy nền" hay "ẩn video, ch�
 
 Key **không** nằm trong source, không nằm trong binary, không được log.
 
-### Cách dán key (đường chính)
+### Đặt key bằng terminal (đường duy nhất)
 
-`Settings → YOUTUBE` có ô **API key YouTube Data API v3**: dán key vào ô, bấm
-**Lưu key** (hoặc Enter). Ô này dùng `PasswordBox` nên key không hiện ra khi gõ;
-sau khi lưu, ô được xoá và key **không** được giữ trong view model. Ngay bên
-dưới ô là đường dẫn file thật để người dùng đối chiếu, cùng nút **Xoá key**.
+Mimi **không** có ô dán key trong giao diện — đây là yêu cầu của chủ dự án: cấu
+hình thuộc về terminal. Script `tools/Set-YouTubeKey.ps1` làm việc đó:
 
-Cách này tồn tại vì trước đó đường dẫn file chỉ được nêu trong panel YouTube —
-mà panel đó lại bị ẩn khi chưa có key, nên trên thực tế không có chỗ nào trong
-app chỉ được người dùng phải làm gì.
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\Set-YouTubeKey.ps1
+```
 
-Key được kiểm tra hình dạng trước khi ghi (`YouTubeApiKey.Normalize`): cắt
-khoảng trắng hai đầu, từ chối chuỗi rỗng, chuỗi có dấu cách/xuống dòng, ký tự
-ngoài ASCII in được (dấu ngoặc kép cong khi copy từ trang web), và độ dài
-ngoài khoảng 20–100. Nhờ vậy lỗi copy/paste hiện ra ngay chứ không thành một
-lần tìm kiếm thất bại khó hiểu.
+Không truyền tham số thì script hỏi key và **không hiện lại** giá trị vừa gõ.
+Các lệnh khác:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\Set-YouTubeKey.ps1 -Status
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\Set-YouTubeKey.ps1 -Remove
+```
+
+`-Status` in đường dẫn file và một dạng che của key (`AIza****tu`), không in
+key đầy đủ. `-Remove` xoá file.
+
+Script kiểm tra hình dạng trước khi ghi (`YouTubeApiKey.Normalize` bên C# dùng
+cùng luật): cắt khoảng trắng hai đầu, từ chối chuỗi rỗng, có dấu cách/xuống
+dòng, ký tự ngoài ASCII in được (dấu ngoặc kép cong khi copy từ web), và độ dài
+ngoài khoảng 20–100. Mimi cũng áp luật này khi **đọc** file, nên một file bị hỏng
+được coi là *chưa có key* thay vì bị gửi lên Google và trả về 400.
 
 ### Thứ tự tìm key
 
@@ -46,8 +55,9 @@ lần tìm kiếm thất bại khó hiểu.
    đúng key, không có `key=`, không có ngoặc kép.
 
 Thiếu key → mục YouTube tự ẩn; không có lỗi, không có crash. Mục này được kiểm
-tra lại khi cửa sổ Mimi được kích hoạt (alt-tab trở về), khi mở Settings, và
-ngay sau khi lưu/xoá key — nên không cần tắt mở lại app.
+tra lại khi cửa sổ Mimi được kích hoạt (alt-tab trở về) và khi mở Settings, nên
+đặt key trong terminal rồi quay lại Mimi là mục hiện ra ngay — không cần tắt mở
+lại app.
 
 Nếu key sai hoặc chưa bật YouTube Data API v3 cho project, API trả 400/401;
 Mimi báo riêng trạng thái *key bị từ chối* và chỉ người dùng vào Settings, thay
@@ -66,6 +76,20 @@ quy trình của Google.
 
 ## Hành vi phát
 
+- Player nhúng KHÔNG được nạp bằng cách điều hướng thẳng tới
+  `youtube.com/embed/...`. Cách đó không gửi `Referer`, và YouTube trả **Error
+  153 – video player configuration error** (đúng lỗi đã gặp ở bản trước). Mimi
+  phục vụ một trang nhỏ `player.html` từ host ảo `https://mimi-player.local`
+  (`SetVirtualHostNameToFolderMapping`), trang này mới tạo iframe nhúng chính
+  thức với `referrerpolicy="strict-origin-when-cross-origin"`, nên iframe có
+  origin và referrer hợp lệ.
+- Thư mục chứa trang đó là `%LOCALAPPDATA%\Mimi\YouTubePlayerPage`, tách khỏi
+  profile Chromium (`YouTubeBrowserProfile`); Mimi ghi lại mỗi lần khởi động
+  player.
+- WebView2 được tạo với `--autoplay-policy=no-user-gesture-required`, vì cú
+  click phát nằm ở WPF chứ không nằm trong trang.
+- Trước khi khởi tạo WebView2, code chờ layout (`DispatcherPriority.Loaded`) cho
+  tới khi pane hiện — WebView2 không khởi tạo được khi control còn collapsed.
 - Ô video **dùng chung khung với visualizer**: `IsVisualizerSurfaceVisible =
   !IsYouTubePlaying`. Visualizer tắt khi video hiện, bật lại khi video đóng.
 - Chọn video → Mimi **pause nhạc local**, **dừng Radio**, **bỏ track online**
@@ -73,8 +97,10 @@ quy trình của Google.
 - Bấm lại đúng hàng đang phát, hoặc nút **Dừng**, hoặc phím Space → đóng
   player. Code-behind điều hướng WebView2 sang `about:blank`, và đó chính là
   cách âm thanh dừng lại.
-- Nút **Mở** mở trang `watch?v=` bằng trình duyệt mặc định (dùng khi video chặn
-  nhúng).
+- Nút **Mở** chỉ là đường lui cho video **chặn nhúng** (chủ video tắt embed);
+  bình thường bấm **Phát** là video chạy ngay trong Mimi, không cần mở trình
+  duyệt. Nhãn nút trong danh sách là **Phát**/**Dừng**, không còn dùng câu
+  automation làm nhãn hiển thị.
 - Nội dung YouTube **không** vào `Track`, queue, history, favorites, lyrics hay
   phiên lưu; không có cache media của Mimi.
 

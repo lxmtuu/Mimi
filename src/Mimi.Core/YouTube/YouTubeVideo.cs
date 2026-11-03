@@ -20,10 +20,10 @@ public sealed record YouTubeVideo(
     public Uri WatchUrl => new($"https://www.youtube.com/watch?v={VideoId}");
 
     /// <summary>
-    /// Official embed URL. Playback stays inside YouTube's player and the
-    /// player remains visible for as long as it is playing.
+    /// True when the identifier has the shape YouTube uses. The embed page
+    /// validates this again before it builds a URL, because a malformed id
+    /// would otherwise load YouTube's own error page.
     /// </summary>
-    public Uri EmbedUrl => new(
-        $"https://www.youtube.com/embed/{VideoId}" +
-        "?autoplay=1&rel=0&enablejsapi=0");
+    public bool HasValidVideoId => VideoId.Length == 11 && VideoId.All(
+        character => char.IsAsciiLetterOrDigit(character) || character is '-' or '_');
 }
