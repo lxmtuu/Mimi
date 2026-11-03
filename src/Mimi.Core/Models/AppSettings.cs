@@ -13,12 +13,13 @@ namespace Mimi.Models;
 /// Version 4 adds the interface-language preference. Version 5 adds the
 /// interface-theme preference. Version 6 adds per-track lyrics display
 /// offsets. Version 7 adds the Internet Radio enable/disable preference.
+/// Version 8 adds the online music panel enable/disable preference.
 /// Unknown string values are tolerated here and interpreted defensively by
 /// the app layer.
 /// </summary>
 public sealed class AppSettings
 {
-    public const int CurrentVersion = 7;
+    public const int CurrentVersion = 8;
 
     public const int MinimumLyricsOffsetMilliseconds = -30000;
 
@@ -51,6 +52,13 @@ public sealed class AppSettings
     public bool WatchLibraryFolders { get; set; } = true;
 
     public bool InternetRadioEnabled { get; set; } = true;
+
+    /// <summary>
+    /// Controls whether the online music panel (the official YouTube Music
+    /// web player hosted inside Mimi) is available. Mimi never downloads or
+    /// extracts audio from it; the embedded site plays its own streams.
+    /// </summary>
+    public bool OnlineMusicEnabled { get; set; } = true;
 
     public List<string> WatchedFolders { get; set; } = [];
 

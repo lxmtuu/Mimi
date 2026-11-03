@@ -142,6 +142,7 @@
   <data name="Nav_Favorites" xml:space="preserve"><value>Favorites</value></data>
   <data name="Nav_Home" xml:space="preserve"><value>Home</value></data>
   <data name="Nav_MyLibrary" xml:space="preserve"><value>My Library</value></data>
+  <data name="Nav_OnlineMusic" xml:space="preserve"><value>YouTube Music</value></data>
   <data name="Nav_Playlists" xml:space="preserve"><value>PLAYLISTS</value></data>
   <data name="Nav_Radio" xml:space="preserve"><value>Internet Radio</value></data>
   <data name="Nav_RecentlyPlayed" xml:space="preserve"><value>Recently played</value></data>
@@ -154,6 +155,16 @@
   <data name="NowPlaying_Title" xml:space="preserve"><value>NOW PLAYING</value></data>
   <data name="NowPlaying_UpNext" xml:space="preserve"><value>UP NEXT</value></data>
   <data name="NowPlaying_VolumeHeader" xml:space="preserve"><value>VOLUME</value></data>
+  <data name="Online_InstallRuntime" xml:space="preserve"><value>Get WebView2 Runtime</value></data>
+  <data name="Online_LegalNotice" xml:space="preserve"><value>The official YouTube Music player is shown unmodified. Mimi does not block its ads, download audio, or keep its own copy of anything you play.</value></data>
+  <data name="Online_LoadFailed" xml:space="preserve"><value>Couldn't load YouTube Music. Check your connection and try again.</value></data>
+  <data name="Online_Loading" xml:space="preserve"><value>Loading YouTube Music…</value></data>
+  <data name="Online_OpenInBrowser" xml:space="preserve"><value>Open in browser</value></data>
+  <data name="Online_ProviderAttribution" xml:space="preserve"><value>Music site: YouTube Music (Google)</value></data>
+  <data name="Online_RuntimeMissing" xml:space="preserve"><value>Microsoft Edge WebView2 Runtime is missing</value></data>
+  <data name="Online_RuntimeMissingDetail" xml:space="preserve"><value>Mimi needs the WebView2 Runtime to show the YouTube Music player. Install it, then reopen this panel.</value></data>
+  <data name="Online_Title" xml:space="preserve"><value>YouTube Music</value></data>
+  <data name="Online_WindowTitle" xml:space="preserve"><value>YouTube Music — Mimi</value></data>
   <data name="OpenWith_CouldNotOpenPaths" xml:space="preserve"><value>Couldn't open those paths with Mimi.&#10;&#10;{0}</value></data>
   <data name="OpenWith_FilesNotFound" xml:space="preserve"><value>The opened file(s) could not be found.</value></data>
   <data name="OpenWith_NoneOpenedSongsCouldBePlayed" xml:space="preserve"><value>None of the opened songs could be played.</value></data>
@@ -288,6 +299,9 @@
   <data name="Settings_FolderPathCouldNotBeUsed" xml:space="preserve"><value>That folder path could not be used.</value></data>
   <data name="Settings_InternetRadioDescription" xml:space="preserve"><value>When on, Mimi contacts Radio Browser mirrors for the station directory and a playback click count, then streams audio directly from each station. Station servers can see your IP address. Turn this off to hide Internet Radio, cancel station loading, and stop radio playback.</value></data>
   <data name="Settings_InternetRadioSection" xml:space="preserve"><value>INTERNET RADIO</value></data>
+  <data name="Settings_EnableOnlineMusic" xml:space="preserve"><value>Enable the YouTube Music panel</value></data>
+  <data name="Settings_OnlineMusicDescription" xml:space="preserve"><value>When on, Mimi opens the official YouTube Music web player in its own window so you can search and listen there. Mimi does not download, extract, or cache audio, and nothing from that site becomes part of your local library. Turn this off to hide the panel and close it.</value></data>
+  <data name="Settings_OnlineMusicSection" xml:space="preserve"><value>ONLINE MUSIC</value></data>
   <data name="Settings_KeyboardShortcutsSection" xml:space="preserve"><value>KEYBOARD SHORTCUTS</value></data>
   <data name="Settings_Language" xml:space="preserve"><value>Interface language</value></data>
   <data name="Settings_LanguageDescription" xml:space="preserve"><value>Changes apply immediately. Mimi will keep expanding translated areas as Phase 5 continues.</value></data>

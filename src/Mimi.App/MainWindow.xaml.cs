@@ -22,6 +22,7 @@ public partial class MainWindow : Window
     private readonly DispatcherTimer metricsTimer =
         new() { Interval = TimeSpan.FromMilliseconds(500) };
     private StageWindow? stageWindow;
+    private OnlineMusicWindow? onlineMusicWindow;
     private WindowsMediaControlsService? mediaControls;
     private IntPtr mainWindowHandle;
 
@@ -92,6 +93,8 @@ public partial class MainWindow : Window
         metricsTimer.Tick -= MetricsTimer_Tick;
         viewModel.StageToggleRequested -= ViewModel_StageToggleRequested;
         viewModel.PropertyChanged -= ViewModel_PropertyChanged;
+        onlineMusicWindow?.Close();
+        onlineMusicWindow = null;
         stageWindow?.Close();
         mediaControls?.Dispose();
         mediaControls = null;
@@ -110,7 +113,14 @@ public partial class MainWindow : Window
     private void ViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         if (e.PropertyName == nameof(MainWindowViewModel.UiTheme))
+        {
             WindowChromeHelper.ApplyDarkTitleBar(this);
+            if (onlineMusicWindow is not null)
+                WindowChromeHelper.ApplyDarkTitleBar(onlineMusicWindow);
+        }
+
+        if (e.PropertyName == nameof(MainWindowViewModel.IsOnlineMusicOpen))
+            SyncOnlineMusicWindow();
 
         if (stageWindow is null) return;
 
@@ -131,6 +141,43 @@ public partial class MainWindow : Window
         {
             PushStageLyrics();
         }
+    }
+
+    /// <summary>
+    /// The online music surface is its own window so the embedded site is a
+    /// normal, visible page rather than a hidden background player.
+    /// </summary>
+    private void SyncOnlineMusicWindow()
+    {
+        if (viewModel.IsOnlineMusicOpen)
+        {
+            OpenOnlineMusicWindow();
+            return;
+        }
+
+        onlineMusicWindow?.Close();
+    }
+
+    private void OpenOnlineMusicWindow()
+    {
+        if (onlineMusicWindow is { IsLoaded: true })
+        {
+            onlineMusicWindow.Activate();
+            return;
+        }
+
+        onlineMusicWindow = new OnlineMusicWindow(viewModel.Loc) { Owner = this };
+        onlineMusicWindow.Closed += OnlineMusicWindow_Closed;
+        onlineMusicWindow.Show();
+    }
+
+    private void OnlineMusicWindow_Closed(object? sender, EventArgs e)
+    {
+        if (sender is OnlineMusicWindow window)
+            window.Closed -= OnlineMusicWindow_Closed;
+
+        onlineMusicWindow = null;
+        viewModel.IsOnlineMusicOpen = false;
     }
 
     private void ToggleStage()

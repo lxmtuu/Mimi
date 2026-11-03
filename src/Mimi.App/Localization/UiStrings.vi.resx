@@ -142,6 +142,7 @@
   <data name="Nav_Favorites" xml:space="preserve"><value>Yêu thích</value></data>
   <data name="Nav_Home" xml:space="preserve"><value>Trang chủ</value></data>
   <data name="Nav_MyLibrary" xml:space="preserve"><value>Thư viện của tôi</value></data>
+  <data name="Nav_OnlineMusic" xml:space="preserve"><value>YouTube Music</value></data>
   <data name="Nav_Playlists" xml:space="preserve"><value>DANH SÁCH PHÁT</value></data>
   <data name="Nav_Radio" xml:space="preserve"><value>Radio trực tuyến</value></data>
   <data name="Nav_RecentlyPlayed" xml:space="preserve"><value>Đã nghe gần đây</value></data>
@@ -154,6 +155,16 @@
   <data name="NowPlaying_Title" xml:space="preserve"><value>ĐANG PHÁT</value></data>
   <data name="NowPlaying_UpNext" xml:space="preserve"><value>SẮP PHÁT</value></data>
   <data name="NowPlaying_VolumeHeader" xml:space="preserve"><value>ÂM LƯỢNG</value></data>
+  <data name="Online_InstallRuntime" xml:space="preserve"><value>Tải WebView2 Runtime</value></data>
+  <data name="Online_LegalNotice" xml:space="preserve"><value>Trình phát chính thức của YouTube Music được hiển thị nguyên bản. Mimi không chặn quảng cáo, không tải âm thanh và không giữ bản sao riêng của nội dung bạn nghe.</value></data>
+  <data name="Online_LoadFailed" xml:space="preserve"><value>Không tải được YouTube Music. Hãy kiểm tra kết nối và thử lại.</value></data>
+  <data name="Online_Loading" xml:space="preserve"><value>Đang tải YouTube Music…</value></data>
+  <data name="Online_OpenInBrowser" xml:space="preserve"><value>Mở bằng trình duyệt</value></data>
+  <data name="Online_ProviderAttribution" xml:space="preserve"><value>Trang nhạc: YouTube Music (Google)</value></data>
+  <data name="Online_RuntimeMissing" xml:space="preserve"><value>Thiếu Microsoft Edge WebView2 Runtime</value></data>
+  <data name="Online_RuntimeMissingDetail" xml:space="preserve"><value>Mimi cần WebView2 Runtime để hiển thị trình phát YouTube Music. Hãy cài đặt rồi mở lại bảng này.</value></data>
+  <data name="Online_Title" xml:space="preserve"><value>YouTube Music</value></data>
+  <data name="Online_WindowTitle" xml:space="preserve"><value>YouTube Music — Mimi</value></data>
   <data name="OpenWith_CouldNotOpenPaths" xml:space="preserve"><value>Không thể mở các đường dẫn đó bằng Mimi.&#10;&#10;{0}</value></data>
   <data name="OpenWith_FilesNotFound" xml:space="preserve"><value>Không tìm thấy file được mở.</value></data>
   <data name="OpenWith_NoneOpenedSongsCouldBePlayed" xml:space="preserve"><value>Không bài nào được mở có thể phát.</value></data>
@@ -288,6 +299,9 @@
   <data name="Settings_FolderPathCouldNotBeUsed" xml:space="preserve"><value>Không thể dùng đường dẫn thư mục đó.</value></data>
   <data name="Settings_InternetRadioDescription" xml:space="preserve"><value>Khi bật, Mimi liên hệ các mirror của Radio Browser để lấy danh mục đài và gửi lượt đếm khi bắt đầu phát, sau đó phát âm thanh trực tiếp từ từng đài. Máy chủ của đài có thể thấy địa chỉ IP của bạn. Tắt tùy chọn này để ẩn Radio trực tuyến, hủy tải danh sách đài và dừng phát radio.</value></data>
   <data name="Settings_InternetRadioSection" xml:space="preserve"><value>RADIO TRỰC TUYẾN</value></data>
+  <data name="Settings_EnableOnlineMusic" xml:space="preserve"><value>Bật bảng YouTube Music</value></data>
+  <data name="Settings_OnlineMusicDescription" xml:space="preserve"><value>Khi bật, Mimi mở trình phát web chính thức của YouTube Music trong cửa sổ riêng để bạn tìm và nghe nhạc tại đó. Mimi không tải, không tách và không lưu đệm âm thanh, và không có nội dung nào từ trang đó trở thành thư viện cục bộ. Tắt tùy chọn này để ẩn và đóng bảng.</value></data>
+  <data name="Settings_OnlineMusicSection" xml:space="preserve"><value>NHẠC TRỰC TUYẾN</value></data>
   <data name="Settings_KeyboardShortcutsSection" xml:space="preserve"><value>PHÍM TẮT</value></data>
   <data name="Settings_Language" xml:space="preserve"><value>Ngôn ngữ giao diện</value></data>
   <data name="Settings_LanguageDescription" xml:space="preserve"><value>Thay đổi áp dụng ngay. Mimi sẽ tiếp tục mở rộng phần đã dịch trong Phase 5.</value></data>

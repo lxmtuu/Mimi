@@ -93,6 +93,7 @@ public sealed partial class MainWindowViewModel
         }
 
         IsSettingsOpen = false;
+        IsOnlineMusicOpen = false;
         IsRadioOpen = true;
 
         if (!radioCatalogLoaded && !IsRadioLoading)

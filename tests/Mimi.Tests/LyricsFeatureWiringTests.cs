@@ -162,7 +162,7 @@ public sealed class LyricsFeatureWiringTests
             "Models",
             "AppSettings.cs");
         Assert.Contains(
-            "CurrentVersion = 7",
+            $"CurrentVersion = {global::Mimi.Models.AppSettings.CurrentVersion}",
             settingsModel,
             StringComparison.Ordinal);
         Assert.Contains(
