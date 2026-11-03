@@ -19,6 +19,19 @@ public interface IYouTubeSearchService
     /// </summary>
     string KeyFilePath { get; }
 
+    /// <summary>
+    /// Writes the user's key to <see cref="KeyFilePath"/>, replacing whatever
+    /// was there. Returns false when the text is not a plausible key or the
+    /// file cannot be written.
+    /// </summary>
+    bool TrySaveApiKey(string apiKey);
+
+    /// <summary>
+    /// Deletes the stored key file. Returns false only when the file exists but
+    /// cannot be removed.
+    /// </summary>
+    bool TryClearApiKey();
+
     /// <exception cref="YouTubeQuotaExceededException">
     /// The daily quota for this key is used up.
     /// </exception>
@@ -35,4 +48,12 @@ public interface IYouTubeSearchService
 /// normal, expected state for the free quota, not a bug in Mimi.
 /// </summary>
 public sealed class YouTubeQuotaExceededException(string message)
+    : Exception(message);
+
+/// <summary>
+/// The official API refused the key itself, which almost always means the key
+/// was pasted incompletely, was deleted in Google Cloud, or belongs to a
+/// project that has not enabled YouTube Data API v3.
+/// </summary>
+public sealed class YouTubeInvalidKeyException(string message)
     : Exception(message);

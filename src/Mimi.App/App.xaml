@@ -76,6 +76,17 @@
             <Setter Property="FontFamily" Value="{StaticResource MimiUiFontFamily}"/>
             <Setter Property="FocusVisualStyle" Value="{StaticResource MimiFocusVisualStyle}"/>
         </Style>
+        <!-- The API key box is the only PasswordBox in the app. It is styled
+             explicitly so it reads as part of the dark card rather than as a
+             stock white Windows control. -->
+        <Style TargetType="PasswordBox">
+            <Setter Property="FontFamily" Value="{StaticResource MimiUiFontFamily}"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+            <Setter Property="Background" Value="{StaticResource ControlBackgroundBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+            <Setter Property="Padding" Value="6,3"/>
+            <Setter Property="FocusVisualStyle" Value="{StaticResource MimiFocusVisualStyle}"/>
+        </Style>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

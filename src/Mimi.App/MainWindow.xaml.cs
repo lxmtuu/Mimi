@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.IO;
 using System.Windows;
+using System.Windows.Input;
 using Microsoft.Web.WebView2.Core;
 using System.Windows.Controls.Primitives;
 using System.Windows.Interop;
@@ -241,6 +242,29 @@ public partial class MainWindow : Window
         stageWindow.ModeChanged += StageWindow_ModeChanged;
         stageWindow.Closed += StageWindow_Closed;
         stageWindow.Show();
+    }
+
+    // PasswordBox deliberately has no bindable Password property, so the key
+    // typed into Settings is handed to the view model here and the box is
+    // cleared immediately afterwards. The key never lives on the view model.
+    private void SaveYouTubeApiKey_Click(object sender, RoutedEventArgs e) =>
+        SubmitYouTubeApiKey();
+
+    private void YouTubeApiKeyBox_KeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key != Key.Enter) return;
+
+        SubmitYouTubeApiKey();
+        e.Handled = true;
+    }
+
+    private void SubmitYouTubeApiKey()
+    {
+        var key = YouTubeApiKeyBox.Password;
+        if (string.IsNullOrWhiteSpace(key)) return;
+
+        viewModel.SaveYouTubeApiKeyCommand.Execute(key);
+        YouTubeApiKeyBox.Clear();
     }
 
     private void PushStageLyrics() =>

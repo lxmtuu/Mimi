@@ -57,6 +57,47 @@ public sealed class YouTubeSearchService : IYouTubeSearchService
 
     public bool IsConfigured => ResolveApiKey() is not null;
 
+    /// <summary>
+    /// Stores the key the user pasted into Settings. The value is validated by
+    /// shape first, so a stray space or a smart quote is reported immediately
+    /// rather than turning into a mysterious failed search.
+    /// </summary>
+    public bool TrySaveApiKey(string apiKey)
+    {
+        var normalized = YouTubeApiKey.Normalize(apiKey);
+        if (normalized is null) return false;
+
+        try
+        {
+            Directory.CreateDirectory(userDataService.DataDirectory);
+            File.WriteAllText(KeyFilePath, normalized);
+            return true;
+        }
+        catch (Exception ex) when (
+            ex is IOException or UnauthorizedAccessException or NotSupportedException)
+        {
+            // Never log the key: only the fact that writing failed.
+            return false;
+        }
+    }
+
+    public bool TryClearApiKey()
+    {
+        try
+        {
+            var path = KeyFilePath;
+            if (!File.Exists(path)) return true;
+
+            File.Delete(path);
+            return true;
+        }
+        catch (Exception ex) when (
+            ex is IOException or UnauthorizedAccessException)
+        {
+            return false;
+        }
+    }
+
     public async Task<IReadOnlyList<YouTubeVideo>> SearchAsync(
         string query,
         CancellationToken cancellationToken)
@@ -87,6 +128,15 @@ public sealed class YouTubeSearchService : IYouTubeSearchService
             // 403 is how the Data API reports an exhausted daily quota.
             throw new YouTubeQuotaExceededException(
                 "The YouTube Data API quota for this key is exhausted.");
+        }
+
+        if (response.StatusCode is
+            System.Net.HttpStatusCode.BadRequest or
+            System.Net.HttpStatusCode.Unauthorized)
+        {
+            // 400/401 means the key itself was refused, which the user can fix.
+            throw new YouTubeInvalidKeyException(
+                "The YouTube Data API rejected the configured key.");
         }
 
         if (!response.IsSuccessStatusCode)

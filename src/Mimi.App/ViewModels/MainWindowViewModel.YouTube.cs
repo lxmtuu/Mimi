@@ -23,6 +23,7 @@ public sealed partial class MainWindowViewModel
         Empty,
         Failed,
         QuotaExceeded,
+        InvalidKey,
         NotConfigured,
         Unavailable
     }
@@ -46,6 +47,17 @@ public sealed partial class MainWindowViewModel
 
     [ObservableProperty]
     private string youTubeStatusLabel = string.Empty;
+
+    /// <summary>
+    /// Feedback for the Settings key box. The pasted key itself is never stored
+    /// on the view model: the command takes it as a parameter, writes it to
+    /// disk, and the box is cleared.
+    /// </summary>
+    [ObservableProperty]
+    private string youTubeApiKeyMessage = string.Empty;
+
+    [ObservableProperty]
+    private bool isYouTubeApiKeyMessageError;
 
     [ObservableProperty]
     private YouTubeVideoItemViewModel? selectedYouTubeVideo;
@@ -200,6 +212,68 @@ public sealed partial class MainWindowViewModel
         }
     }
 
+    /// <summary>
+    /// Saves the key typed into Settings. This exists so the configuration step
+    /// is discoverable: before it, the only way to set a key was to find the
+    /// app data folder by hand, and the panel that explained the path was
+    /// hidden while no key existed.
+    /// </summary>
+    [RelayCommand]
+    private void SaveYouTubeApiKey(string? apiKey)
+    {
+        if (disposed) return;
+
+        if (youtubeSearchService is null)
+        {
+            SetYouTubeApiKeyMessage(Loc["Settings_YouTubeKeyUnavailable"], isError: true);
+            return;
+        }
+
+        var normalized = YouTubeApiKey.Normalize(apiKey);
+        if (normalized is null)
+        {
+            SetYouTubeApiKeyMessage(
+                Loc["Settings_YouTubeKeyInvalid"],
+                isError: true);
+            return;
+        }
+
+        if (!youtubeSearchService.TrySaveApiKey(normalized))
+        {
+            SetYouTubeApiKeyMessage(
+                Loc["Settings_YouTubeKeyWriteFailed"],
+                isError: true);
+            return;
+        }
+
+        RefreshYouTubeAvailability();
+        SetYouTubeApiKeyMessage(Loc["Settings_YouTubeKeySaved"], isError: false);
+    }
+
+    [RelayCommand]
+    private void ClearYouTubeApiKey()
+    {
+        if (disposed || youtubeSearchService is null) return;
+
+        if (!youtubeSearchService.TryClearApiKey())
+        {
+            SetYouTubeApiKeyMessage(
+                Loc["Settings_YouTubeKeyWriteFailed"],
+                isError: true);
+            return;
+        }
+
+        // With no key the surface must disappear, so nothing may keep playing.
+        RefreshYouTubeAvailability();
+        SetYouTubeApiKeyMessage(Loc["Settings_YouTubeKeyRemoved"], isError: false);
+    }
+
+    private void SetYouTubeApiKeyMessage(string message, bool isError)
+    {
+        YouTubeApiKeyMessage = message;
+        IsYouTubeApiKeyMessageError = isError;
+    }
+
     private async Task LoadYouTubeVideosAsync()
     {
         if (disposed) return;
@@ -271,6 +345,14 @@ public sealed partial class MainWindowViewModel
             cancellation.IsCancellationRequested ||
             lifetimeCancellation.IsCancellationRequested)
         {
+        }
+        catch (YouTubeInvalidKeyException)
+        {
+            if (disposed || version != youtubeSearchVersion) return;
+
+            // The user can fix this from Settings, so say so instead of
+            // reporting a generic network failure.
+            SetYouTubeStatus(YouTubeSearchStatus.InvalidKey, YouTubeVideos.Count);
         }
         catch (YouTubeQuotaExceededException)
         {
@@ -359,6 +441,7 @@ public sealed partial class MainWindowViewModel
             YouTubeSearchStatus.Empty => Loc["YouTube_NoResults"],
             YouTubeSearchStatus.Failed => Loc["YouTube_LoadFailed"],
             YouTubeSearchStatus.QuotaExceeded => Loc["YouTube_QuotaExceeded"],
+            YouTubeSearchStatus.InvalidKey => Loc["YouTube_InvalidKey"],
             YouTubeSearchStatus.NotConfigured => Loc.Format(
                 "YouTube_NotConfigured",
                 YouTubeKeyFilePath),

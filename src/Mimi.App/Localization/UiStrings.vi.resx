@@ -422,4 +422,14 @@
   <data name="TrackCount_Playlist" xml:space="preserve"><value>{0} bài trong danh sách phát này</value></data>
   <data name="TrackCount_RecentlyPlayed" xml:space="preserve"><value>{0} bài đã nghe gần đây</value></data>
   <data name="TrackCount_SearchResults" xml:space="preserve"><value>{0} kết quả tìm kiếm</value></data>
+  <data name="Settings_YouTubeKeyClear" xml:space="preserve"><value>Xoá key</value></data>
+  <data name="Settings_YouTubeKeyHint" xml:space="preserve"><value>Dán key lấy từ Google Cloud Console. Key chỉ lưu trên máy này, trong file bên dưới, không bao giờ ghi vào log và không gửi đi đâu ngoài API của Google.</value></data>
+  <data name="Settings_YouTubeKeyInvalid" xml:space="preserve"><value>Chuỗi này không giống API key. Hãy copy nguyên giá trị trong Google Cloud Console, không kèm dấu cách hay dấu ngoặc kép.</value></data>
+  <data name="Settings_YouTubeKeyLabel" xml:space="preserve"><value>API key YouTube Data API v3</value></data>
+  <data name="Settings_YouTubeKeyRemoved" xml:space="preserve"><value>Đã xoá key. Mục YouTube được ẩn lại.</value></data>
+  <data name="Settings_YouTubeKeySave" xml:space="preserve"><value>Lưu key</value></data>
+  <data name="Settings_YouTubeKeySaved" xml:space="preserve"><value>Đã lưu key. Mục YouTube đã sẵn sàng.</value></data>
+  <data name="Settings_YouTubeKeyUnavailable" xml:space="preserve"><value>Bản dựng này không có dịch vụ YouTube.</value></data>
+  <data name="Settings_YouTubeKeyWriteFailed" xml:space="preserve"><value>Không ghi được file key. Hãy kiểm tra thư mục dữ liệu có ghi được không.</value></data>
+  <data name="YouTube_InvalidKey" xml:space="preserve"><value>YouTube từ chối key. Hãy dán key YouTube Data API v3 hợp lệ trong Settings.</value></data>
 </root>

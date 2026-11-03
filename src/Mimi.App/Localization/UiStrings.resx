@@ -422,4 +422,14 @@
   <data name="TrackCount_Playlist" xml:space="preserve"><value>{0} song(s) in this playlist</value></data>
   <data name="TrackCount_RecentlyPlayed" xml:space="preserve"><value>{0} recently played song(s)</value></data>
   <data name="TrackCount_SearchResults" xml:space="preserve"><value>{0} search result(s)</value></data>
+  <data name="Settings_YouTubeKeyClear" xml:space="preserve"><value>Remove key</value></data>
+  <data name="Settings_YouTubeKeyHint" xml:space="preserve"><value>Paste the key from Google Cloud Console. It is stored only on this computer, in the file below, and it is never written to logs or sent anywhere except Google's API.</value></data>
+  <data name="Settings_YouTubeKeyInvalid" xml:space="preserve"><value>That does not look like an API key. Copy the whole value from Google Cloud Console without spaces or quotation marks.</value></data>
+  <data name="Settings_YouTubeKeyLabel" xml:space="preserve"><value>YouTube Data API v3 key</value></data>
+  <data name="Settings_YouTubeKeyRemoved" xml:space="preserve"><value>Key removed. YouTube is hidden again.</value></data>
+  <data name="Settings_YouTubeKeySave" xml:space="preserve"><value>Save key</value></data>
+  <data name="Settings_YouTubeKeySaved" xml:space="preserve"><value>Key saved. The YouTube entry is now available.</value></data>
+  <data name="Settings_YouTubeKeyUnavailable" xml:space="preserve"><value>The YouTube service is not available in this build.</value></data>
+  <data name="Settings_YouTubeKeyWriteFailed" xml:space="preserve"><value>Could not write the key file. Check that the data folder is writable.</value></data>
+  <data name="YouTube_InvalidKey" xml:space="preserve"><value>YouTube rejected the key. Paste a valid YouTube Data API v3 key in Settings.</value></data>
 </root>

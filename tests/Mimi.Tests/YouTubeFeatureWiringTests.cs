@@ -127,6 +127,42 @@ public sealed class YouTubeFeatureWiringTests
     }
 
     [Fact]
+    public void TheKeyIsConfiguredInSettingsInsteadOfByHuntingForTheDataFolder()
+    {
+        var root = FindRepositoryRoot();
+
+        var xaml = Read(root, "src", "Mimi.App", "MainWindow.xaml");
+        Assert.Contains("YouTubeApiKeyBox", xaml, StringComparison.Ordinal);
+        Assert.Contains("SaveYouTubeApiKey_Click", xaml, StringComparison.Ordinal);
+        Assert.Contains("ClearYouTubeApiKeyCommand", xaml, StringComparison.Ordinal);
+        Assert.Contains("YouTubeKeyFilePath", xaml, StringComparison.Ordinal);
+
+        var viewModel = Read(
+            root,
+            "src",
+            "Mimi.App",
+            "ViewModels",
+            "MainWindowViewModel.YouTube.cs");
+        Assert.Contains(
+            "private void SaveYouTubeApiKey(string? apiKey)",
+            viewModel,
+            StringComparison.Ordinal);
+        Assert.Contains("youtubeSearchService.TrySaveApiKey", viewModel, StringComparison.Ordinal);
+        Assert.Contains("youtubeSearchService.TryClearApiKey", viewModel, StringComparison.Ordinal);
+        // The pasted key is written to disk and never kept as view model state.
+        Assert.DoesNotContain("private string youTubeApiKey", viewModel, StringComparison.Ordinal);
+
+        var codeBehind = Read(root, "src", "Mimi.App", "MainWindow.xaml.cs");
+        Assert.Contains("YouTubeApiKeyBox.Clear();", codeBehind, StringComparison.Ordinal);
+
+        var service = Read(root, "src", "Mimi.Library", "YouTubeSearchService.cs");
+        Assert.Contains(
+            "public bool TrySaveApiKey(string apiKey)",
+            service,
+            StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void NoExtractionLibraryExistsInTheSource()
     {
         var root = FindRepositoryRoot();

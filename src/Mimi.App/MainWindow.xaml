@@ -1737,7 +1737,50 @@
                                 <TextBlock Text="{Binding Loc[Settings_YouTubeDescription]}"
                                            Foreground="{StaticResource TextMutedBrush}" FontSize="11" TextWrapping="Wrap" Margin="24,0,0,4"/>
                                 <TextBlock Text="{Binding Loc[YouTube_ProviderAttribution]}"
-                                           Foreground="{StaticResource TextMutedBrush}" FontSize="11" TextWrapping="Wrap" Margin="24,0,0,2"/>
+                                           Foreground="{StaticResource TextMutedBrush}" FontSize="11" TextWrapping="Wrap" Margin="24,0,0,8"/>
+
+                                <!-- Pasting the key belongs here: finding the app data folder by
+                                     hand was the only way to configure YouTube before, and the
+                                     panel that explained the path was hidden while no key existed. -->
+                                <TextBlock Text="{Binding Loc[Settings_YouTubeKeyLabel]}"
+                                           Foreground="{StaticResource TextMutedBrush}" FontSize="11"
+                                           Margin="24,0,0,5"/>
+                                <Grid Margin="24,0,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <PasswordBox x:Name="YouTubeApiKeyBox" Grid.Column="0"
+                                                 FontFamily="Consolas" FontSize="11"
+                                                 KeyDown="YouTubeApiKeyBox_KeyDown"
+                                                 AutomationProperties.Name="{Binding Loc[Settings_YouTubeKeyLabel]}"/>
+                                    <Button Grid.Column="1" Content="{Binding Loc[Settings_YouTubeKeySave]}"
+                                            Click="SaveYouTubeApiKey_Click" Margin="6,0,0,0" Padding="10,5" FontSize="11"
+                                            AutomationProperties.Name="{Binding Loc[Settings_YouTubeKeySave]}"/>
+                                    <Button Grid.Column="2" Content="{Binding Loc[Settings_YouTubeKeyClear]}"
+                                            Command="{Binding ClearYouTubeApiKeyCommand}" Margin="6,0,0,0" Padding="10,5" FontSize="11"
+                                            AutomationProperties.Name="{Binding Loc[Settings_YouTubeKeyClear]}"/>
+                                </Grid>
+                                <TextBlock Text="{Binding Loc[Settings_YouTubeKeyHint]}"
+                                           Foreground="{StaticResource TextMutedBrush}" FontSize="10" TextWrapping="Wrap"
+                                           Margin="24,6,0,0"/>
+                                <TextBlock Text="{Binding YouTubeKeyFilePath}" ToolTip="{Binding YouTubeKeyFilePath}"
+                                           Foreground="{StaticResource TextMutedBrush}" FontSize="10"
+                                           TextTrimming="CharacterEllipsis" Margin="24,3,0,0"/>
+                                <TextBlock Text="{Binding YouTubeApiKeyMessage}" FontSize="11" TextWrapping="Wrap"
+                                           Margin="24,6,0,0">
+                                    <TextBlock.Style>
+                                        <Style TargetType="{x:Type TextBlock}">
+                                            <Setter Property="Foreground" Value="{StaticResource AccentSecondaryBrush}"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsYouTubeApiKeyMessageError}" Value="True">
+                                                    <Setter Property="Foreground" Value="{StaticResource WarningTextBrush}"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
                             </StackPanel>
                         </Border>
 

@@ -94,6 +94,81 @@ public sealed class YouTubeSearchServiceTests
             service.SearchAsync("neon", CancellationToken.None));
     }
 
+    [Fact]
+    public void SavingAKeyWritesTheFileTheSearchReads()
+    {
+        var directory = Path.Combine(
+            Path.GetTempPath(),
+            "mimi-youtube-key-" + Guid.NewGuid().ToString("N"));
+
+        try
+        {
+            var service = new YouTubeSearchService(
+                new FakeUserDataService(directory),
+                new HttpClient(new RecordingHandler(HttpStatusCode.OK, "{}")),
+                _ => null);
+
+            Assert.False(service.IsConfigured);
+
+            // Surrounding whitespace from a copy/paste must not be stored.
+            Assert.True(service.TrySaveApiKey("  AIzaSyA1234567890abcdefghijklmnopqrstu  "));
+            Assert.True(service.IsConfigured);
+            Assert.Equal(
+                "AIzaSyA1234567890abcdefghijklmnopqrstu",
+                File.ReadAllText(service.KeyFilePath));
+
+            Assert.True(service.TryClearApiKey());
+            Assert.False(service.IsConfigured);
+            Assert.False(File.Exists(service.KeyFilePath));
+        }
+        finally
+        {
+            if (Directory.Exists(directory))
+                Directory.Delete(directory, recursive: true);
+        }
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    [InlineData("too-short")]
+    [InlineData("AIzaSyA1234567890 abcdefghijklmnop")]
+    [InlineData("AIzaSyA1234567890abcdefghijklmnop\u201D")]
+    [InlineData("AIzaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")]
+    public void MalformedKeysAreRejectedInsteadOfSaved(string raw)
+    {
+        var directory = Path.Combine(
+            Path.GetTempPath(),
+            "mimi-youtube-key-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(directory);
+
+        try
+        {
+            var service = new YouTubeSearchService(
+                new FakeUserDataService(directory),
+                new HttpClient(new RecordingHandler(HttpStatusCode.OK, "{}")),
+                _ => null);
+
+            Assert.False(service.TrySaveApiKey(raw));
+            Assert.False(service.IsConfigured);
+            Assert.False(File.Exists(service.KeyFilePath));
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task ARefusedKeyIsReportedSeparatelyFromANetworkFailure()
+    {
+        var handler = new RecordingHandler(HttpStatusCode.BadRequest, "{}");
+        var service = CreateService(handler, "AIzaSyA1234567890abcdefghijklmnopqrstu");
+
+        await Assert.ThrowsAsync<YouTubeInvalidKeyException>(() =>
+            service.SearchAsync("neon", CancellationToken.None));
+    }
+
     private static YouTubeSearchService CreateService(
         HttpMessageHandler handler,
         string? apiKey) =>
@@ -121,9 +196,10 @@ public sealed class YouTubeSearchServiceTests
         }
     }
 
-    private sealed class FakeUserDataService : IUserDataService
+    private sealed class FakeUserDataService(string? dataDirectory = null)
+        : IUserDataService
     {
-        public string DataDirectory =>
+        public string DataDirectory => dataDirectory ??
             Path.Combine(Path.GetTempPath(), "mimi-youtube-tests");
 
         public void MigrateLegacyDataIfNeeded() { }

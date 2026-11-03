@@ -19,16 +19,39 @@ thị thì mới hợp lệ, nên không có "chạy nền" hay "ẩn video, ch�
 
 Key **không** nằm trong source, không nằm trong binary, không được log.
 
-Thứ tự tìm key (đọc lại mỗi lần tìm kiếm, nên thả file vào là dùng được ngay):
+### Cách dán key (đường chính)
 
-1. Biến môi trường `MIMI_YOUTUBE_API_KEY`.
+`Settings → YOUTUBE` có ô **API key YouTube Data API v3**: dán key vào ô, bấm
+**Lưu key** (hoặc Enter). Ô này dùng `PasswordBox` nên key không hiện ra khi gõ;
+sau khi lưu, ô được xoá và key **không** được giữ trong view model. Ngay bên
+dưới ô là đường dẫn file thật để người dùng đối chiếu, cùng nút **Xoá key**.
+
+Cách này tồn tại vì trước đó đường dẫn file chỉ được nêu trong panel YouTube —
+mà panel đó lại bị ẩn khi chưa có key, nên trên thực tế không có chỗ nào trong
+app chỉ được người dùng phải làm gì.
+
+Key được kiểm tra hình dạng trước khi ghi (`YouTubeApiKey.Normalize`): cắt
+khoảng trắng hai đầu, từ chối chuỗi rỗng, chuỗi có dấu cách/xuống dòng, ký tự
+ngoài ASCII in được (dấu ngoặc kép cong khi copy từ trang web), và độ dài
+ngoài khoảng 20–100. Nhờ vậy lỗi copy/paste hiện ra ngay chứ không thành một
+lần tìm kiếm thất bại khó hiểu.
+
+### Thứ tự tìm key
+
+Đọc lại mỗi lần tìm kiếm, nên thả file vào là dùng được ngay:
+
+1. Biến môi trường `MIMI_YOUTUBE_API_KEY` (ưu tiên cao nhất).
 2. File `youtube-api-key.txt` trong thư mục dữ liệu của Mimi
-   (`Settings → Open data folder`).
+   (`%LOCALAPPDATA%\Mimi`, hoặc `Settings → Open data folder`). File chỉ chứa
+   đúng key, không có `key=`, không có ngoặc kép.
 
-Thiếu key → mục YouTube tự ẩn; panel chỉ hiện hướng dẫn đường dẫn file. Không
-có lỗi, không có crash. Mục này được kiểm tra lại khi cửa sổ Mimi được kích hoạt
-(alt-tab trở về) và khi mở Settings, nên thả file key vào rồi quay lại là mục hiện
-ra ngay — không cần tắt mở lại app.
+Thiếu key → mục YouTube tự ẩn; không có lỗi, không có crash. Mục này được kiểm
+tra lại khi cửa sổ Mimi được kích hoạt (alt-tab trở về), khi mở Settings, và
+ngay sau khi lưu/xoá key — nên không cần tắt mở lại app.
+
+Nếu key sai hoặc chưa bật YouTube Data API v3 cho project, API trả 400/401;
+Mimi báo riêng trạng thái *key bị từ chối* và chỉ người dùng vào Settings, thay
+vì gộp chung vào lỗi mạng.
 
 Tạo key: Google Cloud Console → tạo project → bật **YouTube Data API v3** →
 Create credentials → API key → API restrictions → chỉ chọn *YouTube Data API
