@@ -219,22 +219,103 @@ public sealed class ThemeService
         publishedColors["TextPrimaryTransparentColor"] = ToColor(
             textPrimary.WithAlpha(0x00));
 
-        // Publish into merged dictionaries as well as the root. WPF
-        // resolves DynamicResource values owned by a merged dictionary in
-        // that dictionary's context, while element-level references start
-        // from the application root; keeping both in sync makes the live
-        // brush update independent of that lookup detail.
+        // Exactly one dictionary owns the colours. Publishing the same keys
+        // into several dictionaries (the application root *and* the merged
+        // brush dictionary) looked harmless, but WPF resolves a colour in the
+        // scope of whoever asks: brushes declared in ThemeBrushes read the
+        // merged copy, while elements in a window read the root copy. When the
+        // two drifted apart - which they do whenever one of the copies is a
+        // still-deferred dictionary that loads after the write - the window
+        // showed two themes at once: a pink rail around a navy toolbar.
+        var target = FindBrushOwner(resources) ?? resources;
+        foreach (var (key, color) in publishedColors)
+            target[key] = color;
+
+        target["MimiThemeId"] = effectiveTheme.Id;
+        target["MimiThemeName"] = effectiveTheme.Name;
+
+        // One line per apply: when a window looks half-themed, the log says
+        // which theme was actually published and how often.
+        Log.Information("Published theme {ThemeId}", effectiveTheme.Id);
+
+        // Anything left over in another dictionary is a previous theme that a
+        // scope could still resolve; drop it so the theme cannot half-apply.
+        RemoveFromOtherDictionaries(
+            resources,
+            target,
+            publishedColors.Keys.Append("MimiThemeId").Append("MimiThemeName"));
+
+        VerifyPublishedTheme(resources, target, effectiveTheme);
+    }
+
+    /// <summary>
+    /// Confirms the palette really has a single owner after publishing, and
+    /// records the surface colour the shared brush ended up with. A half-themed
+    /// window is hard to explain from a screenshot; this makes the log state it.
+    /// </summary>
+    private static void VerifyPublishedTheme(
+        ResourceDictionary resources,
+        ResourceDictionary target,
+        ThemeDefinition theme)
+    {
+        var duplicates = EnumerateDictionaries(resources)
+            .Where(dictionary =>
+                !ReferenceEquals(dictionary, target) &&
+                dictionary.Contains(ColorResourceKey(ThemeTokens.PanelBackground)))
+            .Count();
+
+        if (duplicates > 0)
+        {
+            Log.Warning(
+                "Theme {ThemeId} still resolves from {DictionaryCount} extra dictionary slot(s)",
+                theme.Id,
+                duplicates);
+        }
+
+        if (target[BrushResourceKey(ThemeTokens.PanelBackground)] is SolidColorBrush brush)
+        {
+            Log.Debug(
+                "Theme {ThemeId} panel brush resolves to {BrushColor}",
+                theme.Id,
+                brush.Color);
+        }
+    }
+
+    /// <summary>
+    /// The merged dictionary that declares the shared brushes
+    /// (<c>ThemeBrushes.xaml</c>). Its brushes resolve their DynamicResource
+    /// colours in that dictionary's own scope, so the colours have to live
+    /// there rather than in the application root.
+    /// </summary>
+    private static ResourceDictionary? FindBrushOwner(ResourceDictionary resources)
+    {
         foreach (var dictionary in EnumerateDictionaries(resources))
         {
-            // Sealed style/template dictionaries cannot be written, but
-            // the application dictionary and ThemeBrushes are writable.
-            if (dictionary.IsReadOnly) continue;
+            if (ReferenceEquals(dictionary, resources)) continue;
+            if (dictionary.Contains(BrushResourceKey(ThemeTokens.Accent)) ||
+                dictionary.Contains("PanelBackgroundBrush"))
+            {
+                return dictionary;
+            }
+        }
 
-            foreach (var (key, color) in publishedColors)
-                dictionary[key] = color;
+        return null;
+    }
 
-            dictionary["MimiThemeId"] = effectiveTheme.Id;
-            dictionary["MimiThemeName"] = effectiveTheme.Name;
+    private static void RemoveFromOtherDictionaries(
+        ResourceDictionary resources,
+        ResourceDictionary owner,
+        IEnumerable<string> keys)
+    {
+        var stale = keys.ToArray();
+        foreach (var dictionary in EnumerateDictionaries(resources))
+        {
+            if (ReferenceEquals(dictionary, owner) || dictionary.IsReadOnly) continue;
+
+            foreach (var key in stale)
+            {
+                if (dictionary.Contains(key)) dictionary.Remove(key);
+            }
         }
     }
 
