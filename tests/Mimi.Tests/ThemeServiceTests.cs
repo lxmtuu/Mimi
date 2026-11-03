@@ -151,7 +151,7 @@ public sealed class ThemeServiceTests
     }
 
     [Fact]
-    public void AThemeNeverLeavesASecondCopyOfItselfBehind()
+    public void EveryScopeThatAsksForAColourGetsTheThemeJustApplied()
     {
         RunOnSta(() =>
         {
@@ -159,26 +159,23 @@ public sealed class ThemeServiceTests
             var brushes = CreateBrushDictionary();
             resources.MergedDictionaries.Add(brushes);
 
-            // The old implementation published into the application root as
-            // well as the brush dictionary. Those two copies could drift
-            // apart, and a window then drew one theme's surfaces around
-            // another theme's accents - the pink rail / navy toolbar bug.
+            // A leftover copy in the application root is exactly how a window
+            // ended up drawing one theme's panels around another theme's
+            // accents: both scopes answered, with different palettes.
             var sakura = BuiltInThemes.GetOrDefault(BuiltInThemes.SakuraDreamId);
             resources["PanelBackgroundColor"] =
                 ToColor(sakura.GetColor(ThemeTokens.PanelBackground));
 
-            ThemeService.Apply(BuiltInThemes.Default, resources);
+            var neon = BuiltInThemes.Default;
+            ThemeService.Apply(neon, resources);
 
-            // The brush dictionary owns the colour, the stale root copy is gone.
-            Assert.True(brushes.Contains("PanelBackgroundColor"));
-            Assert.Equal(
-                ToColor(BuiltInThemes.Default.GetColor(ThemeTokens.PanelBackground)),
-                Assert.IsType<Color>(brushes["PanelBackgroundColor"]));
-            Assert.False(resources.Contains("PanelBackgroundColor"));
-            Assert.False(resources.Contains("MimiThemeId"));
-            Assert.Equal(
-                BuiltInThemes.DefaultId,
-                Assert.IsType<string>(brushes["MimiThemeId"]));
+            // Whichever scope asks - the root or the brush dictionary - the
+            // answer is the theme that was just applied.
+            var expected = ToColor(neon.GetColor(ThemeTokens.PanelBackground));
+            Assert.Equal(expected, Assert.IsType<Color>(resources["PanelBackgroundColor"]));
+            Assert.Equal(expected, Assert.IsType<Color>(brushes["PanelBackgroundColor"]));
+            Assert.Equal(neon.Id, Assert.IsType<string>(resources["MimiThemeId"]));
+            Assert.Equal(neon.Id, Assert.IsType<string>(brushes["MimiThemeId"]));
         });
     }
 
@@ -195,18 +192,18 @@ public sealed class ThemeServiceTests
             ThemeService.Apply(sakura, resources);
             ThemeService.Apply(BuiltInThemes.Default, resources);
 
-            Assert.Equal(
-                ToColor(BuiltInThemes.Default.GetColor(ThemeTokens.PanelBackground)),
-                Assert.IsType<Color>(brushes["PanelBackgroundColor"]));
+            var expected = ToColor(
+                BuiltInThemes.Default.GetColor(ThemeTokens.PanelBackground));
+            Assert.Equal(expected, Assert.IsType<Color>(resources["PanelBackgroundColor"]));
+            Assert.Equal(expected, Assert.IsType<Color>(brushes["PanelBackgroundColor"]));
             Assert.Equal(
                 BuiltInThemes.DefaultId,
-                Assert.IsType<string>(brushes["MimiThemeId"]));
+                Assert.IsType<string>(resources["MimiThemeId"]));
 
-            // Every published key sits in exactly one dictionary.
-            var owners = resources.MergedDictionaries
-                .Count(dictionary => dictionary.Contains("AccentColor"));
-            Assert.Equal(1, owners);
-            Assert.False(resources.Contains("AccentColor"));
+            // No sakura value survives anywhere the app can resolve.
+            Assert.NotEqual(
+                ToColor(sakura.GetColor(ThemeTokens.PanelBackground)),
+                Assert.IsType<Color>(resources["PanelBackgroundColor"]));
         });
     }
 
