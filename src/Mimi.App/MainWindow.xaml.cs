@@ -64,7 +64,10 @@ public partial class MainWindow : Window
         <div id="player"></div>
         <script>
           (function () {
-            var videoId = new URLSearchParams(window.location.search).get('v') || '';
+            var params = new URLSearchParams(window.location.search);
+            var videoId = params.get('v') || '';
+            // The player keeps its own volume, so it is handed over at start.
+            var initialVolume = parseInt(params.get('volume'), 10);
             var player = null;
 
             // The host drives everything through these two functions with
@@ -87,6 +90,16 @@ public partial class MainWindow : Window
                 if (command.command === 'play') player.playVideo();
                 else if (command.command === 'pause') player.pauseVideo();
                 else if (command.command === 'seek') player.seekTo(command.seconds, true);
+                else if (command.command === 'volume') {
+                  // Volume 0 is Mimi's mute; anything above it unmutes, so the
+                  // page and the slider always agree.
+                  player.setVolume(command.value);
+                  if (command.value > 0) player.unMute();
+                }
+                else if (command.command === 'restart') {
+                  player.seekTo(0, true);
+                  player.playVideo();
+                }
                 return true;
               }
             };
@@ -105,8 +118,11 @@ public partial class MainWindow : Window
                 height: '100%',
                 playerVars: { autoplay: 1, rel: 0, playsinline: 1 },
                 events: {
-                  // Scripted play retries autoplay if the browser deferred it.
-                  onReady: function () { player.playVideo(); },
+                  onReady: function () {
+                    if (!isNaN(initialVolume)) player.setVolume(initialVolume);
+                    // Scripted play retries autoplay if the browser deferred it.
+                    player.playVideo();
+                  },
                   onError: function (event) { window.mimiError = event.data; }
                 }
               });
@@ -340,7 +356,8 @@ public partial class MainWindow : Window
             embeddedPlayerSilences = 0;
             core.Navigate(
                 $"https://{YouTubePlayerHost}/{YouTubePlayerPageName}" +
-                $"?v={Uri.EscapeDataString(video.VideoId)}");
+                $"?v={Uri.EscapeDataString(video.VideoId)}" +
+                $"&volume={viewModel.YouTubeVolumePercent}");
         }
         catch (Exception ex)
         {
@@ -396,6 +413,12 @@ public partial class MainWindow : Window
         {
             EmbeddedPlayerCommandKind.Play => "{\"command\":\"play\"}",
             EmbeddedPlayerCommandKind.Pause => "{\"command\":\"pause\"}",
+            EmbeddedPlayerCommandKind.Restart => "{\"command\":\"restart\"}",
+            EmbeddedPlayerCommandKind.SetVolume => JsonSerializer.Serialize(new
+            {
+                command = "volume",
+                value = (int)Math.Clamp(Math.Round(command.Seconds), 0, 100)
+            }),
             _ => JsonSerializer.Serialize(new
             {
                 command = "seek",

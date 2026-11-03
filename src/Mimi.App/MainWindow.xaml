@@ -1502,6 +1502,12 @@
                             <TextBlock Text="{Binding Loc[YouTube_ProviderAttribution]}"
                                        Foreground="{StaticResource AccentBrush}" FontSize="11" FontWeight="SemiBold"/>
                         </Border>
+                        <!-- The results are the play order, so this starts the list
+                             the way a playlist would. -->
+                        <Button DockPanel.Dock="Right" Content="{Binding Loc[YouTube_PlayAll]}"
+                                Command="{Binding PlayAllYouTubeVideosCommand}"
+                                Padding="12,7" FontSize="11" Margin="0,0,8,0" VerticalAlignment="Top"
+                                AutomationProperties.Name="{Binding Loc[YouTube_PlayAll]}"/>
                     </DockPanel>
 
                     <Grid Grid.Row="1" Margin="0,18,0,0">

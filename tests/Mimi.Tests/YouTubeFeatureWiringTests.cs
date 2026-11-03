@@ -212,6 +212,46 @@ public sealed class YouTubeFeatureWiringTests
     }
 
     [Fact]
+    public void TheTransportCoverageMatchesTheLocalPlayer()
+    {
+        var root = FindRepositoryRoot();
+
+        var viewModel = Read(
+            root,
+            "src",
+            "Mimi.App",
+            "ViewModels",
+            "MainWindowViewModel.YouTube.cs");
+        // Next/previous, repeat, shuffle and play-all all act on the results
+        // list, which is the play order for YouTube.
+        Assert.Contains("private bool TryHandleYouTubeNavigation(", viewModel, StringComparison.Ordinal);
+        Assert.Contains("private bool PlayAdjacentYouTubeVideo(", viewModel, StringComparison.Ordinal);
+        Assert.Contains("private void HandleYouTubeVideoEnded()", viewModel, StringComparison.Ordinal);
+        Assert.Contains("private void PlayAllYouTubeVideos()", viewModel, StringComparison.Ordinal);
+        Assert.Contains("EmbeddedPlayerCommandKind.SetVolume", viewModel, StringComparison.Ordinal);
+        Assert.Contains("public int YouTubeVolumePercent", viewModel, StringComparison.Ordinal);
+
+        var main = Read(root, "src", "Mimi.App", "ViewModels", "MainWindowViewModel.cs");
+        Assert.Contains("TryHandleYouTubeNavigation(-1)", main, StringComparison.Ordinal);
+        Assert.Contains("TryHandleYouTubeNavigation(1)", main, StringComparison.Ordinal);
+
+        var queue = Read(
+            root,
+            "src",
+            "Mimi.App",
+            "ViewModels",
+            "MainWindowViewModel.PlaybackQueue.cs");
+        Assert.Contains("PushYouTubeVolume();", queue, StringComparison.Ordinal);
+
+        var codeBehind = Read(root, "src", "Mimi.App", "MainWindow.xaml.cs");
+        Assert.Contains("player.setVolume(", codeBehind, StringComparison.Ordinal);
+        Assert.Contains("player.seekTo(0, true)", codeBehind, StringComparison.Ordinal);
+
+        var xaml = Read(root, "src", "Mimi.App", "MainWindow.xaml");
+        Assert.Contains("PlayAllYouTubeVideosCommand", xaml, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void TheKeyIsConfiguredFromATerminalAndNeverInTheUi()
     {
         var root = FindRepositoryRoot();

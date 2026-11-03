@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Mimi.Core.Playback;
 using Mimi.YouTube;
 using Serilog;
 
@@ -11,7 +12,9 @@ public enum EmbeddedPlayerCommandKind
 {
     Play,
     Pause,
-    Seek
+    Seek,
+    SetVolume,
+    Restart
 }
 
 /// <summary>
@@ -57,6 +60,7 @@ public sealed partial class MainWindowViewModel
     private double youTubePositionSeconds;
     private double youTubeDurationSeconds;
     private bool isYouTubeVideoPlaying;
+    private bool youTubeEndHandled;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsLibraryContentVisible))]
@@ -104,6 +108,13 @@ public sealed partial class MainWindowViewModel
     /// </summary>
     public bool IsVisualizerSurfaceVisible => !IsYouTubePlaying;
 
+    /// <summary>
+    /// Volume the page is opened with. The embedded player keeps its own
+    /// volume, so it has to be handed over at start and again on every change.
+    /// </summary>
+    public int YouTubeVolumePercent =>
+        (int)Math.Round(Math.Clamp(IsMuted ? 0 : Volume, 0, 1) * 100);
+
     public string YouTubeKeyFilePath =>
         youtubeSearchService?.KeyFilePath ?? string.Empty;
 
@@ -149,12 +160,18 @@ public sealed partial class MainWindowViewModel
     {
         if (disposed || !IsYouTubePlaying) return;
 
-        // The official player reports zero when the video has finished.
+        // The official player reports zero when the video has finished. It can
+        // repeat that report on the next poll, so act once per ending.
         if (state == YouTubeStateEnded)
         {
-            StopYouTubeVideo();
+            if (youTubeEndHandled) return;
+
+            youTubeEndHandled = true;
+            HandleYouTubeVideoEnded();
             return;
         }
+
+        youTubeEndHandled = false;
 
         if (durationSeconds > 0.5)
             youTubeDurationSeconds = durationSeconds;
@@ -212,6 +229,91 @@ public sealed partial class MainWindowViewModel
         if (disposed || !IsYouTubePlaying) return;
 
         YouTubeStatusLabel = Loc["YouTube_BridgeUnavailable"];
+    }
+
+    /// <summary>
+    /// The search results are the play order for YouTube, so the transport's
+    /// next/previous and the repeat mode work without a second queue that would
+    /// have to be kept in step with the list the user is looking at.
+    /// </summary>
+    private bool TryHandleYouTubeNavigation(int offset)
+    {
+        if (!IsYouTubePlaying) return false;
+
+        PlayAdjacentYouTubeVideo(offset, allowWrap: true);
+        return true;
+    }
+
+    private bool PlayAdjacentYouTubeVideo(int offset, bool allowWrap)
+    {
+        if (!IsYouTubePlaying || YouTubeVideos.Count == 0) return false;
+
+        var current = CurrentYouTubeVideo;
+        if (current is null) return false;
+
+        var index = YouTubeVideos.IndexOf(current);
+        if (index < 0) return false;
+
+        int target;
+        if (offset > 0 && IsShuffleEnabled && YouTubeVideos.Count > 1)
+        {
+            do
+            {
+                target = Random.Shared.Next(YouTubeVideos.Count);
+            }
+            while (target == index);
+        }
+        else
+        {
+            target = index + offset;
+
+            if (target < 0 || target >= YouTubeVideos.Count)
+            {
+                if (!allowWrap) return false;
+
+                target = (target + YouTubeVideos.Count) % YouTubeVideos.Count;
+            }
+        }
+
+        StartYouTubeVideo(YouTubeVideos[target]);
+        return true;
+    }
+
+    /// <summary>End of a video follows the same repeat rules as a local track.</summary>
+    private void HandleYouTubeVideoEnded()
+    {
+        if (RepeatMode == RepeatMode.One)
+        {
+            youTubeEndHandled = false;
+            RequestEmbeddedPlayer(EmbeddedPlayerCommandKind.Restart);
+            return;
+        }
+
+        if (PlayAdjacentYouTubeVideo(1, allowWrap: RepeatMode == RepeatMode.All))
+            return;
+
+        StopYouTubeVideo();
+    }
+
+    /// <summary>Starts the list from the selection: the "play all" of this panel.</summary>
+    [RelayCommand]
+    private void PlayAllYouTubeVideos()
+    {
+        if (disposed || YouTubeVideos.Count == 0) return;
+
+        var first = SelectedYouTubeVideo ?? YouTubeVideos[0];
+        StartYouTubeVideo(first);
+    }
+
+    private void PushYouTubeVolume()
+    {
+        if (!IsYouTubePlaying) return;
+
+        // Muting is expressed as volume 0; the page unmutes itself when the
+        // value climbs back above zero, so one command covers both controls.
+        RequestEmbeddedPlayer(
+            EmbeddedPlayerCommandKind.SetVolume,
+            YouTubeVolumePercent);
     }
 
     private void RequestEmbeddedPlayer(
@@ -291,11 +393,36 @@ public sealed partial class MainWindowViewModel
             return;
         }
 
+        StartYouTubeVideo(video);
+    }
+
+    /// <summary>
+    /// Starts one result without the toggle behaviour of the row click, so the
+    /// transport can move through the list without closing the player.
+    /// </summary>
+    private void StartYouTubeVideo(YouTubeVideoItemViewModel video)
+    {
+        if (disposed) return;
+
+        SelectedYouTubeVideo = video;
+
+        if (ReferenceEquals(video, CurrentYouTubeVideo))
+        {
+            // Already on screen: restart it instead of reloading the page.
+            youTubePositionSeconds = 0;
+            youTubeEndHandled = false;
+            SetProgressPercent(0);
+            CurrentTimeLabel = "0:00";
+            RequestEmbeddedPlayer(EmbeddedPlayerCommandKind.Restart);
+            return;
+        }
+
         ReleaseOtherPlaybackSurfaces();
 
         youTubePositionSeconds = 0;
         youTubeDurationSeconds = 0;
         isYouTubeVideoPlaying = false;
+        youTubeEndHandled = false;
 
         CurrentYouTubeVideo = video;
         SelectedYouTubeVideo = video;
@@ -317,6 +444,7 @@ public sealed partial class MainWindowViewModel
         youTubePositionSeconds = 0;
         youTubeDurationSeconds = 0;
         isYouTubeVideoPlaying = false;
+        youTubeEndHandled = false;
         NowPlayingTitle = Loc["NowPlaying_ChooseSong"];
         NowPlayingSubtitle = Loc["NowPlaying_NextFavoriteWaiting"];
         SetProgressPercent(0);

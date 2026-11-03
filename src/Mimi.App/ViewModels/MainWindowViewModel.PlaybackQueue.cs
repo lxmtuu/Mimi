@@ -307,8 +307,14 @@ public sealed partial class MainWindowViewModel
         RefreshUpcomingQueue();
     }
 
-    private void ApplyEffectiveVolume() =>
+    private void ApplyEffectiveVolume()
+    {
         audioPlayer.Volume = IsMuted ? 0 : (float)Math.Clamp(Volume, 0, 1);
+
+        // The embedded player has its own volume, so it is pushed separately
+        // whenever the slider or the mute button moves.
+        PushYouTubeVolume();
+    }
 
     [RelayCommand]
     private void ToggleMute() => IsMuted = !IsMuted;

@@ -103,7 +103,17 @@ quy trình của Google.
   - nút Play/Pause ở Now Playing **toggle video** (trước đây nó dừng hẳn video);
   - thanh tiến trình **chạy theo video** và kéo/click để seek được;
   - `-10s` / `+10s` seek đúng 10 giây trong video;
-  - hai nhãn thời gian lấy đúng thời lượng thật của video.
+  - hai nhãn thời gian lấy đúng thời lượng thật của video;
+  - **âm lượng** (slider + nút mute) đẩy thẳng vào `player.setVolume()`, và
+    `0%` được hiểu là mute; giá trị âm lượng hiện tại cũng được truyền sang
+    trang lúc mở (`&volume=`) để hai bên không lệch nhau;
+  - **chuyển/lùi bài** (`Next`/`Previous`) đi trong danh sách kết quả — danh
+    sách đó chính là hàng đợi của YouTube, có quấn vòng;
+  - **lặp và shuffle** dùng đúng trạng thái `RepeatMode`/`IsShuffleEnabled` của
+    Now Playing: `One` phát lại video (`seekTo(0)` rồi `playVideo`), `All` quấn
+    vòng khi hết danh sách, `Off` dừng ở cuối; shuffle chọn ngẫu nhiên một kết
+    quả khác;
+  - **Phát tất cả** bắt đầu danh sách từ mục đang chọn, giống một playlist.
 - Không còn chuyện đồng hồ NAudio ghi đè lên timeline của video:
   `RefreshPlaybackPosition` thoát sớm khi `IsYouTubePlaying`.
 - Video chạy hết → player báo `state = 0` → Mimi đóng player, visualizer trở
@@ -165,8 +175,12 @@ Các hướng hợp lệ khác nếu vẫn thấy vướng:
 - Đây là **player video**, không phải audio-only. Không có tham số chính thức
   nào để tắt hình.
 - Queue, visualizer và SMTC của Mimi **không** áp dụng cho nội dung YouTube:
-  audio nằm trong player của họ, không qua NAudio. Seek và timeline thì **có**,
-  nhưng thông qua IFrame Player API chứ không qua pipeline của Mimi.
+  audio nằm trong player của họ, không qua NAudio. Seek, timeline, âm lượng,
+  chuyển/lùi bài, lặp và shuffle thì **có**, nhưng qua IFrame Player API.
+- Hàng đợi YouTube là **danh sách kết quả đang hiển thị**, không phải một
+  playlist lưu lại: đổi từ khoá tìm kiếm là đổi hàng đợi, và không có gì của
+  YouTube được ghi vào queue/history/favorites hay phiên lưu của Mimi. Playlist
+  lưu hẳn các mục YouTube là việc của lát sau, nếu chủ dự án muốn.
 - Có quảng cáo, trừ khi người dùng tự đăng nhập **YouTube Premium** của họ
   trong profile WebView2 của Mimi. Mimi không chặn quảng cáo.
 - Cần **Microsoft Edge WebView2 Runtime**; thiếu thì chỉ log cảnh báo, phần còn
@@ -177,5 +191,7 @@ Các hướng hợp lệ khác nếu vẫn thấy vướng:
 - **Stage**: hiện video full màn hình khi mở Stage. Sẽ làm sau khi pane ở cửa
   sổ chính được nghiệm thu, để tránh hai HWND WebView2 cùng lúc.
 - Playlist/kênh, tìm theo thời lượng, lọc kết quả.
+- Playlist **lưu lại** cho YouTube (hiện chỉ có hàng đợi là danh sách kết quả).
+- SMTC/Quick Settings cho nội dung YouTube.
 - Âm lượng: slider của Mimi vẫn chỉ điều khiển NAudio, chưa nối vào player
   (dùng nút loa trong player, hoặc âm lượng hệ thống).

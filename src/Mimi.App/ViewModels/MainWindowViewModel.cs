@@ -993,6 +993,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     [RelayCommand]
     private void Previous()
     {
+        if (TryHandleYouTubeNavigation(-1)) return;
         if (TryHandleRadioStationNavigation(-1)) return;
         if (TryHandleOnlineTrackNavigation(-1)) return;
         TryPlayPreviousFromQueue();
@@ -1001,6 +1002,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     [RelayCommand]
     private void Next()
     {
+        if (TryHandleYouTubeNavigation(1)) return;
         if (TryHandleRadioStationNavigation(1)) return;
         if (TryHandleOnlineTrackNavigation(1)) return;
         TryPlayNextFromQueue(showErrors: true);

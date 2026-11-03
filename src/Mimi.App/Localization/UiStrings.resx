@@ -428,4 +428,5 @@
   <data name="YouTube_BridgeUnavailable" xml:space="preserve"><value>The player did not report its position, so the timeline stays empty. Reopen the video; if it repeats, the log records why.</value></data>
   <data name="YouTube_Diagnose" xml:space="preserve"><value>Diagnose player</value></data>
   <data name="YouTube_DiagnosticFormat" xml:space="preserve"><value>Player report: {0}</value></data>
+  <data name="YouTube_PlayAll" xml:space="preserve"><value>Play all</value></data>
 </root>
