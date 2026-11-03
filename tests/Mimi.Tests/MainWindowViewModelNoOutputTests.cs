@@ -1447,6 +1447,8 @@ public sealed class MainWindowViewModelNoOutputTests
             LoadedStreamUrl = null;
         }
 
+        public int RemoteStreamLoadCalls { get; private set; }
+
         public void LoadStream(Uri streamUrl)
         {
             StreamLoadCalls++;
@@ -1461,6 +1463,23 @@ public sealed class MainWindowViewModelNoOutputTests
             Duration = TimeSpan.Zero;
             IsPlaying = false;
             IsLiveStream = true;
+        }
+
+        /// <summary>
+        /// Finite online sources keep a real duration, unlike live radio.
+        /// </summary>
+        public void LoadRemoteAudio(Uri audioUrl)
+        {
+            RemoteStreamLoadCalls++;
+            if (StreamLoadFailure is not null)
+                throw StreamLoadFailure;
+
+            PlaybackGeneration++;
+            LoadedStreamUrl = audioUrl;
+            CurrentTime = TimeSpan.Zero;
+            Duration = TimeSpan.FromSeconds(180);
+            IsPlaying = false;
+            IsLiveStream = false;
         }
 
         public void Play()
