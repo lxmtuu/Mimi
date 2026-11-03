@@ -206,6 +206,36 @@ public sealed class RadioBrowserServiceTests
     }
 
     [Theory]
+    [InlineData("https://stream.example/live.m3u8")]
+    [InlineData("https://stream.example/live.m3u")]
+    [InlineData("https://stream.example/live.M3U")]
+    [InlineData("https://stream.example/listen.pls?sid=1")]
+    [InlineData("https://stream.example/live.xspf")]
+    public void ParseStationsFiltersPlaylistStreamUrls(string streamUrl)
+    {
+        var json = ValidStationJson().Replace(
+            "https://stream.example/live.mp3",
+            streamUrl,
+            StringComparison.Ordinal);
+
+        Assert.Empty(RadioBrowserService.ParseStations(json));
+    }
+
+    [Theory]
+    [InlineData("https://stream.example/live.mp3?next=.m3u")]
+    [InlineData("https://stream.example/mount.pls.mp3")]
+    [InlineData("https://stream.example/m3u")]
+    public void ParseStationsAllowsDirectStreamUrls(string streamUrl)
+    {
+        var json = ValidStationJson().Replace(
+            "https://stream.example/live.mp3",
+            streamUrl,
+            StringComparison.Ordinal);
+
+        Assert.Single(RadioBrowserService.ParseStations(json));
+    }
+
+    [Theory]
     [InlineData("{")]
     [InlineData("{}")]
     public void ParseStationsRejectsInvalidResponses(string json) =>

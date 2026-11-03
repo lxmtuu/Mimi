@@ -58,7 +58,7 @@ làm việc. Bản prototype áp dụng các điều kiện trên như sau:
   `api.radio-browser.info` hoặc subdomain của nó, kèm
   `User-Agent: Mimi/<version>`, timeout,
   backoff và giới hạn 60 kết quả/response tối đa 2 MiB.
-- Chỉ hiển thị đài có `lastcheckok = 1`, không HLS và có `url_resolved`
+- Chỉ hiển thị đài có `lastcheckok = 1`, không HLS/playlist URL và có `url_resolved`
   HTTP(S) không chứa thông tin đăng nhập nhúng, không trỏ tới
   localhost hoặc các dải IP private/link-local. Stream được mở trực tiếp
   bằng Media Foundation; Mimi không proxy, ghi, tải xuống, lưu vào thư

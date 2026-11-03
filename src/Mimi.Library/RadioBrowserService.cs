@@ -440,7 +440,8 @@ public sealed class RadioBrowserService : IRadioStationService, IDisposable
                 GetString(element, "url_resolved"),
                 out var streamUrl,
                 requirePublicHost: true) ||
-            streamUrl is null)
+            streamUrl is null ||
+            IsPlaylistStreamUrl(streamUrl))
         {
             return false;
         }
@@ -519,6 +520,15 @@ public sealed class RadioBrowserService : IRadioStationService, IDisposable
 
         uri = candidate;
         return true;
+    }
+
+    private static bool IsPlaylistStreamUrl(Uri uri)
+    {
+        var path = uri.AbsolutePath;
+        return path.EndsWith(".m3u8", StringComparison.OrdinalIgnoreCase) ||
+               path.EndsWith(".m3u", StringComparison.OrdinalIgnoreCase) ||
+               path.EndsWith(".pls", StringComparison.OrdinalIgnoreCase) ||
+               path.EndsWith(".xspf", StringComparison.OrdinalIgnoreCase);
     }
 
     private static bool IsPublicHost(Uri uri)

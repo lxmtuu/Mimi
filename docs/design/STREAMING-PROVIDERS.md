@@ -50,9 +50,9 @@ sau:
   `all.api.radio-browser.info`, có mirror dự phòng, timeout 12 giây,
   backoff ngắn, response tối đa 2 MiB và tối đa 60 kết quả. Mirror chỉ
   được chấp nhận khi host là `api.radio-browser.info` hoặc subdomain
-  của nó. Adapter loại đài `lastcheckok != 1`, HLS, URL không phải
-  HTTP(S), URL chứa user-info và stream host localhost/private/
-  link-local.
+  của nó. Adapter loại đài `lastcheckok != 1`, HLS/playlist URL
+  (`.m3u8`, `.m3u`, `.pls`, `.xspf`), URL không phải HTTP(S), URL
+  chứa user-info và stream host localhost/private/link-local.
 - Click-counter dùng đúng một request, không retry/failover, và chỉ được
   ViewModel gọi sau khi `Play()` thành công cho một đài mới do người dùng
   chọn. Pause/resume cùng đài không tạo click mới.
