@@ -53,7 +53,11 @@ Start Menu của Mimi đã tồn tại, app còn tự kiểm tra và sửa
 target/IconLocation/AppUserModelID của nó ở mỗi lần khởi động
 (rồi báo Explorer làm mới khi có thay đổi); app không tự tạo
 shortcut mới ở bước này nếu người dùng chưa chọn đăng ký
-Explorer.
+Explorer. Khi sửa một shortcut đã tồn tại, file link phải được
+nạp bằng `STGM_READWRITE`: việc nạp chỉ đọc khiến
+`IPropertyStore.SetValue` bị từ chối, làm một shortcut đã mang
+AppUserModelID của Mimi nhưng trỏ về EXE cũ không thể được
+retarget.
 
 Lưu ý về nút đã ghim trên Taskbar từ trước: shortcut ghim cũ
 đã được Windows tạo trước khi app công bố relaunch identity ở

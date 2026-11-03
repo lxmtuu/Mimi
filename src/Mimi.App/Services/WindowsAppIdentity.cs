@@ -29,6 +29,7 @@ internal static class WindowsAppIdentity
 
     private const int AppModelErrorNoPackage = 15700;
     private const uint StorageRead = 0x00000000;
+    private const uint StorageReadWrite = 0x00000002;
     private const uint AssociationChanged = 0x08000000;
     private const uint IdListFlag = 0x0000;
 
@@ -315,7 +316,10 @@ internal static class WindowsAppIdentity
 
             if (shortcutExists)
             {
-                persistFile.Load(shortcutPath, StorageRead);
+                // Ensure may retarget or restamp this link. A read-only
+                // STGM load makes the link's IPropertyStore reject SetValue,
+                // which would strand the shell identity on the old target.
+                persistFile.Load(shortcutPath, StorageReadWrite);
                 existingTargetPath = GetShortcutTargetPath(link);
                 (existingIconPath, existingIconIndex) =
                     GetShortcutIconLocation(link);

@@ -133,6 +133,14 @@ public sealed class AppIconTests
             "TryRepairExistingStartMenuShortcut",
             identity,
             StringComparison.Ordinal);
+        Assert.Contains(
+            "StorageReadWrite = 0x00000002",
+            identity,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "persistFile.Load(shortcutPath, StorageReadWrite);",
+            identity,
+            StringComparison.Ordinal);
 
         var setPropertiesIndex = identity.IndexOf(
             "TrySetWindowAppUserModelProperties",
