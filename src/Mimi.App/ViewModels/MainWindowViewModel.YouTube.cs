@@ -39,13 +39,13 @@ public sealed partial class MainWindowViewModel
     private bool isYouTubeOpen;
 
     [ObservableProperty]
-    private string youtubeSearchText = string.Empty;
+    private string youTubeSearchText = string.Empty;
 
     [ObservableProperty]
     private bool isYouTubeLoading;
 
     [ObservableProperty]
-    private string youtubeStatusLabel = string.Empty;
+    private string youTubeStatusLabel = string.Empty;
 
     [ObservableProperty]
     private YouTubeVideoItemViewModel? selectedYouTubeVideo;
