@@ -26,7 +26,9 @@ Thứ tự tìm key (đọc lại mỗi lần tìm kiếm, nên thả file vào 
    (`Settings → Open data folder`).
 
 Thiếu key → mục YouTube tự ẩn; panel chỉ hiện hướng dẫn đường dẫn file. Không
-có lỗi, không có crash.
+có lỗi, không có crash. Mục này được kiểm tra lại khi cửa sổ Mimi được kích hoạt
+(alt-tab trở về) và khi mở Settings, nên thả file key vào rồi quay lại là mục hiện
+ra ngay — không cần tắt mở lại app.
 
 Tạo key: Google Cloud Console → tạo project → bật **YouTube Data API v3** →
 Create credentials → API key → API restrictions → chỉ chọn *YouTube Data API
