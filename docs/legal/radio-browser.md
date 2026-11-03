@@ -72,12 +72,16 @@ làm việc. Bản prototype áp dụng các điều kiện trên như sau:
   sinh cache favicon; ô đại diện dùng chữ cái đầu do client tạo.
 - Log không ghi search query hoặc toàn bộ stream URL; lỗi stream chỉ ghi
   station UUID/loại exception và log load chỉ ghi host.
+- Settings có kill switch Internet Radio cục bộ lưu ở schema v7. Khi tắt,
+  Mimi ẩn Radio, chặn tải/phát đài và dừng đài hiện tại; mô tả tại
+  Settings nêu Mimi liên hệ Radio Browser, phát trực tiếp từ đài và máy
+  chủ đài có thể thấy địa chỉ IP của người dùng.
 
 Trạng thái này chưa phải phê duyệt production. Chủ dự án đã nghiệm thu
 runtime prototype trên Windows thật với mạng/đài thật ngày 03/11/2026;
-vẫn cần hoàn thành các cổng phát hành còn thiếu như kill switch trong
-Settings và nội dung privacy/attribution trước khi bật mặc định cho
-người dùng cuối.
+vẫn cần hoàn thành các cổng phát hành còn thiếu như nội dung
+privacy/attribution đầy đủ hơn và cơ chế tắt provider từ xa trước khi
+bật mặc định cho người dùng cuối.
 
 ## Nguồn
 

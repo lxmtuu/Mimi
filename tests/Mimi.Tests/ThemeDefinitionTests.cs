@@ -17,7 +17,7 @@ public sealed class ThemeDefinitionTests
             BuiltInThemes.All.Select(theme => theme.Id));
         Assert.Equal(BuiltInThemes.NeonStageId, BuiltInThemes.DefaultId);
         Assert.Equal(BuiltInThemes.NeonStageId, BuiltInThemes.Default.Id);
-        Assert.Equal(6, global::Mimi.Models.AppSettings.CurrentVersion);
+        Assert.Equal(7, global::Mimi.Models.AppSettings.CurrentVersion);
     }
 
     [Fact]

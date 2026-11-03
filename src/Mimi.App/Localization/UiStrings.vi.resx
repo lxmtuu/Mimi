@@ -284,7 +284,10 @@
   <data name="Settings_DataDiagnosticsSection" xml:space="preserve"><value>DỮ LIỆU &amp; CHẨN ĐOÁN</value></data>
   <data name="Settings_DataFolder" xml:space="preserve"><value>Thư mục dữ liệu</value></data>
   <data name="Settings_DefaultsSection" xml:space="preserve"><value>MẶC ĐỊNH</value></data>
+  <data name="Settings_EnableInternetRadio" xml:space="preserve"><value>Bật Radio trực tuyến</value></data>
   <data name="Settings_FolderPathCouldNotBeUsed" xml:space="preserve"><value>Không thể dùng đường dẫn thư mục đó.</value></data>
+  <data name="Settings_InternetRadioDescription" xml:space="preserve"><value>Khi bật, Mimi liên hệ các mirror của Radio Browser để lấy danh mục đài và gửi lượt đếm khi bắt đầu phát, sau đó phát âm thanh trực tiếp từ từng đài. Máy chủ của đài có thể thấy địa chỉ IP của bạn. Tắt tùy chọn này để ẩn Radio trực tuyến, hủy tải danh sách đài và dừng phát radio.</value></data>
+  <data name="Settings_InternetRadioSection" xml:space="preserve"><value>RADIO TRỰC TUYẾN</value></data>
   <data name="Settings_KeyboardShortcutsSection" xml:space="preserve"><value>PHÍM TẮT</value></data>
   <data name="Settings_Language" xml:space="preserve"><value>Ngôn ngữ giao diện</value></data>
   <data name="Settings_LanguageDescription" xml:space="preserve"><value>Thay đổi áp dụng ngay. Mimi sẽ tiếp tục mở rộng phần đã dịch trong Phase 5.</value></data>

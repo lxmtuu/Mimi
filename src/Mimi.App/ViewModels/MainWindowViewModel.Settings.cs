@@ -50,6 +50,10 @@ public sealed partial class MainWindowViewModel
     private bool autoUpgradeLegacyCoverArt = true;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsRadioAvailable))]
+    private bool internetRadioEnabled = true;
+
+    [ObservableProperty]
     private WindowPlacementSettings windowPlacement = new();
 
     public bool IsLibraryContentVisible => !IsSettingsOpen && !IsRadioOpen;
@@ -94,6 +98,7 @@ public sealed partial class MainWindowViewModel
         RestoreLibraryView = settings.RestoreLibraryView;
         RestoreWindowPlacement = settings.RestoreWindowPlacement;
         AutoUpgradeLegacyCoverArt = settings.AutoUpgradeLegacyCoverArt;
+        InternetRadioEnabled = settings.InternetRadioEnabled;
         WatchLibraryFolders = settings.WatchLibraryFolders;
         WatchedFolders.Clear();
         foreach (var folder in settings.WatchedFolders)
@@ -268,6 +273,15 @@ public sealed partial class MainWindowViewModel
             QueueLegacyCoverArtUpgrade();
     }
 
+    partial void OnInternetRadioEnabledChanged(bool value)
+    {
+        if (!value)
+            DisableInternetRadio();
+
+        if (settingsLoaded && !isRestoringSettings)
+            SaveSettings();
+    }
+
     partial void OnWindowPlacementChanged(WindowPlacementSettings value)
     {
         if (settingsLoaded && !isRestoringSettings)
@@ -423,6 +437,7 @@ public sealed partial class MainWindowViewModel
         settings.RestoreLibraryView = RestoreLibraryView;
         settings.RestoreWindowPlacement = RestoreWindowPlacement;
         settings.AutoUpgradeLegacyCoverArt = AutoUpgradeLegacyCoverArt;
+        settings.InternetRadioEnabled = InternetRadioEnabled;
         settings.WatchLibraryFolders = WatchLibraryFolders;
         settings.WatchedFolders = [.. WatchedFolders];
         settings.WindowPlacement = RestoreWindowPlacement

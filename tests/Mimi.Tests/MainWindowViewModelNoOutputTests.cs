@@ -1225,6 +1225,98 @@ public sealed class MainWindowViewModelNoOutputTests
         });
     }
 
+    [Fact]
+    public void InternetRadioKillSwitch_HidesRadioStopsPlaybackAndBlocksReopen()
+    {
+        RunOnSta(() =>
+        {
+            var stationUuid = Guid.Parse("33333333-3333-3333-3333-333333333333");
+            var station = new RadioStation(
+                stationUuid,
+                "Kill Switch Wave",
+                new Uri("https://stream.example/kill-switch.mp3"),
+                new Uri("https://station.example/"),
+                null,
+                "Japan",
+                "Japanese",
+                ["anime"],
+                "MP3",
+                128,
+                10,
+                20);
+            var radio = new FakeRadioStationService
+            {
+                TopStations = [station]
+            };
+            var audio = new FakeAudioPlayer
+            {
+                OutputStatus = new AudioOutputStatus(
+                    isAvailable: true,
+                    AudioOutputKind.WasapiShared,
+                    "Test Speakers",
+                    "Audio output is ready.")
+            };
+            var viewModel = new MainWindowViewModel(
+                audio,
+                new FakeLibraryService(),
+                new FakeLibraryCatalog(),
+                new FakeUserDataService(),
+                new FakeDialogService(),
+                radioStationService: radio);
+
+            try
+            {
+                viewModel.InitializationTask.GetAwaiter().GetResult();
+
+                PumpDispatcherUntilCompleted(
+                    viewModel.ShowRadioCommand.ExecuteAsync(null));
+                var stationViewModel = Assert.Single(viewModel.RadioStations);
+
+                PumpDispatcherUntilCompleted(
+                    viewModel.PlayRadioStationCommand.ExecuteAsync(stationViewModel));
+
+                Assert.True(viewModel.IsRadioServiceInstalled);
+                Assert.True(viewModel.IsRadioAvailable);
+                Assert.True(viewModel.IsRadioOpen);
+                Assert.Same(stationViewModel, viewModel.CurrentRadioStation);
+                Assert.True(viewModel.IsPlaying);
+                Assert.Equal(1, radio.TopCalls);
+
+                viewModel.InternetRadioEnabled = false;
+
+                Assert.True(viewModel.IsRadioServiceInstalled);
+                Assert.False(viewModel.IsRadioAvailable);
+                Assert.False(viewModel.IsRadioOpen);
+                Assert.False(viewModel.IsRadioContentVisible);
+                Assert.True(viewModel.IsLibraryContentVisible);
+                Assert.Null(viewModel.CurrentRadioStation);
+                Assert.False(viewModel.IsPlaying);
+                Assert.False(audio.IsPlaying);
+                Assert.False(stationViewModel.IsCurrent);
+                Assert.False(stationViewModel.IsPlaying);
+
+                PumpDispatcherUntilCompleted(
+                    viewModel.ShowRadioCommand.ExecuteAsync(null));
+
+                Assert.False(viewModel.IsRadioOpen);
+                Assert.Equal(1, radio.TopCalls);
+
+                viewModel.InternetRadioEnabled = true;
+                PumpDispatcherUntilCompleted(
+                    viewModel.ShowRadioCommand.ExecuteAsync(null));
+
+                Assert.True(viewModel.IsRadioAvailable);
+                Assert.True(viewModel.IsRadioOpen);
+                Assert.True(viewModel.IsRadioContentVisible);
+                Assert.Equal(1, radio.TopCalls);
+            }
+            finally
+            {
+                viewModel.Dispose();
+            }
+        });
+    }
+
     private static void RunOnSta(Action action)
     {
         Exception? failure = null;

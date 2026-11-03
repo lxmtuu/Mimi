@@ -100,6 +100,12 @@ public sealed class LocalizationServiceTests
         Assert.Equal(
             "TRỰC TIẾP",
             service.GetString("Radio_Live", "vi-VN"));
+        Assert.Equal(
+            "Enable Internet Radio",
+            service.GetString("Settings_EnableInternetRadio", "en-US"));
+        Assert.Equal(
+            "Bật Radio trực tuyến",
+            service.GetString("Settings_EnableInternetRadio", "vi-VN"));
     }
 
     [Fact]

@@ -115,7 +115,7 @@ public sealed class UserDataServiceTests : IDisposable
     }
 
     [Fact]
-    public void Version6SettingsRoundTrip()
+    public void Version7SettingsRoundTrip()
     {
         var expected = new AppSettings
         {
@@ -131,6 +131,7 @@ public sealed class UserDataServiceTests : IDisposable
             RestoreWindowPlacement = false,
             AutoUpgradeLegacyCoverArt = false,
             WatchLibraryFolders = false,
+            InternetRadioEnabled = false,
             WatchedFolders = [@"C:\Music", @"D:\Songs"],
             LyricsOffsetsByPath = new Dictionary<string, int>
             {
@@ -191,6 +192,7 @@ public sealed class UserDataServiceTests : IDisposable
         Assert.False(loaded.RestoreWindowPlacement);
         Assert.False(loaded.AutoUpgradeLegacyCoverArt);
         Assert.False(loaded.WatchLibraryFolders);
+        Assert.False(loaded.InternetRadioEnabled);
         Assert.Equal([@"C:\Music", @"D:\Songs"], loaded.WatchedFolders);
         Assert.Equal(
             250,
@@ -242,6 +244,7 @@ public sealed class UserDataServiceTests : IDisposable
         Assert.True(loaded.RestoreWindowPlacement);
         Assert.True(loaded.AutoUpgradeLegacyCoverArt);
         Assert.True(loaded.WatchLibraryFolders);
+        Assert.True(loaded.InternetRadioEnabled);
         Assert.Empty(loaded.WatchedFolders);
         Assert.Empty(loaded.LyricsOffsetsByPath);
         Assert.Equal("Library", loaded.LibraryView.ActiveView);
@@ -250,7 +253,7 @@ public sealed class UserDataServiceTests : IDisposable
     }
 
     [Fact]
-    public void Version3SettingsMigrateToVersion6WithLanguageAndThemeDefaults()
+    public void Version3SettingsMigrateToVersion7WithLanguageAndThemeDefaults()
     {
         File.WriteAllText(
             Path.Combine(dataDirectory, "settings.json"),
@@ -265,7 +268,7 @@ public sealed class UserDataServiceTests : IDisposable
     }
 
     [Fact]
-    public void Version4SettingsMigrateToVersion6WithThemeDefault()
+    public void Version4SettingsMigrateToVersion7WithThemeDefault()
     {
         File.WriteAllText(
             Path.Combine(dataDirectory, "settings.json"),

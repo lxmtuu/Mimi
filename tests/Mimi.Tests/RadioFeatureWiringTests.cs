@@ -125,6 +125,14 @@ public sealed class RadioFeatureWiringTests
             "CurrentCoverArtPath = null;",
             radioViewModel,
             StringComparison.Ordinal);
+        Assert.Contains(
+            "InternetRadioEnabled && radioStationService is not null",
+            radioViewModel,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "DisableInternetRadio",
+            radioViewModel,
+            StringComparison.Ordinal);
 
         var settingsViewModel = Read(
             root,
@@ -140,6 +148,18 @@ public sealed class RadioFeatureWiringTests
             "!IsSettingsOpen && !IsRadioOpen",
             settingsViewModel,
             StringComparison.Ordinal);
+        Assert.Contains(
+            "InternetRadioEnabled = settings.InternetRadioEnabled",
+            settingsViewModel,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "settings.InternetRadioEnabled = InternetRadioEnabled",
+            settingsViewModel,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "DisableInternetRadio();",
+            settingsViewModel,
+            StringComparison.Ordinal);
 
         var mainWindow = Read(root, "src", "Mimi.App", "MainWindow.xaml");
         Assert.Contains("ShowRadioCommand", mainWindow, StringComparison.Ordinal);
@@ -148,6 +168,9 @@ public sealed class RadioFeatureWiringTests
         Assert.Contains("PlayRadioStationCommand", mainWindow, StringComparison.Ordinal);
         Assert.Contains("OpenRadioHomepageCommand", mainWindow, StringComparison.Ordinal);
         Assert.Contains("Radio_ProviderAttribution", mainWindow, StringComparison.Ordinal);
+        Assert.Contains("IsRadioServiceInstalled", mainWindow, StringComparison.Ordinal);
+        Assert.Contains("Binding InternetRadioEnabled", mainWindow, StringComparison.Ordinal);
+        Assert.Contains("Settings_InternetRadioDescription", mainWindow, StringComparison.Ordinal);
         Assert.Contains(
             "Binding=\"{Binding IsLivePlayback}\"",
             mainWindow,

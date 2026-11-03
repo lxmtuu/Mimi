@@ -284,7 +284,10 @@
   <data name="Settings_DataDiagnosticsSection" xml:space="preserve"><value>DATA &amp; DIAGNOSTICS</value></data>
   <data name="Settings_DataFolder" xml:space="preserve"><value>Data folder</value></data>
   <data name="Settings_DefaultsSection" xml:space="preserve"><value>DEFAULTS</value></data>
+  <data name="Settings_EnableInternetRadio" xml:space="preserve"><value>Enable Internet Radio</value></data>
   <data name="Settings_FolderPathCouldNotBeUsed" xml:space="preserve"><value>That folder path could not be used.</value></data>
+  <data name="Settings_InternetRadioDescription" xml:space="preserve"><value>When on, Mimi contacts Radio Browser mirrors for the station directory and a playback click count, then streams audio directly from each station. Station servers can see your IP address. Turn this off to hide Internet Radio, cancel station loading, and stop radio playback.</value></data>
+  <data name="Settings_InternetRadioSection" xml:space="preserve"><value>INTERNET RADIO</value></data>
   <data name="Settings_KeyboardShortcutsSection" xml:space="preserve"><value>KEYBOARD SHORTCUTS</value></data>
   <data name="Settings_Language" xml:space="preserve"><value>Interface language</value></data>
   <data name="Settings_LanguageDescription" xml:space="preserve"><value>Changes apply immediately. Mimi will keep expanding translated areas as Phase 5 continues.</value></data>

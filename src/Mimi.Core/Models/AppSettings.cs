@@ -12,12 +12,13 @@ namespace Mimi.Models;
 /// adds mute/shuffle/repeat preferences and the paused playback queue.
 /// Version 4 adds the interface-language preference. Version 5 adds the
 /// interface-theme preference. Version 6 adds per-track lyrics display
-/// offsets. Unknown string values are tolerated here and interpreted
-/// defensively by the app layer.
+/// offsets. Version 7 adds the Internet Radio enable/disable preference.
+/// Unknown string values are tolerated here and interpreted defensively by
+/// the app layer.
 /// </summary>
 public sealed class AppSettings
 {
-    public const int CurrentVersion = 6;
+    public const int CurrentVersion = 7;
 
     public const int MinimumLyricsOffsetMilliseconds = -30000;
 
@@ -48,6 +49,8 @@ public sealed class AppSettings
     public bool AutoUpgradeLegacyCoverArt { get; set; } = true;
 
     public bool WatchLibraryFolders { get; set; } = true;
+
+    public bool InternetRadioEnabled { get; set; } = true;
 
     public List<string> WatchedFolders { get; set; } = [];
 

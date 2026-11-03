@@ -162,7 +162,7 @@ public sealed class LyricsFeatureWiringTests
             "Models",
             "AppSettings.cs");
         Assert.Contains(
-            "CurrentVersion = 6",
+            "CurrentVersion = 7",
             settingsModel,
             StringComparison.Ordinal);
         Assert.Contains(

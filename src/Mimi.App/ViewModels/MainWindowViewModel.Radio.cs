@@ -65,7 +65,10 @@ public sealed partial class MainWindowViewModel
 
     public ObservableCollection<RadioStationItemViewModel> RadioStations { get; } = [];
 
-    public bool IsRadioAvailable => radioStationService is not null;
+    public bool IsRadioServiceInstalled => radioStationService is not null;
+
+    public bool IsRadioAvailable =>
+        InternetRadioEnabled && radioStationService is not null;
 
     public bool IsRadioContentVisible => IsRadioOpen && !IsSettingsOpen;
 
@@ -83,6 +86,12 @@ public sealed partial class MainWindowViewModel
     [RelayCommand]
     private async Task ShowRadioAsync()
     {
+        if (!IsRadioAvailable)
+        {
+            IsRadioOpen = false;
+            return;
+        }
+
         IsSettingsOpen = false;
         IsRadioOpen = true;
 
@@ -149,6 +158,15 @@ public sealed partial class MainWindowViewModel
     private async Task LoadRadioStationsAsync()
     {
         if (disposed) return;
+
+        if (!InternetRadioEnabled)
+        {
+            SetRadioCatalogStatus(
+                RadioCatalogStatus.Unavailable,
+                RadioStations.Count,
+                radioCatalogWasSearch);
+            return;
+        }
 
         if (radioStationService is null)
         {
@@ -256,7 +274,7 @@ public sealed partial class MainWindowViewModel
     {
         if (disposed || IsRadioConnecting) return;
 
-        if (radioStationService is null)
+        if (radioStationService is null || !InternetRadioEnabled)
         {
             SetRadioCatalogStatus(
                 RadioCatalogStatus.Unavailable,
@@ -535,6 +553,45 @@ public sealed partial class MainWindowViewModel
         NowPlayingTitle = CurrentRadioStation.Name;
         NowPlayingSubtitle = BuildRadioNowPlayingSubtitle(CurrentRadioStation);
         DurationLabel = Loc["Radio_Live"];
+    }
+
+    private void DisableInternetRadio()
+    {
+        CancelRadioWork();
+        IsRadioOpen = false;
+        connectingRadioStation = null;
+        IsRadioConnecting = false;
+        if (IsRadioLoading)
+        {
+            IsRadioLoading = false;
+            SetRadioCatalogStatus(
+                RadioStations.Count == 0
+                    ? RadioCatalogStatus.NotLoaded
+                    : RadioCatalogStatus.Ready,
+                RadioStations.Count,
+                radioCatalogWasSearch);
+        }
+
+        if (CurrentRadioStation is null)
+        {
+            RefreshRadioStationPlaybackStates();
+            return;
+        }
+
+        try
+        {
+            audioPlayer.Stop();
+        }
+        catch (Exception ex)
+        {
+            Log.Debug(
+                "Could not stop Internet Radio for {StationUuid}: {ExceptionType}",
+                CurrentRadioStation.StationUuid,
+                ex.GetType().FullName);
+        }
+
+        ClearPlaybackAfterFailedRadioLoad();
+        RefreshPlaybackState();
     }
 
     private void CancelRadioWork()

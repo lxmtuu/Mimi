@@ -71,13 +71,18 @@ sau:
   slider/nút ±10 giây bị tắt khi live. Next/Previous chuyển đài trong danh
   sách hiện tại, còn resume tạo kết nối mới tới live edge. SMTC nhận
   metadata và nút Play/Pause/Next/Previous nhưng timeline không cho seek.
+- Settings có kill switch Internet Radio lưu ở settings schema v7. Khi
+  tắt, navigation/content Radio bị ẩn, catalog/search bị hủy hoặc chặn,
+  đài hiện tại bị dừng và gỡ khỏi Now Playing; thư viện local không bị
+  ảnh hưởng. Mô tả ngắn tại Settings nêu việc Mimi liên hệ Radio Browser
+  và máy chủ đài có thể thấy địa chỉ IP của người dùng.
 
 Chủ dự án đã nghiệm thu runtime prototype trên Windows thật ngày
 03/11/2026. Giới hạn còn mở của prototype: đài chết, geo-block hoặc
 định dạng Media Foundation không mở được
 chỉ báo lỗi để người dùng chọn đài khác; chưa tự reconnect khi network
-stall ngoài thao tác Play/resume; chưa có kill switch trong Settings,
-trang privacy/attribution hoàn chỉnh hoặc cơ chế tắt provider từ xa. Các
+stall ngoài thao tác Play/resume; chưa có trang privacy/attribution
+đầy đủ ngoài mô tả ngắn trong Settings hoặc cơ chế tắt provider từ xa. Các
 mục này vẫn là cổng production, không được suy ra là đã hoàn thành từ
 việc prototype chạy được ở mức code/test tự động.
 
