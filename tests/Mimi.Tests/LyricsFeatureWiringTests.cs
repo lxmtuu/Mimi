@@ -100,6 +100,25 @@ public sealed class LyricsFeatureWiringTests
             "ScrollSelectedItemIntoViewBehavior.IsEnabled=\"True\"",
             mainWindow,
             StringComparison.Ordinal);
+        Assert.Contains(
+            "VirtualizingPanel.ScrollUnit=\"Pixel\"",
+            mainWindow,
+            StringComparison.Ordinal);
+
+        var scrollBehavior = Read(
+            root,
+            "src",
+            "Mimi.App",
+            "Behaviors",
+            "ScrollSelectedItemIntoViewBehavior.cs");
+        Assert.Contains(
+            "scrollViewer.CanContentScroll",
+            scrollBehavior,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "ScrollUnit.Item",
+            scrollBehavior,
+            StringComparison.Ordinal);
 
         var settingsModel = Read(
             root,

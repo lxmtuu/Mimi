@@ -88,7 +88,18 @@ của bài trước và không chặn đường phát nhạc nếu file lời ho
 
 Ảnh runtime ngày 03/11/2026 của chủ dự án đã xác nhận một file
 `.lrc` thật được nạp và hiển thị trong thẻ Lyrics, với nhãn nguồn
-`.lrc file`. Bằng chứng này mới bao phủ khâu nạp/hiển thị. Các kiểm
-tra runtime còn lại là dòng hiện tại khi phát/tạm dừng/seek, hiệu quả
-của nút chỉnh offset, việc offset được giữ sau khi đóng/mở lại app
-và một bài chỉ có lyrics nhúng không đồng bộ.
+`.lrc file`. Lượt kiểm tra tiếp theo cùng ngày xác nhận thêm: dòng
+hiện tại được tô, nút ±0,1 giây đổi thời điểm hiện lời đúng chiều và
+offset vẫn còn sau khi đóng/mở lại app. Độ lệch vài giây với bài thử
+là lệch đều và chỉnh bằng offset thì khớp, phù hợp với file `.lrc`
+được canh cho một bản audio khác hơn là lỗi parser.
+
+Cùng lượt đó chủ dự án phát hiện danh sách **nhảy xuống dòng cuối**
+mỗi khi dòng hiện tại đổi. Nguyên nhân: `ListBox` để chế độ cuộn
+logic theo item nên `VerticalOffset`/`ViewportHeight` tính bằng số
+dòng, trong khi behavior cộng chúng với tọa độ pixel từ
+`TransformToAncestor`; kết quả bị clamp về cuối danh sách. Fix ép
+`VirtualizingPanel.ScrollUnit="Pixel"` cho danh sách lời và behavior
+tự bỏ qua bước căn giữa bằng pixel khi gặp cuộn logic. Cần chủ dự án
+kiểm tra lại hành vi cuộn trên Windows thật, cùng một bài chỉ có
+lyrics nhúng không đồng bộ.

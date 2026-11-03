@@ -1819,6 +1819,7 @@
                                              ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                                              VirtualizingPanel.IsVirtualizing="True"
                                              VirtualizingPanel.VirtualizationMode="Recycling"
+                                             VirtualizingPanel.ScrollUnit="Pixel"
                                              Focusable="False"
                                              AutomationProperties.Name="{Binding Loc[Lyrics_ListAutomation]}"
                                              behaviors:ScrollSelectedItemIntoViewBehavior.IsEnabled="True">

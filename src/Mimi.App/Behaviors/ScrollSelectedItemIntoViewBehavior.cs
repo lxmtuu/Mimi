@@ -71,6 +71,19 @@ public static class ScrollSelectedItemIntoViewBehavior
             return;
         }
 
+        if (scrollViewer.CanContentScroll &&
+            VirtualizingPanel.GetScrollUnit(listBox) == ScrollUnit.Item)
+        {
+            // Logical (item) scrolling measures offsets and viewport size
+            // in items, while the transform below yields pixels. Mixing the
+            // two units produced a huge offset that clamped to the bottom,
+            // so the list jumped to the last line on every selection
+            // change. ScrollIntoView above is the safe fallback here; the
+            // pixel centering requires VirtualizingPanel.ScrollUnit="Pixel"
+            // (or physical scrolling with CanContentScroll="False").
+            return;
+        }
+
         try
         {
             var itemTop = container
