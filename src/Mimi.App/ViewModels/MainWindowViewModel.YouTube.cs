@@ -82,6 +82,30 @@ public sealed partial class MainWindowViewModel
     public string YouTubeKeyFilePath =>
         youtubeSearchService?.KeyFilePath ?? string.Empty;
 
+    /// <summary>
+    /// Re-reads whether a key is present. The key file is resolved lazily, so
+    /// dropping youtube-api-key.txt into the data folder takes effect as soon
+    /// as this runs: no restart and no stale hidden nav entry.
+    /// </summary>
+    public void RefreshYouTubeAvailability()
+    {
+        if (disposed) return;
+
+        OnPropertyChanged(nameof(IsYouTubeConfigured));
+        OnPropertyChanged(nameof(IsYouTubeAvailable));
+
+        if (IsYouTubeAvailable)
+        {
+            // A newly valid key must not leave the old "not configured" text.
+            RefreshYouTubeStatusLabel();
+            return;
+        }
+
+        // Losing the key hides the surface, so nothing may keep playing on it.
+        IsYouTubeOpen = false;
+        StopYouTubeVideo();
+    }
+
     partial void OnCurrentYouTubeVideoChanged(YouTubeVideoItemViewModel? value) =>
         RefreshYouTubePlaybackStates();
 

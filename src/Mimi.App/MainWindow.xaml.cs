@@ -52,6 +52,11 @@ public partial class MainWindow : Window
 
         viewModel.StageToggleRequested += ViewModel_StageToggleRequested;
         viewModel.PropertyChanged += ViewModel_PropertyChanged;
+
+        // The API key is read from disk, so a user who adds the key file while
+        // Mimi is open gets the YouTube entry on the next window activation
+        // instead of having to restart.
+        Activated += (_, _) => viewModel.RefreshYouTubeAvailability();
         metricsTimer.Tick += MetricsTimer_Tick;
         metricsTimer.Start();
     }

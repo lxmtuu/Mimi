@@ -108,6 +108,17 @@ public sealed class YouTubeFeatureWiringTests
             settings,
             StringComparison.Ordinal);
 
+        // The key file is read lazily, so adding it while Mimi runs must not
+        // require a restart just to reveal the nav entry.
+        Assert.Contains(
+            "public void RefreshYouTubeAvailability()",
+            viewModel,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "Activated += (_, _) => viewModel.RefreshYouTubeAvailability();",
+            codeBehind,
+            StringComparison.Ordinal);
+
         var settingsModel = Read(root, "src", "Mimi.Core", "Models", "AppSettings.cs");
         Assert.Contains(
             "public bool YouTubeSearchEnabled { get; set; } = true;",

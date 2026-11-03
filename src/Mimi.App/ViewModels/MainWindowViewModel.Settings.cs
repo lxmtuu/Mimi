@@ -337,6 +337,10 @@ public sealed partial class MainWindowViewModel
         IsOnlineOpen = false;
         IsYouTubeOpen = false;
         IsSettingsOpen = true;
+
+        // Settings shows where the key file lives, so it is the natural place
+        // to notice a key the user just added.
+        RefreshYouTubeAvailability();
     }
 
     [RelayCommand]
