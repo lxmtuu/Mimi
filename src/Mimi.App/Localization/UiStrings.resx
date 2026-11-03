@@ -160,9 +160,9 @@
   <data name="Online_ProviderAttribution" xml:space="preserve"><value>Catalog by Audius. Audio is streamed from Audius content nodes.</value></data>
   <data name="Online_Title" xml:space="preserve"><value>Online Music</value></data>
   <data name="Online_Connecting" xml:space="preserve"><value>Connecting…</value></data>
-  <data name="Online_Description" xml:space="preserve"><value>Search the Audius catalog and play it right here. Mimi streams only: nothing is downloaded, and nothing is added to your library.</value></data>
+  <data name="Online_Description" xml:space="preserve"><value>Search the Audius catalog and play it right here. Audius is a community catalog, so many Vietnamese and commercial releases are not on it. Mimi streams only: nothing is downloaded or added to your library.</value></data>
   <data name="Online_LicensePrefix" xml:space="preserve"><value>License</value></data>
-  <data name="Online_NoResults" xml:space="preserve"><value>No tracks match your search.</value></data>
+  <data name="Online_NoResults" xml:space="preserve"><value>No tracks match your search. Audius is a community catalog, so some songs are missing entirely.</value></data>
   <data name="Online_NowPlaying" xml:space="preserve"><value>ONLINE</value></data>
   <data name="Online_OpenSource" xml:space="preserve"><value>Source</value></data>
   <data name="Online_OpenSourceFailed" xml:space="preserve"><value>Couldn't open this track's page.</value></data>

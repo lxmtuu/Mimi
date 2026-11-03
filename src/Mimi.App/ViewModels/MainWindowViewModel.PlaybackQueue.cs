@@ -462,7 +462,9 @@ public sealed partial class MainWindowViewModel
         var candidates = playbackQueue.GetNextCandidates();
         if (candidates.Count == 0)
         {
-            if (CurrentTrack is null)
+            // A finished online session owns playback state; the local
+            // library must not be started behind the user's back.
+            if (CurrentTrack is null && !hasOnlineSession)
             {
                 var fallback = SelectedTrack ??
                                TracksView.Cast<TrackItemViewModel>().FirstOrDefault();

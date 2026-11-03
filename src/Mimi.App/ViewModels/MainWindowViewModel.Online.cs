@@ -34,6 +34,11 @@ public sealed partial class MainWindowViewModel
     private int onlineCatalogResultCount;
     private int onlineSearchVersion;
 
+    // True while the last playback source the user chose was the online
+    // catalog. It keeps an ended online track from silently handing the
+    // engine back to a local queue item.
+    private bool hasOnlineSession;
+
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsLibraryContentVisible))]
     [NotifyPropertyChangedFor(nameof(IsOnlineContentVisible))]
@@ -133,6 +138,49 @@ public sealed partial class MainWindowViewModel
         }
 
         await StartOnlineTrackAsync(track);
+    }
+
+    /// <summary>
+    /// True when <see cref="PlayPause"/> must handle the press itself, so a
+    /// finished or paused online track never restarts a local song.
+    /// </summary>
+    private bool TryToggleOnlinePlayback()
+    {
+        if (!hasOnlineSession && CurrentOnlineTrack is null) return false;
+
+        if (CurrentOnlineTrack is null)
+        {
+            // Nothing adopted yet (for example the last result finished):
+            // replay the selection rather than borrowing a library track.
+            var target = SelectedOnlineTrack ?? OnlineTracks.FirstOrDefault();
+            if (target is null)
+            {
+                ShowOnlineSessionEnded();
+                return true;
+            }
+
+            _ = StartOnlineTrackAsync(target);
+            return true;
+        }
+
+        try
+        {
+            if (audioPlayer.IsPlaying)
+                audioPlayer.Pause();
+            else
+            {
+                ApplyEffectiveVolume();
+                audioPlayer.Play();
+            }
+        }
+        catch (AudioOutputUnavailableException ex)
+        {
+            ShowAudioOutputUnavailable(ex);
+        }
+
+        RefreshPlaybackState();
+        RefreshOnlineTrackPlaybackStates();
+        return true;
     }
 
     [RelayCommand]
@@ -281,6 +329,7 @@ public sealed partial class MainWindowViewModel
 
             if (!loaded || !IsCurrentPlaybackVersion(version)) return;
 
+            hasOnlineSession = true;
             CurrentOnlineTrack = track;
             CurrentRadioStation = null;
             CurrentTrack = null;
@@ -357,6 +406,7 @@ public sealed partial class MainWindowViewModel
     /// </summary>
     private bool TryAdvanceOnlineTrack()
     {
+        if (!hasOnlineSession) return false;
         if (CurrentOnlineTrack is null) return false;
 
         var currentIndex = OnlineTracks.IndexOf(CurrentOnlineTrack);
@@ -369,15 +419,32 @@ public sealed partial class MainWindowViewModel
         return true;
     }
 
+    /// <summary>
+    /// The last result finished. Stay on the online surface and say so
+    /// instead of falling back to whatever local song happens to be selected.
+    /// </summary>
+    private void ShowOnlineSessionEnded()
+    {
+        SetProgressPercent(0);
+        CurrentTimeLabel = "0:00";
+        DurationLabel = "0:00";
+        RefreshPlaybackState();
+        RefreshOnlineTrackPlaybackStates();
+    }
+
     private bool TryHandleOnlineTrackNavigation(int offset)
     {
-        if (CurrentOnlineTrack is null) return false;
+        var onlineOwnsPlayback = hasOnlineSession || CurrentOnlineTrack is not null;
+        if (!onlineOwnsPlayback) return false;
         if (OnlineTracks.Count == 0 || IsOnlineConnecting) return true;
 
-        var currentIndex = OnlineTracks.IndexOf(CurrentOnlineTrack);
-        if (currentIndex < 0) return true;
-
-        var targetIndex = currentIndex + offset;
+        // After the last result finishes there is no current track, so the
+        // list continues from the selected row instead of jumping away.
+        var anchor = CurrentOnlineTrack ?? SelectedOnlineTrack;
+        var currentIndex = anchor is null ? -1 : OnlineTracks.IndexOf(anchor);
+        var targetIndex = currentIndex < 0
+            ? (offset < 0 ? OnlineTracks.Count - 1 : 0)
+            : currentIndex + offset;
         if (targetIndex < 0 || targetIndex >= OnlineTracks.Count) return true;
 
         var target = OnlineTracks[targetIndex];
@@ -455,6 +522,7 @@ public sealed partial class MainWindowViewModel
         onlineSearchVersion++;
         IsOnlineOpen = false;
         IsOnlineLoading = false;
+        hasOnlineSession = false;
         connectingOnlineTrack = null;
         IsOnlineConnecting = false;
         SetOnlineCatalogStatus(

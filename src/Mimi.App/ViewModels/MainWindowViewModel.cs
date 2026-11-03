@@ -912,6 +912,11 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
             return;
         }
 
+        // The online catalog has its own session state: resuming or
+        // replays the online selection instead of picking up a local track.
+        if (TryToggleOnlinePlayback())
+            return;
+
         if (CurrentTrack is null)
         {
             if (!TryPlayNextFromQueue(showErrors: false) &&
@@ -2484,6 +2489,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         var loaded = false;
         var switchStarted = Stopwatch.GetTimestamp();
         BeginLocalPlaybackAttempt();
+        hasOnlineSession = false;
         try
         {
             audioPlayer.Load(track.FilePath);
@@ -2728,9 +2734,16 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     private void AdvanceAfterPlaybackEnded(TrackItemViewModel? endedTrack)
     {
         // An online track is not a local track, but it is finite: finishing it
-        // should move on to the next visible result instead of stopping.
-        if (endedTrack is null && TryAdvanceOnlineTrack())
+        // should move on to the next visible result. When the results run out
+        // the session ends on the online surface; it must never hand playback
+        // to whichever local song happens to be selected.
+        if (endedTrack is null && hasOnlineSession)
+        {
+            if (!TryAdvanceOnlineTrack())
+                ShowOnlineSessionEnded();
+
             return;
+        }
 
         if (disposed || endedTrack is null ||
             !ReferenceEquals(CurrentTrack, endedTrack))

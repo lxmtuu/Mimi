@@ -124,6 +124,63 @@ public sealed class OnlineCatalogFeatureWiringTests
     }
 
     [Fact]
+    public void FinishedOnlineTrackNeverFallsBackToALocalSong()
+    {
+        var root = FindRepositoryRoot();
+
+        var viewModel = Read(
+            root,
+            "src",
+            "Mimi.App",
+            "ViewModels",
+            "MainWindowViewModel.Online.cs");
+        Assert.Contains("private bool hasOnlineSession;", viewModel, StringComparison.Ordinal);
+        Assert.Contains("hasOnlineSession = true;", viewModel, StringComparison.Ordinal);
+        Assert.Contains("private void ShowOnlineSessionEnded()", viewModel, StringComparison.Ordinal);
+        Assert.Contains("private bool TryToggleOnlinePlayback()", viewModel, StringComparison.Ordinal);
+        Assert.Contains("if (!hasOnlineSession) return false;", viewModel, StringComparison.Ordinal);
+
+        var main = Read(root, "src", "Mimi.App", "ViewModels", "MainWindowViewModel.cs");
+        Assert.Contains("if (TryToggleOnlinePlayback())", main, StringComparison.Ordinal);
+        Assert.Contains("if (endedTrack is null && hasOnlineSession)", main, StringComparison.Ordinal);
+        Assert.Contains("ShowOnlineSessionEnded();", main, StringComparison.Ordinal);
+
+        var queue = Read(
+            root,
+            "src",
+            "Mimi.App",
+            "ViewModels",
+            "MainWindowViewModel.PlaybackQueue.cs");
+        Assert.Contains(
+            "if (CurrentTrack is null && !hasOnlineSession)",
+            queue,
+            StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void StreamedOnlineTracksReachANaturalEndWithoutAReportedLength()
+    {
+        var root = FindRepositoryRoot();
+
+        var audioService = Read(root, "src", "Mimi.Audio", "AudioService.cs");
+        Assert.Contains("loadedIsFiniteRemote", audioService, StringComparison.Ordinal);
+        Assert.Contains("reachedReportedEnd", audioService, StringComparison.Ordinal);
+        Assert.Contains("reader.CurrentTime >=", audioService, StringComparison.Ordinal);
+        Assert.Contains(
+            "TimeSpan.FromMilliseconds(500)",
+            audioService,
+            StringComparison.Ordinal);
+
+        var classifier = Read(
+            root,
+            "src",
+            "Mimi.Core",
+            "Playback",
+            "PlaybackStopClassifier.cs");
+        Assert.Contains("bool reachedReportedEnd = false", classifier, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void NoStreamExtractionDependencyExistsAnywhereInTheSource()
     {
         var root = FindRepositoryRoot();

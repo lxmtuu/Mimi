@@ -44,6 +44,12 @@ public sealed class AudioService : IAudioPlayer
     private VolumeSampleProvider? volumeProvider;
     private string? loadedSource;
     private bool loadedIsLiveStream;
+
+    // A finite remote source (an online catalog track) is not live, but a
+    // streamed reader often reports no usable length. Remember that shape so
+    // its end is still recognised instead of looking like an interrupted
+    // output that never advances.
+    private bool loadedIsFiniteRemote;
     private PlaybackStoppedSubscription? playbackStoppedSubscription;
     private float volume = 0.7f;
     private AudioOutputStatus outputStatus;
@@ -222,6 +228,7 @@ public sealed class AudioService : IAudioPlayer
                 return (fileReader, fileReader);
             },
             isLiveStream: false,
+            isFiniteRemote: false,
             logSource: path);
 
     public void LoadStream(Uri streamUrl)
@@ -232,6 +239,7 @@ public sealed class AudioService : IAudioPlayer
             streamUrl.AbsoluteUri,
             () => CreateRemoteReader(streamUrl),
             isLiveStream: true,
+            isFiniteRemote: false,
             logSource: $"live stream host {streamUrl.Host}");
     }
 
@@ -248,6 +256,7 @@ public sealed class AudioService : IAudioPlayer
             audioUrl.AbsoluteUri,
             () => CreateRemoteReader(audioUrl),
             isLiveStream: false,
+            isFiniteRemote: true,
             logSource: $"online audio host {audioUrl.Host}");
     }
 
@@ -284,6 +293,7 @@ public sealed class AudioService : IAudioPlayer
         string sourceKey,
         Func<(WaveStream Reader, ISampleProvider Source)> createReader,
         bool isLiveStream,
+        bool isFiniteRemote,
         string logSource)
     {
         AudioOutputStatusChangedEventArgs? statusChanged = null;
@@ -331,6 +341,7 @@ public sealed class AudioService : IAudioPlayer
                         visualizer = null;
                         loadedSource = null;
                         loadedIsLiveStream = false;
+                        loadedIsFiniteRemote = false;
                     }
                     else
                     {
@@ -378,6 +389,7 @@ public sealed class AudioService : IAudioPlayer
                     visualizer = newVisualizer;
                     loadedSource = sourceKey;
                     loadedIsLiveStream = isLiveStream;
+                    loadedIsFiniteRemote = isFiniteRemote;
                     newReader = null;
                     newVisualizer = null;
 
@@ -393,6 +405,7 @@ public sealed class AudioService : IAudioPlayer
                     visualizer = newVisualizer;
                     loadedSource = sourceKey;
                     loadedIsLiveStream = isLiveStream;
+                    loadedIsFiniteRemote = isFiniteRemote;
                     newReader = null;
                     newVisualizer = null;
                     switchableSource = new SwitchableSampleProvider(newOutputSource);
@@ -477,10 +490,21 @@ public sealed class AudioService : IAudioPlayer
             }
             else
             {
+                // A finite online track streams without a usable length, so
+                // compare the decoded position with the duration the provider
+                // reported. Without this the output stop looked like an
+                // interruption and playback never advanced.
+                var reachedReportedEnd = loadedIsFiniteRemote &&
+                    reader is not null &&
+                    reader.TotalTime > TimeSpan.Zero &&
+                    reader.CurrentTime >=
+                        reader.TotalTime - TimeSpan.FromMilliseconds(500);
+
                 endedNaturally = !loadedIsLiveStream &&
                     PlaybackStopClassifier.IsNaturalEnd(
                         hasException: false,
-                        reader?.Length);
+                        reader?.Length,
+                        reachedReportedEnd);
                 if (endedNaturally)
                 {
                     // Capture the ending run while the reader/output pair
@@ -1286,6 +1310,7 @@ public sealed class AudioService : IAudioPlayer
         volumeProvider = null;
         loadedSource = null;
         loadedIsLiveStream = false;
+        loadedIsFiniteRemote = false;
     }
 
     private static void DisposeTrackChainLocked(

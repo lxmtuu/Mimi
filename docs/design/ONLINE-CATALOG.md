@@ -87,3 +87,27 @@ thể có chuyện một track online cũ "chen" vào sau khi người dùng đ�
   dependency trích xuất nào trong `src/`, item online không tạo `Track`/queue,
   công tắc tắt hoạt động, đủ khóa song ngữ.
 - `UserDataServiceTests`: round-trip schema v8 gồm `OnlineCatalogEnabled`.
+
+## Sửa lỗi sau nghiệm thu runtime 03/11/2026
+
+Chủ dự án chạy thử trên Windows thật và báo hai vấn đề. Cả hai đã sửa:
+
+1. **Hết bài thì rơi về nhạc local.** Nguyên nhân kép:
+   - `MediaFoundationReader` phát stream MP3 không có `Length` hữu hạn, nên
+     `PlaybackStopClassifier.IsNaturalEnd` trả `false` và engine coi việc dừng
+     là "bị ngắt", không phát `PlaybackEnded` → không chuyển bài.
+   - Sau đó `PlayPause` gặp `CurrentTrack == null` nên rơi vào nhánh cũ: lấy
+     `TryPlayNextFromQueue`, mà hàm này khi hàng đợi rỗng lại chọn
+     `SelectedTrack` hoặc bài đầu thư viện → tự phát một bài local.
+   Cách sửa: `AudioService` ghi nhớ `loadedIsFiniteRemote` và coi việc chạm
+   `TotalTime` (sai số 500 ms) là kết thúc tự nhiên; ViewModel có
+   `hasOnlineSession` để phiên online không bao giờ bị bài local chiếm lại —
+   `PlayPause`/`Next`/`Previous` chỉ đi trong danh sách kết quả, và khi hết
+   danh sách thì dừng ngay trên panel online (`ShowOnlineSessionEnded`).
+
+2. **Thiếu nhạc Việt.** Đây là giới hạn danh mục, không phải lỗi code: Audius
+   là catalog cộng đồng, phần lớn bản phát hành thương mại của Việt Nam không
+   có trên đó. UI và chuỗi mô tả đã nói rõ điều này thay vì để người dùng đoán.
+   Muốn nghe nhạc Việt có bản quyền, đường hợp lệ là thư viện local, Radio
+   trực tuyến, hoặc máy chủ nhạc của chính người dùng (Navidrome/Jellyfin —
+   xem `docs/legal/self-hosted-servers.md`).

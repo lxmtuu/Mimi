@@ -10,6 +10,18 @@ namespace Mimi.Core.Playback;
 /// </summary>
 public static class PlaybackStopClassifier
 {
-    public static bool IsNaturalEnd(bool hasException, long? readerLength) =>
-        !hasException && readerLength is > 0;
+    /// <param name="hasException">Whether the output reported an error.</param>
+    /// <param name="readerLength">
+    /// Decoded length when the source exposes one. Streaming sources often
+    /// report zero or nothing here.
+    /// </param>
+    /// <param name="reachedReportedEnd">
+    /// Set when a finite streaming source has no usable length but its
+    /// position reached the duration the provider reported.
+    /// </param>
+    public static bool IsNaturalEnd(
+        bool hasException,
+        long? readerLength,
+        bool reachedReportedEnd = false) =>
+        !hasException && (readerLength is > 0 || reachedReportedEnd);
 }

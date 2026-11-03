@@ -160,9 +160,9 @@
   <data name="Online_ProviderAttribution" xml:space="preserve"><value>Danh mục bởi Audius. Âm thanh được phát trực tiếp từ các content node của Audius.</value></data>
   <data name="Online_Title" xml:space="preserve"><value>Nhạc trực tuyến</value></data>
   <data name="Online_Connecting" xml:space="preserve"><value>Đang kết nối…</value></data>
-  <data name="Online_Description" xml:space="preserve"><value>Tìm trong danh mục Audius và phát ngay tại đây. Mimi chỉ phát trực tuyến: không tải về và không thêm gì vào thư viện.</value></data>
+  <data name="Online_Description" xml:space="preserve"><value>Tìm trong danh mục Audius và phát ngay tại đây. Audius là danh mục cộng đồng nên nhiều bài Việt và nhạc thương mại không có trên đó. Mimi chỉ phát trực tuyến: không tải về và không thêm gì vào thư viện.</value></data>
   <data name="Online_LicensePrefix" xml:space="preserve"><value>Giấy phép</value></data>
-  <data name="Online_NoResults" xml:space="preserve"><value>Không có bài nào khớp với tìm kiếm.</value></data>
+  <data name="Online_NoResults" xml:space="preserve"><value>Không có bài nào khớp với tìm kiếm. Audius là danh mục cộng đồng nên một số bài không hề có.</value></data>
   <data name="Online_NowPlaying" xml:space="preserve"><value>TRỰC TUYẾN</value></data>
   <data name="Online_OpenSource" xml:space="preserve"><value>Nguồn</value></data>
   <data name="Online_OpenSourceFailed" xml:space="preserve"><value>Không mở được trang của bài này.</value></data>

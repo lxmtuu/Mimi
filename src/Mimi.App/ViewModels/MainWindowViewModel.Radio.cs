@@ -293,6 +293,7 @@ public sealed partial class MainWindowViewModel
         connectingRadioStation = station;
         IsRadioConnecting = true;
         SelectedRadioStation = station;
+        hasOnlineSession = false;
         connectingOnlineTrack = null;
         IsOnlineConnecting = false;
         CurrentOnlineTrack = null;
