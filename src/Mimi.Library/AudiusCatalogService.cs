@@ -223,10 +223,17 @@ public sealed class AudiusCatalogService : IOnlineCatalogService
 
         if (!trimmed.StartsWith('/')) return false;
 
-        return Uri.TryCreate(
-            $"{CanonicalSiteUrl}{trimmed}",
-            UriKind.Absolute,
-            out uri);
+        if (!Uri.TryCreate(
+                $"{CanonicalSiteUrl}{trimmed}",
+                UriKind.Absolute,
+                out var relative) ||
+            relative is null)
+        {
+            return false;
+        }
+
+        uri = relative;
+        return true;
     }
 
     private static bool IsPublicHttpsUri(string? value, out Uri? uri)
