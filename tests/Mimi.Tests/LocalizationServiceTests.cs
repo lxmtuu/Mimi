@@ -88,6 +88,24 @@ public sealed class LocalizationServiceTests
         Assert.Equal(
             "Không tìm thấy lời. Hãy đặt file .lrc cùng tên cạnh bài hát.",
             service.GetString("Lyrics_NotFound", "vi-VN"));
+        Assert.Equal(
+            "Internet Radio",
+            service.GetString("Nav_Radio", "en-US"));
+        Assert.Equal(
+            "Radio trực tuyến",
+            service.GetString("Nav_Radio", "vi-VN"));
+        Assert.Equal(
+            "LIVE",
+            service.GetString("Radio_Live", "en-US"));
+        Assert.Equal(
+            "TRỰC TIẾP",
+            service.GetString("Radio_Live", "vi-VN"));
+        Assert.Equal(
+            "Enable Internet Radio",
+            service.GetString("Settings_EnableInternetRadio", "en-US"));
+        Assert.Equal(
+            "Bật Radio trực tuyến",
+            service.GetString("Settings_EnableInternetRadio", "vi-VN"));
     }
 
     [Fact]

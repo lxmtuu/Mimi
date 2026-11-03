@@ -96,6 +96,7 @@ public sealed partial class MainWindowViewModel
         WatchLibraryFolders = true;
         SaveSettings(force: true);
         IsSettingsOpen = false;
+            IsRadioOpen = false;
 
         var result = await ScanAndAddFolderAsync(folder);
         if (result?.SkippedDirectories > 0)

@@ -115,7 +115,7 @@ public sealed class UserDataServiceTests : IDisposable
     }
 
     [Fact]
-    public void Version6SettingsRoundTrip()
+    public void Version7SettingsRoundTrip()
     {
         var expected = new AppSettings
         {
@@ -131,6 +131,17 @@ public sealed class UserDataServiceTests : IDisposable
             RestoreWindowPlacement = false,
             AutoUpgradeLegacyCoverArt = false,
             WatchLibraryFolders = false,
+            InternetRadioEnabled = false,
+            OnlineCatalogEnabled = false,
+            YouTubeSearchEnabled = false,
+            YouTubeFavorites =
+            [
+                new Mimi.YouTube.SavedYouTubeVideo(
+                    "dQw4w9WgXcQ",
+                    "Saved clip",
+                    "Some channel",
+                    "https://i.ytimg.com/vi/dQw4w9WgXcQ/mqdefault.jpg")
+            ],
             WatchedFolders = [@"C:\Music", @"D:\Songs"],
             LyricsOffsetsByPath = new Dictionary<string, int>
             {
@@ -191,6 +202,12 @@ public sealed class UserDataServiceTests : IDisposable
         Assert.False(loaded.RestoreWindowPlacement);
         Assert.False(loaded.AutoUpgradeLegacyCoverArt);
         Assert.False(loaded.WatchLibraryFolders);
+        Assert.False(loaded.InternetRadioEnabled);
+        Assert.False(loaded.OnlineCatalogEnabled);
+        Assert.False(loaded.YouTubeSearchEnabled);
+        var savedVideo = Assert.Single(loaded.YouTubeFavorites);
+        Assert.Equal("dQw4w9WgXcQ", savedVideo.VideoId);
+        Assert.Equal("Saved clip", savedVideo.Title);
         Assert.Equal([@"C:\Music", @"D:\Songs"], loaded.WatchedFolders);
         Assert.Equal(
             250,
@@ -242,6 +259,9 @@ public sealed class UserDataServiceTests : IDisposable
         Assert.True(loaded.RestoreWindowPlacement);
         Assert.True(loaded.AutoUpgradeLegacyCoverArt);
         Assert.True(loaded.WatchLibraryFolders);
+        Assert.True(loaded.InternetRadioEnabled);
+        Assert.True(loaded.OnlineCatalogEnabled);
+        Assert.True(loaded.YouTubeSearchEnabled);
         Assert.Empty(loaded.WatchedFolders);
         Assert.Empty(loaded.LyricsOffsetsByPath);
         Assert.Equal("Library", loaded.LibraryView.ActiveView);
@@ -250,7 +270,7 @@ public sealed class UserDataServiceTests : IDisposable
     }
 
     [Fact]
-    public void Version3SettingsMigrateToVersion6WithLanguageAndThemeDefaults()
+    public void Version3SettingsMigrateToVersion7WithLanguageAndThemeDefaults()
     {
         File.WriteAllText(
             Path.Combine(dataDirectory, "settings.json"),
@@ -258,14 +278,14 @@ public sealed class UserDataServiceTests : IDisposable
 
         var loaded = service.LoadSettings();
 
-        Assert.Equal(6, loaded.Version);
+        Assert.Equal(AppSettings.CurrentVersion, loaded.Version);
         Assert.Equal(0.5, loaded.Volume);
         Assert.Equal(UiLanguages.System, loaded.UiLanguage);
         Assert.Equal(BuiltInThemes.DefaultId, loaded.UiTheme);
     }
 
     [Fact]
-    public void Version4SettingsMigrateToVersion6WithThemeDefault()
+    public void Version4SettingsMigrateToVersion7WithThemeDefault()
     {
         File.WriteAllText(
             Path.Combine(dataDirectory, "settings.json"),
@@ -273,7 +293,7 @@ public sealed class UserDataServiceTests : IDisposable
 
         var loaded = service.LoadSettings();
 
-        Assert.Equal(6, loaded.Version);
+        Assert.Equal(AppSettings.CurrentVersion, loaded.Version);
         Assert.Equal(0.5, loaded.Volume);
         Assert.Equal(UiLanguages.Vietnamese, loaded.UiLanguage);
         Assert.Equal(BuiltInThemes.DefaultId, loaded.UiTheme);

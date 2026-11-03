@@ -158,6 +158,12 @@ public sealed class WindowsMediaControlsService : IDisposable
                 SetObservedTrack(viewModel.CurrentTrack);
                 SyncAll();
                 break;
+            case nameof(MainWindowViewModel.CurrentRadioStation):
+                SyncAll();
+                break;
+            case nameof(MainWindowViewModel.CurrentOnlineTrack):
+                SyncAll();
+                break;
             case nameof(MainWindowViewModel.CurrentCoverArtPath):
                 QueueThumbnailUpdate();
                 break;
@@ -227,6 +233,62 @@ public sealed class WindowsMediaControlsService : IDisposable
     {
         if (disposed || controls is null) return;
 
+        var station = viewModel.CurrentRadioStation;
+        if (station is not null)
+        {
+            CancelThumbnailUpdate();
+            TrySmtc(
+                () =>
+                {
+                    var updater = controls.DisplayUpdater;
+                    updater.AppMediaId = WindowsAppIdentity.AppUserModelId;
+                    updater.Type = MediaPlaybackType.Music;
+
+                    var music = updater.MusicProperties;
+                    music.Title = station.Name;
+                    music.Artist = station.MetadataLabel;
+                    music.AlbumArtist = "Radio Browser";
+                    music.AlbumTitle = station.Station.Country;
+                    music.Genres.Clear();
+                    foreach (var tag in station.Station.Tags.Take(4))
+                        music.Genres.Add(tag);
+
+                    if (refreshThumbnail)
+                        updater.Thumbnail = null;
+
+                    updater.Update();
+                },
+                "update Windows media metadata");
+            return;
+        }
+
+        var online = viewModel.CurrentOnlineTrack;
+        if (online is not null)
+        {
+            QueueThumbnailUpdate();
+            TrySmtc(
+                () =>
+                {
+                    var updater = controls.DisplayUpdater;
+                    updater.AppMediaId = WindowsAppIdentity.AppUserModelId;
+                    updater.Type = MediaPlaybackType.Music;
+
+                    var music = updater.MusicProperties;
+                    music.Title = online.Title;
+                    music.Artist = online.Artist;
+                    music.AlbumArtist = "Audius";
+                    music.AlbumTitle = string.Empty;
+                    music.Genres.Clear();
+
+                    if (refreshThumbnail)
+                        updater.Thumbnail = null;
+
+                    updater.Update();
+                },
+                "update Windows media metadata");
+            return;
+        }
+
         var track = viewModel.CurrentTrack;
         if (track is null)
         {
@@ -272,9 +334,13 @@ public sealed class WindowsMediaControlsService : IDisposable
     {
         if (disposed || controls is null) return;
 
-        var hasTrack = viewModel.CurrentTrack is not null;
-        var canSeek = hasTrack && audioPlayer.Duration > TimeSpan.Zero;
-        var status = !hasTrack
+        var hasSource = viewModel.HasCurrentPlaybackSource;
+        // Online catalog tracks are finite, so the transport may seek them.
+        // Live radio never can.
+        var canSeek = (viewModel.CurrentTrack is not null ||
+                       viewModel.CurrentOnlineTrack is not null) &&
+            audioPlayer.Duration > TimeSpan.Zero;
+        var status = !hasSource
             ? MediaPlaybackStatus.Closed
             : viewModel.IsPlaying
                 ? MediaPlaybackStatus.Playing
@@ -283,18 +349,18 @@ public sealed class WindowsMediaControlsService : IDisposable
         TrySmtc(
             () =>
             {
-                if (controls.IsEnabled != hasTrack)
-                    controls.IsEnabled = hasTrack;
+                if (controls.IsEnabled != hasSource)
+                    controls.IsEnabled = hasSource;
                 if (controls.PlaybackStatus != status)
                     controls.PlaybackStatus = status;
-                if (controls.IsPlayEnabled != hasTrack)
-                    controls.IsPlayEnabled = hasTrack;
-                if (controls.IsPauseEnabled != (hasTrack && viewModel.IsPlaying))
-                    controls.IsPauseEnabled = hasTrack && viewModel.IsPlaying;
-                if (controls.IsNextEnabled != hasTrack)
-                    controls.IsNextEnabled = hasTrack;
-                if (controls.IsPreviousEnabled != hasTrack)
-                    controls.IsPreviousEnabled = hasTrack;
+                if (controls.IsPlayEnabled != hasSource)
+                    controls.IsPlayEnabled = hasSource;
+                if (controls.IsPauseEnabled != (hasSource && viewModel.IsPlaying))
+                    controls.IsPauseEnabled = hasSource && viewModel.IsPlaying;
+                if (controls.IsNextEnabled != hasSource)
+                    controls.IsNextEnabled = hasSource;
+                if (controls.IsPreviousEnabled != hasSource)
+                    controls.IsPreviousEnabled = hasSource;
                 if (controls.IsFastForwardEnabled != canSeek)
                     controls.IsFastForwardEnabled = canSeek;
                 if (controls.IsRewindEnabled != canSeek)
@@ -329,7 +395,54 @@ public sealed class WindowsMediaControlsService : IDisposable
 
     private void SyncTimeline()
     {
-        if (disposed || controls is null || viewModel.CurrentTrack is null)
+        if (disposed || controls is null)
+            return;
+
+        if (viewModel.CurrentRadioStation is not null)
+        {
+            var livePosition = audioPlayer.CurrentTime;
+            if (livePosition < TimeSpan.Zero)
+                livePosition = TimeSpan.Zero;
+
+            TrySmtc(
+                () => controls.UpdateTimelineProperties(
+                    new SystemMediaTransportControlsTimelineProperties
+                    {
+                        StartTime = TimeSpan.Zero,
+                        MinSeekTime = TimeSpan.Zero,
+                        Position = livePosition,
+                        MaxSeekTime = livePosition,
+                        EndTime = livePosition
+                    }),
+                "update Windows media timeline");
+            return;
+        }
+
+        if (viewModel.CurrentOnlineTrack is not null)
+        {
+            var onlineDuration = audioPlayer.Duration;
+            if (onlineDuration < TimeSpan.Zero) onlineDuration = TimeSpan.Zero;
+
+            var onlinePosition = audioPlayer.CurrentTime;
+            if (onlinePosition < TimeSpan.Zero) onlinePosition = TimeSpan.Zero;
+            if (onlineDuration > TimeSpan.Zero && onlinePosition > onlineDuration)
+                onlinePosition = onlineDuration;
+
+            TrySmtc(
+                () => controls.UpdateTimelineProperties(
+                    new SystemMediaTransportControlsTimelineProperties
+                    {
+                        StartTime = TimeSpan.Zero,
+                        MinSeekTime = TimeSpan.Zero,
+                        Position = onlinePosition,
+                        MaxSeekTime = onlineDuration,
+                        EndTime = onlineDuration
+                    }),
+                "update Windows media timeline");
+            return;
+        }
+
+        if (viewModel.CurrentTrack is null)
             return;
 
         var duration = audioPlayer.Duration;

@@ -10,7 +10,8 @@ using Serilog;
 namespace Mimi.Services;
 
 /// <summary>
-/// Local-file playback engine based on WASAPI shared mode. The output
+/// Playback engine for local files and direct live streams, based on
+/// WASAPI shared mode. The output
 /// follows the Windows default render endpoint; if that endpoint changes or
 /// disappears, playback pauses and only the output stream is rebuilt around
 /// the already-decoded reader. WaveOut remains a conservative fallback when
@@ -37,11 +38,18 @@ public sealed class AudioService : IAudioPlayer
     private volatile IWavePlayer? output;
     private MMDevice? outputDevice;
     private volatile string? outputDeviceId;
-    private AudioFileReader? reader;
+    private WaveStream? reader;
     private VisualizerSampleProvider? visualizer;
     private SwitchableSampleProvider? switchableSource;
     private VolumeSampleProvider? volumeProvider;
-    private string? loadedPath;
+    private string? loadedSource;
+    private bool loadedIsLiveStream;
+
+    // A finite remote source (an online catalog track) is not live, but a
+    // streamed reader often reports no usable length. Remember that shape so
+    // its end is still recognised instead of looking like an interrupted
+    // output that never advances.
+    private bool loadedIsFiniteRemote;
     private PlaybackStoppedSubscription? playbackStoppedSubscription;
     private float volume = 0.7f;
     private AudioOutputStatus outputStatus;
@@ -160,12 +168,27 @@ public sealed class AudioService : IAudioPlayer
         }
     }
 
+    public bool IsLiveStream
+    {
+        get
+        {
+            lock (gate)
+                return loadedIsLiveStream && reader is not null;
+        }
+    }
+
     public TimeSpan Duration
     {
         get
         {
             lock (gate)
-                return reader?.TotalTime ?? TimeSpan.Zero;
+            {
+                // A live network source has no trustworthy finite duration,
+                // even if the underlying reader reports an estimate.
+                return loadedIsLiveStream
+                    ? TimeSpan.Zero
+                    : reader?.TotalTime ?? TimeSpan.Zero;
+            }
         }
     }
 
@@ -191,7 +214,87 @@ public sealed class AudioService : IAudioPlayer
         public EventHandler<StoppedEventArgs>? Handler { get; set; }
     }
 
-    public void Load(string path)
+    public void Load(string path) =>
+        LoadSource(
+            path,
+            () =>
+            {
+                var fileReader = new AudioFileReader(path);
+
+                // Keep the reader at unity gain and apply volume AFTER the
+                // visualizer tap, so the spectrum reflects the music itself,
+                // not the volume slider.
+                fileReader.Volume = 1.0f;
+                return (fileReader, fileReader);
+            },
+            isLiveStream: false,
+            isFiniteRemote: false,
+            logSource: path);
+
+    public void LoadStream(Uri streamUrl)
+    {
+        ValidateRemoteUri(streamUrl);
+
+        LoadSource(
+            streamUrl.AbsoluteUri,
+            () => CreateRemoteReader(streamUrl),
+            isLiveStream: true,
+            isFiniteRemote: false,
+            logSource: $"live stream host {streamUrl.Host}");
+    }
+
+    /// <summary>
+    /// Online catalog tracks are finite and seekable, unlike live radio, so
+    /// they keep their reported duration and may be repositioned. The audio is
+    /// still streamed directly: nothing is downloaded or written to disk.
+    /// </summary>
+    public void LoadRemoteAudio(Uri audioUrl)
+    {
+        ValidateRemoteUri(audioUrl);
+
+        LoadSource(
+            audioUrl.AbsoluteUri,
+            () => CreateRemoteReader(audioUrl),
+            isLiveStream: false,
+            isFiniteRemote: true,
+            logSource: $"online audio host {audioUrl.Host}");
+    }
+
+    private static void ValidateRemoteUri(Uri? remoteUri)
+    {
+        ArgumentNullException.ThrowIfNull(remoteUri);
+        if (!remoteUri.IsAbsoluteUri ||
+            (remoteUri.Scheme != Uri.UriSchemeHttp &&
+             remoteUri.Scheme != Uri.UriSchemeHttps) ||
+            !string.IsNullOrEmpty(remoteUri.UserInfo))
+        {
+            throw new ArgumentException(
+                "A direct HTTP(S) URL without embedded credentials is required.",
+                nameof(remoteUri));
+        }
+    }
+
+    private static (WaveStream Reader, ISampleProvider Source) CreateRemoteReader(
+        Uri remoteUri)
+    {
+        var remoteReader = new MediaFoundationReader(remoteUri.AbsoluteUri);
+        try
+        {
+            return (remoteReader, remoteReader.ToSampleProvider());
+        }
+        catch
+        {
+            remoteReader.Dispose();
+            throw;
+        }
+    }
+
+    private void LoadSource(
+        string sourceKey,
+        Func<(WaveStream Reader, ISampleProvider Source)> createReader,
+        bool isLiveStream,
+        bool isFiniteRemote,
+        string logSource)
     {
         AudioOutputStatusChangedEventArgs? statusChanged = null;
         var loadStarted = Stopwatch.GetTimestamp();
@@ -205,18 +308,21 @@ public sealed class AudioService : IAudioPlayer
             ThrowIfDisposedLocked();
             AdvancePlaybackGenerationLocked();
 
-            // Opening/decoding the next file does not require the current
-            // reader. For a different path, build the candidate chain while
-            // the old track is still intact, then stop/swap only at the
-            // last moment. A failed candidate still ends in the historical
-            // "no track loaded" state via the catch block below.
+            // Opening/decoding the next source does not require the current
+            // reader. For a different source, build the candidate chain
+            // while the old source is still intact, then stop/swap only at
+            // the last moment. A failed candidate still ends in the
+            // historical "no source loaded" state via the catch block below.
+            var sourceComparison = isLiveStream
+                ? StringComparison.Ordinal
+                : StringComparison.OrdinalIgnoreCase;
             var buildBeforeStoppingCurrent = reader is not null &&
                 !string.Equals(
-                    loadedPath,
-                    path,
-                    StringComparison.OrdinalIgnoreCase);
+                    loadedSource,
+                    sourceKey,
+                    sourceComparison);
 
-            AudioFileReader? newReader = null;
+            WaveStream? newReader = null;
             VisualizerSampleProvider? newVisualizer = null;
             try
             {
@@ -233,7 +339,9 @@ public sealed class AudioService : IAudioPlayer
                         DisposeTrackChainLocked(reader, visualizer);
                         reader = null;
                         visualizer = null;
-                        loadedPath = null;
+                        loadedSource = null;
+                        loadedIsLiveStream = false;
+                        loadedIsFiniteRemote = false;
                     }
                     else
                     {
@@ -244,13 +352,14 @@ public sealed class AudioService : IAudioPlayer
                 }
 
                 var decodeStarted = Stopwatch.GetTimestamp();
-                newReader = new AudioFileReader(path);
+                var createdReader = createReader();
+                newReader = createdReader.Reader;
 
-                // Keep the reader at unity gain and apply volume AFTER the
-                // visualizer tap, so the spectrum reflects the music itself,
-                // not the volume slider.
-                newReader.Volume = 1.0f;
-                newVisualizer = new VisualizerSampleProvider(newReader);
+                // The local-file factory keeps its reader at unity gain.
+                // Volume is applied after this visualizer tap for every
+                // source, so the spectrum reflects the music itself rather
+                // than the volume slider.
+                newVisualizer = new VisualizerSampleProvider(createdReader.Source);
 
                 // WASAPI shared mode auto-converts sample rates, but a
                 // stereo float stream is the most widely accepted shape for
@@ -278,7 +387,9 @@ public sealed class AudioService : IAudioPlayer
                     switchableSource!.SetSource(newOutputSource);
                     reader = newReader;
                     visualizer = newVisualizer;
-                    loadedPath = path;
+                    loadedSource = sourceKey;
+                    loadedIsLiveStream = isLiveStream;
+                    loadedIsFiniteRemote = isFiniteRemote;
                     newReader = null;
                     newVisualizer = null;
 
@@ -292,7 +403,9 @@ public sealed class AudioService : IAudioPlayer
 
                     reader = newReader;
                     visualizer = newVisualizer;
-                    loadedPath = path;
+                    loadedSource = sourceKey;
+                    loadedIsLiveStream = isLiveStream;
+                    loadedIsFiniteRemote = isFiniteRemote;
                     newReader = null;
                     newVisualizer = null;
                     switchableSource = new SwitchableSampleProvider(newOutputSource);
@@ -304,7 +417,7 @@ public sealed class AudioService : IAudioPlayer
                         Stopwatch.GetElapsedTime(transitionStarted);
 
                     // A missing output must not turn a successfully decoded
-                    // file into a track error. The reader remains loaded and
+                    // source into a source error. The reader remains loaded and
                     // paused; Play reports the output problem distinctly.
                     var outputCreateStarted = Stopwatch.GetTimestamp();
                     TryCreateOutputLocked(out statusChanged);
@@ -324,10 +437,10 @@ public sealed class AudioService : IAudioPlayer
         if (totalElapsed.TotalMilliseconds >= 50)
         {
             Log.Information(
-                "Audio load timing for {FilePath}: total={TotalMs:F1}ms; " +
+                "Audio load timing for {Source}: total={TotalMs:F1}ms; " +
                 "decode={DecodeMs:F1}ms; transition={TransitionMs:F1}ms; " +
                 "outputCreate={OutputCreateMs:F1}ms; reusedOutput={ReusedOutput}",
-                path,
+                logSource,
                 totalElapsed.TotalMilliseconds,
                 decodeElapsed.TotalMilliseconds,
                 transitionElapsed.TotalMilliseconds,
@@ -377,9 +490,21 @@ public sealed class AudioService : IAudioPlayer
             }
             else
             {
-                endedNaturally = PlaybackStopClassifier.IsNaturalEnd(
-                    hasException: false,
-                    reader?.Length);
+                // A finite online track streams without a usable length, so
+                // compare the decoded position with the duration the provider
+                // reported. Without this the output stop looked like an
+                // interruption and playback never advanced.
+                var reachedReportedEnd = loadedIsFiniteRemote &&
+                    reader is not null &&
+                    reader.TotalTime > TimeSpan.Zero &&
+                    reader.CurrentTime >=
+                        reader.TotalTime - TimeSpan.FromMilliseconds(500);
+
+                endedNaturally = !loadedIsLiveStream &&
+                    PlaybackStopClassifier.IsNaturalEnd(
+                        hasException: false,
+                        reader?.Length,
+                        reachedReportedEnd);
                 if (endedNaturally)
                 {
                     // Capture the ending run while the reader/output pair
@@ -632,7 +757,7 @@ public sealed class AudioService : IAudioPlayer
                 }
             }
 
-            if (reader is not null)
+            if (reader is not null && !loadedIsLiveStream)
                 reader.Position = 0;
 
             AdvancePlaybackGenerationLocked();
@@ -648,7 +773,7 @@ public sealed class AudioService : IAudioPlayer
     {
         lock (gate)
         {
-            if (reader is null || disposed) return;
+            if (reader is null || loadedIsLiveStream || disposed) return;
 
             AdvancePlaybackGenerationLocked();
             var maximum = Math.Max(0, reader.TotalTime.TotalSeconds);
@@ -1037,21 +1162,24 @@ public sealed class AudioService : IAudioPlayer
                 wasapiFailureLogged = false;
                 var created = TryCreateOutputLocked(out statusChanged);
 
-                try
+                if (!loadedIsLiveStream)
                 {
-                    var duration = reader.TotalTime;
-                    var target = position;
-                    if (target < TimeSpan.Zero)
-                        target = TimeSpan.Zero;
-                    if (duration > TimeSpan.Zero && target > duration)
-                        target = duration;
-                    reader.CurrentTime = target;
-                }
-                catch (Exception ex)
-                {
-                    Log.Debug(
-                        ex,
-                        "Could not restore the playback position after an output rebuild");
+                    try
+                    {
+                        var duration = reader.TotalTime;
+                        var target = position;
+                        if (target < TimeSpan.Zero)
+                            target = TimeSpan.Zero;
+                        if (duration > TimeSpan.Zero && target > duration)
+                            target = duration;
+                        reader.CurrentTime = target;
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Debug(
+                            ex,
+                            "Could not restore the playback position after an output rebuild");
+                    }
                 }
 
                 if (wasPlaying)
@@ -1180,11 +1308,13 @@ public sealed class AudioService : IAudioPlayer
         reader = null;
         visualizer = null;
         volumeProvider = null;
-        loadedPath = null;
+        loadedSource = null;
+        loadedIsLiveStream = false;
+        loadedIsFiniteRemote = false;
     }
 
     private static void DisposeTrackChainLocked(
-        AudioFileReader? chainReader,
+        WaveStream? chainReader,
         VisualizerSampleProvider? chainVisualizer)
     {
         try
@@ -1202,7 +1332,7 @@ public sealed class AudioService : IAudioPlayer
         }
         catch (Exception ex)
         {
-            Log.Debug(ex, "Could not dispose the audio file reader");
+            Log.Debug(ex, "Could not dispose the audio reader");
         }
     }
 

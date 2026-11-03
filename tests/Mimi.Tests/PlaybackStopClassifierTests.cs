@@ -21,4 +21,26 @@ public sealed class PlaybackStopClassifierTests
             expected,
             PlaybackStopClassifier.IsNaturalEnd(hasException, readerLength));
     }
+
+    [Theory]
+    [InlineData(false, null, true, true)]
+    [InlineData(false, 0L, true, true)]
+    [InlineData(false, null, false, false)]
+    [InlineData(true, null, true, false)]
+    public void IsNaturalEnd_AcceptsAReportedEndWhenAStreamHasNoLength(
+        bool hasException,
+        long? readerLength,
+        bool reachedReportedEnd,
+        bool expected)
+    {
+        // Streamed online tracks frequently expose no usable length, so the
+        // decoded position reaching the provider duration is what marks the
+        // end. Without it the output stop looked like an interruption.
+        Assert.Equal(
+            expected,
+            PlaybackStopClassifier.IsNaturalEnd(
+                hasException,
+                readerLength,
+                reachedReportedEnd));
+    }
 }

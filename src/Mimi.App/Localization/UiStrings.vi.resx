@@ -142,7 +142,10 @@
   <data name="Nav_Favorites" xml:space="preserve"><value>Yêu thích</value></data>
   <data name="Nav_Home" xml:space="preserve"><value>Trang chủ</value></data>
   <data name="Nav_MyLibrary" xml:space="preserve"><value>Thư viện của tôi</value></data>
+  <data name="Nav_Online" xml:space="preserve"><value>Nhạc trực tuyến</value></data>
+  <data name="Nav_YouTube" xml:space="preserve"><value>YouTube</value></data>
   <data name="Nav_Playlists" xml:space="preserve"><value>DANH SÁCH PHÁT</value></data>
+  <data name="Nav_Radio" xml:space="preserve"><value>Radio trực tuyến</value></data>
   <data name="Nav_RecentlyPlayed" xml:space="preserve"><value>Đã nghe gần đây</value></data>
   <data name="Nav_ScanFolder" xml:space="preserve"><value>Quét thư mục</value></data>
   <data name="Nav_Settings" xml:space="preserve"><value>Cài đặt</value></data>
@@ -153,6 +156,46 @@
   <data name="NowPlaying_Title" xml:space="preserve"><value>ĐANG PHÁT</value></data>
   <data name="NowPlaying_UpNext" xml:space="preserve"><value>SẮP PHÁT</value></data>
   <data name="NowPlaying_VolumeHeader" xml:space="preserve"><value>ÂM LƯỢNG</value></data>
+  <data name="Online_LoadFailed" xml:space="preserve"><value>Không tìm được trên Audius. Hãy kiểm tra kết nối và thử lại.</value></data>
+  <data name="Online_Loading" xml:space="preserve"><value>Đang tìm trên Audius…</value></data>
+  <data name="Online_ProviderAttribution" xml:space="preserve"><value>Danh mục bởi Audius. Âm thanh được phát trực tiếp từ các content node của Audius.</value></data>
+  <data name="Online_Title" xml:space="preserve"><value>Nhạc trực tuyến</value></data>
+  <data name="Online_Connecting" xml:space="preserve"><value>Đang kết nối…</value></data>
+  <data name="Online_Description" xml:space="preserve"><value>Tìm trong danh mục Audius và phát ngay tại đây. Audius là danh mục cộng đồng nên nhiều bài Việt và nhạc thương mại không có trên đó. Mimi chỉ phát trực tuyến: không tải về và không thêm gì vào thư viện.</value></data>
+  <data name="Online_LicensePrefix" xml:space="preserve"><value>Giấy phép</value></data>
+  <data name="Online_NoResults" xml:space="preserve"><value>Không có bài nào khớp với tìm kiếm. Audius là danh mục cộng đồng nên một số bài không hề có.</value></data>
+  <data name="Online_NowPlaying" xml:space="preserve"><value>TRỰC TUYẾN</value></data>
+  <data name="Online_OpenSource" xml:space="preserve"><value>Nguồn</value></data>
+  <data name="Online_OpenSourceFailed" xml:space="preserve"><value>Không mở được trang của bài này.</value></data>
+  <data name="Online_PlayAutomation" xml:space="preserve"><value>Phát hoặc tạm dừng bài này</value></data>
+  <data name="Online_PlayFailed" xml:space="preserve"><value>Không phát được bài này. Có thể bài không khả dụng, bị giới hạn hoặc định dạng Windows không hỗ trợ.</value></data>
+  <data name="Online_ResultListAutomation" xml:space="preserve"><value>Kết quả tìm kiếm trực tuyến</value></data>
+  <data name="Online_ResultsAvailable" xml:space="preserve"><value>{0} bài trực tuyến</value></data>
+  <data name="Online_Search" xml:space="preserve"><value>Tìm</value></data>
+  <data name="Online_SearchAutomation" xml:space="preserve"><value>Tìm nhạc trực tuyến</value></data>
+  <data name="Online_SearchLabel" xml:space="preserve"><value>Tìm bài hát hoặc nghệ sĩ</value></data>
+  <data name="Online_Source" xml:space="preserve"><value>Phát trực tuyến từ Audius</value></data>
+  <data name="Online_Unavailable" xml:space="preserve"><value>Hiện không dùng được nhạc trực tuyến.</value></data>
+  <data name="YouTube_Description" xml:space="preserve"><value>Tìm trên YouTube và phát video ngay trong khung Đang phát. Trình phát chính thức luôn hiển thị khi đang phát, đóng lại là dừng âm thanh. Hạn mức miễn phí cho khoảng 100 lần tìm mỗi ngày.</value></data>
+  <data name="YouTube_LoadFailed" xml:space="preserve"><value>Không tìm được trên YouTube. Hãy kiểm tra kết nối và thử lại.</value></data>
+  <data name="YouTube_Loading" xml:space="preserve"><value>Đang tìm trên YouTube…</value></data>
+  <data name="YouTube_NoResults" xml:space="preserve"><value>Không có video nào khớp với tìm kiếm.</value></data>
+  <data name="YouTube_NotConfigured" xml:space="preserve"><value>Chưa có key. Chạy tools\Set-YouTubeKey.ps1 trong terminal (script ghi ra {0}), rồi tìm lại.</value></data>
+  <data name="YouTube_NowPlaying" xml:space="preserve"><value>ĐANG PHÁT</value></data>
+  <data name="YouTube_OpenFailed" xml:space="preserve"><value>Không mở được video này trên YouTube.</value></data>
+  <data name="YouTube_OpenSource" xml:space="preserve"><value>Mở</value></data>
+  <data name="YouTube_PlayAutomation" xml:space="preserve"><value>Phát video này hoặc dừng lại</value></data>
+  <data name="YouTube_ProviderAttribution" xml:space="preserve"><value>Trình phát của YouTube</value></data>
+  <data name="YouTube_QuotaExceeded" xml:space="preserve"><value>Hạn mức tìm kiếm YouTube hôm nay đã hết. Hạn mức được làm mới hằng ngày, hoặc bạn có thể tăng trong Google Cloud.</value></data>
+  <data name="YouTube_ResultListAutomation" xml:space="preserve"><value>Kết quả tìm kiếm YouTube</value></data>
+  <data name="YouTube_ResultsAvailable" xml:space="preserve"><value>{0} video</value></data>
+  <data name="YouTube_Search" xml:space="preserve"><value>Tìm</value></data>
+  <data name="YouTube_SearchAutomation" xml:space="preserve"><value>Tìm trên YouTube</value></data>
+  <data name="YouTube_SearchLabel" xml:space="preserve"><value>Tìm trên YouTube</value></data>
+  <data name="YouTube_Source" xml:space="preserve"><value>YouTube</value></data>
+  <data name="YouTube_Stop" xml:space="preserve"><value>Dừng</value></data>
+  <data name="YouTube_Title" xml:space="preserve"><value>YouTube</value></data>
+  <data name="YouTube_Unavailable" xml:space="preserve"><value>Hiện không dùng được tìm kiếm YouTube.</value></data>
   <data name="OpenWith_CouldNotOpenPaths" xml:space="preserve"><value>Không thể mở các đường dẫn đó bằng Mimi.&#10;&#10;{0}</value></data>
   <data name="OpenWith_FilesNotFound" xml:space="preserve"><value>Không tìm thấy file được mở.</value></data>
   <data name="OpenWith_NoneOpenedSongsCouldBePlayed" xml:space="preserve"><value>Không bài nào được mở có thể phát.</value></data>
@@ -231,6 +274,27 @@
   <data name="Queue_RemoveFromQueue" xml:space="preserve"><value>Xoá khỏi hàng đợi</value></data>
   <data name="Queue_RemoveSelectedAutomation" xml:space="preserve"><value>Xoá bài đã chọn khỏi hàng đợi</value></data>
   <data name="Queue_Status" xml:space="preserve"><value>{0} sắp phát · {1} · {2}</value></data>
+  <data name="Radio_Connecting" xml:space="preserve"><value>Đang kết nối…</value></data>
+  <data name="Radio_Description" xml:space="preserve"><value>Các đài phát trực tiếp từ danh mục Radio Browser. Thư viện cục bộ của bạn vẫn hoạt động khi ngoại tuyến.</value></data>
+  <data name="Radio_Homepage" xml:space="preserve"><value>Trang chủ</value></data>
+  <data name="Radio_HomepageOpenFailed" xml:space="preserve"><value>Không thể mở trang chủ của đài này.</value></data>
+  <data name="Radio_Live" xml:space="preserve"><value>TRỰC TIẾP</value></data>
+  <data name="Radio_LoadFailed" xml:space="preserve"><value>Không thể tải danh sách đài. Hãy kiểm tra kết nối và thử lại.</value></data>
+  <data name="Radio_LoadingStations" xml:space="preserve"><value>Đang tải các đài trực tiếp…</value></data>
+  <data name="Radio_NoSearchResults" xml:space="preserve"><value>Không có đài trực tiếp nào khớp với tìm kiếm của bạn.</value></data>
+  <data name="Radio_NoStations" xml:space="preserve"><value>Hiện không có đài trực tiếp nào khả dụng.</value></data>
+  <data name="Radio_PlayFailed" xml:space="preserve"><value>Không thể phát đài này. Đài có thể đang ngoại tuyến, hoặc Windows không mở được định dạng stream của đài.</value></data>
+  <data name="Radio_PlayStationAutomation" xml:space="preserve"><value>Phát hoặc tạm dừng đài này</value></data>
+  <data name="Radio_ProviderAttribution" xml:space="preserve"><value>Danh mục đài do Radio Browser cung cấp</value></data>
+  <data name="Radio_Refresh" xml:space="preserve"><value>Làm mới</value></data>
+  <data name="Radio_RefreshAutomation" xml:space="preserve"><value>Làm mới danh sách đài radio</value></data>
+  <data name="Radio_Search" xml:space="preserve"><value>Tìm kiếm</value></data>
+  <data name="Radio_SearchAutomation" xml:space="preserve"><value>Tìm kiếm đài radio</value></data>
+  <data name="Radio_SearchLabel" xml:space="preserve"><value>Tìm kiếm đài</value></data>
+  <data name="Radio_StationListAutomation" xml:space="preserve"><value>Các đài radio trực tuyến</value></data>
+  <data name="Radio_StationsAvailable" xml:space="preserve"><value>{0} đài trực tiếp khả dụng</value></data>
+  <data name="Radio_Title" xml:space="preserve"><value>Radio trực tuyến</value></data>
+  <data name="Radio_Unavailable" xml:space="preserve"><value>Radio trực tuyến không khả dụng trong bản này.</value></data>
   <data name="Scan_Canceled" xml:space="preserve"><value>Đã huỷ quét</value></data>
   <data name="Scan_Canceling" xml:space="preserve"><value>Đang huỷ quét…</value></data>
   <data name="Scan_CouldNotScanFiles" xml:space="preserve"><value>Không thể quét các file nhạc đó.&#10;&#10;{0}</value></data>
@@ -262,7 +326,16 @@
   <data name="Settings_DataDiagnosticsSection" xml:space="preserve"><value>DỮ LIỆU &amp; CHẨN ĐOÁN</value></data>
   <data name="Settings_DataFolder" xml:space="preserve"><value>Thư mục dữ liệu</value></data>
   <data name="Settings_DefaultsSection" xml:space="preserve"><value>MẶC ĐỊNH</value></data>
+  <data name="Settings_EnableInternetRadio" xml:space="preserve"><value>Bật Radio trực tuyến</value></data>
   <data name="Settings_FolderPathCouldNotBeUsed" xml:space="preserve"><value>Không thể dùng đường dẫn thư mục đó.</value></data>
+  <data name="Settings_InternetRadioDescription" xml:space="preserve"><value>Khi bật, Mimi liên hệ các mirror của Radio Browser để lấy danh mục đài và gửi lượt đếm khi bắt đầu phát, sau đó phát âm thanh trực tiếp từ từng đài. Máy chủ của đài có thể thấy địa chỉ IP của bạn. Tắt tùy chọn này để ẩn Radio trực tuyến, hủy tải danh sách đài và dừng phát radio.</value></data>
+  <data name="Settings_InternetRadioSection" xml:space="preserve"><value>RADIO TRỰC TUYẾN</value></data>
+  <data name="Settings_EnableOnline" xml:space="preserve"><value>Bật tìm nhạc trực tuyến</value></data>
+  <data name="Settings_OnlineDescription" xml:space="preserve"><value>Khi bật, Mimi tìm trong danh mục Audius và phát trực tiếp bài bạn chọn, không tải về và không lưu đệm. Audius và các content node có thể thấy địa chỉ IP của bạn. Không có nội dung nào được thêm vào thư viện, hàng đợi, lịch sử, yêu thích hay phiên lưu. Tắt tùy chọn này để ẩn mục nhạc trực tuyến và dừng bài đang phát.</value></data>
+  <data name="Settings_OnlineSection" xml:space="preserve"><value>NHẠC TRỰC TUYẾN</value></data>
+  <data name="Settings_EnableYouTube" xml:space="preserve"><value>Bật tìm kiếm YouTube</value></data>
+  <data name="Settings_YouTubeDescription" xml:space="preserve"><value>Khi bật, Mimi tìm trên YouTube bằng API key của chính bạn và phát video bằng trình phát nhúng chính thức của YouTube ngay trong Mimi. Mimi không tải, không tách và không lưu đệm nội dung, và không có gì từ YouTube được thêm vào thư viện, hàng đợi, lịch sử, yêu thích hay phiên lưu. Tắt tùy chọn này để ẩn YouTube và dừng video.</value></data>
+  <data name="Settings_YouTubeSection" xml:space="preserve"><value>YOUTUBE</value></data>
   <data name="Settings_KeyboardShortcutsSection" xml:space="preserve"><value>PHÍM TẮT</value></data>
   <data name="Settings_Language" xml:space="preserve"><value>Ngôn ngữ giao diện</value></data>
   <data name="Settings_LanguageDescription" xml:space="preserve"><value>Thay đổi áp dụng ngay. Mimi sẽ tiếp tục mở rộng phần đã dịch trong Phase 5.</value></data>
@@ -348,4 +421,22 @@
   <data name="TrackCount_Playlist" xml:space="preserve"><value>{0} bài trong danh sách phát này</value></data>
   <data name="TrackCount_RecentlyPlayed" xml:space="preserve"><value>{0} bài đã nghe gần đây</value></data>
   <data name="TrackCount_SearchResults" xml:space="preserve"><value>{0} kết quả tìm kiếm</value></data>
+  <data name="YouTube_InvalidKey" xml:space="preserve"><value>YouTube từ chối key. Hãy dán key YouTube Data API v3 hợp lệ trong Settings.</value></data>
+  <data name="YouTube_Play" xml:space="preserve"><value>Phát</value></data>
+  <data name="YouTube_StopRow" xml:space="preserve"><value>Dừng</value></data>
+  <data name="YouTube_EmbeddingBlocked" xml:space="preserve"><value>Video này không phát được trong Mimi vì chủ video đã tắt nhúng. Dùng nút Mở để xem trên YouTube.</value></data>
+  <data name="YouTube_BridgeUnavailable" xml:space="preserve"><value>Player không báo được vị trí nên thanh thời gian để trống. Hãy mở lại video; nếu vẫn vậy, log có ghi lý do.</value></data>
+  <data name="YouTube_Diagnose" xml:space="preserve"><value>Chẩn đoán player</value></data>
+  <data name="YouTube_DiagnosticFormat" xml:space="preserve"><value>Player báo: {0}</value></data>
+  <data name="YouTube_PlayAll" xml:space="preserve"><value>Phát tất cả</value></data>
+  <data name="YouTube_CopyLink" xml:space="preserve"><value>Sao chép liên kết</value></data>
+  <data name="YouTube_FavoriteAdd" xml:space="preserve"><value>Thêm vào đã lưu</value></data>
+  <data name="YouTube_FavoriteRemove" xml:space="preserve"><value>Bỏ khỏi đã lưu</value></data>
+  <data name="YouTube_FavoriteAdded" xml:space="preserve"><value>Đã lưu vào danh sách YouTube của bạn.</value></data>
+  <data name="YouTube_FavoriteRemoved" xml:space="preserve"><value>Đã bỏ khỏi danh sách YouTube của bạn.</value></data>
+  <data name="YouTube_SavedMarker" xml:space="preserve"><value>Đã lưu</value></data>
+  <data name="YouTube_SavedTab" xml:space="preserve"><value>Đã lưu ({0})</value></data>
+  <data name="YouTube_SearchTab" xml:space="preserve"><value>Kết quả ({0})</value></data>
+  <data name="YouTube_NoSaved" xml:space="preserve"><value>Chưa lưu mục nào. Chuột phải vào một kết quả để lưu.</value></data>
+  <data name="YouTube_LinkCopied" xml:space="preserve"><value>Đã sao chép liên kết.</value></data>
 </root>

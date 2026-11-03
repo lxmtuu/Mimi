@@ -4,6 +4,8 @@ using System.Windows;
 using System.Windows.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using Mimi.Localization;
+using Mimi.Online;
+using Mimi.YouTube;
 using Mimi.Services;
 using Mimi.ViewModels;
 using Serilog;
@@ -132,6 +134,9 @@ public partial class App : Application
         services.AddSingleton<ILibraryService, LibraryService>();
         services.AddSingleton<ILibraryCatalog, SqliteLibraryCatalog>();
         services.AddSingleton<ILyricsService, FileLyricsService>();
+        services.AddSingleton<IRadioStationService, RadioBrowserService>();
+        services.AddSingleton<IOnlineCatalogService, AudiusCatalogService>();
+        services.AddSingleton<IYouTubeSearchService, YouTubeSearchService>();
         services.AddSingleton<ICoverArtOptimizer, CoverArtOptimizer>();
         services.AddSingleton<ILibraryFolderWatcher, FileSystemLibraryFolderWatcher>();
         services.AddSingleton<IFileAssociationService, WindowsFileAssociationService>();

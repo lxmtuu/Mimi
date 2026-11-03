@@ -1,6 +1,7 @@
 using System.Text.Json.Serialization;
 using Mimi.Localization;
 using Mimi.Theming;
+using Mimi.YouTube;
 
 namespace Mimi.Models;
 
@@ -12,12 +13,16 @@ namespace Mimi.Models;
 /// adds mute/shuffle/repeat preferences and the paused playback queue.
 /// Version 4 adds the interface-language preference. Version 5 adds the
 /// interface-theme preference. Version 6 adds per-track lyrics display
-/// offsets. Unknown string values are tolerated here and interpreted
-/// defensively by the app layer.
+/// offsets. Version 7 adds the Internet Radio enable/disable preference.
+/// Version 8 adds the online catalog (in-app search and streaming)
+/// enable/disable preference. Version 9 adds the YouTube search
+/// enable/disable preference.
+/// Unknown string values are tolerated here and interpreted defensively by
+/// the app layer.
 /// </summary>
 public sealed class AppSettings
 {
-    public const int CurrentVersion = 6;
+    public const int CurrentVersion = 10;
 
     public const int MinimumLyricsOffsetMilliseconds = -30000;
 
@@ -49,6 +54,31 @@ public sealed class AppSettings
 
     public bool WatchLibraryFolders { get; set; } = true;
 
+    public bool InternetRadioEnabled { get; set; } = true;
+
+    /// <summary>
+    /// Controls whether the in-app online catalog search is available. The
+    /// catalog is streaming-only: Mimi never downloads, proxies, or caches
+    /// provider audio, and online items never join the local library.
+    /// </summary>
+    public bool OnlineCatalogEnabled { get; set; } = true;
+
+    /// <summary>
+    /// Controls whether in-app YouTube search is available. Search uses the
+    /// user's own Data API key; playback happens only in YouTube's embedded
+    /// player, which stays visible, and Mimi never downloads the media.
+    /// </summary>
+    public bool YouTubeSearchEnabled { get; set; } = true;
+
+    /// <summary>
+    /// YouTube items the user kept. Only ids and display metadata are stored;
+    /// nothing here is media, and none of it joins the local library.
+    /// </summary>
+    public List<SavedYouTubeVideo> YouTubeFavorites { get; set; } = [];
+
+    /// <summary>Upper bound so a mis-edited file cannot grow without limit.</summary>
+    public const int MaximumYouTubeFavorites = 500;
+
     public List<string> WatchedFolders { get; set; } = [];
 
     /// <summary>
@@ -69,6 +99,12 @@ public sealed class AppSettings
     /// Repairs values that are absent, out of range, or unsafe to consume.
     /// settings.json is user-editable, so loading must never trust it blindly.
     /// </summary>
+    private static string? CleanNullableUrl(string? value)
+    {
+        var cleaned = Clean(value, string.Empty, 512);
+        return cleaned.Length == 0 ? null : cleaned;
+    }
+
     public void Normalize()
     {
         Version = CurrentVersion;
@@ -116,6 +152,29 @@ public sealed class AppSettings
         }
 
         LyricsOffsetsByPath = normalizedLyricsOffsets;
+
+        // Saved YouTube items: keep only what can be played again, drop
+        // duplicates, and cap the list so an edited file cannot grow forever.
+        var normalizedFavorites = new List<SavedYouTubeVideo>();
+        var seenVideoIds = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var favorite in YouTubeFavorites ?? [])
+        {
+            if (favorite is null) continue;
+
+            var id = Clean(favorite.VideoId, string.Empty, 32);
+            if (id.Length != 11) continue;
+            if (!seenVideoIds.Add(id)) continue;
+
+            normalizedFavorites.Add(new SavedYouTubeVideo(
+                id,
+                Clean(favorite.Title, "YouTube", 200),
+                Clean(favorite.ChannelTitle, "YouTube", 120),
+                CleanNullableUrl(favorite.ThumbnailUrl)));
+
+            if (normalizedFavorites.Count >= MaximumYouTubeFavorites) break;
+        }
+
+        YouTubeFavorites = normalizedFavorites;
 
         LibraryView ??= new LibraryViewSettings();
         LibraryView.Normalize();

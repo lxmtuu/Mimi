@@ -89,7 +89,11 @@ trước dòng đầu tiên hiển thị trước dòng sắp hát ở vị trí
 - `LyricsTextParserTests`: sắp xếp/mở rộng nhiều timestamp, Enhanced
   LRC, offset của file + delay người dùng và lyrics thường.
 - `FileLyricsServiceTests`: ưu tiên sidecar, fallback embedded, sidecar
-  rỗng và trường hợp không có lyrics.
+  rỗng và trường hợp không có lyrics. Hai test tích hợp dùng
+  `FileLyricsService` mặc định với một file FLAC tối thiểu được chính
+  TagLib# ghi trường `Lyrics`, xác thực cả lời nhúng thường không
+  timestamp lẫn lời nhúng dạng LRC có timestamp qua đường đọc thật,
+  không qua delegate giả.
 - `UserDataServiceTests`: settings v6, clamp/loại bỏ offset 0 và
   migration từ schema cũ.
 - `LocalizationServiceTests`: parity 344 khóa VI/EN và nhãn Lyrics.
@@ -112,5 +116,9 @@ tự bỏ qua bước căn giữa bằng pixel khi gặp cuộn logic. Chủ d�
 kiểm tra lại trên Windows thật và xác nhận hành vi cuộn đã ổn. Hai
 ảnh runtime tiếp theo xác nhận panel lời lớn trên Stage hiển thị và
 chuyển dòng đúng trên Windows thật, gồm cả trạng thái intro khi dòng
-đầu tiên còn ở vị trí kế tiếp. Lượt thử còn lại là một bài chỉ có
-lyrics nhúng không đồng bộ.
+đầu tiên còn ở vị trí kế tiếp. Đường đọc lời nhúng có test tích hợp thật trên Windows CI
+(`41614648545`), và ngày 03/11/2026 chủ dự án đã xác nhận trực tiếp
+trên Windows thật rằng bài chỉ có lyrics nhúng không đồng bộ hiển
+thị đạt. Cùng lượt nghiệm thu đó, tiêu chí dòng `.lrc` khớp nhịp
+trong khoảng ±100 ms sau offset cũng được xác nhận đạt; hai gate
+runtime còn lại của Lyrics coi như đã đóng trên nhánh làm việc.

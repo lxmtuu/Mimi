@@ -161,8 +161,10 @@ public sealed class LyricsFeatureWiringTests
             "Mimi.Core",
             "Models",
             "AppSettings.cs");
+        var expectedSchemaVersion =
+            global::Mimi.Models.AppSettings.CurrentVersion;
         Assert.Contains(
-            "CurrentVersion = 6",
+            $"CurrentVersion = {expectedSchemaVersion}",
             settingsModel,
             StringComparison.Ordinal);
         Assert.Contains(

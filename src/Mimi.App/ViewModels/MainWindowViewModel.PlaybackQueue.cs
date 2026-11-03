@@ -117,13 +117,13 @@ public sealed partial class MainWindowViewModel
     public double TaskbarProgressValue =>
         Math.Clamp(ProgressPercent / 100d, 0, 1);
 
-    public TaskbarItemProgressState TaskbarProgressState => CurrentTrack is null
+    public TaskbarItemProgressState TaskbarProgressState => !HasCurrentPlaybackSource
         ? TaskbarItemProgressState.None
         : IsPlaying
             ? TaskbarItemProgressState.Normal
             : TaskbarItemProgressState.Paused;
 
-    public string TaskbarDescription => CurrentTrack is null
+    public string TaskbarDescription => !HasCurrentPlaybackSource
         ? "Mimi"
         : $"{NowPlayingTitle} — {NowPlayingSubtitle}";
 
@@ -170,10 +170,13 @@ public sealed partial class MainWindowViewModel
             AudioOutputNotice = string.Empty;
     }
 
-    partial void OnIsPlayingChanged(bool value) =>
+    partial void OnIsPlayingChanged(bool value)
+    {
         CurrentTrack?.SetCurrentPlaybackState(
             isCurrentTrack: true,
             isPlaying: value);
+        RefreshRadioStationPlaybackStates();
+    }
 
     private void AudioPlayer_OutputStatusChanged(
         object? sender,
@@ -274,7 +277,7 @@ public sealed partial class MainWindowViewModel
     {
         RefreshAudioOutputStatus(
             ex.Status,
-            playbackInterrupted: CurrentTrack is not null);
+            playbackInterrupted: HasCurrentPlaybackSource);
         RefreshPlaybackState();
         Log.Warning(
             ex,
@@ -304,8 +307,14 @@ public sealed partial class MainWindowViewModel
         RefreshUpcomingQueue();
     }
 
-    private void ApplyEffectiveVolume() =>
+    private void ApplyEffectiveVolume()
+    {
         audioPlayer.Volume = IsMuted ? 0 : (float)Math.Clamp(Volume, 0, 1);
+
+        // The embedded player has its own volume, so it is pushed separately
+        // whenever the slider or the mute button moves.
+        PushYouTubeVolume();
+    }
 
     [RelayCommand]
     private void ToggleMute() => IsMuted = !IsMuted;
@@ -375,7 +384,7 @@ public sealed partial class MainWindowViewModel
     [RelayCommand]
     private void PausePlayback()
     {
-        if (CurrentTrack is not null && audioPlayer.IsPlaying)
+        if (HasCurrentPlaybackSource && audioPlayer.IsPlaying)
             audioPlayer.Pause();
 
         RefreshPlaybackState();
@@ -384,6 +393,16 @@ public sealed partial class MainWindowViewModel
 
     public void SeekToPosition(TimeSpan position)
     {
+        // A video has its own timeline living in the embedded player.
+        if (IsYouTubePlaying)
+        {
+            var limit = youTubeDurationSeconds > 0 ? youTubeDurationSeconds : 0;
+            var target = Math.Clamp(position.TotalSeconds, 0, limit);
+            youTubePositionSeconds = target;
+            RequestEmbeddedPlayer(EmbeddedPlayerCommandKind.Seek, target);
+            return;
+        }
+
         if (CurrentTrack is null || audioPlayer.Duration <= TimeSpan.Zero)
             return;
 
@@ -396,7 +415,9 @@ public sealed partial class MainWindowViewModel
     }
 
     private void SeekRelative(TimeSpan offset) =>
-        SeekToPosition(audioPlayer.CurrentTime + offset);
+        SeekToPosition(IsYouTubePlaying
+            ? TimeSpan.FromSeconds(youTubePositionSeconds) + offset
+            : audioPlayer.CurrentTime + offset);
 
     private void ChangeVolumeBy(double offset)
     {
@@ -459,7 +480,9 @@ public sealed partial class MainWindowViewModel
         var candidates = playbackQueue.GetNextCandidates();
         if (candidates.Count == 0)
         {
-            if (CurrentTrack is null)
+            // A finished online session owns playback state; the local
+            // library must not be started behind the user's back.
+            if (CurrentTrack is null && !hasOnlineSession)
             {
                 var fallback = SelectedTrack ??
                                TracksView.Cast<TrackItemViewModel>().FirstOrDefault();

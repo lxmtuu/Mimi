@@ -14,6 +14,8 @@ using Mimi.Core.Playback;
 using Mimi.Core.Text;
 using Mimi.Localization;
 using Mimi.Models;
+using Mimi.Online;
+using Mimi.YouTube;
 using Mimi.Services;
 using Serilog;
 
@@ -116,6 +118,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     private TrackItemViewModel? selectedTrack;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasCurrentPlaybackSource))]
     [NotifyPropertyChangedFor(nameof(TaskbarProgressState))]
     [NotifyPropertyChangedFor(nameof(TaskbarDescription))]
     private TrackItemViewModel? currentTrack;
@@ -235,7 +238,10 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         IFileAssociationService? fileAssociationService = null,
         LocalizationService? localizationService = null,
         ThemeService? themeService = null,
-        ILyricsService? lyricsService = null)
+        ILyricsService? lyricsService = null,
+        IRadioStationService? radioStationService = null,
+        IOnlineCatalogService? onlineCatalogService = null,
+        IYouTubeSearchService? youtubeSearchService = null)
     {
         this.audioPlayer = audioPlayer;
         this.libraryService = libraryService;
@@ -247,6 +253,9 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         this.fileAssociationService = fileAssociationService;
         this.themeService = themeService;
         this.lyricsService = lyricsService;
+        this.radioStationService = radioStationService;
+        this.onlineCatalogService = onlineCatalogService;
+        this.youtubeSearchService = youtubeSearchService;
         Loc = localizationService ?? new LocalizationService();
 
         TracksView = CollectionViewSource.GetDefaultView(Tracks);
@@ -460,6 +469,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         if (value is not null)
         {
             IsSettingsOpen = false;
+            IsRadioOpen = false;
             _ = ShowPlaylistAsync(value);
             SaveSettings();
             return;
@@ -495,7 +505,23 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     {
         // Timer-driven updates always run under changingProgress, so any
         // remaining change is user input - mouse or keyboard alike.
-        if (changingProgress || audioPlayer.Duration <= TimeSpan.Zero) return;
+        if (changingProgress) return;
+
+        if (IsYouTubePlaying)
+        {
+            // Before the first report the duration is unknown, so there is
+            // nothing meaningful to seek within yet.
+            if (youTubeDurationSeconds > 0)
+            {
+                RequestEmbeddedPlayer(
+                    EmbeddedPlayerCommandKind.Seek,
+                    youTubeDurationSeconds * Math.Clamp(value, 0, 100) / 100d);
+            }
+
+            return;
+        }
+
+        if (audioPlayer.Duration <= TimeSpan.Zero) return;
 
         audioPlayer.Seek(TimeSpan.FromSeconds(
             audioPlayer.Duration.TotalSeconds * value / 100d));
@@ -506,6 +532,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     private void ShowHome()
     {
         IsSettingsOpen = false;
+        IsRadioOpen = false;
         SelectedPlaylist = null;
         ActiveView = LibraryViewMode.Library;
         SearchText = string.Empty;
@@ -516,6 +543,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     private void ShowLibrary()
     {
         IsSettingsOpen = false;
+        IsRadioOpen = false;
         SelectedPlaylist = null;
         ActiveView = LibraryViewMode.Library;
     }
@@ -524,6 +552,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     private void ToggleFavoritesView()
     {
         IsSettingsOpen = false;
+        IsRadioOpen = false;
         SelectedPlaylist = null;
         ActiveView = ActiveView == LibraryViewMode.Favorites
             ? LibraryViewMode.Library
@@ -534,6 +563,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     private void ShowRecent()
     {
         IsSettingsOpen = false;
+        IsRadioOpen = false;
         SelectedPlaylist = null;
         ActiveView = LibraryViewMode.Recent;
     }
@@ -544,6 +574,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         if (playlist is null) return;
 
         IsSettingsOpen = false;
+        IsRadioOpen = false;
 
         if (SelectedPlaylist != playlist)
             SelectedPlaylist = playlist;
@@ -822,6 +853,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         if (IsScanning) return;
 
         IsSettingsOpen = false;
+        IsRadioOpen = false;
         var fileNames = dialogService.PickAudioFiles();
         if (fileNames.Count > 0)
             await ScanAndAddFilesAsync(fileNames);
@@ -833,6 +865,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         if (IsScanning) return;
 
         IsSettingsOpen = false;
+        IsRadioOpen = false;
         var folder = dialogService.PickMusicFolder();
         if (string.IsNullOrWhiteSpace(folder)) return;
 
@@ -850,6 +883,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         if (paths is null || paths.Length == 0 || IsScanning) return;
 
         IsSettingsOpen = false;
+        IsRadioOpen = false;
         var files = paths.Where(File.Exists).ToArray();
         var folders = paths.Where(Directory.Exists).ToArray();
         var skippedDirectories = 0;
@@ -883,6 +917,46 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     [RelayCommand]
     private void PlayPause()
     {
+        if (CurrentRadioStation is not null)
+        {
+            if (audioPlayer.IsPlaying)
+                audioPlayer.Pause();
+            else
+                _ = StartRadioStationAsync(
+                    CurrentRadioStation,
+                    registerClick: false);
+
+            RefreshPlaybackState();
+            RefreshRadioStationPlaybackStates();
+            return;
+        }
+
+        // A visible YouTube player owns the audible surface: the transport
+        // controls that player rather than starting a local track underneath
+        // the video. Stopping stays on the player's own Stop button and on the
+        // result row that is currently playing.
+        if (IsYouTubePlaying)
+        {
+            RequestEmbeddedPlayer(isYouTubeVideoPlaying
+                ? EmbeddedPlayerCommandKind.Pause
+                : EmbeddedPlayerCommandKind.Play);
+            return;
+        }
+
+        // The YouTube panel keeps a selection after a video ends or is stopped.
+        // Play there must resume that video, not fall through to the local
+        // library, which is what used to happen and looked like a view switch.
+        if (IsYouTubeOpen && SelectedYouTubeVideo is { } youTubeSelection)
+        {
+            StartYouTubeVideo(youTubeSelection);
+            return;
+        }
+
+        // The online catalog has its own session state: resuming or
+        // replays the online selection instead of picking up a local track.
+        if (TryToggleOnlinePlayback())
+            return;
+
         if (CurrentTrack is null)
         {
             if (!TryPlayNextFromQueue(showErrors: false) &&
@@ -926,10 +1000,22 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     }
 
     [RelayCommand]
-    private void Previous() => TryPlayPreviousFromQueue();
+    private void Previous()
+    {
+        if (TryHandleYouTubeNavigation(-1)) return;
+        if (TryHandleRadioStationNavigation(-1)) return;
+        if (TryHandleOnlineTrackNavigation(-1)) return;
+        TryPlayPreviousFromQueue();
+    }
 
     [RelayCommand]
-    private void Next() => TryPlayNextFromQueue(showErrors: true);
+    private void Next()
+    {
+        if (TryHandleYouTubeNavigation(1)) return;
+        if (TryHandleRadioStationNavigation(1)) return;
+        if (TryHandleOnlineTrackNavigation(1)) return;
+        TryPlayNextFromQueue(showErrors: true);
+    }
 
     [RelayCommand]
     private async Task ToggleFavorite(TrackItemViewModel? track)
@@ -2444,6 +2530,8 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     {
         var loaded = false;
         var switchStarted = Stopwatch.GetTimestamp();
+        BeginLocalPlaybackAttempt();
+        hasOnlineSession = false;
         try
         {
             audioPlayer.Load(track.FilePath);
@@ -2687,6 +2775,18 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
 
     private void AdvanceAfterPlaybackEnded(TrackItemViewModel? endedTrack)
     {
+        // An online track is not a local track, but it is finite: finishing it
+        // should move on to the next visible result. When the results run out
+        // the session ends on the online surface; it must never hand playback
+        // to whichever local song happens to be selected.
+        if (endedTrack is null && hasOnlineSession)
+        {
+            if (!TryAdvanceOnlineTrack())
+                ShowOnlineSessionEnded();
+
+            return;
+        }
+
         if (disposed || endedTrack is null ||
             !ReferenceEquals(CurrentTrack, endedTrack))
         {
@@ -2778,8 +2878,26 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
 
     private void RefreshPlaybackPosition()
     {
+        // The embedded player reports its own position; running the NAudio
+        // timeline over it would pin the bar to 0:00.
+        if (IsYouTubePlaying)
+        {
+            RefreshPlaybackState();
+            return;
+        }
+
         var duration = audioPlayer.Duration;
         var position = audioPlayer.CurrentTime;
+
+        if (CurrentRadioStation is not null)
+        {
+            if (!userSeeking)
+                SetProgressPercent(0);
+            CurrentTimeLabel = FormatTime(position);
+            DurationLabel = Loc["Radio_Live"];
+            RefreshPlaybackState();
+            return;
+        }
 
         if (!userSeeking && duration.TotalSeconds > 0)
         {
@@ -2797,8 +2915,13 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
 
     private void RefreshPlaybackState()
     {
-        IsPlaying = audioPlayer.IsPlaying;
-        if (IsPlaying && AudioOutputNotice.Length != 0)
+        // While a video owns the surface, the play/pause icon describes the
+        // video, not the local pipeline that is deliberately idle.
+        IsPlaying = IsYouTubePlaying
+            ? isYouTubeVideoPlaying
+            : audioPlayer.IsPlaying;
+
+        if (!IsYouTubePlaying && IsPlaying && AudioOutputNotice.Length != 0)
             AudioOutputNotice = string.Empty;
     }
 
@@ -2929,6 +3052,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         disposed = true;
 
         lifetimeCancellation.Cancel();
+        CancelRadioWork();
         scanCancellation?.Cancel();
         searchCancellation?.Cancel();
         CancelLyricsLoad();

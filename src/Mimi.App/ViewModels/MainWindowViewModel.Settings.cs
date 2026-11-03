@@ -9,6 +9,7 @@ using Mimi.Localization;
 using Mimi.Models;
 using Mimi.Theming;
 using Serilog;
+using Mimi.YouTube;
 
 namespace Mimi.ViewModels;
 
@@ -28,6 +29,7 @@ public sealed partial class MainWindowViewModel
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsLibraryContentVisible))]
+    [NotifyPropertyChangedFor(nameof(IsRadioContentVisible))]
     private bool isSettingsOpen;
 
     [ObservableProperty]
@@ -49,9 +51,22 @@ public sealed partial class MainWindowViewModel
     private bool autoUpgradeLegacyCoverArt = true;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsRadioAvailable))]
+    private bool internetRadioEnabled = true;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsOnlineAvailable))]
+    private bool onlineCatalogEnabled = true;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsYouTubeAvailable))]
+    private bool youTubeSearchEnabled = true;
+
+    [ObservableProperty]
     private WindowPlacementSettings windowPlacement = new();
 
-    public bool IsLibraryContentVisible => !IsSettingsOpen;
+    public bool IsLibraryContentVisible =>
+        !IsSettingsOpen && !IsRadioOpen && !IsOnlineOpen && !IsYouTubeOpen;
 
     public string VolumePercentLabel => $"{Volume:P0}";
 
@@ -93,6 +108,16 @@ public sealed partial class MainWindowViewModel
         RestoreLibraryView = settings.RestoreLibraryView;
         RestoreWindowPlacement = settings.RestoreWindowPlacement;
         AutoUpgradeLegacyCoverArt = settings.AutoUpgradeLegacyCoverArt;
+        InternetRadioEnabled = settings.InternetRadioEnabled;
+        OnlineCatalogEnabled = settings.OnlineCatalogEnabled;
+        YouTubeSearchEnabled = settings.YouTubeSearchEnabled;
+
+        SavedYouTubeVideos.Clear();
+        foreach (var favorite in settings.YouTubeFavorites)
+            SavedYouTubeVideos.Add(new YouTubeVideoItemViewModel(favorite.ToVideo()));
+
+        RefreshYouTubeFavoriteStates();
+        OnPropertyChanged(nameof(YouTubeListToggleLabel));
         WatchLibraryFolders = settings.WatchLibraryFolders;
         WatchedFolders.Clear();
         foreach (var folder in settings.WatchedFolders)
@@ -209,6 +234,7 @@ public sealed partial class MainWindowViewModel
         OnPropertyChanged(nameof(QueueStatusLabel));
         OnPropertyChanged(nameof(OpenWithMimiStatusLabel));
         RefreshLyricsLocalizedLabels();
+        RefreshRadioStatusLabel();
         NotifySortLabelsChanged();
         RefreshPlaybackStateFilterOptions();
         RefreshFilterOptions();
@@ -222,7 +248,11 @@ public sealed partial class MainWindowViewModel
         foreach (var playlist in Playlists)
             playlist.RefreshLocalizedLabels();
 
-        if (CurrentTrack is null)
+        if (CurrentRadioStation is not null)
+        {
+            RefreshRadioLocalizedLabels();
+        }
+        else if (CurrentTrack is null)
         {
             NowPlayingTitle = Loc["NowPlaying_ChooseSong"];
             NowPlayingSubtitle = Loc["NowPlaying_NextFavoriteWaiting"];
@@ -262,6 +292,33 @@ public sealed partial class MainWindowViewModel
             QueueLegacyCoverArtUpgrade();
     }
 
+    partial void OnInternetRadioEnabledChanged(bool value)
+    {
+        if (!value)
+            DisableInternetRadio();
+
+        if (settingsLoaded && !isRestoringSettings)
+            SaveSettings();
+    }
+
+    partial void OnOnlineCatalogEnabledChanged(bool value)
+    {
+        if (!value)
+            DisableOnlineCatalog();
+
+        if (settingsLoaded && !isRestoringSettings)
+            SaveSettings();
+    }
+
+    partial void OnYouTubeSearchEnabledChanged(bool value)
+    {
+        if (!value)
+            DisableYouTube();
+
+        if (settingsLoaded && !isRestoringSettings)
+            SaveSettings();
+    }
+
     partial void OnWindowPlacementChanged(WindowPlacementSettings value)
     {
         if (settingsLoaded && !isRestoringSettings)
@@ -282,7 +339,17 @@ public sealed partial class MainWindowViewModel
     }
 
     [RelayCommand]
-    private void OpenSettings() => IsSettingsOpen = true;
+    private void OpenSettings()
+    {
+        IsRadioOpen = false;
+        IsOnlineOpen = false;
+        IsYouTubeOpen = false;
+        IsSettingsOpen = true;
+
+        // Settings shows where the key file lives, so it is the natural place
+        // to notice a key the user just added.
+        RefreshYouTubeAvailability();
+    }
 
     [RelayCommand]
     private void CloseSettings() => IsSettingsOpen = false;
@@ -413,6 +480,17 @@ public sealed partial class MainWindowViewModel
         settings.RestoreLibraryView = RestoreLibraryView;
         settings.RestoreWindowPlacement = RestoreWindowPlacement;
         settings.AutoUpgradeLegacyCoverArt = AutoUpgradeLegacyCoverArt;
+        settings.InternetRadioEnabled = InternetRadioEnabled;
+        settings.OnlineCatalogEnabled = OnlineCatalogEnabled;
+        settings.YouTubeSearchEnabled = YouTubeSearchEnabled;
+        settings.YouTubeFavorites =
+        [
+            .. SavedYouTubeVideos.Select(saved => new SavedYouTubeVideo(
+                saved.VideoId,
+                saved.Title,
+                saved.ChannelTitle,
+                saved.ThumbnailUrl?.AbsoluteUri))
+        ];
         settings.WatchLibraryFolders = WatchLibraryFolders;
         settings.WatchedFolders = [.. WatchedFolders];
         settings.WindowPlacement = RestoreWindowPlacement
@@ -461,10 +539,13 @@ public sealed partial class MainWindowViewModel
                 UpcomingTrackPaths = queueSnapshot.UpcomingPaths
             };
         }
-        else
+        else if (CurrentRadioStation is null)
         {
             settings.PlaybackSession = null;
         }
+        // Internet Radio is session-only. While a station is current, keep
+        // any previously saved local session untouched instead of writing a
+        // stream URL or erasing the local song merely because Radio opened.
     }
 
     private void RestorePersistedState()

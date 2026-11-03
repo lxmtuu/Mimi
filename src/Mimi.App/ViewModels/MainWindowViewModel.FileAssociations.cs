@@ -215,6 +215,7 @@ public sealed partial class MainWindowViewModel
             if (disposed) return;
 
             IsSettingsOpen = false;
+            IsRadioOpen = false;
             var files = paths.Where(File.Exists).ToArray();
             var folders = paths.Where(Directory.Exists).ToArray();
             var supportedFiles = files

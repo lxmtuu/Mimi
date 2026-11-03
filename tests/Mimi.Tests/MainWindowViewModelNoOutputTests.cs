@@ -1012,6 +1012,311 @@ public sealed class MainWindowViewModelNoOutputTests
         }
     }
 
+    [Fact]
+    public void RadioPlayback_UsesSeparateLiveSource_RegistersOneClick_AndLocalTrackRetakesPlayback()
+    {
+        RunOnSta(() =>
+        {
+            var stationUuid = Guid.Parse("11111111-1111-1111-1111-111111111111");
+            var station = new RadioStation(
+                stationUuid,
+                "Mimi Wave",
+                new Uri("https://stream.example/live.mp3"),
+                new Uri("https://station.example/"),
+                null,
+                "Japan",
+                "Japanese",
+                ["anime"],
+                "MP3",
+                128,
+                10,
+                20);
+            var radio = new FakeRadioStationService
+            {
+                TopStations = [station]
+            };
+            var audio = new FakeAudioPlayer
+            {
+                OutputStatus = new AudioOutputStatus(
+                    isAvailable: true,
+                    AudioOutputKind.WasapiShared,
+                    "Test Speakers",
+                    "Audio output is ready.")
+            };
+            var viewModel = new MainWindowViewModel(
+                audio,
+                new FakeLibraryService(),
+                new FakeLibraryCatalog(),
+                new FakeUserDataService(),
+                new FakeDialogService(),
+                radioStationService: radio);
+
+            try
+            {
+                viewModel.InitializationTask.GetAwaiter().GetResult();
+
+                PumpDispatcherUntilCompleted(
+                    viewModel.ShowRadioCommand.ExecuteAsync(null));
+
+                Assert.True(viewModel.IsRadioOpen);
+                Assert.True(viewModel.IsRadioContentVisible);
+                Assert.False(viewModel.IsLibraryContentVisible);
+                Assert.Equal(1, radio.TopCalls);
+                var stationViewModel = Assert.Single(viewModel.RadioStations);
+
+                PumpDispatcherUntilCompleted(
+                    viewModel.PlayRadioStationCommand.ExecuteAsync(stationViewModel));
+
+                Assert.Same(stationViewModel, viewModel.CurrentRadioStation);
+                Assert.Null(viewModel.CurrentTrack);
+                Assert.True(viewModel.HasCurrentPlaybackSource);
+                Assert.True(viewModel.IsLivePlayback);
+                Assert.True(viewModel.IsPlaying);
+                Assert.Equal(1, audio.StreamLoadCalls);
+                Assert.Equal(1, audio.PlayCalls);
+                Assert.Equal(station.StreamUrl, audio.LoadedStreamUrl);
+                Assert.Equal([stationUuid], radio.Clicks);
+                Assert.Equal("Mimi Wave", viewModel.NowPlayingTitle);
+                Assert.Contains("Internet Radio", viewModel.NowPlayingSubtitle);
+                Assert.Equal("LIVE", viewModel.DurationLabel);
+                Assert.True(stationViewModel.IsCurrent);
+                Assert.True(stationViewModel.IsPlaying);
+
+                PumpDispatcherUntilCompleted(
+                    viewModel.PlayRadioStationCommand.ExecuteAsync(stationViewModel));
+
+                Assert.False(viewModel.IsPlaying);
+                Assert.Equal(1, audio.StreamLoadCalls);
+                Assert.Single(radio.Clicks);
+
+                viewModel.PlayPauseCommand.Execute(null);
+                PumpDispatcherUntil(() =>
+                    audio.StreamLoadCalls == 2 &&
+                    viewModel.IsPlaying &&
+                    !viewModel.IsRadioConnecting);
+
+                Assert.Equal(2, audio.PlayCalls);
+                Assert.Single(radio.Clicks);
+
+                var localTrack = new TrackItemViewModel(
+                    new Track
+                    {
+                        FilePath = @"C:\fixtures\local.wav",
+                        MetadataTitle = "Local Signal",
+                        Duration = TimeSpan.FromSeconds(30)
+                    },
+                    isFavorite: false);
+                viewModel.Tracks.Add(localTrack);
+
+                viewModel.PlayTrackCommand.Execute(localTrack);
+
+                Assert.Same(localTrack, viewModel.CurrentTrack);
+                Assert.Null(viewModel.CurrentRadioStation);
+                Assert.False(viewModel.IsLivePlayback);
+                Assert.Equal(1, audio.LoadCalls);
+                Assert.Equal(3, audio.PlayCalls);
+                Assert.Single(radio.Clicks);
+                Assert.False(stationViewModel.IsCurrent);
+                Assert.False(stationViewModel.IsPlaying);
+            }
+            finally
+            {
+                viewModel.Dispose();
+            }
+        });
+    }
+
+    [Fact]
+    public void RadioPlayback_StaleStreamLoadCannotOverwriteLocalTrackThatRetakesPlayback()
+    {
+        RunOnSta(() =>
+        {
+            var stationUuid = Guid.Parse("22222222-2222-2222-2222-222222222222");
+            var station = new RadioStation(
+                stationUuid,
+                "Slow Wave",
+                new Uri("https://stream.example/slow.mp3"),
+                new Uri("https://station.example/"),
+                null,
+                "Japan",
+                "Japanese",
+                ["anime"],
+                "MP3",
+                128,
+                10,
+                20);
+            var radio = new FakeRadioStationService
+            {
+                TopStations = [station]
+            };
+            using var streamLoadStarted = new ManualResetEventSlim(false);
+            using var streamLoadRelease = new ManualResetEventSlim(false);
+            var audio = new FakeAudioPlayer
+            {
+                OutputStatus = new AudioOutputStatus(
+                    isAvailable: true,
+                    AudioOutputKind.WasapiShared,
+                    "Test Speakers",
+                    "Audio output is ready."),
+                StreamLoadStarted = streamLoadStarted,
+                StreamLoadRelease = streamLoadRelease
+            };
+            var viewModel = new MainWindowViewModel(
+                audio,
+                new FakeLibraryService(),
+                new FakeLibraryCatalog(),
+                new FakeUserDataService(),
+                new FakeDialogService(),
+                radioStationService: radio);
+
+            try
+            {
+                viewModel.InitializationTask.GetAwaiter().GetResult();
+
+                PumpDispatcherUntilCompleted(
+                    viewModel.ShowRadioCommand.ExecuteAsync(null));
+                var stationViewModel = Assert.Single(viewModel.RadioStations);
+
+                var localTrack = new TrackItemViewModel(
+                    new Track
+                    {
+                        FilePath = @"C:\fixtures\retake.wav",
+                        MetadataTitle = "Local Retake",
+                        Duration = TimeSpan.FromSeconds(30)
+                    },
+                    isFavorite: false);
+                viewModel.Tracks.Add(localTrack);
+
+                var radioTask =
+                    viewModel.PlayRadioStationCommand.ExecuteAsync(stationViewModel);
+                PumpDispatcherUntil(() => streamLoadStarted.IsSet);
+
+                // Release the blocked stream load from another thread. The
+                // local retake may have to wait for that in-flight load, but
+                // it must be the final source loaded into the player.
+                var releaseTask = Task.Run(async () =>
+                {
+                    await Task.Delay(100);
+                    streamLoadRelease.Set();
+                });
+
+                viewModel.PlayTrackCommand.Execute(localTrack);
+                PumpDispatcherUntilCompleted(radioTask);
+                releaseTask.GetAwaiter().GetResult();
+
+                Assert.Same(localTrack, viewModel.CurrentTrack);
+                Assert.Null(viewModel.CurrentRadioStation);
+                Assert.False(viewModel.IsLivePlayback);
+                Assert.True(viewModel.IsPlaying);
+                Assert.Equal(1, audio.StreamLoadCalls);
+                Assert.Equal(1, audio.LoadCalls);
+                Assert.Equal(1, audio.PlayCalls);
+                Assert.False(audio.IsLiveStream);
+                Assert.Null(audio.LoadedStreamUrl);
+                Assert.Empty(radio.Clicks);
+                Assert.False(stationViewModel.IsCurrent);
+                Assert.False(stationViewModel.IsPlaying);
+            }
+            finally
+            {
+                streamLoadRelease.Set();
+                viewModel.Dispose();
+            }
+        });
+    }
+
+    [Fact]
+    public void InternetRadioKillSwitch_HidesRadioStopsPlaybackAndBlocksReopen()
+    {
+        RunOnSta(() =>
+        {
+            var stationUuid = Guid.Parse("33333333-3333-3333-3333-333333333333");
+            var station = new RadioStation(
+                stationUuid,
+                "Kill Switch Wave",
+                new Uri("https://stream.example/kill-switch.mp3"),
+                new Uri("https://station.example/"),
+                null,
+                "Japan",
+                "Japanese",
+                ["anime"],
+                "MP3",
+                128,
+                10,
+                20);
+            var radio = new FakeRadioStationService
+            {
+                TopStations = [station]
+            };
+            var audio = new FakeAudioPlayer
+            {
+                OutputStatus = new AudioOutputStatus(
+                    isAvailable: true,
+                    AudioOutputKind.WasapiShared,
+                    "Test Speakers",
+                    "Audio output is ready.")
+            };
+            var viewModel = new MainWindowViewModel(
+                audio,
+                new FakeLibraryService(),
+                new FakeLibraryCatalog(),
+                new FakeUserDataService(),
+                new FakeDialogService(),
+                radioStationService: radio);
+
+            try
+            {
+                viewModel.InitializationTask.GetAwaiter().GetResult();
+
+                PumpDispatcherUntilCompleted(
+                    viewModel.ShowRadioCommand.ExecuteAsync(null));
+                var stationViewModel = Assert.Single(viewModel.RadioStations);
+
+                PumpDispatcherUntilCompleted(
+                    viewModel.PlayRadioStationCommand.ExecuteAsync(stationViewModel));
+
+                Assert.True(viewModel.IsRadioServiceInstalled);
+                Assert.True(viewModel.IsRadioAvailable);
+                Assert.True(viewModel.IsRadioOpen);
+                Assert.Same(stationViewModel, viewModel.CurrentRadioStation);
+                Assert.True(viewModel.IsPlaying);
+                Assert.Equal(1, radio.TopCalls);
+
+                viewModel.InternetRadioEnabled = false;
+
+                Assert.True(viewModel.IsRadioServiceInstalled);
+                Assert.False(viewModel.IsRadioAvailable);
+                Assert.False(viewModel.IsRadioOpen);
+                Assert.False(viewModel.IsRadioContentVisible);
+                Assert.True(viewModel.IsLibraryContentVisible);
+                Assert.Null(viewModel.CurrentRadioStation);
+                Assert.False(viewModel.IsPlaying);
+                Assert.False(audio.IsPlaying);
+                Assert.False(stationViewModel.IsCurrent);
+                Assert.False(stationViewModel.IsPlaying);
+
+                PumpDispatcherUntilCompleted(
+                    viewModel.ShowRadioCommand.ExecuteAsync(null));
+
+                Assert.False(viewModel.IsRadioOpen);
+                Assert.Equal(1, radio.TopCalls);
+
+                viewModel.InternetRadioEnabled = true;
+                PumpDispatcherUntilCompleted(
+                    viewModel.ShowRadioCommand.ExecuteAsync(null));
+
+                Assert.True(viewModel.IsRadioAvailable);
+                Assert.True(viewModel.IsRadioOpen);
+                Assert.True(viewModel.IsRadioContentVisible);
+                Assert.Equal(1, radio.TopCalls);
+            }
+            finally
+            {
+                viewModel.Dispose();
+            }
+        });
+    }
+
     private static void RunOnSta(Action action)
     {
         Exception? failure = null;
@@ -1048,6 +1353,22 @@ public sealed class MainWindowViewModelNoOutputTests
         }
 
         task.GetAwaiter().GetResult();
+    }
+
+    private static void PumpDispatcherUntil(Func<bool> condition)
+    {
+        var deadline = DateTime.UtcNow.AddSeconds(5);
+        while (!condition())
+        {
+            if (DateTime.UtcNow >= deadline)
+                Assert.Fail("Timed out waiting for the dispatcher condition.");
+
+            var frame = new DispatcherFrame();
+            Dispatcher.CurrentDispatcher.BeginInvoke(
+                DispatcherPriority.Background,
+                new Action(() => frame.Continue = false));
+            Dispatcher.PushFrame(frame);
+        }
     }
 
     private sealed class RecoveryWavePlayer : IWavePlayer
@@ -1101,13 +1422,19 @@ public sealed class MainWindowViewModelNoOutputTests
 
         public long PlaybackGeneration { get; private set; }
         public bool IsPlaying { get; private set; }
+        public bool IsLiveStream { get; private set; }
         public TimeSpan CurrentTime { get; private set; }
         public TimeSpan Duration { get; private set; }
         public float Volume { get; set; }
         public AudioOutputStatus OutputStatus { get; set; }
         public AudioOutputUnavailableException? PlayFailure { get; set; }
         public int LoadCalls { get; private set; }
+        public int StreamLoadCalls { get; private set; }
         public int PlayCalls { get; private set; }
+        public Uri? LoadedStreamUrl { get; private set; }
+        public Exception? StreamLoadFailure { get; set; }
+        public ManualResetEventSlim? StreamLoadStarted { get; set; }
+        public ManualResetEventSlim? StreamLoadRelease { get; set; }
 
         public void Load(string path)
         {
@@ -1116,6 +1443,43 @@ public sealed class MainWindowViewModelNoOutputTests
             CurrentTime = TimeSpan.Zero;
             Duration = TimeSpan.FromSeconds(30);
             IsPlaying = false;
+            IsLiveStream = false;
+            LoadedStreamUrl = null;
+        }
+
+        public int RemoteStreamLoadCalls { get; private set; }
+
+        public void LoadStream(Uri streamUrl)
+        {
+            StreamLoadCalls++;
+            StreamLoadStarted?.Set();
+            StreamLoadRelease?.Wait(TimeSpan.FromSeconds(10));
+            if (StreamLoadFailure is not null)
+                throw StreamLoadFailure;
+
+            PlaybackGeneration++;
+            LoadedStreamUrl = streamUrl;
+            CurrentTime = TimeSpan.Zero;
+            Duration = TimeSpan.Zero;
+            IsPlaying = false;
+            IsLiveStream = true;
+        }
+
+        /// <summary>
+        /// Finite online sources keep a real duration, unlike live radio.
+        /// </summary>
+        public void LoadRemoteAudio(Uri audioUrl)
+        {
+            RemoteStreamLoadCalls++;
+            if (StreamLoadFailure is not null)
+                throw StreamLoadFailure;
+
+            PlaybackGeneration++;
+            LoadedStreamUrl = audioUrl;
+            CurrentTime = TimeSpan.Zero;
+            Duration = TimeSpan.FromSeconds(180);
+            IsPlaying = false;
+            IsLiveStream = false;
         }
 
         public void Play()
@@ -1170,6 +1534,42 @@ public sealed class MainWindowViewModelNoOutputTests
         {
             PlaybackChanged = null;
             OutputStatusChanged = null;
+        }
+    }
+
+    private sealed class FakeRadioStationService : IRadioStationService
+    {
+        public IReadOnlyList<RadioStation> TopStations { get; init; } = [];
+        public List<string> Searches { get; } = [];
+        public List<Guid> Clicks { get; } = [];
+        public int TopCalls { get; private set; }
+
+        public Task<IReadOnlyList<RadioStation>> GetTopStationsAsync(
+            CancellationToken cancellationToken = default)
+        {
+            TopCalls++;
+            return Task.FromResult(TopStations);
+        }
+
+        public Task<IReadOnlyList<RadioStation>> SearchStationsAsync(
+            string query,
+            CancellationToken cancellationToken = default)
+        {
+            Searches.Add(query);
+            return Task.FromResult<IReadOnlyList<RadioStation>>(
+                TopStations
+                    .Where(station => station.Name.Contains(
+                        query,
+                        StringComparison.OrdinalIgnoreCase))
+                    .ToArray());
+        }
+
+        public Task RegisterStationClickAsync(
+            Guid stationUuid,
+            CancellationToken cancellationToken = default)
+        {
+            Clicks.Add(stationUuid);
+            return Task.CompletedTask;
         }
     }
 
