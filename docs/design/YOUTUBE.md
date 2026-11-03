@@ -124,6 +124,13 @@ quy trình của Google.
     vòng khi hết danh sách, `Off` dừng ở cuối; shuffle chọn ngẫu nhiên một kết
     quả khác;
   - **Phát tất cả** bắt đầu danh sách từ mục đang chọn, giống một playlist.
+- **Cầu nối không được phép treo**: lệnh `ExecuteScriptAsync` phát ra đúng lúc
+  trang đang điều hướng có thể không bao giờ trả về. Mỗi lần đọc trạng thái có
+  watchdog 2,5 giây, và cờ "đang đọc" được xoá khi `NavigationCompleted`, nên
+  một lần lỗi không làm timeline chết vĩnh viễn. Trang cũng trả `problem`
+  (`api-missing` / `player-missing`) thay vì `null` để log nói rõ vì sao.
+- Nút Play/Pause gửi lệnh **`toggle`**: trang tự đọc trạng thái và lật, nên báo
+  cáo cũ không thể biến nút thành nút không làm gì.
 - Không còn chuyện đồng hồ NAudio ghi đè lên timeline của video:
   `RefreshPlaybackPosition` thoát sớm khi `IsYouTubePlaying`.
 - Video chạy hết → player báo `state = 0` → Mimi đóng player, visualizer trở

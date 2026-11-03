@@ -937,9 +937,9 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         // result row that is currently playing.
         if (IsYouTubePlaying)
         {
-            RequestEmbeddedPlayer(isYouTubeVideoPlaying
-                ? EmbeddedPlayerCommandKind.Pause
-                : EmbeddedPlayerCommandKind.Play);
+            // The page decides whether this means play or pause, so a stale
+            // report cannot turn the button into a no-op.
+            RequestEmbeddedPlayer(EmbeddedPlayerCommandKind.Toggle);
             return;
         }
 

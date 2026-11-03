@@ -103,8 +103,10 @@ public sealed class YouTubeFeatureWiringTests
         Assert.Contains("if (IsYouTubePlaying)", main, StringComparison.Ordinal);
         // The transport hands playback to the video; the Stop button and the
         // row toggle are what tear the player down.
+        // The page flips its own state, so a stale report cannot turn the
+        // Play button into a no-op.
         Assert.Contains(
-            "RequestEmbeddedPlayer(isYouTubeVideoPlaying",
+            "RequestEmbeddedPlayer(EmbeddedPlayerCommandKind.Toggle)",
             main,
             StringComparison.Ordinal);
         Assert.Contains(
@@ -175,8 +177,10 @@ public sealed class YouTubeFeatureWiringTests
         var main = Read(root, "src", "Mimi.App", "ViewModels", "MainWindowViewModel.cs");
         // The play/pause button toggles the video instead of stopping it, and
         // the NAudio timeline stops writing over the video's timeline.
+        // The page flips its own state, so a stale report cannot turn the
+        // Play button into a no-op.
         Assert.Contains(
-            "RequestEmbeddedPlayer(isYouTubeVideoPlaying",
+            "RequestEmbeddedPlayer(EmbeddedPlayerCommandKind.Toggle)",
             main,
             StringComparison.Ordinal);
         // Slider input seeks the video rather than a silent local player.
@@ -313,6 +317,33 @@ public sealed class YouTubeFeatureWiringTests
         Assert.Contains(
             "YouTube_ReferrerRejected",
             Read(root, "src", "Mimi.App", "ViewModels", "MainWindowViewModel.YouTube.cs"),
+            StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void ThePlayerPollCannotGetStuckAndSaysWhyItIsEmpty()
+    {
+        var root = FindRepositoryRoot();
+        var codeBehind = Read(root, "src", "Mimi.App", "MainWindow.xaml.cs");
+
+        // A script call issued while the page navigates can stay pending. If
+        // the in-flight flag is never cleared, the timeline looks dead while
+        // the video keeps playing.
+        Assert.Contains("Task.WhenAny(", codeBehind, StringComparison.Ordinal);
+        Assert.Contains("NavigationCompleted", codeBehind, StringComparison.Ordinal);
+        Assert.Contains("youTubePollInFlight = false;", codeBehind, StringComparison.Ordinal);
+
+        // The page reports why it has no state instead of returning null, so a
+        // missing player can be told apart from a slow one.
+        Assert.Contains("problem: 'api-missing'", codeBehind, StringComparison.Ordinal);
+        Assert.Contains("problem: 'player-missing'", codeBehind, StringComparison.Ordinal);
+        Assert.Contains("problem.GetString()", codeBehind, StringComparison.Ordinal);
+
+        // Play/Pause is decided inside the page, where the state is real.
+        Assert.Contains("command.command === 'toggle'", codeBehind, StringComparison.Ordinal);
+        Assert.Contains(
+            "EmbeddedPlayerCommandKind.Toggle => ",
+            codeBehind,
             StringComparison.Ordinal);
     }
 

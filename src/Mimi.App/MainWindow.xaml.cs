@@ -79,7 +79,10 @@ public partial class MainWindow : Window
             window.mimi = {
               ready: function () { return player !== null; },
               report: function () {
-                if (!player || typeof player.getCurrentTime !== 'function') return null;
+                if (!window.YT || typeof window.YT.Player !== 'function')
+                  return { problem: 'api-missing' };
+                if (!player || typeof player.getCurrentTime !== 'function')
+                  return { problem: 'player-missing' };
                 return {
                   state: player.getPlayerState(),
                   position: player.getCurrentTime() || 0,
@@ -95,6 +98,13 @@ public partial class MainWindow : Window
                 if (!player || !command) return false;
                 if (command.command === 'play') player.playVideo();
                 else if (command.command === 'pause') player.pauseVideo();
+                else if (command.command === 'toggle') {
+                  // Read the state here, where it is authoritative, instead of
+                  // trusting the host's last report.
+                  var state = player.getPlayerState();
+                  if (state === 1 || state === 3) player.pauseVideo();
+                  else player.playVideo();
+                }
                 else if (command.command === 'seek') player.seekTo(command.seconds, true);
                 else if (command.command === 'volume') {
                   // Volume 0 is Mimi's mute; anything above it unmutes, so the
@@ -371,6 +381,11 @@ public partial class MainWindow : Window
                     CoreWebView2WebResourceContext.All);
                 initialized.WebResourceRequested += OnYouTubeResourceRequested;
 
+                // A navigation aborts any script call in progress, so the
+                // in-flight flag must not survive one.
+                initialized.NavigationCompleted += (_, _) =>
+                    youTubePollInFlight = false;
+
                 youTubeBrowserReady = true;
             }
 
@@ -444,6 +459,7 @@ public partial class MainWindow : Window
         {
             EmbeddedPlayerCommandKind.Play => "{\"command\":\"play\"}",
             EmbeddedPlayerCommandKind.Pause => "{\"command\":\"pause\"}",
+            EmbeddedPlayerCommandKind.Toggle => "{\"command\":\"toggle\"}",
             EmbeddedPlayerCommandKind.Restart => "{\"command\":\"restart\"}",
             EmbeddedPlayerCommandKind.SetVolume => JsonSerializer.Serialize(new
             {
@@ -477,10 +493,26 @@ public partial class MainWindow : Window
         {
             // Returning the object itself means the result is already JSON;
             // no double parsing and no message channel involved.
-            var result = await core.ExecuteScriptAsync(
+            var script = core.ExecuteScriptAsync(
                 "window.mimi && window.mimi.report ? window.mimi.report() : null");
 
-            if (result is null or "null")
+            // A script call issued while the page is navigating can stay
+            // pending forever. Without this watchdog the in-flight flag would
+            // stay set and Mimi would never read the player again: the video
+            // plays, but the Play button and the timeline look dead.
+            var completed = await Task.WhenAny(
+                script,
+                Task.Delay(TimeSpan.FromSeconds(2.5)));
+
+            if (!ReferenceEquals(completed, script))
+            {
+                Serilog.Log.Debug("The YouTube player did not answer a poll in time.");
+                return;
+            }
+
+            var result = await script;
+
+            if (result is null or "null" or "undefined" or "")
             {
                 NoteEmbeddedPlayerSilence();
                 return;
@@ -489,6 +521,16 @@ public partial class MainWindow : Window
             using var document = JsonDocument.Parse(result);
             var root = document.RootElement;
             if (root.ValueKind != JsonValueKind.Object) return;
+
+            if (root.TryGetProperty("problem", out var problem) &&
+                problem.ValueKind == JsonValueKind.String)
+            {
+                Serilog.Log.Debug(
+                    "The YouTube page has no player yet: {Problem}",
+                    problem.GetString());
+                NoteEmbeddedPlayerSilence();
+                return;
+            }
 
             if (!root.TryGetProperty("state", out var state) ||
                 !root.TryGetProperty("position", out var position) ||
@@ -520,11 +562,14 @@ public partial class MainWindow : Window
                 position.GetDouble(),
                 duration.GetDouble());
         }
-        catch (Exception ex) when (
-            ex is JsonException or InvalidOperationException or ObjectDisposedException)
+        catch (Exception ex)
         {
-            // Either the page is not loaded yet (null player), the JSON shape
-            // changed, or the browser went away with the window.
+            // Not loaded yet, the JSON shape changed, the page is mid-navigation
+            // or the browser went away with the window. Whatever it is, one
+            // failed poll must never stop the next one.
+            Serilog.Log.Debug(
+                "The YouTube player poll failed: {ExceptionType}",
+                ex.GetType().FullName);
             NoteEmbeddedPlayerSilence();
         }
         finally
@@ -549,6 +594,10 @@ public partial class MainWindow : Window
             youTubeBrowserReady);
 
         viewModel.ReportEmbeddedPlayerUnavailable();
+
+        // Ask the page what it sees and show it: a screenshot of the panel is
+        // then enough to tell a missing bridge from a slow page.
+        _ = RunEmbeddedPlayerDiagnosticAsync();
     }
 
     /// <summary>

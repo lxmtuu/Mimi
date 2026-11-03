@@ -12,6 +12,10 @@ public enum EmbeddedPlayerCommandKind
 {
     Play,
     Pause,
+    // Toggle asks the page to flip its own state. The Play button must work
+    // even when Mimi's last report is stale, so the decision is made where the
+    // player state actually lives.
+    Toggle,
     Seek,
     SetVolume,
     Restart
