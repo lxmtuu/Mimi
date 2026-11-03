@@ -286,6 +286,74 @@ public sealed class YouTubeFeatureWiringTests
     }
 
     [Fact]
+    public void TheEmbedIdentifiesItselfSoTheVideoPlaysInsideMimi()
+    {
+        var root = FindRepositoryRoot();
+        var codeBehind = Read(root, "src", "Mimi.App", "MainWindow.xaml.cs");
+
+        // A page served from a virtual https host gives the iframe an origin
+        // and a referrer. Without one YouTube answers error 153 and the owner
+        // is pushed out to youtube.com, which is exactly what must not happen.
+        Assert.Contains("SetVirtualHostNameToFolderMapping(", codeBehind, StringComparison.Ordinal);
+        Assert.Contains("mimi-player.local", codeBehind, StringComparison.Ordinal);
+        Assert.Contains("strict-origin-when-cross-origin", codeBehind, StringComparison.Ordinal);
+
+        // WebView2 does not always send Referer itself, so Mimi fills it in
+        // rather than leaving the player unattributable.
+        Assert.Contains("AddWebResourceRequestedFilter(", codeBehind, StringComparison.Ordinal);
+        Assert.Contains("\"Referer\"", codeBehind, StringComparison.Ordinal);
+        Assert.Contains("SetHeader(", codeBehind, StringComparison.Ordinal);
+
+        // The page also names itself to the player.
+        Assert.Contains("origin: window.location.origin", codeBehind, StringComparison.Ordinal);
+        Assert.Contains("widget_referrer:", codeBehind, StringComparison.Ordinal);
+
+        // A refused embed is reported instead of leaving a dead progress bar.
+        Assert.Contains("ReportEmbeddedPlayerError(", codeBehind, StringComparison.Ordinal);
+        Assert.Contains(
+            "YouTube_ReferrerRejected",
+            Read(root, "src", "Mimi.App", "ViewModels", "MainWindowViewModel.YouTube.cs"),
+            StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void TheKeyLivesInATerminalCommandAndNeverInTheSettingsPanel()
+    {
+        var root = FindRepositoryRoot();
+
+        // Standing owner rule: no key field anywhere in Settings. The key is
+        // typed into a terminal (tools\Set-YouTubeKey.ps1) or set as an
+        // environment variable, and Mimi only ever reads it back.
+        var xaml = Read(root, "src", "Mimi.App", "MainWindow.xaml");
+        Assert.DoesNotContain("PasswordBox", xaml, StringComparison.Ordinal);
+        Assert.DoesNotContain("YouTubeApiKeyBox", xaml, StringComparison.Ordinal);
+        Assert.DoesNotContain("YouTubeKeyBox", xaml, StringComparison.Ordinal);
+        Assert.DoesNotContain("youtube-api-key", xaml, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("Settings_YouTubeSection", xaml, StringComparison.Ordinal);
+
+        // The old guidance pointed at Settings; the key is stored by script.
+        foreach (var file in new[] { "UiStrings.resx", "UiStrings.vi.resx" })
+        {
+            var resx = Read(root, "src", "Mimi.App", "Localization", file);
+            var line = resx
+                .Split('\n')
+                .FirstOrDefault(candidate =>
+                    candidate.Contains(
+                        "name=\"YouTube_InvalidKey\"",
+                        StringComparison.Ordinal));
+            Assert.NotNull(line);
+            Assert.Contains("Set-YouTubeKey.ps1", line!, StringComparison.Ordinal);
+            Assert.DoesNotContain("Settings", line!, StringComparison.Ordinal);
+        }
+
+        // The terminal path is real: the script exists and has a status check.
+        var script = Read(root, "tools", "Set-YouTubeKey.ps1");
+        Assert.Contains("youtube-api-key.txt", script, StringComparison.Ordinal);
+        Assert.Contains("Read-Host -AsSecureString", script, StringComparison.Ordinal);
+        Assert.Contains("[switch]$Remove", script, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void TheKeyIsConfiguredFromATerminalAndNeverInTheUi()
     {
         var root = FindRepositoryRoot();

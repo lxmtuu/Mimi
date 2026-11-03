@@ -421,10 +421,11 @@
   <data name="TrackCount_Playlist" xml:space="preserve"><value>{0} bài trong danh sách phát này</value></data>
   <data name="TrackCount_RecentlyPlayed" xml:space="preserve"><value>{0} bài đã nghe gần đây</value></data>
   <data name="TrackCount_SearchResults" xml:space="preserve"><value>{0} kết quả tìm kiếm</value></data>
-  <data name="YouTube_InvalidKey" xml:space="preserve"><value>YouTube từ chối key. Hãy dán key YouTube Data API v3 hợp lệ trong Settings.</value></data>
+  <data name="YouTube_InvalidKey" xml:space="preserve"><value>YouTube từ chối key. Chạy tools\Set-YouTubeKey.ps1 trong terminal để lưu key YouTube Data API v3 hợp lệ, rồi tìm lại.</value></data>
   <data name="YouTube_Play" xml:space="preserve"><value>Phát</value></data>
   <data name="YouTube_StopRow" xml:space="preserve"><value>Dừng</value></data>
   <data name="YouTube_EmbeddingBlocked" xml:space="preserve"><value>Video này không phát được trong Mimi vì chủ video đã tắt nhúng. Dùng nút Mở để xem trên YouTube.</value></data>
+  <data name="YouTube_ReferrerRejected" xml:space="preserve"><value>YouTube không nhận ra cửa sổ này nên video không thể phát trong Mimi (lỗi 153). Hãy mở lại video; nếu vẫn lỗi, bấm "Chẩn đoán trình phát" và xem log.</value></data>
   <data name="YouTube_BridgeUnavailable" xml:space="preserve"><value>Player không báo được vị trí nên thanh thời gian để trống. Hãy mở lại video; nếu vẫn vậy, log có ghi lý do.</value></data>
   <data name="YouTube_Diagnose" xml:space="preserve"><value>Chẩn đoán player</value></data>
   <data name="YouTube_DiagnosticFormat" xml:space="preserve"><value>Player báo: {0}</value></data>

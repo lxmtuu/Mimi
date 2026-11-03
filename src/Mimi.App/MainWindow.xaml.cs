@@ -30,14 +30,15 @@ public partial class MainWindow : Window
     private bool youTubeBrowserReady;
     private bool youTubePollInFlight;
     private int embeddedPlayerSilences;
+    private int reportedEmbeddedPlayerError;
 
     /// <summary>
-    /// Virtual host mapped to a folder Mimi controls. YouTube's embedded player
-    /// requires a Referer that identifies the embedding page, and a top-level
-    /// navigation straight to /embed/ sends none — that is exactly what shows
-    /// "Error 153: video player configuration error". Serving one small page
-    /// from an https host gives the iframe a real origin and referrer while the
-    /// player itself is still YouTube's own.
+    /// Host name mapped to a local folder. YouTube's embedded player requires a
+    /// Referer that identifies the embedding page; a top-level navigation
+    /// straight to /embed/ sends none, and that is what shows "Error 153: video
+    /// player configuration error". Serving one small page from a virtual https
+    /// host gives the iframe a real origin and a real referrer, while the player
+    /// itself is still YouTube's own.
     /// </summary>
     private const string YouTubePlayerHost = "mimi-player.local";
 
@@ -82,7 +83,12 @@ public partial class MainWindow : Window
                 return {
                   state: player.getPlayerState(),
                   position: player.getCurrentTime() || 0,
-                  duration: player.getDuration() || 0
+                  duration: player.getDuration() || 0,
+                  // 101/150 mean the owner refused embedding; 153 means
+                  // YouTube could not identify this page. Both are worth
+                  // reporting instead of showing a progress bar that never
+                  // moves.
+                  error: window.mimiError || null
                 };
               },
               command: function (command) {
@@ -116,7 +122,13 @@ public partial class MainWindow : Window
                 videoId: videoId,
                 width: '100%',
                 height: '100%',
-                playerVars: { autoplay: 1, rel: 0, playsinline: 1 },
+                // origin and widget_referrer identify this page to YouTube.
+                // Missing identity is what its player answers with error 153.
+                playerVars: {
+                  autoplay: 1, rel: 0, playsinline: 1,
+                  origin: window.location.origin,
+                  widget_referrer: window.location.href
+                },
                 events: {
                   onReady: function () {
                     if (!isNaN(initialVolume)) player.setVolume(initialVolume);
@@ -345,6 +357,20 @@ public partial class MainWindow : Window
                     pageFolder,
                     CoreWebView2HostResourceAccessKind.DenyCors);
 
+                // YouTube requires the request to identify the embedding page
+                // through Referer. Chromium normally sends it for an iframe,
+                // but WebView2 strips it in a few cases (virtual hosts
+                // included), which is exactly the "Error 153: video player
+                // configuration error" the owner hit. Only a missing header is
+                // filled in; anything the browser already sent is left alone.
+                initialized.AddWebResourceRequestedFilter(
+                    "https://www.youtube.com/*",
+                    CoreWebView2WebResourceContext.All);
+                initialized.AddWebResourceRequestedFilter(
+                    "https://*.youtube.com/*",
+                    CoreWebView2WebResourceContext.All);
+                initialized.WebResourceRequested += OnYouTubeResourceRequested;
+
                 youTubeBrowserReady = true;
             }
 
@@ -355,6 +381,10 @@ public partial class MainWindow : Window
             if (video is null) return;
 
             embeddedPlayerSilences = 0;
+            reportedEmbeddedPlayerError = 0;
+
+            // The page applies this volume when its player becomes ready, so
+            // the first second of sound matches Mimi's slider.
             core.Navigate(
                 $"https://{YouTubePlayerHost}/{YouTubePlayerPageName}" +
                 $"?v={Uri.EscapeDataString(video.VideoId)}" +
@@ -467,6 +497,23 @@ public partial class MainWindow : Window
                 return;
             }
 
+            // The page records the last player error. Reporting it once keeps
+            // "nothing happens when I press play" from being a silent failure.
+            if (root.TryGetProperty("error", out var error) &&
+                error.ValueKind == JsonValueKind.Number)
+            {
+                var code = error.GetInt32();
+                if (code != reportedEmbeddedPlayerError)
+                {
+                    reportedEmbeddedPlayerError = code;
+                    viewModel.ReportEmbeddedPlayerError(code);
+                }
+            }
+            else
+            {
+                reportedEmbeddedPlayerError = 0;
+            }
+
             embeddedPlayerSilences = 0;
             viewModel.ApplyEmbeddedPlayerState(
                 state.GetInt32(),
@@ -502,6 +549,33 @@ public partial class MainWindow : Window
             youTubeBrowserReady);
 
         viewModel.ReportEmbeddedPlayerUnavailable();
+    }
+
+    /// <summary>
+    /// Fills in a missing Referer for YouTube's own requests. YouTube rejects
+    /// an embed it cannot attribute (error 153), and WebView2 does not always
+    /// send the header itself. A header the browser already set is kept as is.
+    /// </summary>
+    private void OnYouTubeResourceRequested(
+        object? sender,
+        CoreWebView2WebResourceRequestedEventArgs args)
+    {
+        try
+        {
+            if (args.Request.Headers.Contains("Referer")) return;
+
+            args.Request.Headers.SetHeader(
+                "Referer",
+                $"https://{YouTubePlayerHost}/{YouTubePlayerPageName}");
+        }
+        catch (ArgumentException ex)
+        {
+            // An immutable or malformed header set is not worth failing a
+            // navigation over; the player reports the outcome either way.
+            Serilog.Log.Debug(
+                "Could not set the YouTube referrer: {ExceptionType}",
+                ex.GetType().FullName);
+        }
     }
 
     private void OnYouTubeLinkCopyRequested(string link)
