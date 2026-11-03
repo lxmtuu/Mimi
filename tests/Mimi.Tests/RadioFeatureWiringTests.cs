@@ -47,7 +47,9 @@ public sealed class RadioFeatureWiringTests
 
         var audioService = Read(root, "src", "Mimi.Audio", "AudioService.cs");
         Assert.Contains(
-            "new MediaFoundationReader(streamUrl.AbsoluteUri)",
+            // Radio and the online catalog share one direct Media Foundation
+            // reader; live stations still opt into live-stream semantics.
+            "new MediaFoundationReader(remoteUri.AbsoluteUri)",
             audioService,
             StringComparison.Ordinal);
         Assert.Contains(
