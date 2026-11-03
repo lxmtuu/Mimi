@@ -130,15 +130,17 @@ public sealed class UiRefreshWiringTests
     {
         var root = FindRepositoryRoot();
 
-        foreach (var file in new[]
-                 {
-                     ("src", "Mimi.App", "App.xaml"),
-                     ("src", "Mimi.App", "MainWindow.xaml"),
-                     ("src", "Mimi.App", "StageWindow.xaml"),
-                     ("src", "Mimi.App", "TextPromptWindow.xaml"),
-                     ("src", "Mimi.App", "Themes", "ControlStyles.xaml"),
-                     ("src", "Mimi.App", "Themes", "ThemeBrushes.xaml")
-                 })
+        string[][] files =
+        [
+            ["src", "Mimi.App", "App.xaml"],
+            ["src", "Mimi.App", "MainWindow.xaml"],
+            ["src", "Mimi.App", "StageWindow.xaml"],
+            ["src", "Mimi.App", "TextPromptWindow.xaml"],
+            ["src", "Mimi.App", "Themes", "ControlStyles.xaml"],
+            ["src", "Mimi.App", "Themes", "ThemeBrushes.xaml"]
+        ];
+
+        foreach (var file in files)
         {
             var document = XDocument.Parse(Read(root, file));
             Assert.NotNull(document.Root);
