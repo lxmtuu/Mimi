@@ -74,7 +74,7 @@ public static class BuiltInThemes
             [ThemeTokens.TextSecondary] = "#C6D6EC",
             [ThemeTokens.TextMuted] = "#93A9C7",
             [ThemeTokens.TextFaint] = "#8298B8",
-            [ThemeTokens.TextDisabled] = "#6E86A6",
+            [ThemeTokens.TextDisabled] = "#7189A9",
             [ThemeTokens.Warning] = "#FFB020",
             [ThemeTokens.WarningText] = "#FFD9A0",
             [ThemeTokens.WarningBackground] = "#34251A",
