@@ -129,6 +129,31 @@ public sealed class AppIconTests
             identity,
             StringComparison.Ordinal);
 
+        Assert.Contains(
+            "TryRepairExistingStartMenuShortcut",
+            identity,
+            StringComparison.Ordinal);
+
+        var setPropertiesIndex = identity.IndexOf(
+            "TrySetWindowAppUserModelProperties",
+            StringComparison.Ordinal);
+        var setProperties = identity[setPropertiesIndex..];
+        Assert.True(
+            setProperties.IndexOf(
+                "RelaunchIconResourceKey",
+                StringComparison.Ordinal) <
+            setProperties.IndexOf(
+                "AppUserModelIdKey",
+                StringComparison.Ordinal),
+            "Relaunch properties must be published before the window AppUserModelID.");
+
+        var appCode = File.ReadAllText(Path.Combine(
+            root, "src", "Mimi.App", "App.xaml.cs"));
+        Assert.Contains(
+            "WindowsAppIdentity.TryRepairExistingStartMenuShortcut();",
+            appCode,
+            StringComparison.Ordinal);
+
         var mainWindowCode = File.ReadAllText(Path.Combine(
             root, "src", "Mimi.App", "MainWindow.xaml.cs"));
         Assert.Contains(

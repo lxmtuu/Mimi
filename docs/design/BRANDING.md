@@ -42,11 +42,18 @@ rồi công bố file đó qua các thuộc tính
 `System.AppUserModel.ID/RelaunchCommand/RelaunchIconResource/
 RelaunchDisplayNameResource` trên chính HWND cửa sổ chính bằng
 `SHGetPropertyStoreForWindow`; các thuộc tính được xóa lúc cửa
-sổ đóng. Tên file chứa hash nội dung nên mỗi lần đổi icon sẽ có
-đường dẫn mới, không phụ thuộc việc Explorer tự làm mới cache
-cho đường dẫn cũ. Shortcut identity ở Start Menu và các giá
-trị icon trong đăng ký Explorer cũng dùng cùng file ICO độc
-lập này khi được tạo/cập nhật.
+sổ đóng. Các giá trị relaunch được viết trước, AppUserModelID
+của cửa sổ được đóng dấu sau cùng, vì property store của HWND áp
+dụng từng lần ghi ngay lập tức. Tên file chứa hash nội dung nên
+mỗi lần đổi icon sẽ có đường dẫn mới, không phụ thuộc việc
+Explorer tự làm mới cache cho đường dẫn cũ. Shortcut identity ở
+Start Menu và các giá trị icon trong đăng ký Explorer cũng dùng
+cùng file ICO độc lập này khi được tạo/cập nhật. Nếu shortcut
+Start Menu của Mimi đã tồn tại, app còn tự kiểm tra và sửa
+target/IconLocation/AppUserModelID của nó ở mỗi lần khởi động
+(rồi báo Explorer làm mới khi có thay đổi); app không tự tạo
+shortcut mới ở bước này nếu người dùng chưa chọn đăng ký
+Explorer.
 
 Lưu ý về nút đã ghim trên Taskbar từ trước: shortcut ghim cũ
 đã được Windows tạo trước khi app công bố relaunch identity ở

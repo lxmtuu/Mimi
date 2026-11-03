@@ -29,6 +29,8 @@ internal static class WindowsAppIdentity
 
     private const int AppModelErrorNoPackage = 15700;
     private const uint StorageRead = 0x00000000;
+    private const uint AssociationChanged = 0x08000000;
+    private const uint IdListFlag = 0x0000;
 
     private static readonly Guid AppUserModelPropertyFormatId = new(
         "9F4C2855-9F79-4B39-A8D0-E1D42DE1D5F3");
@@ -164,17 +166,22 @@ internal static class WindowsAppIdentity
     {
         var executablePath = TryResolveExecutablePath();
         var iconPath = TryGetShellIconPath();
-        if (executablePath is null || iconPath is null) return;
+        if (executablePath is null || iconPath is null)
+        {
+            Log.Warning(
+                "Could not set Mimi's window AppUserModel properties " +
+                "because the executable or shell icon path was unavailable");
+            return;
+        }
 
         TryUseWindowPropertyStore(
             windowHandle,
             "set",
             propertyStore =>
             {
-                SetPropertyString(
-                    propertyStore,
-                    AppUserModelIdKey,
-                    AppUserModelId);
+                // Window property-store writes take effect immediately, so
+                // publish every relaunch value before stamping the explicit
+                // AppUserModelID that makes the shell consume them.
                 SetPropertyString(
                     propertyStore,
                     RelaunchCommandKey,
@@ -187,10 +194,16 @@ internal static class WindowsAppIdentity
                     propertyStore,
                     RelaunchDisplayNameResourceKey,
                     DisplayName);
+                SetPropertyString(
+                    propertyStore,
+                    AppUserModelIdKey,
+                    AppUserModelId);
                 propertyStore.Commit();
 
-                Log.Debug(
-                    "Window AppUserModel relaunch icon set to {IconPath}",
+                Log.Information(
+                    "Window AppUserModel relaunch identity set: " +
+                    "executable {ExecutablePath}, icon {IconPath}",
+                    executablePath,
                     iconPath);
             });
     }
@@ -209,12 +222,57 @@ internal static class WindowsAppIdentity
             "clear",
             propertyStore =>
             {
-                ClearProperty(propertyStore, AppUserModelIdKey);
                 ClearProperty(propertyStore, RelaunchCommandKey);
                 ClearProperty(propertyStore, RelaunchIconResourceKey);
                 ClearProperty(propertyStore, RelaunchDisplayNameResourceKey);
+                ClearProperty(propertyStore, AppUserModelIdKey);
                 propertyStore.Commit();
             });
+    }
+
+    /// <summary>
+    /// Repairs Mimi's Start menu identity shortcut during startup when one
+    /// already exists. Windows resolves the taskbar identity for an explicit
+    /// AppUserModelID through that shortcut, so an in-place rebuild must not
+    /// preserve a missing ID or a stale IconLocation indefinitely. A missing
+    /// shortcut is not created here; creating one remains part of the
+    /// user's opt-in Explorer registration.
+    /// </summary>
+    public static void TryRepairExistingStartMenuShortcut()
+    {
+        try
+        {
+            if (HasPackageIdentity()) return;
+
+            var shortcutPath = GetStartMenuShortcutPath();
+            if (shortcutPath is null || !File.Exists(shortcutPath)) return;
+
+            var executablePath = TryResolveExecutablePath();
+            if (executablePath is null) return;
+
+            if (EnsureStartMenuShortcut(executablePath) ==
+                StartMenuShortcutUpdate.Updated)
+            {
+                NotifyShellAssociationsChanged();
+            }
+        }
+        catch (Exception ex) when (
+            ex is ArgumentException or
+            COMException or
+            DllNotFoundException or
+            EntryPointNotFoundException or
+            InvalidCastException or
+            InvalidComObjectException or
+            IOException or
+            NotSupportedException or
+            UnauthorizedAccessException or
+            InvalidOperationException or
+            System.Security.SecurityException)
+        {
+            Log.Warning(
+                ex,
+                "Could not repair Mimi's existing Start menu identity shortcut");
+        }
     }
 
     /// <summary>
@@ -593,6 +651,25 @@ internal static class WindowsAppIdentity
         propertyStore.SetValue(ref key, ref emptyValue);
     }
 
+    private static void NotifyShellAssociationsChanged()
+    {
+        try
+        {
+            SHChangeNotify(
+                AssociationChanged,
+                IdListFlag,
+                IntPtr.Zero,
+                IntPtr.Zero);
+        }
+        catch (Exception ex) when (
+            ex is DllNotFoundException or EntryPointNotFoundException)
+        {
+            // The shortcut was still repaired; Explorer will eventually
+            // observe the changed link without this best-effort hint.
+            Log.Debug(ex, "Could not notify Windows Explorer of the shortcut repair");
+        }
+    }
+
     private static bool HasPackageIdentity()
     {
         var packageFullNameLength = 0;
@@ -701,6 +778,16 @@ internal static class WindowsAppIdentity
         IntPtr windowHandle,
         ref Guid interfaceId,
         out IntPtr propertyStore);
+
+    [DllImport(
+        "shell32.dll",
+        ExactSpelling = true)]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+    private static extern void SHChangeNotify(
+        uint eventId,
+        uint flags,
+        IntPtr item1,
+        IntPtr item2);
 
     [DllImport(
         "kernel32.dll",

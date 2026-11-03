@@ -27,6 +27,7 @@ public partial class App : Application
 
         ConfigureLogging();
         WindowsAppIdentity.TrySetProcessAppUserModelId();
+        WindowsAppIdentity.TryRepairExistingStartMenuShortcut();
         RegisterGlobalExceptionHandlers();
         Log.Information(
             "Mimi {Version} starting",
