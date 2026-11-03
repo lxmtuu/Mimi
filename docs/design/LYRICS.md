@@ -86,6 +86,9 @@ của bài trước và không chặn đường phát nhạc nếu file lời ho
   migration từ schema cũ.
 - `LocalizationServiceTests`: parity 344 khóa VI/EN và nhãn Lyrics.
 
-Nghiệm thu runtime vẫn cần chủ dự án kiểm tra trên Windows thật với ít
-nhất một cặp file nhạc + `.lrc`, gồm phát/tạm dừng/seek, chỉnh offset,
-đóng/mở lại app và một bài chỉ có lyrics nhúng không đồng bộ.
+Ảnh runtime ngày 03/11/2026 của chủ dự án đã xác nhận một file
+`.lrc` thật được nạp và hiển thị trong thẻ Lyrics, với nhãn nguồn
+`.lrc file`. Bằng chứng này mới bao phủ khâu nạp/hiển thị. Các kiểm
+tra runtime còn lại là dòng hiện tại khi phát/tạm dừng/seek, hiệu quả
+của nút chỉnh offset, việc offset được giữ sau khi đóng/mở lại app
+và một bài chỉ có lyrics nhúng không đồng bộ.
