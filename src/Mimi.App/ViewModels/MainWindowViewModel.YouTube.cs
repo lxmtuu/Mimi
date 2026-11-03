@@ -333,10 +333,17 @@ public sealed partial class MainWindowViewModel
 
         IsYouTubeSavedView = !IsYouTubeSavedView;
 
-        if (IsYouTubeSavedView && SavedYouTubeVideos.Count == 0)
-            YouTubeStatusLabel = Loc["YouTube_NoSaved"];
-        else
+        // The status line describes what the list is showing: "20 video(s)"
+        // under a saved list of two would be misleading.
+        if (!IsYouTubeSavedView)
+        {
             RefreshYouTubeStatusLabel();
+            return;
+        }
+
+        YouTubeStatusLabel = SavedYouTubeVideos.Count == 0
+            ? Loc["YouTube_NoSaved"]
+            : Loc.Format("YouTube_SavedTab", SavedYouTubeVideos.Count);
     }
 
     /// <summary>

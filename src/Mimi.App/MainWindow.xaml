@@ -1511,27 +1511,34 @@
                     </Grid.RowDefinitions>
 
                     <DockPanel Grid.Row="0" LastChildFill="False">
-                        <StackPanel DockPanel.Dock="Left" MaxWidth="520">
+                        <StackPanel DockPanel.Dock="Left" MaxWidth="460">
                             <TextBlock Text="{Binding Loc[YouTube_Title]}" FontSize="23" FontWeight="Bold"/>
                             <TextBlock Text="{Binding Loc[YouTube_Description]}"
                                        Foreground="{StaticResource TextMutedBrush}" FontSize="12"
                                        Margin="0,5,0,0" TextWrapping="Wrap"/>
                         </StackPanel>
-                        <Border DockPanel.Dock="Right" Background="{StaticResource RaisedBackgroundBrush}"
-                                CornerRadius="10" Padding="10,7" VerticalAlignment="Top">
-                            <TextBlock Text="{Binding Loc[YouTube_ProviderAttribution]}"
-                                       Foreground="{StaticResource AccentBrush}" FontSize="11" FontWeight="SemiBold"/>
-                        </Border>
-                        <!-- The results are the play order, so this starts the list
-                             the way a playlist would. -->
-                        <Button DockPanel.Dock="Right" Content="{Binding Loc[YouTube_PlayAll]}"
-                                Command="{Binding PlayAllYouTubeVideosCommand}"
-                                Padding="12,7" FontSize="11" Margin="0,0,8,0" VerticalAlignment="Top"
-                                AutomationProperties.Name="{Binding Loc[YouTube_PlayAll]}"/>
-                        <Button DockPanel.Dock="Right" Content="{Binding YouTubeListToggleLabel}"
-                                Command="{Binding ToggleYouTubeSavedViewCommand}"
-                                Padding="12,7" FontSize="11" Margin="0,0,8,0" VerticalAlignment="Top"
-                                AutomationProperties.Name="{Binding YouTubeListToggleLabel}"/>
+                        <!-- One docked panel instead of three docked buttons: when
+                             the window is narrow the description wraps, rather than
+                             a button being squeezed until its label is cut off. -->
+                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal"
+                                    VerticalAlignment="Top" Margin="12,0,0,0">
+                            <Button Content="{Binding YouTubeListToggleLabel}"
+                                    Command="{Binding ToggleYouTubeSavedViewCommand}"
+                                    Padding="12,7" FontSize="11" Margin="0,0,8,0"
+                                    ToolTip="{Binding YouTubeListToggleLabel}"
+                                    AutomationProperties.Name="{Binding YouTubeListToggleLabel}"/>
+                            <!-- The results are the play order, so this starts the list
+                                 the way a playlist would. -->
+                            <Button Content="{Binding Loc[YouTube_PlayAll]}"
+                                    Command="{Binding PlayAllYouTubeVideosCommand}"
+                                    Padding="12,7" FontSize="11" Margin="0,0,8,0"
+                                    AutomationProperties.Name="{Binding Loc[YouTube_PlayAll]}"/>
+                            <Border Background="{StaticResource RaisedBackgroundBrush}"
+                                    CornerRadius="10" Padding="10,7">
+                                <TextBlock Text="{Binding Loc[YouTube_ProviderAttribution]}"
+                                           Foreground="{StaticResource AccentBrush}" FontSize="11" FontWeight="SemiBold"/>
+                            </Border>
+                        </StackPanel>
                     </DockPanel>
 
                     <Grid Grid.Row="1" Margin="0,18,0,0">
