@@ -45,7 +45,8 @@ public sealed class WindowsFileAssociationService : IFileAssociationService
 
     private string OpenCommand => $"\"{ExecutablePath}\" \"%1\"";
 
-    private string IconValue => $"\"{ExecutablePath}\",0";
+    private string IconValue =>
+        $"\"{WindowsAppIdentity.TryGetShellIconPath() ?? ExecutablePath}\",0";
 
     private bool IsRegistrationTarget =>
         string.Equals(

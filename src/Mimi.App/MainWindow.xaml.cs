@@ -23,6 +23,7 @@ public partial class MainWindow : Window
         new() { Interval = TimeSpan.FromMilliseconds(500) };
     private StageWindow? stageWindow;
     private WindowsMediaControlsService? mediaControls;
+    private IntPtr mainWindowHandle;
 
     public MainWindow(MainWindowViewModel viewModel, IAudioPlayer audioPlayer)
     {
@@ -55,6 +56,13 @@ public partial class MainWindow : Window
     protected override void OnSourceInitialized(EventArgs e)
     {
         base.OnSourceInitialized(e);
+        mainWindowHandle = new WindowInteropHelper(this).Handle;
+
+        // With an explicit AppUserModelID, the taskbar group icon is a
+        // shell identity concern rather than just the WPF window icon.
+        // Publish the relaunch icon on this HWND before the window is
+        // shown so the shell does not keep resolving the old shortcut icon.
+        WindowsAppIdentity.TrySetWindowAppUserModelProperties(mainWindowHandle);
         WindowChromeHelper.ApplyDarkTitleBar(this);
 
         // SMTC is keyed to the top-level HWND. It must therefore be created
@@ -63,7 +71,19 @@ public partial class MainWindow : Window
             viewModel,
             audioPlayer,
             Dispatcher);
-        mediaControls.Initialize(new WindowInteropHelper(this).Handle);
+        mediaControls.Initialize(mainWindowHandle);
+    }
+
+    protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
+    {
+        if (mainWindowHandle != IntPtr.Zero)
+        {
+            WindowsAppIdentity.TryClearWindowAppUserModelProperties(
+                mainWindowHandle);
+            mainWindowHandle = IntPtr.Zero;
+        }
+
+        base.OnClosing(e);
     }
 
     protected override void OnClosed(EventArgs e)

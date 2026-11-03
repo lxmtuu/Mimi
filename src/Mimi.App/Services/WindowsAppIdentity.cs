@@ -1,5 +1,8 @@
+using System.Collections;
 using System.IO;
+using System.Resources;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using Serilog;
 
 namespace Mimi.Services;
@@ -27,9 +30,24 @@ internal static class WindowsAppIdentity
     private const int AppModelErrorNoPackage = 15700;
     private const uint StorageRead = 0x00000000;
 
+    private static readonly Guid AppUserModelPropertyFormatId = new(
+        "9F4C2855-9F79-4B39-A8D0-E1D42DE1D5F3");
+    private static readonly Guid PropertyStoreInterfaceId = new(
+        "886D8EEB-8CF2-4446-8D02-CDBA1DBDCF99");
+    private static readonly PropertyKey RelaunchCommandKey = new(
+        AppUserModelPropertyFormatId,
+        2);
+    private static readonly PropertyKey RelaunchIconResourceKey = new(
+        AppUserModelPropertyFormatId,
+        3);
+    private static readonly PropertyKey RelaunchDisplayNameResourceKey = new(
+        AppUserModelPropertyFormatId,
+        4);
     private static readonly PropertyKey AppUserModelIdKey = new(
-        new Guid("9F4C2855-9F79-4B39-A8D0-E1D42DE1D5F3"),
+        AppUserModelPropertyFormatId,
         5);
+    private static readonly object ShellIconLock = new();
+    private static string? shellIconPath;
 
     /// <summary>
     /// Sets this process's explicit AppUserModelID. Call this before any
@@ -74,6 +92,132 @@ internal static class WindowsAppIdentity
     }
 
     /// <summary>
+    /// Materializes the bundled application icon as a standalone file for
+    /// Windows Shell surfaces that do not reliably follow the window icon.
+    /// The file name contains a short content hash: a future icon receives
+    /// a new path instead of depending on Explorer invalidating an icon
+    /// cache entry for an old path.
+    /// </summary>
+    public static string? TryGetShellIconPath()
+    {
+        lock (ShellIconLock)
+        {
+            if (shellIconPath is not null && File.Exists(shellIconPath))
+                return shellIconPath;
+
+            try
+            {
+                var iconBytes = ReadBundledIconBytes();
+                var localAppDataPath = Environment.GetFolderPath(
+                    Environment.SpecialFolder.LocalApplicationData);
+                if (iconBytes is null ||
+                    string.IsNullOrWhiteSpace(localAppDataPath))
+                {
+                    return null;
+                }
+
+                var iconDirectory = Path.Combine(
+                    localAppDataPath,
+                    "Mimi",
+                    "icons");
+                Directory.CreateDirectory(iconDirectory);
+
+                var iconVersion = Convert.ToHexString(
+                    SHA256.HashData(iconBytes))[..12].ToLowerInvariant();
+                var iconPath = Path.Combine(
+                    iconDirectory,
+                    $"mimi-{iconVersion}.ico");
+                if (!File.Exists(iconPath) ||
+                    new FileInfo(iconPath).Length != iconBytes.Length)
+                {
+                    File.WriteAllBytes(iconPath, iconBytes);
+                }
+
+                shellIconPath = iconPath;
+                return iconPath;
+            }
+            catch (Exception ex) when (
+                ex is ArgumentException or
+                BadImageFormatException or
+                FileNotFoundException or
+                IOException or
+                InvalidOperationException or
+                MissingManifestResourceException or
+                NotSupportedException or
+                UnauthorizedAccessException)
+            {
+                Log.Warning(ex, "Could not prepare Mimi's Windows shell icon");
+                return null;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Gives the main window the same explicit AppUserModel identity as the
+    /// process, plus the relaunch command/icon/name Windows uses for the
+    /// taskbar group. Setting only the WPF window icon is not sufficient for
+    /// an explicitly identified unpackaged app: the shell can keep using the
+    /// icon stored on the matching shortcut instead.
+    /// </summary>
+    public static void TrySetWindowAppUserModelProperties(
+        IntPtr windowHandle)
+    {
+        var executablePath = TryResolveExecutablePath();
+        var iconPath = TryGetShellIconPath();
+        if (executablePath is null || iconPath is null) return;
+
+        TryUseWindowPropertyStore(
+            windowHandle,
+            "set",
+            propertyStore =>
+            {
+                SetPropertyString(
+                    propertyStore,
+                    AppUserModelIdKey,
+                    AppUserModelId);
+                SetPropertyString(
+                    propertyStore,
+                    RelaunchCommandKey,
+                    $"\"{executablePath}\"");
+                SetPropertyString(
+                    propertyStore,
+                    RelaunchIconResourceKey,
+                    $"{iconPath},0");
+                SetPropertyString(
+                    propertyStore,
+                    RelaunchDisplayNameResourceKey,
+                    DisplayName);
+                propertyStore.Commit();
+
+                Log.Debug(
+                    "Window AppUserModel relaunch icon set to {IconPath}",
+                    iconPath);
+            });
+    }
+
+    /// <summary>
+    /// Removes the window properties set by
+    /// <see cref="TrySetWindowAppUserModelProperties"/>. Windows asks apps
+    /// to clear values they put in a window property store before the HWND
+    /// is destroyed.
+    /// </summary>
+    public static void TryClearWindowAppUserModelProperties(
+        IntPtr windowHandle)
+    {
+        TryUseWindowPropertyStore(
+            windowHandle,
+            "clear",
+            propertyStore =>
+            {
+                ClearProperty(propertyStore, AppUserModelIdKey);
+                ClearProperty(propertyStore, RelaunchCommandKey);
+                ClearProperty(propertyStore, RelaunchIconResourceKey);
+                ClearProperty(propertyStore, RelaunchDisplayNameResourceKey);
+                propertyStore.Commit();
+            });
+    }
+
+    /// <summary>
     /// Creates or updates the current user's Start menu shortcut so it
     /// points at <paramref name="executablePath"/> and carries Mimi's
     /// AppUserModelID. An unrelated shortcut that merely happens to be named
@@ -104,18 +248,25 @@ internal static class WindowsAppIdentity
             var persistFile = (IPersistFile)linkObject;
             var propertyStore = (IPropertyStore)linkObject;
 
+            var desiredIconPath = TryGetShellIconPath() ?? targetPath;
             var shortcutExists = File.Exists(shortcutPath);
             string? existingTargetPath = null;
             string? existingAppUserModelId = null;
+            string? existingIconPath = null;
+            var existingIconIndex = 0;
 
             if (shortcutExists)
             {
                 persistFile.Load(shortcutPath, StorageRead);
                 existingTargetPath = GetShortcutTargetPath(link);
+                (existingIconPath, existingIconIndex) =
+                    GetShortcutIconLocation(link);
                 existingAppUserModelId =
                     GetShortcutAppUserModelId(propertyStore);
 
                 if (PathsEqual(existingTargetPath, targetPath) &&
+                    PathsEqual(existingIconPath, desiredIconPath) &&
+                    existingIconIndex == 0 &&
                     string.Equals(
                         existingAppUserModelId,
                         AppUserModelId,
@@ -143,8 +294,13 @@ internal static class WindowsAppIdentity
                 link.SetArguments(string.Empty);
                 link.SetWorkingDirectory(
                     Path.GetDirectoryName(targetPath) ?? string.Empty);
-                link.SetIconLocation(targetPath, 0);
+                link.SetIconLocation(desiredIconPath, 0);
                 link.SetDescription(DisplayName);
+            }
+            else if (!PathsEqual(existingIconPath, desiredIconPath) ||
+                     existingIconIndex != 0)
+            {
+                link.SetIconLocation(desiredIconPath, 0);
             }
 
             SetShortcutAppUserModelId(propertyStore);
@@ -272,6 +428,171 @@ internal static class WindowsAppIdentity
             : Path.Combine(programsFolder, "Mimi.lnk");
     }
 
+    private static byte[]? ReadBundledIconBytes()
+    {
+        var assembly = typeof(WindowsAppIdentity).Assembly;
+        var resourceStreamName = assembly.GetManifestResourceNames()
+            .FirstOrDefault(static name => name.EndsWith(
+                ".g.resources",
+                StringComparison.OrdinalIgnoreCase));
+        if (resourceStreamName is null) return null;
+
+        using var resourceStream =
+            assembly.GetManifestResourceStream(resourceStreamName);
+        if (resourceStream is null) return null;
+
+        using var reader = new ResourceReader(resourceStream);
+        foreach (DictionaryEntry entry in reader)
+        {
+            if (entry.Key is not string key ||
+                !key.Equals(
+                    "assets/mimi.ico",
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            return entry.Value switch
+            {
+                byte[] bytes => bytes,
+                Stream stream => ReadAllBytes(stream),
+                _ => null
+            };
+        }
+
+        return null;
+    }
+
+    private static byte[] ReadAllBytes(Stream stream)
+    {
+        if (stream.CanSeek)
+            stream.Position = 0;
+
+        using var copy = new MemoryStream();
+        stream.CopyTo(copy);
+        return copy.ToArray();
+    }
+
+    private static string? TryResolveExecutablePath()
+    {
+        try
+        {
+            var processPath = Environment.ProcessPath;
+            if (!string.IsNullOrWhiteSpace(processPath) &&
+                string.Equals(
+                    Path.GetFileName(processPath),
+                    "Mimi.exe",
+                    StringComparison.OrdinalIgnoreCase) &&
+                File.Exists(processPath))
+            {
+                return Path.GetFullPath(processPath);
+            }
+
+            var assemblyPath = typeof(WindowsAppIdentity).Assembly.Location;
+            if (!string.IsNullOrWhiteSpace(assemblyPath))
+            {
+                var candidate = Path.ChangeExtension(assemblyPath, ".exe");
+                if (File.Exists(candidate))
+                    return Path.GetFullPath(candidate);
+            }
+        }
+        catch (Exception ex) when (
+            ex is ArgumentException or
+            IOException or
+            NotSupportedException or
+            UnauthorizedAccessException)
+        {
+            Log.Debug(ex, "Could not resolve Mimi's executable path");
+        }
+
+        return null;
+    }
+
+    private static void TryUseWindowPropertyStore(
+        IntPtr windowHandle,
+        string operation,
+        Action<IPropertyStore> usePropertyStore)
+    {
+        if (windowHandle == IntPtr.Zero) return;
+
+        object? propertyStoreObject = null;
+        try
+        {
+            if (HasPackageIdentity()) return;
+
+            var interfaceId = PropertyStoreInterfaceId;
+            var result = SHGetPropertyStoreForWindow(
+                windowHandle,
+                ref interfaceId,
+                out var propertyStorePointer);
+            if (result < 0 || propertyStorePointer == IntPtr.Zero)
+            {
+                Log.Warning(
+                    "Could not {Operation} Mimi's window AppUserModel " +
+                    "properties; HRESULT={HResult}",
+                    operation,
+                    $"0x{result:X8}");
+                return;
+            }
+
+            try
+            {
+                propertyStoreObject =
+                    Marshal.GetObjectForIUnknown(propertyStorePointer);
+            }
+            finally
+            {
+                _ = Marshal.Release(propertyStorePointer);
+            }
+
+            usePropertyStore((IPropertyStore)propertyStoreObject);
+        }
+        catch (Exception ex) when (
+            ex is COMException or
+            DllNotFoundException or
+            EntryPointNotFoundException or
+            InvalidCastException or
+            InvalidComObjectException or
+            InvalidOperationException or
+            MarshalDirectiveException or
+            NotSupportedException)
+        {
+            Log.Warning(
+                ex,
+                "Could not {Operation} Mimi's window AppUserModel properties",
+                operation);
+        }
+        finally
+        {
+            if (propertyStoreObject is not null)
+                _ = Marshal.ReleaseComObject(propertyStoreObject);
+        }
+    }
+
+    private static void SetPropertyString(
+        IPropertyStore propertyStore,
+        PropertyKey key,
+        string value)
+    {
+        var propertyValue = PropVariant.FromString(value);
+        try
+        {
+            propertyStore.SetValue(ref key, ref propertyValue);
+        }
+        finally
+        {
+            _ = PropVariantClear(ref propertyValue);
+        }
+    }
+
+    private static void ClearProperty(
+        IPropertyStore propertyStore,
+        PropertyKey key)
+    {
+        var emptyValue = new PropVariant();
+        propertyStore.SetValue(ref key, ref emptyValue);
+    }
+
     private static bool HasPackageIdentity()
     {
         var packageFullNameLength = 0;
@@ -291,6 +612,19 @@ internal static class WindowsAppIdentity
 
         var path = new string(buffer, 0, length).Trim();
         return string.IsNullOrWhiteSpace(path) ? null : path;
+    }
+
+    private static (string? Path, int Index) GetShortcutIconLocation(
+        IShellLinkW link)
+    {
+        var buffer = new char[4096];
+        link.GetIconLocation(buffer, buffer.Length, out var index);
+
+        var length = Array.IndexOf(buffer, '\0');
+        if (length < 0) length = buffer.Length;
+
+        var path = new string(buffer, 0, length).Trim();
+        return (string.IsNullOrWhiteSpace(path) ? null : path, index);
     }
 
     private static string? GetShortcutAppUserModelId(
@@ -358,6 +692,15 @@ internal static class WindowsAppIdentity
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
     private static extern int SetCurrentProcessExplicitAppUserModelID(
         string appId);
+
+    [DllImport(
+        "shell32.dll",
+        ExactSpelling = true)]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+    private static extern int SHGetPropertyStoreForWindow(
+        IntPtr windowHandle,
+        ref Guid interfaceId,
+        out IntPtr propertyStore);
 
     [DllImport(
         "kernel32.dll",

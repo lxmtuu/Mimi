@@ -114,6 +114,44 @@ public sealed class AppIconTests
             StringComparison.Ordinal);
     }
 
+    [Fact]
+    public void WindowsShellIdentityPublishesStandaloneRelaunchIcon()
+    {
+        var root = FindRepositoryRoot();
+
+        var identity = File.ReadAllText(Path.Combine(
+            root, "src", "Mimi.App", "Services", "WindowsAppIdentity.cs"));
+        Assert.Contains("SHGetPropertyStoreForWindow", identity, StringComparison.Ordinal);
+        Assert.Contains("RelaunchIconResourceKey", identity, StringComparison.Ordinal);
+        Assert.Contains("TryGetShellIconPath", identity, StringComparison.Ordinal);
+        Assert.Contains(
+            "link.SetIconLocation(desiredIconPath, 0)",
+            identity,
+            StringComparison.Ordinal);
+
+        var mainWindowCode = File.ReadAllText(Path.Combine(
+            root, "src", "Mimi.App", "MainWindow.xaml.cs"));
+        Assert.Contains(
+            "TrySetWindowAppUserModelProperties(mainWindowHandle)",
+            mainWindowCode,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "TryClearWindowAppUserModelProperties",
+            mainWindowCode,
+            StringComparison.Ordinal);
+
+        var associationService = File.ReadAllText(Path.Combine(
+            root,
+            "src",
+            "Mimi.App",
+            "Services",
+            "WindowsFileAssociationService.cs"));
+        Assert.Contains(
+            "WindowsAppIdentity.TryGetShellIconPath() ?? ExecutablePath",
+            associationService,
+            StringComparison.Ordinal);
+    }
+
     private static (int Width, int Height) ReadPngSize(string path)
     {
         Assert.True(File.Exists(path), $"Missing logo PNG at {path}.");

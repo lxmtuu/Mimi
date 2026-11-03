@@ -28,23 +28,37 @@ sở hữu trí tuệ của bên thứ ba.
 - `src/Mimi.App/Assets/mimi.ico`: icon ứng dụng dạng ICO gồm 9
   cỡ 16, 20, 24, 32, 40, 48, 64, 128, 256 px, được nối bằng
   `<ApplicationIcon>Assets\mimi.ico</ApplicationIcon>` trong
-  `Mimi.App.csproj` nên xuất hiện ở file EXE, thanh tiêu đề,
-  taskbar và Alt-Tab. File này còn được đóng gói dạng WPF
-  `Resource` và đặt làm thuộc tính `Icon` của cửa sổ chính, để
-  nút taskbar của cửa sổ đang chạy lấy icon trực tiếp từ cửa sổ
-  thay vì phụ thuộc cách Windows Shell phân giải icon qua
-  AppUserModelID/shortcut. Icon này thay thế icon tạm trước đó
+  `Mimi.App.csproj` cho file EXE, đồng thời đóng gói dạng WPF
+  `Resource` và đặt làm thuộc tính `Icon` của cửa sổ chính cho
+  thanh tiêu đề/Alt-Tab. Icon này thay thế icon tạm trước đó
   (ô xanh ngọc chữ M đen).
 
-Lưu ý về nút đã ghim trên taskbar: khi app không chạy, Windows
-hiển thị icon của shortcut đã ghim và có thể giữ hình cũ trong
-cache sau khi thay icon. Cách xử lý một lần là bỏ ghim, chạy
-bản build mới rồi ghim lại.
+Riêng nút Taskbar còn một lớp nữa vì Mimi dùng AppUserModelID
+tường minh `Mimi.App`: Windows có thể lấy icon của nhóm Taskbar
+từ shortcut/relaunch identity của Shell dù icon trên thanh
+tiêu đề đã đúng. Khi chạy, app vì vậy trích ICO nhúng thành file
+độc lập `%LocalAppData%\Mimi\icons\mimi-<12 ký tự hash>.ico`,
+rồi công bố file đó qua các thuộc tính
+`System.AppUserModel.ID/RelaunchCommand/RelaunchIconResource/
+RelaunchDisplayNameResource` trên chính HWND cửa sổ chính bằng
+`SHGetPropertyStoreForWindow`; các thuộc tính được xóa lúc cửa
+sổ đóng. Tên file chứa hash nội dung nên mỗi lần đổi icon sẽ có
+đường dẫn mới, không phụ thuộc việc Explorer tự làm mới cache
+cho đường dẫn cũ. Shortcut identity ở Start Menu và các giá
+trị icon trong đăng ký Explorer cũng dùng cùng file ICO độc
+lập này khi được tạo/cập nhật.
+
+Lưu ý về nút đã ghim trên Taskbar từ trước: shortcut ghim cũ
+đã được Windows tạo trước khi app công bố relaunch identity ở
+trên vẫn có thể giữ icon riêng của nó. Cách xử lý một lần là
+đóng app, bỏ ghim nút cũ, chạy bản build mới rồi ghim lại từ
+nút đang chạy.
 
 `tests/Mimi.Tests/AppIconTests.cs` gác định dạng ICO/các cỡ
 chuẩn, tính vuông của hai PNG và toàn bộ wiring
-(`ApplicationIcon`, hai mục `Resource`, logo ở header và
-`Window.Icon`).
+(`ApplicationIcon`, hai mục `Resource`, logo ở header,
+`Window.Icon`, file ICO độc lập cho Shell và thuộc tính
+relaunch của cửa sổ).
 
 ## Cách xử lý từ ảnh concept
 
