@@ -109,6 +109,8 @@ dòng, trong khi behavior cộng chúng với tọa độ pixel từ
 `TransformToAncestor`; kết quả bị clamp về cuối danh sách. Fix ép
 `VirtualizingPanel.ScrollUnit="Pixel"` cho danh sách lời và behavior
 tự bỏ qua bước căn giữa bằng pixel khi gặp cuộn logic. Chủ dự án đã
-kiểm tra lại trên Windows thật và xác nhận hành vi cuộn đã ổn. Panel
-lời lớn trên Stage là lát kế tiếp cần nghiệm thu runtime; một bài
-chỉ có lyrics nhúng không đồng bộ cũng vẫn nên được thử riêng.
+kiểm tra lại trên Windows thật và xác nhận hành vi cuộn đã ổn. Hai
+ảnh runtime tiếp theo xác nhận panel lời lớn trên Stage hiển thị và
+chuyển dòng đúng trên Windows thật, gồm cả trạng thái intro khi dòng
+đầu tiên còn ở vị trí kế tiếp. Lượt thử còn lại là một bài chỉ có
+lyrics nhúng không đồng bộ.
