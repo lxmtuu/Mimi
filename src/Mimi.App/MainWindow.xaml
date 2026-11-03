@@ -69,9 +69,16 @@
 
         <Style x:Key="NavButtonStyle" TargetType="{x:Type Button}" BasedOn="{StaticResource {x:Type Button}}">
             <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
             <Setter Property="HorizontalContentAlignment" Value="Left"/>
-            <Setter Property="Padding" Value="10,8"/>
-            <Setter Property="Margin" Value="2"/>
+            <Setter Property="Padding" Value="9,7"/>
+            <Setter Property="Margin" Value="1"/>
+            <Setter Property="FontSize" Value="12.5"/>
+        </Style>
+        <Style x:Key="NavSectionRuleStyle" TargetType="{x:Type Border}">
+            <Setter Property="Height" Value="1"/>
+            <Setter Property="Background" Value="{StaticResource DividerBrush}"/>
+            <Setter Property="Margin" Value="9,8,9,8"/>
         </Style>
         <Style x:Key="NavLibraryButtonStyle" TargetType="{x:Type Button}" BasedOn="{StaticResource NavButtonStyle}">
             <Style.Triggers>
@@ -372,19 +379,22 @@
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <DockPanel Grid.Row="0" Margin="6,2,6,18">
+        <DockPanel Grid.Row="0" Margin="6,0,6,14">
             <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
-                <Image Width="42" Height="42"
+                <Image Width="38" Height="38"
                        Source="pack://application:,,,/Assets/mimi-256.png"
                        Stretch="Uniform"
                        RenderOptions.BitmapScalingMode="HighQuality"/>
-                <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
-                    <TextBlock Text="MIMI" FontSize="18" FontWeight="Bold"/>
-                    <TextBlock Text="{Binding Loc[App_MusicUniverse]}" FontSize="10" Foreground="{StaticResource TextMutedBrush}"/>
+                <StackPanel Margin="11,0,0,0" VerticalAlignment="Center">
+                    <TextBlock Text="MIMI" FontSize="17" FontWeight="Bold"/>
+                    <TextBlock Text="{Binding Loc[App_MusicUniverse]}" FontSize="10"
+                               Foreground="{StaticResource TextMutedBrush}" Margin="0,1,0,0"/>
                 </StackPanel>
             </StackPanel>
-            <TextBlock Text="{Binding Loc[App_Tagline]}" Foreground="{StaticResource TextMutedBrush}"
-                       VerticalAlignment="Center" HorizontalAlignment="Right"/>
+            <!-- One brand line is enough up here; the tagline moved to the
+                 rail footer so the header stays a single quiet row. -->
+            <TextBlock Text="{Binding Loc[App_Tagline]}" Foreground="{StaticResource TextFaintBrush}"
+                       FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Right"/>
         </DockPanel>
 
         <Grid Grid.Row="1">
@@ -397,7 +407,8 @@
             <Border Grid.Column="0" Background="{StaticResource PanelBackgroundBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="18" Padding="12" Margin="0,0,14,0">
                 <DockPanel>
                     <StackPanel DockPanel.Dock="Top">
-                        <TextBlock Text="{Binding Loc[Nav_YourSpace]}" Foreground="{StaticResource TextMutedBrush}" FontSize="11" Margin="8,10,0,14"/>
+                        <TextBlock Text="{Binding Loc[Nav_YourSpace]}" Foreground="{StaticResource TextMutedBrush}"
+                                   FontSize="10" FontWeight="SemiBold" Margin="9,6,0,10"/>
                         <Button Command="{Binding ShowHomeCommand}" Style="{StaticResource NavButtonStyle}"
                                 AutomationProperties.Name="{Binding Loc[Nav_Home]}">
                             <StackPanel Orientation="Horizontal">
@@ -426,6 +437,7 @@
                                 <TextBlock Text="{Binding Loc[Nav_RecentlyPlayed]}" Margin="10,0,0,0" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
+                        <Border Style="{StaticResource NavSectionRuleStyle}"/>
                         <Button Command="{Binding ShowRadioCommand}" Style="{StaticResource NavRadioButtonStyle}"
                                 Visibility="{Binding IsRadioAvailable, Converter={StaticResource BooleanToVisibilityConverter}}"
                                 AutomationProperties.Name="{Binding Loc[Nav_Radio]}">
@@ -450,7 +462,8 @@
                                 <TextBlock Text="{Binding Loc[Nav_YouTube]}" Margin="10,0,0,0" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
-                        <Button Command="{Binding AddFilesCommand}" Style="{StaticResource NavButtonStyle}" Margin="2,10,2,2"
+                        <Border Style="{StaticResource NavSectionRuleStyle}"/>
+                        <Button Command="{Binding AddFilesCommand}" Style="{StaticResource NavButtonStyle}"
                                 AutomationProperties.Name="{Binding Loc[Nav_AddMusicFiles]}">
                             <StackPanel Orientation="Horizontal">
                                 <Path Data="{StaticResource PlusIconGeometry}" Style="{StaticResource IconPathStyle}"/>
@@ -464,14 +477,6 @@
                                 <TextBlock Text="{Binding Loc[Nav_ScanFolder]}" Margin="10,0,0,0" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
-                        <Button Command="{Binding OpenSettingsCommand}" Style="{StaticResource NavSettingsButtonStyle}"
-                                AutomationProperties.Name="{Binding Loc[Nav_Settings]}">
-                            <StackPanel Orientation="Horizontal">
-                                <Path Data="{StaticResource SettingsIconGeometry}" Style="{StaticResource IconPathStyle}"/>
-                                <TextBlock Text="{Binding Loc[Nav_Settings]}" Margin="10,0,0,0" VerticalAlignment="Center"/>
-                            </StackPanel>
-                        </Button>
-
                         <DockPanel Margin="8,26,2,8" LastChildFill="False">
                             <TextBlock Text="{Binding Loc[Nav_Playlists]}" Foreground="{StaticResource TextMutedBrush}" FontSize="11"
                                        VerticalAlignment="Center"/>
@@ -501,12 +506,24 @@
                             </Button>
                         </UniformGrid>
                     </StackPanel>
-                    <Border DockPanel.Dock="Bottom" Background="{StaticResource RaisedBackgroundBrush}" CornerRadius="12" Padding="12" Margin="2,14,2,2">
+                    <Border DockPanel.Dock="Bottom" Background="{StaticResource RaisedBackgroundBrush}"
+                            CornerRadius="12" Padding="10,8" Margin="1,10,1,1">
                         <StackPanel>
-                            <TextBlock Text="MIMI BETA" Foreground="{StaticResource AccentBrush}" FontWeight="Bold"/>
-                            <TextBlock Text="{Binding Loc[Nav_BetaDescription]}" TextWrapping="Wrap" Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" Margin="0,6,0,0"/>
+                            <TextBlock Text="MIMI BETA" Foreground="{StaticResource AccentBrush}"
+                                       FontSize="10" FontWeight="Bold"/>
+                            <TextBlock Text="{Binding Loc[Nav_BetaDescription]}" TextWrapping="Wrap"
+                                       Foreground="{StaticResource TextMutedBrush}" FontSize="10" Margin="0,4,0,0"/>
                         </StackPanel>
                     </Border>
+                    <Button DockPanel.Dock="Bottom" Command="{Binding OpenSettingsCommand}"
+                            Style="{StaticResource NavSettingsButtonStyle}" Margin="1,4,1,0"
+                            HorizontalContentAlignment="Left"
+                            AutomationProperties.Name="{Binding Loc[Nav_Settings]}">
+                        <StackPanel Orientation="Horizontal">
+                            <Path Data="{StaticResource SettingsIconGeometry}" Style="{StaticResource IconPathStyle}"/>
+                            <TextBlock Text="{Binding Loc[Nav_Settings]}" Margin="10,0,0,0" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
 
                     <Grid Margin="2,4,2,8">
                         <ListBox ItemsSource="{Binding Playlists}"
@@ -549,18 +566,9 @@
                                 </DataTemplate>
                             </ListBox.ItemTemplate>
                             <ListBox.ItemContainerStyle>
-                                <Style TargetType="{x:Type ListBoxItem}">
+                                <Style TargetType="{x:Type ListBoxItem}" BasedOn="{StaticResource MimiRowItemStyle}">
                                     <Setter Property="Padding" Value="5"/>
                                     <Setter Property="Margin" Value="1"/>
-                                    <Setter Property="Background" Value="Transparent"/>
-                                    <Setter Property="Foreground" Value="{StaticResource TextStrongBrush}"/>
-                                    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-                                    <Setter Property="FocusVisualStyle" Value="{StaticResource MimiFocusVisualStyle}"/>
-                                    <Style.Triggers>
-                                        <Trigger Property="IsSelected" Value="True">
-                                            <Setter Property="Background" Value="{StaticResource SelectedBackgroundBrush}"/>
-                                        </Trigger>
-                                    </Style.Triggers>
                                 </Style>
                             </ListBox.ItemContainerStyle>
                         </ListBox>
@@ -820,7 +828,9 @@
                                 <MenuItem Header="{Binding PlacementTarget.DataContext.Loc[Playlist_AddToPlaylist], RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"
                                           ItemsSource="{Binding PlacementTarget.DataContext.Playlists, RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}">
                                     <MenuItem.ItemContainerStyle>
-                                        <Style TargetType="{x:Type MenuItem}">
+                                        <!-- Keeps the themed menu template for the
+                                             generated playlist items. -->
+                                        <Style TargetType="{x:Type MenuItem}" BasedOn="{StaticResource {x:Type MenuItem}}">
                                             <Setter Property="Header" Value="{Binding Name}"/>
                                             <Setter Property="Command" Value="{Binding PlacementTarget.DataContext.AddSelectedTrackToPlaylistCommand, RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"/>
                                             <Setter Property="CommandParameter" Value="{Binding}"/>
@@ -1051,12 +1061,11 @@
                             </GridView>
                         </ListView.View>
                         <ListView.ItemContainerStyle>
-                            <Style TargetType="{x:Type ListViewItem}">
-                                <Setter Property="Padding" Value="8"/>
+                            <!-- Themed container: quiet accent hover instead of
+                                 the light system highlight. -->
+                            <Style TargetType="{x:Type ListViewItem}" BasedOn="{StaticResource MimiGridViewItemStyle}">
+                                <Setter Property="Padding" Value="8,5"/>
                                 <Setter Property="Margin" Value="0,2"/>
-                                <Setter Property="Background" Value="Transparent"/>
-                                <Setter Property="Foreground" Value="{StaticResource TextStrongBrush}"/>
-                                <Setter Property="FocusVisualStyle" Value="{StaticResource MimiFocusVisualStyle}"/>
                             </Style>
                         </ListView.ItemContainerStyle>
                     </ListView>
@@ -1225,17 +1234,13 @@
                             </ContextMenu>
                         </ListBox.ContextMenu>
                         <ListBox.ItemContainerStyle>
-                            <Style TargetType="{x:Type ListBoxItem}">
+                            <Style TargetType="{x:Type ListBoxItem}" BasedOn="{StaticResource MimiRowItemStyle}">
                                 <Setter Property="Padding" Value="8"/>
                                 <Setter Property="Margin" Value="2"/>
-                                <Setter Property="Background" Value="Transparent"/>
-                                <Setter Property="Foreground" Value="{StaticResource TextStrongBrush}"/>
-                                <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-                                <Setter Property="FocusVisualStyle" Value="{StaticResource MimiFocusVisualStyle}"/>
                                 <Style.Triggers>
-                                    <Trigger Property="IsSelected" Value="True">
-                                        <Setter Property="Background" Value="{StaticResource SelectedBackgroundBrush}"/>
-                                    </Trigger>
+                                    <!-- The row that is actually playing keeps the
+                                         selection plate even when another row is
+                                         highlighted. -->
                                     <DataTrigger Binding="{Binding IsCurrent}" Value="True">
                                         <Setter Property="Background" Value="{StaticResource SelectedBackgroundBrush}"/>
                                     </DataTrigger>
@@ -1394,17 +1399,13 @@
                             </ContextMenu>
                         </ListBox.ContextMenu>
                         <ListBox.ItemContainerStyle>
-                            <Style TargetType="{x:Type ListBoxItem}">
+                            <Style TargetType="{x:Type ListBoxItem}" BasedOn="{StaticResource MimiRowItemStyle}">
                                 <Setter Property="Padding" Value="8"/>
                                 <Setter Property="Margin" Value="2"/>
-                                <Setter Property="Background" Value="Transparent"/>
-                                <Setter Property="Foreground" Value="{StaticResource TextStrongBrush}"/>
-                                <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-                                <Setter Property="FocusVisualStyle" Value="{StaticResource MimiFocusVisualStyle}"/>
                                 <Style.Triggers>
-                                    <Trigger Property="IsSelected" Value="True">
-                                        <Setter Property="Background" Value="{StaticResource SelectedBackgroundBrush}"/>
-                                    </Trigger>
+                                    <!-- The row that is actually playing keeps the
+                                         selection plate even when another row is
+                                         highlighted. -->
                                     <DataTrigger Binding="{Binding IsCurrent}" Value="True">
                                         <Setter Property="Background" Value="{StaticResource SelectedBackgroundBrush}"/>
                                     </DataTrigger>
@@ -1610,17 +1611,13 @@
                             </ContextMenu>
                         </ListBox.ContextMenu>
                         <ListBox.ItemContainerStyle>
-                            <Style TargetType="{x:Type ListBoxItem}">
+                            <Style TargetType="{x:Type ListBoxItem}" BasedOn="{StaticResource MimiRowItemStyle}">
                                 <Setter Property="Padding" Value="8"/>
                                 <Setter Property="Margin" Value="2"/>
-                                <Setter Property="Background" Value="Transparent"/>
-                                <Setter Property="Foreground" Value="{StaticResource TextStrongBrush}"/>
-                                <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-                                <Setter Property="FocusVisualStyle" Value="{StaticResource MimiFocusVisualStyle}"/>
                                 <Style.Triggers>
-                                    <Trigger Property="IsSelected" Value="True">
-                                        <Setter Property="Background" Value="{StaticResource SelectedBackgroundBrush}"/>
-                                    </Trigger>
+                                    <!-- The row that is actually playing keeps the
+                                         selection plate even when another row is
+                                         highlighted. -->
                                     <DataTrigger Binding="{Binding IsCurrent}" Value="True">
                                         <Setter Property="Background" Value="{StaticResource SelectedBackgroundBrush}"/>
                                     </DataTrigger>
@@ -1914,17 +1911,8 @@
                                         </DataTemplate>
                                     </ListBox.ItemTemplate>
                                     <ListBox.ItemContainerStyle>
-                                        <Style TargetType="{x:Type ListBoxItem}">
+                                        <Style TargetType="{x:Type ListBoxItem}" BasedOn="{StaticResource MimiRowItemStyle}">
                                             <Setter Property="Padding" Value="6,4"/>
-                                            <Setter Property="Background" Value="Transparent"/>
-                                            <Setter Property="Foreground" Value="{StaticResource TextStrongBrush}"/>
-                                            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-                                            <Setter Property="FocusVisualStyle" Value="{StaticResource MimiFocusVisualStyle}"/>
-                                            <Style.Triggers>
-                                                <Trigger Property="IsSelected" Value="True">
-                                                    <Setter Property="Background" Value="{StaticResource SelectedBackgroundBrush}"/>
-                                                </Trigger>
-                                            </Style.Triggers>
                                         </Style>
                                     </ListBox.ItemContainerStyle>
                                 </ListBox>
@@ -2359,12 +2347,8 @@
                                         <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightTextBrushKey}" Color="{DynamicResource TextStrongColor}"/>
                                     </ListView.Resources>
                                     <ListView.ItemContainerStyle>
-                                        <Style TargetType="{x:Type ListViewItem}">
+                                        <Style TargetType="{x:Type ListViewItem}" BasedOn="{StaticResource MimiListViewItemStyle}">
                                             <Setter Property="Padding" Value="6,4"/>
-                                            <Setter Property="Background" Value="Transparent"/>
-                                            <Setter Property="Foreground" Value="{StaticResource TextStrongBrush}"/>
-                                            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-                                            <Setter Property="FocusVisualStyle" Value="{StaticResource MimiFocusVisualStyle}"/>
                                         </Style>
                                     </ListView.ItemContainerStyle>
                                     <ListView.ItemTemplate>
@@ -2546,14 +2530,10 @@
                                             <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightTextBrushKey}" Color="{DynamicResource TextStrongColor}"/>
                                         </ListBox.Resources>
                                         <ListBox.ItemContainerStyle>
-                                            <Style TargetType="{x:Type ListBoxItem}">
+                                            <Style TargetType="{x:Type ListBoxItem}" BasedOn="{StaticResource MimiRowItemStyle}">
                                                 <Setter Property="Padding" Value="8,5"/>
-                                                <Setter Property="Background" Value="Transparent"/>
-                                                <Setter Property="Foreground" Value="{StaticResource TextStrongBrush}"/>
-                                                <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
                                                 <Setter Property="Focusable" Value="False"/>
                                                 <Setter Property="IsHitTestVisible" Value="False"/>
-                                                <Setter Property="FocusVisualStyle" Value="{StaticResource MimiFocusVisualStyle}"/>
                                                 <Style.Triggers>
                                                     <DataTrigger Binding="{Binding IsCurrent}" Value="True">
                                                         <Setter Property="Background" Value="{StaticResource SelectedBackgroundBrush}"/>

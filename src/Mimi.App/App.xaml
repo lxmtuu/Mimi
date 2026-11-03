@@ -14,15 +14,6 @@
         <Style TargetType="TextBlock">
             <Setter Property="FontFamily" Value="{StaticResource MimiUiFontFamily}"/>
         </Style>
-        <Style TargetType="ContextMenu">
-            <Setter Property="FontFamily" Value="{StaticResource MimiUiFontFamily}"/>
-        </Style>
-        <Style TargetType="MenuItem">
-            <Setter Property="FontFamily" Value="{StaticResource MimiUiFontFamily}"/>
-        </Style>
-        <Style TargetType="ToolTip">
-            <Setter Property="FontFamily" Value="{StaticResource MimiUiFontFamily}"/>
-        </Style>
         <Style x:Key="MimiFocusVisualStyle">
             <Setter Property="Control.Template">
                 <Setter.Value>
@@ -49,11 +40,34 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}" CornerRadius="10" Padding="{TemplateBinding Padding}">
-                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                                RecognizesAccessKey="True"/>
-                        </Border>
+                        <Grid>
+                            <Border Background="{TemplateBinding Background}" CornerRadius="10"/>
+                            <!-- The wash sits above the background but under the
+                                 content, so an accent button keeps its own colour
+                                 and the label stays crisp. -->
+                            <Border x:Name="HoverWash" CornerRadius="10"
+                                    Background="{StaticResource HoverSurfaceStrongBrush}"
+                                    Opacity="0"/>
+                            <Border x:Name="PressWash" CornerRadius="10"
+                                    Background="{StaticResource ScrimBrush}"
+                                    Opacity="0"/>
+                            <ContentPresenter Margin="{TemplateBinding Padding}"
+                                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                              RecognizesAccessKey="True"/>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="HoverWash" Property="Opacity" Value="1"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="HoverWash" Property="Opacity" Value="0"/>
+                                <Setter TargetName="PressWash" Property="Opacity" Value="0.28"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="HoverWash" Property="Opacity" Value="0"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
@@ -65,17 +79,15 @@
                 </Trigger>
             </Style.Triggers>
         </Style>
-        <Style TargetType="CheckBox">
-            <Setter Property="FontFamily" Value="{StaticResource MimiUiFontFamily}"/>
-            <Setter Property="Foreground" Value="{StaticResource TextStrongBrush}"/>
-            <Setter Property="Margin" Value="0,7"/>
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
-            <Setter Property="FocusVisualStyle" Value="{StaticResource MimiFocusVisualStyle}"/>
-        </Style>
-        <Style TargetType="TextBox">
-            <Setter Property="FontFamily" Value="{StaticResource MimiUiFontFamily}"/>
-            <Setter Property="FocusVisualStyle" Value="{StaticResource MimiFocusVisualStyle}"/>
-        </Style>
+        <!-- Stock templates that survive (menu popups, edit controls)
+             read these system keys; pointing them at theme colours keeps
+             the app from flashing light grey inside a dark theme. -->
+        <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="{DynamicResource SelectedBackgroundColor}"/>
+        <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" Color="{DynamicResource TextStrongColor}"/>
+        <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey}" Color="{DynamicResource SelectedBackgroundColor}"/>
+        <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightTextBrushKey}" Color="{DynamicResource TextStrongColor}"/>
+        <SolidColorBrush x:Key="{x:Static SystemColors.HotTrackBrushKey}" Color="{DynamicResource AccentColor}"/>
+        <SolidColorBrush x:Key="{x:Static SystemColors.ControlTextBrushKey}" Color="{DynamicResource TextPrimaryColor}"/>
         </ResourceDictionary>
     </Application.Resources>
 </Application>
