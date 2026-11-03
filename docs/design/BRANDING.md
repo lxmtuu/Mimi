@@ -55,9 +55,16 @@ chuẩn, tính vuông của hai PNG và toàn bộ wiring
 2. Crop theo khung tile (874×874), sau đó gọt ~2 px viền alpha
    (MinFilter 5 trên kênh alpha đã đệm trong suốt) để bỏ dải sáng
    anti-alias còn sót từ nền trắng, cho master cuối 870×870.
-3. Thu 256×256 bằng Lanczos cho `mimi-256.png`; `mimi.ico` được
-   xuất từ chính bản 256 đó với 9 cỡ liệt kê ở trên.
+3. Thu 256×256 bằng Lanczos cho `mimi-256.png`. Riêng
+   `mimi.ico` được đóng thủ công từ master theo kiểu tương
+   thích cổ điển: frame 16–64 px mã hoá BMP/DIB 32-bit không
+   nén, frame 128/256 px nén PNG (256 bắt buộc PNG). Không
+   dùng cách xuất ICO mặc định của Pillow vì nó nén PNG cho
+   mọi frame — WPF vẫn đọc được (thanh tiêu đề/header hiện
+   đúng) nhưng đường trích icon cỡ nhỏ của Windows Shell cho
+   taskbar/shortcut tin cậy nhất với frame BMP; bản ICO thuần
+   PNG từng khiến taskbar giữ nguyên icon tạm cũ.
 
 Khi sửa logo, hãy sửa ở `mimi-logo.png` rồi xuất lại
-`mimi-256.png` và `mimi.ico` theo đúng các cỡ này để test gác
-không bị vỡ.
+`mimi-256.png` và `mimi.ico` theo đúng các cỡ cùng kiểu mã
+hoá frame ở bước 3 để test gác không bị vỡ.

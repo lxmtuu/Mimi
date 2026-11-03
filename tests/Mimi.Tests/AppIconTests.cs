@@ -36,6 +36,23 @@ public sealed class AppIconTests
             var height = bytes[entryOffset + 1] == 0 ? 256 : bytes[entryOffset + 1];
             Assert.Equal(width, height);
             widths.Add(width);
+
+            // Frames up to 64px must stay uncompressed BMP/DIB (a
+            // BITMAPINFOHEADER starts with its own size, 40): the shell
+            // taskbar/shortcut icon-extraction path is most reliable
+            // with those, and the earlier PNG-only export left the
+            // taskbar showing the stale placeholder icon. The large
+            // frames stay PNG-compressed (mandatory for 256px).
+            var imageOffset = BitConverter.ToInt32(bytes, entryOffset + 12);
+            if (width <= 64)
+            {
+                Assert.Equal(40, BitConverter.ToInt32(bytes, imageOffset));
+            }
+            else
+            {
+                Assert.Equal(0x89, (int)bytes[imageOffset]);
+                Assert.Equal('P', (char)bytes[imageOffset + 1]);
+            }
         }
 
         Assert.Contains(16, widths);
