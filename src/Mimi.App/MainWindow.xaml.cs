@@ -496,7 +496,7 @@ public partial class MainWindow : Window
         }
     }
 
-    private void PushStageLyrics() =>    private void PushStageLyrics() =>
+    private void PushStageLyrics() =>
         stageWindow?.SetLyrics(
             viewModel.PreviousLyricLine?.Text,
             viewModel.CurrentLyricLine?.Text,
