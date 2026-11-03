@@ -149,8 +149,13 @@ public sealed class YouTubeFeatureWiringTests
             StringComparison.Ordinal);
         Assert.Contains("youtubeSearchService.TrySaveApiKey", viewModel, StringComparison.Ordinal);
         Assert.Contains("youtubeSearchService.TryClearApiKey", viewModel, StringComparison.Ordinal);
-        // The pasted key is written to disk and never kept as view model state.
-        Assert.DoesNotContain("private string youTubeApiKey", viewModel, StringComparison.Ordinal);
+        // The pasted key is written to disk and never kept as view model state;
+        // only the feedback message lives there.
+        Assert.DoesNotContain("private string youTubeApiKey =", viewModel, StringComparison.Ordinal);
+        Assert.Contains(
+            "private string youTubeApiKeyMessage = string.Empty;",
+            viewModel,
+            StringComparison.Ordinal);
 
         var codeBehind = Read(root, "src", "Mimi.App", "MainWindow.xaml.cs");
         Assert.Contains("YouTubeApiKeyBox.Clear();", codeBehind, StringComparison.Ordinal);
