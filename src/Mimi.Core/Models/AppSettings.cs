@@ -14,13 +14,14 @@ namespace Mimi.Models;
 /// interface-theme preference. Version 6 adds per-track lyrics display
 /// offsets. Version 7 adds the Internet Radio enable/disable preference.
 /// Version 8 adds the online catalog (in-app search and streaming)
+/// enable/disable preference. Version 9 adds the YouTube search
 /// enable/disable preference.
 /// Unknown string values are tolerated here and interpreted defensively by
 /// the app layer.
 /// </summary>
 public sealed class AppSettings
 {
-    public const int CurrentVersion = 8;
+    public const int CurrentVersion = 9;
 
     public const int MinimumLyricsOffsetMilliseconds = -30000;
 
@@ -60,6 +61,13 @@ public sealed class AppSettings
     /// provider audio, and online items never join the local library.
     /// </summary>
     public bool OnlineCatalogEnabled { get; set; } = true;
+
+    /// <summary>
+    /// Controls whether in-app YouTube search is available. Search uses the
+    /// user's own Data API key; playback happens only in YouTube's embedded
+    /// player, which stays visible, and Mimi never downloads the media.
+    /// </summary>
+    public bool YouTubeSearchEnabled { get; set; } = true;
 
     public List<string> WatchedFolders { get; set; } = [];
 

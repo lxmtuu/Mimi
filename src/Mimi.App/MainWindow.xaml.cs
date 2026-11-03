@@ -1,5 +1,7 @@
 using System.ComponentModel;
+using System.IO;
 using System.Windows;
+using Microsoft.Web.WebView2.Core;
 using System.Windows.Controls.Primitives;
 using System.Windows.Interop;
 using System.Windows.Threading;
@@ -24,6 +26,7 @@ public partial class MainWindow : Window
     private StageWindow? stageWindow;
     private WindowsMediaControlsService? mediaControls;
     private IntPtr mainWindowHandle;
+    private bool youTubeBrowserReady;
 
     public MainWindow(MainWindowViewModel viewModel, IAudioPlayer audioPlayer)
     {
@@ -92,6 +95,17 @@ public partial class MainWindow : Window
         metricsTimer.Tick -= MetricsTimer_Tick;
         viewModel.StageToggleRequested -= ViewModel_StageToggleRequested;
         viewModel.PropertyChanged -= ViewModel_PropertyChanged;
+        try
+        {
+            YouTubeBrowser.Dispose();
+        }
+        catch (Exception ex)
+        {
+            Serilog.Log.Debug(
+                "Could not dispose the YouTube player: {ExceptionType}",
+                ex.GetType().FullName);
+        }
+
         stageWindow?.Close();
         mediaControls?.Dispose();
         mediaControls = null;
@@ -130,6 +144,58 @@ public partial class MainWindow : Window
                  nameof(MainWindowViewModel.NextLyricLine))
         {
             PushStageLyrics();
+        }
+    }
+
+    /// <summary>
+    /// Drives the single embedded player. Mimi only navigates YouTube's own
+    /// player: no stream is resolved and no media is downloaded. Hiding the
+    /// pane navigates the browser away, which stops playback, so YouTube audio
+    /// can never keep running without a visible player.
+    /// </summary>
+    private async Task SyncYouTubePlayerAsync()
+    {
+        try
+        {
+            if (!viewModel.IsYouTubePlaying)
+            {
+                if (youTubeBrowserReady)
+                    YouTubeBrowser.CoreWebView2.Navigate("about:blank");
+
+                return;
+            }
+
+            if (!youTubeBrowserReady)
+            {
+                // A dedicated profile keeps the user's own YouTube session
+                // (sign-in, Premium) between Mimi runs, like a browser profile.
+                var userDataFolder = Path.Combine(
+                    Environment.GetFolderPath(
+                        Environment.SpecialFolder.LocalApplicationData),
+                    "Mimi",
+                    "YouTubeBrowserProfile");
+                Directory.CreateDirectory(userDataFolder);
+
+                var environment = await CoreWebView2Environment.CreateAsync(
+                    userDataFolder: userDataFolder);
+                await YouTubeBrowser.EnsureCoreWebView2Async(environment);
+                youTubeBrowserReady = true;
+            }
+
+            var core = YouTubeBrowser.CoreWebView2;
+            if (core is null) return;
+
+            var video = viewModel.CurrentYouTubeVideo?.Video;
+            if (video is null) return;
+
+            core.Navigate(video.EmbedUrl.AbsoluteUri);
+        }
+        catch (Exception ex)
+        {
+            // A missing WebView2 Runtime must not break the rest of Mimi.
+            Serilog.Log.Warning(
+                "Could not start the YouTube player: {ExceptionType}",
+                ex.GetType().FullName);
         }
     }
 

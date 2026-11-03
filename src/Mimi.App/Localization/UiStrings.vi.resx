@@ -143,6 +143,7 @@
   <data name="Nav_Home" xml:space="preserve"><value>Trang chủ</value></data>
   <data name="Nav_MyLibrary" xml:space="preserve"><value>Thư viện của tôi</value></data>
   <data name="Nav_Online" xml:space="preserve"><value>Nhạc trực tuyến</value></data>
+  <data name="Nav_YouTube" xml:space="preserve"><value>YouTube</value></data>
   <data name="Nav_Playlists" xml:space="preserve"><value>DANH SÁCH PHÁT</value></data>
   <data name="Nav_Radio" xml:space="preserve"><value>Radio trực tuyến</value></data>
   <data name="Nav_RecentlyPlayed" xml:space="preserve"><value>Đã nghe gần đây</value></data>
@@ -175,6 +176,27 @@
   <data name="Online_SearchLabel" xml:space="preserve"><value>Tìm bài hát hoặc nghệ sĩ</value></data>
   <data name="Online_Source" xml:space="preserve"><value>Phát trực tuyến từ Audius</value></data>
   <data name="Online_Unavailable" xml:space="preserve"><value>Hiện không dùng được nhạc trực tuyến.</value></data>
+  <data name="YouTube_Description" xml:space="preserve"><value>Tìm trên YouTube và phát video ngay trong khung Đang phát. Trình phát chính thức luôn hiển thị khi đang phát, đóng lại là dừng âm thanh. Hạn mức miễn phí cho khoảng 100 lần tìm mỗi ngày.</value></data>
+  <data name="YouTube_ExternalTimeline" xml:space="preserve"><value>Trình phát YouTube</value></data>
+  <data name="YouTube_LoadFailed" xml:space="preserve"><value>Không tìm được trên YouTube. Hãy kiểm tra kết nối và thử lại.</value></data>
+  <data name="YouTube_Loading" xml:space="preserve"><value>Đang tìm trên YouTube…</value></data>
+  <data name="YouTube_NoResults" xml:space="preserve"><value>Không có video nào khớp với tìm kiếm.</value></data>
+  <data name="YouTube_NotConfigured" xml:space="preserve"><value>Hãy đặt API key YouTube Data API v3 của bạn vào {0} (hoặc đặt biến môi trường MIMI_YOUTUBE_API_KEY), rồi tìm lại.</value></data>
+  <data name="YouTube_NowPlaying" xml:space="preserve"><value>ĐANG PHÁT</value></data>
+  <data name="YouTube_OpenFailed" xml:space="preserve"><value>Không mở được video này trên YouTube.</value></data>
+  <data name="YouTube_OpenSource" xml:space="preserve"><value>Mở</value></data>
+  <data name="YouTube_PlayAutomation" xml:space="preserve"><value>Phát video này hoặc dừng lại</value></data>
+  <data name="YouTube_ProviderAttribution" xml:space="preserve"><value>Trình phát của YouTube</value></data>
+  <data name="YouTube_QuotaExceeded" xml:space="preserve"><value>Hạn mức tìm kiếm YouTube hôm nay đã hết. Hạn mức được làm mới hằng ngày, hoặc bạn có thể tăng trong Google Cloud.</value></data>
+  <data name="YouTube_ResultListAutomation" xml:space="preserve"><value>Kết quả tìm kiếm YouTube</value></data>
+  <data name="YouTube_ResultsAvailable" xml:space="preserve"><value>{0} video</value></data>
+  <data name="YouTube_Search" xml:space="preserve"><value>Tìm</value></data>
+  <data name="YouTube_SearchAutomation" xml:space="preserve"><value>Tìm trên YouTube</value></data>
+  <data name="YouTube_SearchLabel" xml:space="preserve"><value>Tìm trên YouTube</value></data>
+  <data name="YouTube_Source" xml:space="preserve"><value>YouTube</value></data>
+  <data name="YouTube_Stop" xml:space="preserve"><value>Dừng</value></data>
+  <data name="YouTube_Title" xml:space="preserve"><value>YouTube</value></data>
+  <data name="YouTube_Unavailable" xml:space="preserve"><value>Hiện không dùng được tìm kiếm YouTube.</value></data>
   <data name="OpenWith_CouldNotOpenPaths" xml:space="preserve"><value>Không thể mở các đường dẫn đó bằng Mimi.&#10;&#10;{0}</value></data>
   <data name="OpenWith_FilesNotFound" xml:space="preserve"><value>Không tìm thấy file được mở.</value></data>
   <data name="OpenWith_NoneOpenedSongsCouldBePlayed" xml:space="preserve"><value>Không bài nào được mở có thể phát.</value></data>
@@ -312,6 +334,9 @@
   <data name="Settings_EnableOnline" xml:space="preserve"><value>Bật tìm nhạc trực tuyến</value></data>
   <data name="Settings_OnlineDescription" xml:space="preserve"><value>Khi bật, Mimi tìm trong danh mục Audius và phát trực tiếp bài bạn chọn, không tải về và không lưu đệm. Audius và các content node có thể thấy địa chỉ IP của bạn. Không có nội dung nào được thêm vào thư viện, hàng đợi, lịch sử, yêu thích hay phiên lưu. Tắt tùy chọn này để ẩn mục nhạc trực tuyến và dừng bài đang phát.</value></data>
   <data name="Settings_OnlineSection" xml:space="preserve"><value>NHẠC TRỰC TUYẾN</value></data>
+  <data name="Settings_EnableYouTube" xml:space="preserve"><value>Bật tìm kiếm YouTube</value></data>
+  <data name="Settings_YouTubeDescription" xml:space="preserve"><value>Khi bật, Mimi tìm trên YouTube bằng API key của chính bạn và phát video bằng trình phát nhúng chính thức của YouTube ngay trong Mimi. Mimi không tải, không tách và không lưu đệm nội dung, và không có gì từ YouTube được thêm vào thư viện, hàng đợi, lịch sử, yêu thích hay phiên lưu. Tắt tùy chọn này để ẩn YouTube và dừng video.</value></data>
+  <data name="Settings_YouTubeSection" xml:space="preserve"><value>YOUTUBE</value></data>
   <data name="Settings_KeyboardShortcutsSection" xml:space="preserve"><value>PHÍM TẮT</value></data>
   <data name="Settings_Language" xml:space="preserve"><value>Ngôn ngữ giao diện</value></data>
   <data name="Settings_LanguageDescription" xml:space="preserve"><value>Thay đổi áp dụng ngay. Mimi sẽ tiếp tục mở rộng phần đã dịch trong Phase 5.</value></data>

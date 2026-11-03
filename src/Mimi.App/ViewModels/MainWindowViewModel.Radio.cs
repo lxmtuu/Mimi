@@ -75,7 +75,8 @@ public sealed partial class MainWindowViewModel
     public bool HasCurrentPlaybackSource =>
         CurrentTrack is not null ||
         CurrentRadioStation is not null ||
-        CurrentOnlineTrack is not null;
+        CurrentOnlineTrack is not null ||
+        CurrentYouTubeVideo is not null;
 
     public bool IsLivePlayback => CurrentRadioStation is not null;
 
@@ -96,6 +97,7 @@ public sealed partial class MainWindowViewModel
 
         IsSettingsOpen = false;
         IsOnlineOpen = false;
+        IsYouTubeOpen = false;
         IsRadioOpen = true;
 
         if (!radioCatalogLoaded && !IsRadioLoading)

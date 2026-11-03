@@ -4,6 +4,7 @@
         xmlns:controls="clr-namespace:Mimi.Controls"
         xmlns:effects="clr-namespace:Mimi.Effects"
         xmlns:behaviors="clr-namespace:Mimi.Behaviors"
+        xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
         xmlns:vm="clr-namespace:Mimi.ViewModels"
         Title="Mimi" Icon="pack://application:,,,/Assets/mimi.ico"
         Height="820" Width="1320" MinHeight="620" MinWidth="960"
@@ -19,6 +20,7 @@
         <StreamGeometry x:Key="HeartIconGeometry">M12,21 C7,16.5 3,13.2 3,9.3 C3,6.4 5.1,4.5 7.6,4.5 C9.4,4.5 11,5.5 12,7 C13,5.5 14.6,4.5 16.4,4.5 C18.9,4.5 21,6.4 21,9.3 C21,13.2 17,16.5 12,21 Z</StreamGeometry>
         <StreamGeometry x:Key="HistoryIconGeometry">M12,3 A9,9 0 1 1 3.2,9 L1.7,9 L5.2,4.7 L8.7,9 L5.3,9 A7,7 0 1 0 12,5 Z M11,8 L13,8 L13,12.2 L16.3,14 L15.4,15.8 L11,13.4 Z</StreamGeometry>
         <StreamGeometry x:Key="RadioIconGeometry">M5,8 L18,3 L18.8,4.7 L8,8 Z M4,10 H20 V20 H4 Z M6,12 H12 V18 H6 Z M9,13.4 A1.8,1.8 0 1 1 9,17 A1.8,1.8 0 1 1 9,13.4 Z M14,12.2 H18 V13.7 H14 Z M14,15 H18 V16.5 H14 Z</StreamGeometry>
+        <StreamGeometry x:Key="YouTubeIconGeometry">M3,6 A2.5,2.5 0 0 1 5.5,3.5 H18.5 A2.5,2.5 0 0 1 21,6 V18 A2.5,2.5 0 0 1 18.5,20.5 H5.5 A2.5,2.5 0 0 1 3,18 Z M10,8.5 L16,12 L10,15.5 Z</StreamGeometry>
         <StreamGeometry x:Key="OnlineMusicIconGeometry">M12,2 A10,10 0 1 1 12,22 A10,10 0 1 1 12,2 Z M10,7.6 L16.6,12 L10,16.4 Z</StreamGeometry>
         <StreamGeometry x:Key="PlusIconGeometry">M10,4 H14 V10 H20 V14 H14 V20 H10 V14 H4 V10 H10 Z</StreamGeometry>
         <StreamGeometry x:Key="FolderIconGeometry">M3,6 A2,2 0 0 1 5,4 H10 L12,6 H19 A2,2 0 0 1 21,8 V18 A2,2 0 0 1 19,20 H5 A2,2 0 0 1 3,18 Z</StreamGeometry>
@@ -125,6 +127,15 @@
         <Style x:Key="NavOnlineButtonStyle" TargetType="{x:Type Button}" BasedOn="{StaticResource NavButtonStyle}">
             <Style.Triggers>
                 <DataTrigger Binding="{Binding IsOnlineOpen}" Value="True">
+                    <Setter Property="Background" Value="{StaticResource SelectedBackgroundBrush}"/>
+                    <Setter Property="Foreground" Value="{StaticResource AccentBrush}"/>
+                    <Setter Property="FontWeight" Value="SemiBold"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="NavYouTubeButtonStyle" TargetType="{x:Type Button}" BasedOn="{StaticResource NavButtonStyle}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsYouTubeOpen}" Value="True">
                     <Setter Property="Background" Value="{StaticResource SelectedBackgroundBrush}"/>
                     <Setter Property="Foreground" Value="{StaticResource AccentBrush}"/>
                     <Setter Property="FontWeight" Value="SemiBold"/>
@@ -429,6 +440,14 @@
                             <StackPanel Orientation="Horizontal">
                                 <Path Data="{StaticResource OnlineMusicIconGeometry}" Style="{StaticResource IconPathStyle}"/>
                                 <TextBlock Text="{Binding Loc[Nav_Online]}" Margin="10,0,0,0" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+                        <Button Command="{Binding ShowYouTubeCommand}" Style="{StaticResource NavYouTubeButtonStyle}"
+                                Visibility="{Binding IsYouTubeAvailable, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                AutomationProperties.Name="{Binding Loc[Nav_YouTube]}">
+                            <StackPanel Orientation="Horizontal">
+                                <Path Data="{StaticResource YouTubeIconGeometry}" Style="{StaticResource IconPathStyle}"/>
+                                <TextBlock Text="{Binding Loc[Nav_YouTube]}" Margin="10,0,0,0" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
                         <Button Command="{Binding AddFilesCommand}" Style="{StaticResource NavButtonStyle}" Margin="2,10,2,2"
@@ -1462,6 +1481,131 @@
 
             <Border Grid.Column="1" Background="{StaticResource PanelBackgroundBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="18"
                     Padding="20" Margin="0,0,14,0"
+                    Visibility="{Binding IsYouTubeContentVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <DockPanel Grid.Row="0" LastChildFill="False">
+                        <StackPanel DockPanel.Dock="Left" MaxWidth="520">
+                            <TextBlock Text="{Binding Loc[YouTube_Title]}" FontSize="23" FontWeight="Bold"/>
+                            <TextBlock Text="{Binding Loc[YouTube_Description]}"
+                                       Foreground="{StaticResource TextMutedBrush}" FontSize="12"
+                                       Margin="0,5,0,0" TextWrapping="Wrap"/>
+                        </StackPanel>
+                        <Border DockPanel.Dock="Right" Background="{StaticResource RaisedBackgroundBrush}"
+                                CornerRadius="10" Padding="10,7" VerticalAlignment="Top">
+                            <TextBlock Text="{Binding Loc[YouTube_ProviderAttribution]}"
+                                       Foreground="{StaticResource AccentBrush}" FontSize="11" FontWeight="SemiBold"/>
+                        </Border>
+                    </DockPanel>
+
+                    <Grid Grid.Row="1" Margin="0,18,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                            <TextBlock Text="{Binding Loc[YouTube_SearchLabel]}"
+                                       Foreground="{StaticResource TextMutedBrush}" FontSize="11" Margin="2,0,0,5"/>
+                            <TextBox Text="{Binding YouTubeSearchText, UpdateSourceTrigger=PropertyChanged}"
+                                     AutomationProperties.Name="{Binding Loc[YouTube_SearchAutomation]}">
+                                <TextBox.InputBindings>
+                                    <KeyBinding Key="Enter" Command="{Binding SearchYouTubeCommand}"/>
+                                </TextBox.InputBindings>
+                            </TextBox>
+                        </StackPanel>
+                        <Button Grid.Column="1" Content="{Binding Loc[YouTube_Search]}"
+                                Command="{Binding SearchYouTubeCommand}" Padding="14,8" Margin="0,21,0,0"
+                                VerticalAlignment="Top"
+                                AutomationProperties.Name="{Binding Loc[YouTube_SearchAutomation]}"/>
+                    </Grid>
+
+                    <StackPanel Grid.Row="2" Margin="0,12,0,10">
+                        <TextBlock Text="{Binding YouTubeStatusLabel}" Foreground="{StaticResource TextMutedBrush}"
+                                   FontSize="11" TextWrapping="Wrap"/>
+                        <ProgressBar Height="3" Margin="0,7,0,0" IsIndeterminate="True"
+                                     Visibility="{Binding IsYouTubeLoading, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                    </StackPanel>
+
+                    <ListBox Grid.Row="3"
+                             ItemsSource="{Binding YouTubeVideos}"
+                             SelectedItem="{Binding SelectedYouTubeVideo, Mode=TwoWay}"
+                             Background="Transparent" BorderThickness="0"
+                             Foreground="{StaticResource TextStrongBrush}"
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                             VirtualizingPanel.IsVirtualizing="True"
+                             behaviors:ItemClickCommandBehavior.Command="{Binding PlayYouTubeVideoCommand}"
+                             AutomationProperties.Name="{Binding Loc[YouTube_ResultListAutomation]}">
+                        <ListBox.ItemContainerStyle>
+                            <Style TargetType="{x:Type ListBoxItem}">
+                                <Setter Property="Padding" Value="8"/>
+                                <Setter Property="Margin" Value="2"/>
+                                <Setter Property="Background" Value="Transparent"/>
+                                <Setter Property="Foreground" Value="{StaticResource TextStrongBrush}"/>
+                                <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                <Setter Property="FocusVisualStyle" Value="{StaticResource MimiFocusVisualStyle}"/>
+                                <Style.Triggers>
+                                    <Trigger Property="IsSelected" Value="True">
+                                        <Setter Property="Background" Value="{StaticResource SelectedBackgroundBrush}"/>
+                                    </Trigger>
+                                    <DataTrigger Binding="{Binding IsCurrent}" Value="True">
+                                        <Setter Property="Background" Value="{StaticResource SelectedBackgroundBrush}"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ListBox.ItemContainerStyle>
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Margin="4,5">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Border Grid.Column="0" Width="56" Height="38" CornerRadius="8"
+                                            Background="{StaticResource RaisedBackgroundBrush}" VerticalAlignment="Center"
+                                            ClipToBounds="True">
+                                        <Grid>
+                                            <TextBlock Text="{Binding Initial}" FontSize="15" FontWeight="Bold"
+                                                       Foreground="{StaticResource AccentBrush}"
+                                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            <Image Source="{Binding ThumbnailUrl}" Stretch="UniformToFill"
+                                                   Visibility="{Binding HasThumbnail, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                        </Grid>
+                                    </Border>
+                                    <StackPanel Grid.Column="1" Margin="12,0,10,0" MinWidth="0" VerticalAlignment="Center">
+                                        <DockPanel LastChildFill="False">
+                                            <TextBlock Text="{Binding Title}" FontSize="13" FontWeight="SemiBold"
+                                                       TextTrimming="CharacterEllipsis"/>
+                                            <Border Background="{StaticResource AccentBrush}" CornerRadius="7"
+                                                    Padding="6,2" Margin="8,0,0,0" VerticalAlignment="Center"
+                                                    Visibility="{Binding IsCurrent, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                                <TextBlock Text="{Binding DataContext.Loc[YouTube_NowPlaying], RelativeSource={RelativeSource AncestorType={x:Type ListBox}}}"
+                                                           Foreground="{StaticResource OnAccentBrush}" FontSize="9" FontWeight="Bold"/>
+                                            </Border>
+                                        </DockPanel>
+                                        <TextBlock Text="{Binding ChannelTitle}" Foreground="{StaticResource TextMutedBrush}"
+                                                   FontSize="11" Margin="0,3,0,0" TextTrimming="CharacterEllipsis"/>
+                                    </StackPanel>
+                                    <Button Grid.Column="2" Padding="9,6" VerticalAlignment="Center"
+                                            Command="{Binding DataContext.PlayYouTubeVideoCommand, RelativeSource={RelativeSource AncestorType={x:Type ListBox}}}"
+                                            CommandParameter="{Binding}"
+                                            Content="{Binding DataContext.Loc[YouTube_PlayAutomation], RelativeSource={RelativeSource AncestorType={x:Type ListBox}}}"
+                                            AutomationProperties.Name="{Binding DataContext.Loc[YouTube_PlayAutomation], RelativeSource={RelativeSource AncestorType={x:Type ListBox}}}"/>
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </Grid>
+            </Border>
+
+            <Border Grid.Column="1" Background="{StaticResource PanelBackgroundBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="18"
+                    Padding="20" Margin="0,0,14,0"
                     Visibility="{Binding IsSettingsOpen, Converter={StaticResource BooleanToVisibilityConverter}}">
                 <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                     <StackPanel Margin="0,0,6,0">
@@ -1578,6 +1722,21 @@
                                 <TextBlock Text="{Binding Loc[Settings_OnlineDescription]}"
                                            Foreground="{StaticResource TextMutedBrush}" FontSize="11" TextWrapping="Wrap" Margin="24,0,0,4"/>
                                 <TextBlock Text="{Binding Loc[Online_ProviderAttribution]}"
+                                           Foreground="{StaticResource TextMutedBrush}" FontSize="11" TextWrapping="Wrap" Margin="24,0,0,2"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Background="{StaticResource RaisedBackgroundBrush}" CornerRadius="12" Padding="14" Margin="0,14,0,0"
+                                Visibility="{Binding IsYouTubeServiceInstalled, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <StackPanel>
+                                <TextBlock Text="{Binding Loc[Settings_YouTubeSection]}" Foreground="{StaticResource AccentBrush}"
+                                           FontSize="11" FontWeight="Bold"/>
+                                <CheckBox IsChecked="{Binding YouTubeSearchEnabled, Mode=TwoWay}"
+                                          Content="{Binding Loc[Settings_EnableYouTube]}"
+                                          AutomationProperties.Name="{Binding Loc[Settings_EnableYouTube]}"/>
+                                <TextBlock Text="{Binding Loc[Settings_YouTubeDescription]}"
+                                           Foreground="{StaticResource TextMutedBrush}" FontSize="11" TextWrapping="Wrap" Margin="24,0,0,4"/>
+                                <TextBlock Text="{Binding Loc[YouTube_ProviderAttribution]}"
                                            Foreground="{StaticResource TextMutedBrush}" FontSize="11" TextWrapping="Wrap" Margin="24,0,0,2"/>
                             </StackPanel>
                         </Border>
@@ -1802,6 +1961,7 @@
                                         </DrawingBrush.Drawing>
                                     </DrawingBrush>
                                 </Grid.OpacityMask>
+                                <Grid Visibility="{Binding IsVisualizerSurfaceVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
                                 <Image Source="{Binding CurrentCoverArtPath}" Stretch="UniformToFill"
                                        Opacity="0.55" IsHitTestVisible="False"
                                        RenderTransformOrigin="0.5,0.5">
@@ -1830,6 +1990,31 @@
                                                          Margin="14,10,14,24" IsHitTestVisible="False"/>
                                 <TextBlock Text="{Binding Loc[App_MusicInMotion]}" FontSize="9" Foreground="{StaticResource TextSecondaryBrush}"
                                            HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,14"/>
+                                </Grid>
+                                <!-- The official YouTube player lives in this same card: the
+                                     visualizer and the video never share the frame, and the
+                                     player is always visible while it plays. -->
+                                <Grid Visibility="{Binding IsYouTubePlaying, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                      Background="#FF0B0B10">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="*"/>
+                                    </Grid.RowDefinitions>
+                                    <DockPanel Grid.Row="0" Margin="8,5,8,3" LastChildFill="False">
+                                        <Button DockPanel.Dock="Right" Padding="7,2" FontSize="10"
+                                                Content="{Binding Loc[YouTube_Stop]}"
+                                                Command="{Binding StopYouTubeVideoCommand}"
+                                                AutomationProperties.Name="{Binding Loc[YouTube_Stop]}"/>
+                                        <Button DockPanel.Dock="Right" Padding="7,2" FontSize="10" Margin="0,0,5,0"
+                                                Content="{Binding Loc[YouTube_OpenSource]}"
+                                                Command="{Binding OpenCurrentYouTubeVideoCommand}"
+                                                AutomationProperties.Name="{Binding Loc[YouTube_OpenSource]}"/>
+                                        <TextBlock Text="{Binding CurrentYouTubeVideo.Title}" FontSize="10"
+                                                   VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
+                                                   Foreground="{StaticResource TextSecondaryBrush}"/>
+                                    </DockPanel>
+                                    <wv2:WebView2 x:Name="YouTubeBrowser" Grid.Row="1" Margin="0,0,0,0"/>
+                                </Grid>
                             </Grid>
                         </Border>
                         <TextBlock Text="{Binding NowPlayingTitle}" FontSize="17" FontWeight="Bold"

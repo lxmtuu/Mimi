@@ -15,6 +15,7 @@ using Mimi.Core.Text;
 using Mimi.Localization;
 using Mimi.Models;
 using Mimi.Online;
+using Mimi.YouTube;
 using Mimi.Services;
 using Serilog;
 
@@ -239,7 +240,8 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         ThemeService? themeService = null,
         ILyricsService? lyricsService = null,
         IRadioStationService? radioStationService = null,
-        IOnlineCatalogService? onlineCatalogService = null)
+        IOnlineCatalogService? onlineCatalogService = null,
+        IYouTubeSearchService? youtubeSearchService = null)
     {
         this.audioPlayer = audioPlayer;
         this.libraryService = libraryService;
@@ -253,6 +255,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         this.lyricsService = lyricsService;
         this.radioStationService = radioStationService;
         this.onlineCatalogService = onlineCatalogService;
+        this.youtubeSearchService = youtubeSearchService;
         Loc = localizationService ?? new LocalizationService();
 
         TracksView = CollectionViewSource.GetDefaultView(Tracks);
@@ -909,6 +912,14 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
 
             RefreshPlaybackState();
             RefreshRadioStationPlaybackStates();
+            return;
+        }
+
+        // A visible YouTube player owns the audible surface. Space stops it
+        // rather than starting a local track underneath the video.
+        if (IsYouTubePlaying)
+        {
+            StopYouTubeVideo();
             return;
         }
 

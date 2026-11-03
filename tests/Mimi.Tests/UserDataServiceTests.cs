@@ -133,6 +133,7 @@ public sealed class UserDataServiceTests : IDisposable
             WatchLibraryFolders = false,
             InternetRadioEnabled = false,
             OnlineCatalogEnabled = false,
+            YouTubeSearchEnabled = false,
             WatchedFolders = [@"C:\Music", @"D:\Songs"],
             LyricsOffsetsByPath = new Dictionary<string, int>
             {
@@ -195,6 +196,7 @@ public sealed class UserDataServiceTests : IDisposable
         Assert.False(loaded.WatchLibraryFolders);
         Assert.False(loaded.InternetRadioEnabled);
         Assert.False(loaded.OnlineCatalogEnabled);
+        Assert.False(loaded.YouTubeSearchEnabled);
         Assert.Equal([@"C:\Music", @"D:\Songs"], loaded.WatchedFolders);
         Assert.Equal(
             250,
@@ -248,6 +250,7 @@ public sealed class UserDataServiceTests : IDisposable
         Assert.True(loaded.WatchLibraryFolders);
         Assert.True(loaded.InternetRadioEnabled);
         Assert.True(loaded.OnlineCatalogEnabled);
+        Assert.True(loaded.YouTubeSearchEnabled);
         Assert.Empty(loaded.WatchedFolders);
         Assert.Empty(loaded.LyricsOffsetsByPath);
         Assert.Equal("Library", loaded.LibraryView.ActiveView);

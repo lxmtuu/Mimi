@@ -95,6 +95,7 @@ public sealed partial class MainWindowViewModel
 
         IsSettingsOpen = false;
         IsRadioOpen = false;
+        IsYouTubeOpen = false;
         IsOnlineOpen = true;
 
         if (OnlineTracks.Count == 0 && !IsOnlineLoading)

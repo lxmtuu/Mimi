@@ -143,6 +143,7 @@
   <data name="Nav_Home" xml:space="preserve"><value>Home</value></data>
   <data name="Nav_MyLibrary" xml:space="preserve"><value>My Library</value></data>
   <data name="Nav_Online" xml:space="preserve"><value>Online Music</value></data>
+  <data name="Nav_YouTube" xml:space="preserve"><value>YouTube</value></data>
   <data name="Nav_Playlists" xml:space="preserve"><value>PLAYLISTS</value></data>
   <data name="Nav_Radio" xml:space="preserve"><value>Internet Radio</value></data>
   <data name="Nav_RecentlyPlayed" xml:space="preserve"><value>Recently played</value></data>
@@ -175,6 +176,27 @@
   <data name="Online_SearchLabel" xml:space="preserve"><value>Search songs or artists</value></data>
   <data name="Online_Source" xml:space="preserve"><value>Streaming from Audius</value></data>
   <data name="Online_Unavailable" xml:space="preserve"><value>Online music isn't available right now.</value></data>
+  <data name="YouTube_Description" xml:space="preserve"><value>Search YouTube here and play the video in the Now Playing frame. The official player stays visible while it plays, and closing it stops the sound. The free quota allows about 100 searches a day.</value></data>
+  <data name="YouTube_ExternalTimeline" xml:space="preserve"><value>YouTube player</value></data>
+  <data name="YouTube_LoadFailed" xml:space="preserve"><value>Couldn't search YouTube. Check your connection and try again.</value></data>
+  <data name="YouTube_Loading" xml:space="preserve"><value>Searching YouTube…</value></data>
+  <data name="YouTube_NoResults" xml:space="preserve"><value>No videos match your search.</value></data>
+  <data name="YouTube_NotConfigured" xml:space="preserve"><value>Add your own YouTube Data API v3 key to {0} (or set MIMI_YOUTUBE_API_KEY), then search again.</value></data>
+  <data name="YouTube_NowPlaying" xml:space="preserve"><value>PLAYING</value></data>
+  <data name="YouTube_OpenFailed" xml:space="preserve"><value>Couldn't open this video on YouTube.</value></data>
+  <data name="YouTube_OpenSource" xml:space="preserve"><value>Open</value></data>
+  <data name="YouTube_PlayAutomation" xml:space="preserve"><value>Play this video or stop it</value></data>
+  <data name="YouTube_ProviderAttribution" xml:space="preserve"><value>Player by YouTube</value></data>
+  <data name="YouTube_QuotaExceeded" xml:space="preserve"><value>Today's YouTube search quota is used up. It resets daily, or you can raise it in Google Cloud.</value></data>
+  <data name="YouTube_ResultListAutomation" xml:space="preserve"><value>YouTube search results</value></data>
+  <data name="YouTube_ResultsAvailable" xml:space="preserve"><value>{0} video(s)</value></data>
+  <data name="YouTube_Search" xml:space="preserve"><value>Search</value></data>
+  <data name="YouTube_SearchAutomation" xml:space="preserve"><value>Search YouTube</value></data>
+  <data name="YouTube_SearchLabel" xml:space="preserve"><value>Search YouTube</value></data>
+  <data name="YouTube_Source" xml:space="preserve"><value>YouTube</value></data>
+  <data name="YouTube_Stop" xml:space="preserve"><value>Stop</value></data>
+  <data name="YouTube_Title" xml:space="preserve"><value>YouTube</value></data>
+  <data name="YouTube_Unavailable" xml:space="preserve"><value>YouTube search isn't available right now.</value></data>
   <data name="OpenWith_CouldNotOpenPaths" xml:space="preserve"><value>Couldn't open those paths with Mimi.&#10;&#10;{0}</value></data>
   <data name="OpenWith_FilesNotFound" xml:space="preserve"><value>The opened file(s) could not be found.</value></data>
   <data name="OpenWith_NoneOpenedSongsCouldBePlayed" xml:space="preserve"><value>None of the opened songs could be played.</value></data>
@@ -312,6 +334,9 @@
   <data name="Settings_EnableOnline" xml:space="preserve"><value>Enable online music search</value></data>
   <data name="Settings_OnlineDescription" xml:space="preserve"><value>When on, Mimi searches the Audius catalog and streams the track you pick directly, without downloading or caching it. Audius and its content nodes can see your IP address. Nothing from the catalog is added to your local library, queue, history, favourites, or saved session. Turn this off to hide the online surface and stop an online track.</value></data>
   <data name="Settings_OnlineSection" xml:space="preserve"><value>ONLINE MUSIC</value></data>
+  <data name="Settings_EnableYouTube" xml:space="preserve"><value>Enable YouTube search</value></data>
+  <data name="Settings_YouTubeDescription" xml:space="preserve"><value>When on, Mimi searches YouTube with your own Data API key and plays the video in YouTube's official embedded player inside Mimi. Mimi does not download, extract, or cache the media, and nothing from YouTube is added to your library, queue, history, favourites, or saved session. Turn this off to hide YouTube and stop the video.</value></data>
+  <data name="Settings_YouTubeSection" xml:space="preserve"><value>YOUTUBE</value></data>
   <data name="Settings_KeyboardShortcutsSection" xml:space="preserve"><value>KEYBOARD SHORTCUTS</value></data>
   <data name="Settings_Language" xml:space="preserve"><value>Interface language</value></data>
   <data name="Settings_LanguageDescription" xml:space="preserve"><value>Changes apply immediately. Mimi will keep expanding translated areas as Phase 5 continues.</value></data>

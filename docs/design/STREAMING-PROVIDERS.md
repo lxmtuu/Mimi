@@ -276,3 +276,18 @@ Lát đầu tiên của catalog on-demand, chạy trong engine của Mimi. Thi�
 
 Giới hạn phải nói thật: catalog Audius không phải toàn bộ nhạc thương mại;
 YouTube/Spotify không nằm trong đường phát của Mimi.
+
+## YouTube — tìm kiếm chính thức, player nhúng hiển thị (schema v9)
+
+Không phải provider của engine Mimi: không có stream, không có rights filter
+riêng, không đi qua NAudio. Đây là **tìm kiếm bằng API chính thức** + **player
+chính thức luôn hiển thị**. Thiết kế đầy đủ: [`YOUTUBE.md`](YOUTUBE.md).
+
+- Key là của người dùng (env hoặc file trong thư mục dữ liệu); không có trong
+  source/binary/log. Thiếu key thì mục YouTube tự ẩn.
+- Ô video dùng chung khung với visualizer: `IsVisualizerSurfaceVisible =
+  !IsYouTubePlaying`.
+- Đóng player → `Navigate("about:blank")` → dừng tiếng. Không có chạy nền.
+- Chọn video sẽ pause nhạc local, dừng Radio, bỏ track online.
+- Giới hạn: player video (không audio-only), không seek/queue/SMTC của Mimi,
+  có quảng cáo trừ khi người dùng tự đăng nhập Premium trong profile WebView2.

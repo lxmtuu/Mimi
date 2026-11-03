@@ -58,10 +58,14 @@ public sealed partial class MainWindowViewModel
     private bool onlineCatalogEnabled = true;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsYouTubeAvailable))]
+    private bool youTubeSearchEnabled = true;
+
+    [ObservableProperty]
     private WindowPlacementSettings windowPlacement = new();
 
     public bool IsLibraryContentVisible =>
-        !IsSettingsOpen && !IsRadioOpen && !IsOnlineOpen;
+        !IsSettingsOpen && !IsRadioOpen && !IsOnlineOpen && !IsYouTubeOpen;
 
     public string VolumePercentLabel => $"{Volume:P0}";
 
@@ -105,6 +109,7 @@ public sealed partial class MainWindowViewModel
         AutoUpgradeLegacyCoverArt = settings.AutoUpgradeLegacyCoverArt;
         InternetRadioEnabled = settings.InternetRadioEnabled;
         OnlineCatalogEnabled = settings.OnlineCatalogEnabled;
+        YouTubeSearchEnabled = settings.YouTubeSearchEnabled;
         WatchLibraryFolders = settings.WatchLibraryFolders;
         WatchedFolders.Clear();
         foreach (var folder in settings.WatchedFolders)
@@ -297,6 +302,15 @@ public sealed partial class MainWindowViewModel
             SaveSettings();
     }
 
+    partial void OnYouTubeSearchEnabledChanged(bool value)
+    {
+        if (!value)
+            DisableYouTube();
+
+        if (settingsLoaded && !isRestoringSettings)
+            SaveSettings();
+    }
+
     partial void OnWindowPlacementChanged(WindowPlacementSettings value)
     {
         if (settingsLoaded && !isRestoringSettings)
@@ -320,6 +334,8 @@ public sealed partial class MainWindowViewModel
     private void OpenSettings()
     {
         IsRadioOpen = false;
+        IsOnlineOpen = false;
+        IsYouTubeOpen = false;
         IsSettingsOpen = true;
     }
 
@@ -454,6 +470,7 @@ public sealed partial class MainWindowViewModel
         settings.AutoUpgradeLegacyCoverArt = AutoUpgradeLegacyCoverArt;
         settings.InternetRadioEnabled = InternetRadioEnabled;
         settings.OnlineCatalogEnabled = OnlineCatalogEnabled;
+        settings.YouTubeSearchEnabled = YouTubeSearchEnabled;
         settings.WatchLibraryFolders = WatchLibraryFolders;
         settings.WatchedFolders = [.. WatchedFolders];
         settings.WindowPlacement = RestoreWindowPlacement
