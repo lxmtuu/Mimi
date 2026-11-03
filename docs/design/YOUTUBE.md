@@ -94,9 +94,23 @@ quy trình của Google.
   !IsYouTubePlaying`. Visualizer tắt khi video hiện, bật lại khi video đóng.
 - Chọn video → Mimi **pause nhạc local**, **dừng Radio**, **bỏ track online**
   để chỉ còn một nguồn âm thanh.
-- Bấm lại đúng hàng đang phát, hoặc nút **Dừng**, hoặc phím Space → đóng
-  player. Code-behind điều hướng WebView2 sang `about:blank`, và đó chính là
-  cách âm thanh dừng lại.
+- **Transport điều khiển được player.** Trang phát dùng **IFrame Player API
+  chính thức** (`youtube.com/iframe_api`), báo `state`/`position`/`duration` về
+  Mimi qua WebMessage mỗi 250 ms; Mimi gửi lệnh `play`/`pause`/`seek` ngược
+  lại. Nhờ vậy:
+  - nút Play/Pause ở Now Playing **toggle video** (trước đây nó dừng hẳn video);
+  - thanh tiến trình **chạy theo video** và kéo/click để seek được;
+  - `-10s` / `+10s` seek đúng 10 giây trong video;
+  - hai nhãn thời gian lấy đúng thời lượng thật của video.
+- Không còn chuyện đồng hồ NAudio ghi đè lên timeline của video:
+  `RefreshPlaybackPosition` thoát sớm khi `IsYouTubePlaying`.
+- Video chạy hết → player báo `state = 0` → Mimi đóng player, visualizer trở
+  lại (giống hết bài local kết thúc).
+- Nếu chủ video tắt nhúng, player báo lỗi **101/150**; Mimi đóng player và nói
+  rõ là phải dùng nút **Mở**, không im lặng.
+- Bấm lại đúng hàng đang phát, hoặc nút **Dừng** → đóng player. Code-behind
+  điều hướng WebView2 sang `about:blank`, và đó chính là cách âm thanh dừng
+  lại. Phím Space nay là play/pause, không còn là stop.
 - Nút **Mở** chỉ là đường lui cho video **chặn nhúng** (chủ video tắt embed);
   bình thường bấm **Phát** là video chạy ngay trong Mimi, không cần mở trình
   duyệt. Nhãn nút trong danh sách là **Phát**/**Dừng**, không còn dùng câu
@@ -108,8 +122,9 @@ quy trình của Google.
 
 - Đây là **player video**, không phải audio-only. Không có tham số chính thức
   nào để tắt hình.
-- Seek/queue/visualizer/SMTC của Mimi **không** áp dụng cho nội dung YouTube vì
-  audio nằm trong player của họ, không qua NAudio.
+- Queue, visualizer và SMTC của Mimi **không** áp dụng cho nội dung YouTube:
+  audio nằm trong player của họ, không qua NAudio. Seek và timeline thì **có**,
+  nhưng thông qua IFrame Player API chứ không qua pipeline của Mimi.
 - Có quảng cáo, trừ khi người dùng tự đăng nhập **YouTube Premium** của họ
   trong profile WebView2 của Mimi. Mimi không chặn quảng cáo.
 - Cần **Microsoft Edge WebView2 Runtime**; thiếu thì chỉ log cảnh báo, phần còn
@@ -119,5 +134,6 @@ quy trình của Google.
 
 - **Stage**: hiện video full màn hình khi mở Stage. Sẽ làm sau khi pane ở cửa
   sổ chính được nghiệm thu, để tránh hai HWND WebView2 cùng lúc.
-- Điều khiển play/pause từ transport của Mimi vào player nhúng.
 - Playlist/kênh, tìm theo thời lượng, lọc kết quả.
+- Âm lượng: slider của Mimi vẫn chỉ điều khiển NAudio, chưa nối vào player
+  (dùng nút loa trong player, hoặc âm lượng hệ thống).

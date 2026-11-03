@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.IO;
+using System.Text.Json;
 using System.Windows;
 using Microsoft.Web.WebView2.Core;
 using System.Windows.Controls.Primitives;
@@ -51,27 +52,73 @@ public partial class MainWindow : Window
         <meta name="referrer" content="strict-origin-when-cross-origin">
         <style>
           html, body { margin: 0; height: 100%; background: #0b0b10; overflow: hidden; }
-          iframe { display: block; border: 0; width: 100%; height: 100%; }
+          #player, iframe { display: block; border: 0; width: 100%; height: 100%; }
           p { margin: 0; padding: 14px; color: #9aa0b4;
               font: 13px "Segoe UI", system-ui, sans-serif; }
         </style>
         </head>
         <body>
         <p id="fallback" hidden>No YouTube video is selected.</p>
-        <iframe id="player" title="YouTube video player"
-                allow="autoplay; encrypted-media; picture-in-picture; web-share"
-                allowfullscreen
-                referrerpolicy="strict-origin-when-cross-origin"></iframe>
+        <div id="player"></div>
         <script>
           (function () {
-            var id = new URLSearchParams(window.location.search).get('v') || '';
-            if (!/^[A-Za-z0-9_-]{11}$/.test(id)) {
+            var videoId = new URLSearchParams(window.location.search).get('v') || '';
+
+            function send(message) {
+              if (window.chrome && window.chrome.webview) {
+                window.chrome.webview.postMessage(message);
+              }
+            }
+
+            if (!/^[A-Za-z0-9_-]{11}$/.test(videoId)) {
               document.getElementById('fallback').hidden = false;
               return;
             }
-            document.getElementById('player').src =
-              'https://www.youtube.com/embed/' + encodeURIComponent(id) +
-              '?autoplay=1&rel=0&playsinline=1';
+
+            var player = null;
+
+            function report() {
+              if (!player || typeof player.getCurrentTime !== 'function') return;
+              send({
+                type: 'tick',
+                state: player.getPlayerState(),
+                position: player.getCurrentTime() || 0,
+                duration: player.getDuration() || 0
+              });
+            }
+
+            // The official IFrame Player API is what makes Mimi's transport
+            // work: it reports position and state, and accepts play/pause/seek.
+            window.onYouTubeIframeAPIReady = function () {
+              player = new YT.Player('player', {
+                videoId: videoId,
+                width: '100%',
+                height: '100%',
+                playerVars: { autoplay: 1, rel: 0, playsinline: 1 },
+                events: {
+                  onReady: report,
+                  onStateChange: report,
+                  onError: function (event) {
+                    send({ type: 'error', code: event.data });
+                  }
+                }
+              });
+
+              setInterval(report, 250);
+            };
+
+            window.chrome.webview.addEventListener('message', function (event) {
+              var command = event.data;
+              if (!player || !command) return;
+
+              if (command.command === 'play') player.playVideo();
+              else if (command.command === 'pause') player.pauseVideo();
+              else if (command.command === 'seek') player.seekTo(command.seconds, true);
+            });
+
+            var api = document.createElement('script');
+            api.src = 'https://www.youtube.com/iframe_api';
+            document.head.appendChild(api);
           }());
         </script>
         </body>
@@ -101,6 +148,7 @@ public partial class MainWindow : Window
         ProgressSlider.LostMouseCapture += (_, _) => viewModel.EndSeek();
 
         viewModel.StageToggleRequested += ViewModel_StageToggleRequested;
+        viewModel.EmbeddedPlayerCommandRequested += OnEmbeddedPlayerCommandRequested;
         viewModel.PropertyChanged += ViewModel_PropertyChanged;
 
         // The API key is read from disk, so a user who adds the key file while
@@ -276,6 +324,11 @@ public partial class MainWindow : Window
                     pageFolder,
                     CoreWebView2HostResourceAccessKind.DenyCors);
 
+                // Two-way bridge with the page: it reports position/state, and
+                // Mimi's transport sends play/pause/seek. The page is the only
+                // component that talks to YouTube's player.
+                initialized.WebMessageReceived += CoreWebView2_WebMessageReceived;
+
                 youTubeBrowserReady = true;
             }
 
@@ -329,6 +382,78 @@ public partial class MainWindow : Window
         stageWindow.ModeChanged += StageWindow_ModeChanged;
         stageWindow.Closed += StageWindow_Closed;
         stageWindow.Show();
+    }
+
+    /// <summary>
+    /// Sends a transport request to the player page. Nothing is sent before the
+    /// page exists, so an early click cannot be lost in a null browser.
+    /// </summary>
+    private void OnEmbeddedPlayerCommandRequested(EmbeddedPlayerCommand command)
+    {
+        if (!youTubeBrowserReady) return;
+
+        var core = YouTubeBrowser.CoreWebView2;
+        if (core is null) return;
+
+        var payload = command.Kind switch
+        {
+            EmbeddedPlayerCommandKind.Play => "{\"command\":\"play\"}",
+            EmbeddedPlayerCommandKind.Pause => "{\"command\":\"pause\"}",
+            _ => JsonSerializer.Serialize(new
+            {
+                command = "seek",
+                seconds = Math.Max(0, command.Seconds)
+            })
+        };
+
+        try
+        {
+            core.PostWebMessageAsJson(payload);
+        }
+        catch (Exception ex) when (ex is InvalidOperationException or ObjectDisposedException)
+        {
+            Serilog.Log.Debug(
+                "Could not send a command to the YouTube player: {ExceptionType}",
+                ex.GetType().FullName);
+        }
+    }
+
+    private void CoreWebView2_WebMessageReceived(
+        object? sender,
+        CoreWebView2WebMessageReceivedEventArgs e)
+    {
+        try
+        {
+            using var document = JsonDocument.Parse(e.WebMessageAsJson);
+            var root = document.RootElement;
+
+            if (!root.TryGetProperty("type", out var type)) return;
+
+            switch (type.GetString())
+            {
+                case "tick"
+                    when root.TryGetProperty("state", out var state) &&
+                         root.TryGetProperty("position", out var position) &&
+                         root.TryGetProperty("duration", out var duration):
+                    viewModel.ApplyEmbeddedPlayerState(
+                        state.GetInt32(),
+                        position.GetDouble(),
+                        duration.GetDouble());
+                    break;
+
+                case "error" when root.TryGetProperty("code", out var code):
+                    viewModel.ReportEmbeddedPlayerError(code.GetInt32());
+                    break;
+            }
+        }
+        catch (JsonException)
+        {
+            // A page Mimi does not control posted something unreadable.
+        }
+        catch (InvalidOperationException)
+        {
+            // Well-formed JSON with an unexpected value shape.
+        }
     }
 
     private void PushStageLyrics() =>

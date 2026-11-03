@@ -43,15 +43,17 @@ public sealed class YouTubeFeatureWiringTests
         Assert.Contains("youtube.com/watch?v=", videoModel, StringComparison.Ordinal);
         Assert.Contains("HasValidVideoId", videoModel, StringComparison.Ordinal);
 
-        // The embed URL is built by the page Mimi serves to the official
-        // player, so the iframe carries an origin and a referrer.
+        // The player is created by the official IFrame API inside a page Mimi
+        // serves from a virtual host, which is what gives the request an origin
+        // and a referrer (without them YouTube answers error 153).
         var codeBehind = Read(root, "src", "Mimi.App", "MainWindow.xaml.cs");
-        Assert.Contains("youtube.com/embed/", codeBehind, StringComparison.Ordinal);
+        Assert.Contains("SetVirtualHostNameToFolderMapping", codeBehind, StringComparison.Ordinal);
+        Assert.Contains("https://www.youtube.com/iframe_api", codeBehind, StringComparison.Ordinal);
+        Assert.Contains("onYouTubeIframeAPIReady", codeBehind, StringComparison.Ordinal);
         Assert.Contains(
-            "referrerpolicy=\"strict-origin-when-cross-origin\"",
+            "<meta name=\"referrer\" content=\"strict-origin-when-cross-origin\">",
             codeBehind,
             StringComparison.Ordinal);
-        Assert.Contains("SetVirtualHostNameToFolderMapping", codeBehind, StringComparison.Ordinal);
 
         var xaml = Read(root, "src", "Mimi.App", "MainWindow.xaml");
         Assert.Contains("Microsoft.Web.WebView2.Wpf", xaml, StringComparison.Ordinal);
@@ -134,6 +136,58 @@ public sealed class YouTubeFeatureWiringTests
             "public bool YouTubeSearchEnabled { get; set; } = true;",
             settingsModel,
             StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void TheTransportDrivesTheEmbeddedPlayerThroughItsOfficialBridge()
+    {
+        var root = FindRepositoryRoot();
+
+        var viewModel = Read(
+            root,
+            "src",
+            "Mimi.App",
+            "ViewModels",
+            "MainWindowViewModel.YouTube.cs");
+        // Position and duration come from the player; Mimi never guesses them.
+        Assert.Contains(
+            "public void ApplyEmbeddedPlayerState(",
+            viewModel,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "public event Action<EmbeddedPlayerCommand>? EmbeddedPlayerCommandRequested;",
+            viewModel,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "public enum EmbeddedPlayerCommandKind",
+            viewModel,
+            StringComparison.Ordinal);
+
+        var main = Read(root, "src", "Mimi.App", "ViewModels", "MainWindowViewModel.cs");
+        // The play/pause button toggles the video instead of stopping it, and
+        // the NAudio timeline stops writing over the video's timeline.
+        Assert.Contains(
+            "RequestEmbeddedPlayer(isYouTubeVideoPlaying",
+            main,
+            StringComparison.Ordinal);
+        // Slider input seeks the video rather than a silent local player.
+        Assert.Contains(
+            "EmbeddedPlayerCommandKind.Seek",
+            main,
+            StringComparison.Ordinal);
+        Assert.Contains("if (IsYouTubePlaying)", main, StringComparison.Ordinal);
+
+        var queue = Read(
+            root,
+            "src",
+            "Mimi.App",
+            "ViewModels",
+            "MainWindowViewModel.PlaybackQueue.cs");
+        Assert.Contains("RequestEmbeddedPlayer(EmbeddedPlayerCommandKind.Seek", queue, StringComparison.Ordinal);
+
+        var codeBehind = Read(root, "src", "Mimi.App", "MainWindow.xaml.cs");
+        Assert.Contains("WebMessageReceived", codeBehind, StringComparison.Ordinal);
+        Assert.Contains("PostWebMessageAsJson", codeBehind, StringComparison.Ordinal);
     }
 
     [Fact]

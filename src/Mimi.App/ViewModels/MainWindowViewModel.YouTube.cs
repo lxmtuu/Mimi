@@ -6,6 +6,22 @@ using Serilog;
 
 namespace Mimi.ViewModels;
 
+/// <summary>What Mimi's transport asks the embedded player to do.</summary>
+public enum EmbeddedPlayerCommandKind
+{
+    Play,
+    Pause,
+    Seek
+}
+
+/// <summary>
+/// One transport request for the embedded player. Seeking carries seconds
+/// because the page owns the timeline, not Mimi.
+/// </summary>
+public readonly record struct EmbeddedPlayerCommand(
+    EmbeddedPlayerCommandKind Kind,
+    double Seconds = 0);
+
 /// <summary>
 /// YouTube search inside Mimi. Mimi only receives metadata from the official
 /// Data API; the chosen video plays in YouTube's own embedded player, which
@@ -28,11 +44,19 @@ public sealed partial class MainWindowViewModel
         Unavailable
     }
 
+    // Official IFrame API player states.
+    private const int YouTubeStateEnded = 0;
+    private const int YouTubeStatePlaying = 1;
+    private const int YouTubeStateBuffering = 3;
+
     private readonly IYouTubeSearchService? youtubeSearchService;
     private CancellationTokenSource? youtubeSearchCancellation;
     private YouTubeSearchStatus youtubeSearchStatus = YouTubeSearchStatus.NotLoaded;
     private int youtubeSearchResultCount;
     private int youtubeSearchVersion;
+    private double youTubePositionSeconds;
+    private double youTubeDurationSeconds;
+    private bool isYouTubeVideoPlaying;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsLibraryContentVisible))]
@@ -82,6 +106,89 @@ public sealed partial class MainWindowViewModel
 
     public string YouTubeKeyFilePath =>
         youtubeSearchService?.KeyFilePath ?? string.Empty;
+
+    /// <summary>
+    /// Raised when the transport (Play/Pause, the slider, -10s/+10s) needs the
+    /// embedded player to act. The window owns the WebView2, so the view model
+    /// only asks and never touches the browser.
+    /// </summary>
+    public event Action<EmbeddedPlayerCommand>? EmbeddedPlayerCommandRequested;
+
+    /// <summary>
+    /// Applies a position report from the official player. Everything the user
+    /// sees about YouTube progress comes from here, because the audio never
+    /// passes through Mimi's own pipeline.
+    /// </summary>
+    public void ApplyEmbeddedPlayerState(
+        int state,
+        double positionSeconds,
+        double durationSeconds)
+    {
+        if (disposed || !IsYouTubePlaying) return;
+
+        // The official player reports zero when the video has finished.
+        if (state == YouTubeStateEnded)
+        {
+            StopYouTubeVideo();
+            return;
+        }
+
+        if (durationSeconds > 0.5)
+            youTubeDurationSeconds = durationSeconds;
+
+        if (positionSeconds >= 0)
+            youTubePositionSeconds = positionSeconds;
+
+        isYouTubeVideoPlaying =
+            state is YouTubeStatePlaying or YouTubeStateBuffering;
+
+        if (!userSeeking)
+        {
+            if (youTubeDurationSeconds > 0)
+            {
+                SetProgressPercent(Math.Clamp(
+                    youTubePositionSeconds / youTubeDurationSeconds * 100d,
+                    0,
+                    100));
+            }
+
+            CurrentTimeLabel = FormatTime(
+                TimeSpan.FromSeconds(youTubePositionSeconds));
+            DurationLabel = FormatTime(
+                TimeSpan.FromSeconds(youTubeDurationSeconds));
+        }
+
+        RefreshPlaybackState();
+    }
+
+    /// <summary>
+    /// Handles the player's own error codes. 101 and 150 are the official
+    /// "the owner disabled embedding" codes, which no amount of retrying fixes,
+    /// so the honest answer is to say so and point at the Open button.
+    /// </summary>
+    public void ReportEmbeddedPlayerError(int code)
+    {
+        if (disposed) return;
+
+        if (code is not (101 or 150))
+        {
+            Log.Debug("The YouTube player reported error code {Code}", code);
+            return;
+        }
+
+        StopYouTubeVideo();
+        YouTubeStatusLabel = Loc["YouTube_EmbeddingBlocked"];
+    }
+
+    private void RequestEmbeddedPlayer(
+        EmbeddedPlayerCommandKind kind,
+        double seconds = 0)
+    {
+        if (CurrentYouTubeVideo is null) return;
+
+        EmbeddedPlayerCommandRequested?.Invoke(
+            new EmbeddedPlayerCommand(kind, seconds));
+    }
 
     /// <summary>
     /// Re-reads whether a key is present. The key file is resolved lazily, so
@@ -151,13 +258,20 @@ public sealed partial class MainWindowViewModel
         }
 
         ReleaseOtherPlaybackSurfaces();
+
+        youTubePositionSeconds = 0;
+        youTubeDurationSeconds = 0;
+        isYouTubeVideoPlaying = false;
+
         CurrentYouTubeVideo = video;
         SelectedYouTubeVideo = video;
         NowPlayingTitle = video.Title;
         NowPlayingSubtitle = BuildYouTubeNowPlayingSubtitle(video);
         SetProgressPercent(0);
         CurrentTimeLabel = "0:00";
-        DurationLabel = Loc["YouTube_ExternalTimeline"];
+        // The real duration arrives from the player a moment later.
+        DurationLabel = "0:00";
+        RefreshPlaybackState();
     }
 
     [RelayCommand]
@@ -166,6 +280,9 @@ public sealed partial class MainWindowViewModel
         if (CurrentYouTubeVideo is null) return;
 
         CurrentYouTubeVideo = null;
+        youTubePositionSeconds = 0;
+        youTubeDurationSeconds = 0;
+        isYouTubeVideoPlaying = false;
         NowPlayingTitle = Loc["NowPlaying_ChooseSong"];
         NowPlayingSubtitle = Loc["NowPlaying_NextFavoriteWaiting"];
         SetProgressPercent(0);

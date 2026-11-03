@@ -177,7 +177,6 @@
   <data name="Online_Source" xml:space="preserve"><value>Phát trực tuyến từ Audius</value></data>
   <data name="Online_Unavailable" xml:space="preserve"><value>Hiện không dùng được nhạc trực tuyến.</value></data>
   <data name="YouTube_Description" xml:space="preserve"><value>Tìm trên YouTube và phát video ngay trong khung Đang phát. Trình phát chính thức luôn hiển thị khi đang phát, đóng lại là dừng âm thanh. Hạn mức miễn phí cho khoảng 100 lần tìm mỗi ngày.</value></data>
-  <data name="YouTube_ExternalTimeline" xml:space="preserve"><value>Trình phát YouTube</value></data>
   <data name="YouTube_LoadFailed" xml:space="preserve"><value>Không tìm được trên YouTube. Hãy kiểm tra kết nối và thử lại.</value></data>
   <data name="YouTube_Loading" xml:space="preserve"><value>Đang tìm trên YouTube…</value></data>
   <data name="YouTube_NoResults" xml:space="preserve"><value>Không có video nào khớp với tìm kiếm.</value></data>
@@ -425,4 +424,5 @@
   <data name="YouTube_InvalidKey" xml:space="preserve"><value>YouTube từ chối key. Hãy dán key YouTube Data API v3 hợp lệ trong Settings.</value></data>
   <data name="YouTube_Play" xml:space="preserve"><value>Phát</value></data>
   <data name="YouTube_StopRow" xml:space="preserve"><value>Dừng</value></data>
+  <data name="YouTube_EmbeddingBlocked" xml:space="preserve"><value>Video này không phát được trong Mimi vì chủ video đã tắt nhúng. Dùng nút Mở để xem trên YouTube.</value></data>
 </root>

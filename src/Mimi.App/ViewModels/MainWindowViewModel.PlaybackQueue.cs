@@ -387,6 +387,16 @@ public sealed partial class MainWindowViewModel
 
     public void SeekToPosition(TimeSpan position)
     {
+        // A video has its own timeline living in the embedded player.
+        if (IsYouTubePlaying)
+        {
+            var limit = youTubeDurationSeconds > 0 ? youTubeDurationSeconds : 0;
+            var target = Math.Clamp(position.TotalSeconds, 0, limit);
+            youTubePositionSeconds = target;
+            RequestEmbeddedPlayer(EmbeddedPlayerCommandKind.Seek, target);
+            return;
+        }
+
         if (CurrentTrack is null || audioPlayer.Duration <= TimeSpan.Zero)
             return;
 
@@ -399,7 +409,9 @@ public sealed partial class MainWindowViewModel
     }
 
     private void SeekRelative(TimeSpan offset) =>
-        SeekToPosition(audioPlayer.CurrentTime + offset);
+        SeekToPosition(IsYouTubePlaying
+            ? TimeSpan.FromSeconds(youTubePositionSeconds) + offset
+            : audioPlayer.CurrentTime + offset);
 
     private void ChangeVolumeBy(double offset)
     {

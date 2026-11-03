@@ -505,7 +505,23 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     {
         // Timer-driven updates always run under changingProgress, so any
         // remaining change is user input - mouse or keyboard alike.
-        if (changingProgress || audioPlayer.Duration <= TimeSpan.Zero) return;
+        if (changingProgress) return;
+
+        if (IsYouTubePlaying)
+        {
+            // Before the first report the duration is unknown, so there is
+            // nothing meaningful to seek within yet.
+            if (youTubeDurationSeconds > 0)
+            {
+                RequestEmbeddedPlayer(
+                    EmbeddedPlayerCommandKind.Seek,
+                    youTubeDurationSeconds * Math.Clamp(value, 0, 100) / 100d);
+            }
+
+            return;
+        }
+
+        if (audioPlayer.Duration <= TimeSpan.Zero) return;
 
         audioPlayer.Seek(TimeSpan.FromSeconds(
             audioPlayer.Duration.TotalSeconds * value / 100d));
@@ -915,11 +931,15 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
             return;
         }
 
-        // A visible YouTube player owns the audible surface. Space stops it
-        // rather than starting a local track underneath the video.
+        // A visible YouTube player owns the audible surface: the transport
+        // controls that player rather than starting a local track underneath
+        // the video. Stopping stays on the player's own Stop button and on the
+        // result row that is currently playing.
         if (IsYouTubePlaying)
         {
-            StopYouTubeVideo();
+            RequestEmbeddedPlayer(isYouTubeVideoPlaying
+                ? EmbeddedPlayerCommandKind.Pause
+                : EmbeddedPlayerCommandKind.Play);
             return;
         }
 
@@ -2847,6 +2867,14 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
 
     private void RefreshPlaybackPosition()
     {
+        // The embedded player reports its own position; running the NAudio
+        // timeline over it would pin the bar to 0:00.
+        if (IsYouTubePlaying)
+        {
+            RefreshPlaybackState();
+            return;
+        }
+
         var duration = audioPlayer.Duration;
         var position = audioPlayer.CurrentTime;
 
@@ -2876,8 +2904,13 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
 
     private void RefreshPlaybackState()
     {
-        IsPlaying = audioPlayer.IsPlaying;
-        if (IsPlaying && AudioOutputNotice.Length != 0)
+        // While a video owns the surface, the play/pause icon describes the
+        // video, not the local pipeline that is deliberately idle.
+        IsPlaying = IsYouTubePlaying
+            ? isYouTubeVideoPlaying
+            : audioPlayer.IsPlaying;
+
+        if (!IsYouTubePlaying && IsPlaying && AudioOutputNotice.Length != 0)
             AudioOutputNotice = string.Empty;
     }
 
