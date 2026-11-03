@@ -1819,6 +1819,11 @@
                                           AutomationProperties.Name="{Binding Loc[Settings_EnableYouTube]}"/>
                                 <TextBlock Text="{Binding Loc[Settings_YouTubeDescription]}"
                                            Foreground="{StaticResource TextMutedBrush}" FontSize="11" TextWrapping="Wrap" Margin="24,0,0,4"/>
+                                <!-- Where the key comes from, without offering a field: the
+                                     owner wants key setup to stay in the terminal. -->
+                                <TextBlock Text="{Binding Loc[Settings_YouTubeKeyHint]}"
+                                           Foreground="{StaticResource TextFaintBrush}" FontSize="10"
+                                           TextWrapping="Wrap" Margin="24,0,0,4"/>
                                 <TextBlock Text="{Binding Loc[YouTube_ProviderAttribution]}"
                                            Foreground="{StaticResource TextMutedBrush}" FontSize="11" TextWrapping="Wrap" Margin="24,0,0,2"/>
                             </StackPanel>

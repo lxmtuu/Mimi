@@ -330,6 +330,9 @@ public sealed class YouTubeFeatureWiringTests
         Assert.DoesNotContain("YouTubeKeyBox", xaml, StringComparison.Ordinal);
         Assert.DoesNotContain("youtube-api-key", xaml, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("Settings_YouTubeSection", xaml, StringComparison.Ordinal);
+        // The panel may explain where the key comes from; it must not offer a
+        // field to paste one.
+        Assert.Contains("Settings_YouTubeKeyHint", xaml, StringComparison.Ordinal);
 
         // The old guidance pointed at Settings; the key is stored by script.
         foreach (var file in new[] { "UiStrings.resx", "UiStrings.vi.resx" })

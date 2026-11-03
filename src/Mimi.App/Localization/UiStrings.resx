@@ -335,6 +335,7 @@
   <data name="Settings_OnlineSection" xml:space="preserve"><value>ONLINE MUSIC</value></data>
   <data name="Settings_EnableYouTube" xml:space="preserve"><value>Enable YouTube search</value></data>
   <data name="Settings_YouTubeDescription" xml:space="preserve"><value>When on, Mimi searches YouTube with your own Data API key and plays the video in YouTube's official embedded player inside Mimi. Mimi does not download, extract, or cache the media, and nothing from YouTube is added to your library, queue, history, favourites, or saved session. Turn this off to hide YouTube and stop the video.</value></data>
+  <data name="Settings_YouTubeKeyHint" xml:space="preserve"><value>The API key is stored by a terminal command, not in this window: run tools\Set-YouTubeKey.ps1 (or set MIMI_YOUTUBE_API_KEY).</value></data>
   <data name="Settings_YouTubeSection" xml:space="preserve"><value>YOUTUBE</value></data>
   <data name="Settings_KeyboardShortcutsSection" xml:space="preserve"><value>KEYBOARD SHORTCUTS</value></data>
   <data name="Settings_Language" xml:space="preserve"><value>Interface language</value></data>
