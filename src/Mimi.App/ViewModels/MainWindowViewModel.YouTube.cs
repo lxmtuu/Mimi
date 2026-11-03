@@ -115,6 +115,29 @@ public sealed partial class MainWindowViewModel
     public event Action<EmbeddedPlayerCommand>? EmbeddedPlayerCommandRequested;
 
     /// <summary>
+    /// Asks the window to print what the player page actually reports. The
+    /// transport has failed silently once already, so there is a way to get a
+    /// straight answer out of the page instead of another round of guessing.
+    /// </summary>
+    public event Action? EmbeddedPlayerDiagnosticRequested;
+
+    [RelayCommand]
+    private void DiagnoseYouTubePlayer()
+    {
+        if (!IsYouTubePlaying) return;
+
+        EmbeddedPlayerDiagnosticRequested?.Invoke();
+    }
+
+    /// <summary>Shows the raw bridge answer in the panel's status line.</summary>
+    public void ApplyEmbeddedPlayerDiagnostic(string report)
+    {
+        if (disposed) return;
+
+        YouTubeStatusLabel = Loc.Format("YouTube_DiagnosticFormat", report);
+    }
+
+    /// <summary>
     /// Applies a position report from the official player. Everything the user
     /// sees about YouTube progress comes from here, because the audio never
     /// passes through Mimi's own pipeline.

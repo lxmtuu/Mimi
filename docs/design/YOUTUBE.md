@@ -110,6 +110,10 @@ quy trình của Google.
   lại (giống hết bài local kết thúc).
 - Nếu chủ video tắt nhúng, player báo lỗi **101/150**; Mimi đóng player và nói
   rõ là phải dùng nút **Mở**, không im lặng.
+- Nếu 3 lần poll liên tiếp không có dữ liệu, Mimi ghi cảnh báo vào log và hiện
+  thông báo trong panel. Nút **Chẩn đoán** (chỉ hiện khi đang phát video) in ra
+  đúng những gì trang phát trả lời: `ready`, `error`, `state`, `duration`,
+  `position`. Đây là công cụ beta để khỏi phải đoán khi transport im lặng.
 - Bấm lại đúng hàng đang phát, hoặc nút **Dừng** → đóng player. Code-behind
   điều hướng WebView2 sang `about:blank`, và đó chính là cách âm thanh dừng
   lại. Phím Space nay là play/pause, không còn là stop.

@@ -1526,8 +1526,17 @@
                     </Grid>
 
                     <StackPanel Grid.Row="2" Margin="0,12,0,10">
-                        <TextBlock Text="{Binding YouTubeStatusLabel}" Foreground="{StaticResource TextMutedBrush}"
-                                   FontSize="11" TextWrapping="Wrap"/>
+                        <DockPanel>
+                            <!-- Beta troubleshooting aid: one click prints what the
+                                 player page actually reports. -->
+                            <Button DockPanel.Dock="Right" Padding="8,3" FontSize="10" Margin="8,0,0,0"
+                                    Content="{Binding Loc[YouTube_Diagnose]}"
+                                    Command="{Binding DiagnoseYouTubePlayerCommand}"
+                                    Visibility="{Binding IsYouTubePlaying, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                    AutomationProperties.Name="{Binding Loc[YouTube_Diagnose]}"/>
+                            <TextBlock Text="{Binding YouTubeStatusLabel}" Foreground="{StaticResource TextMutedBrush}"
+                                       FontSize="11" TextWrapping="Wrap" VerticalAlignment="Center"/>
+                        </DockPanel>
                         <ProgressBar Height="3" Margin="0,7,0,0" IsIndeterminate="True"
                                      Visibility="{Binding IsYouTubeLoading, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                     </StackPanel>

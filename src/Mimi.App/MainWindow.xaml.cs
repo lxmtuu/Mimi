@@ -145,6 +145,7 @@ public partial class MainWindow : Window
 
         viewModel.StageToggleRequested += ViewModel_StageToggleRequested;
         viewModel.EmbeddedPlayerCommandRequested += OnEmbeddedPlayerCommandRequested;
+        viewModel.EmbeddedPlayerDiagnosticRequested += OnEmbeddedPlayerDiagnosticRequested;
         viewModel.PropertyChanged += ViewModel_PropertyChanged;
 
         // The API key is read from disk, so a user who adds the key file while
@@ -477,6 +478,58 @@ public partial class MainWindow : Window
             youTubeBrowserReady);
 
         viewModel.ReportEmbeddedPlayerUnavailable();
+    }
+
+    /// <summary>
+    /// One click, one straight answer about the bridge: is `window.mimi` there,
+    /// did the player get created, what does it report, and did YouTube send an
+    /// error code. Shown in the panel so it can be read without opening a log.
+    /// </summary>
+    private void OnEmbeddedPlayerDiagnosticRequested()
+    {
+        _ = RunEmbeddedPlayerDiagnosticAsync();
+    }
+
+    private async Task RunEmbeddedPlayerDiagnosticAsync()
+    {
+        const string script = """
+            (function () {
+              try {
+                if (!window.mimi) return 'no bridge';
+                var report = window.mimi.report ? window.mimi.report() : null;
+                return JSON.stringify({
+                  ready: window.mimi.ready ? window.mimi.ready() : false,
+                  error: window.mimiError || null,
+                  state: report ? report.state : null,
+                  duration: report ? report.duration : null,
+                  position: report ? report.position : null
+                });
+              } catch (e) {
+                return 'script error: ' + (e && e.message ? e.message : 'unknown');
+              }
+            }())
+            """;
+
+        var core = YouTubeBrowser.CoreWebView2;
+        if (!youTubeBrowserReady || core is null)
+        {
+            viewModel.ApplyEmbeddedPlayerDiagnostic("browser not ready");
+            return;
+        }
+
+        try
+        {
+            var raw = await core.ExecuteScriptAsync(script);
+            // A script that returns a string comes back JSON-quoted.
+            var text = JsonSerializer.Deserialize<string>(raw) ?? raw;
+            viewModel.ApplyEmbeddedPlayerDiagnostic(text);
+        }
+        catch (Exception ex) when (
+            ex is JsonException or InvalidOperationException or ObjectDisposedException)
+        {
+            viewModel.ApplyEmbeddedPlayerDiagnostic(
+                ex.GetType().Name);
+        }
     }
 
     private async Task ExecuteInPlayerAsync(string script)

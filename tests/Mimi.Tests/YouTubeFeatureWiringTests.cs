@@ -202,7 +202,13 @@ public sealed class YouTubeFeatureWiringTests
         Assert.Contains("window.mimi.command", codeBehind, StringComparison.Ordinal);
         // The player must be big enough for YouTube's own controls, and Mimi may
         // not cover them.
-        Assert.Contains("MinHeight=\"200\"", Read(root, "src", "Mimi.App", "MainWindow.xaml"), StringComparison.Ordinal);
+        var xaml = Read(root, "src", "Mimi.App", "MainWindow.xaml");
+        Assert.Contains("MinHeight=\"200\"", xaml, StringComparison.Ordinal);
+
+        // A silent bridge must be diagnosable from the UI, not only the log.
+        Assert.Contains("DiagnoseYouTubePlayerCommand", xaml, StringComparison.Ordinal);
+        Assert.Contains("EmbeddedPlayerDiagnosticRequested", viewModel, StringComparison.Ordinal);
+        Assert.Contains("ApplyEmbeddedPlayerDiagnostic", codeBehind, StringComparison.Ordinal);
     }
 
     [Fact]
