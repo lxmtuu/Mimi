@@ -78,7 +78,8 @@ sau:
   và máy chủ đài có thể thấy địa chỉ IP của người dùng.
 
 Chủ dự án đã nghiệm thu runtime prototype trên Windows thật ngày
-03/11/2026. Giới hạn còn mở của prototype: đài chết, geo-block hoặc
+03/11/2026, bao gồm cả kill switch Internet Radio trong lượt kiểm
+tra gộp A/B/C. Giới hạn còn mở của prototype: đài chết, geo-block hoặc
 định dạng Media Foundation không mở được
 chỉ báo lỗi để người dùng chọn đài khác; chưa tự reconnect khi network
 stall ngoài thao tác Play/resume; chưa có trang privacy/attribution

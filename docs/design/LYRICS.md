@@ -116,8 +116,9 @@ tự bỏ qua bước căn giữa bằng pixel khi gặp cuộn logic. Chủ d�
 kiểm tra lại trên Windows thật và xác nhận hành vi cuộn đã ổn. Hai
 ảnh runtime tiếp theo xác nhận panel lời lớn trên Stage hiển thị và
 chuyển dòng đúng trên Windows thật, gồm cả trạng thái intro khi dòng
-đầu tiên còn ở vị trí kế tiếp. Đường đọc lời nhúng nay đã có test
-tích hợp thật trên Windows CI (`41614648545`); một lượt nhìn trực
-tiếp bằng bài chỉ có lyrics nhúng không đồng bộ vẫn là kiểm tra
-nghiệm thu giao diện còn lại, nhưng không còn là điểm mù về code
-đọc TagLib, parser hay trạng thái không đồng bộ.
+đầu tiên còn ở vị trí kế tiếp. Đường đọc lời nhúng có test tích hợp thật trên Windows CI
+(`41614648545`), và ngày 03/11/2026 chủ dự án đã xác nhận trực tiếp
+trên Windows thật rằng bài chỉ có lyrics nhúng không đồng bộ hiển
+thị đạt. Cùng lượt nghiệm thu đó, tiêu chí dòng `.lrc` khớp nhịp
+trong khoảng ±100 ms sau offset cũng được xác nhận đạt; hai gate
+runtime còn lại của Lyrics coi như đã đóng trên nhánh làm việc.

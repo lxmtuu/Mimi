@@ -78,8 +78,8 @@ làm việc. Bản prototype áp dụng các điều kiện trên như sau:
   chủ đài có thể thấy địa chỉ IP của người dùng.
 
 Trạng thái này chưa phải phê duyệt production. Chủ dự án đã nghiệm thu
-runtime prototype trên Windows thật với mạng/đài thật ngày 03/11/2026;
-vẫn cần hoàn thành các cổng phát hành còn thiếu như nội dung
+runtime prototype trên Windows thật với mạng/đài thật ngày 03/11/2026,
+bao gồm kill switch cục bộ trong Settings; vẫn cần hoàn thành các cổng phát hành còn thiếu như nội dung
 privacy/attribution đầy đủ hơn và cơ chế tắt provider từ xa trước khi
 bật mặc định cho người dùng cuối.
 
