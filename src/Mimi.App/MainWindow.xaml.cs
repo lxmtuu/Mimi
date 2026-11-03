@@ -126,6 +126,12 @@ public partial class MainWindow : Window
         if (e.PropertyName == nameof(MainWindowViewModel.UiTheme))
             WindowChromeHelper.ApplyDarkTitleBar(this);
 
+        // The embedded YouTube player is driven from here: it must react even
+        // when the Stage window is closed, so this hook runs before the
+        // Stage-specific early return.
+        if (e.PropertyName == nameof(MainWindowViewModel.IsYouTubePlaying))
+            _ = SyncYouTubePlayerAsync();
+
         if (stageWindow is null) return;
 
         if (e.PropertyName == nameof(MainWindowViewModel.VisualizerMode))
