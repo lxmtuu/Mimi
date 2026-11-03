@@ -261,7 +261,7 @@ public sealed class UserDataServiceTests : IDisposable
 
         var loaded = service.LoadSettings();
 
-        Assert.Equal(6, loaded.Version);
+        Assert.Equal(AppSettings.CurrentVersion, loaded.Version);
         Assert.Equal(0.5, loaded.Volume);
         Assert.Equal(UiLanguages.System, loaded.UiLanguage);
         Assert.Equal(BuiltInThemes.DefaultId, loaded.UiTheme);
@@ -276,7 +276,7 @@ public sealed class UserDataServiceTests : IDisposable
 
         var loaded = service.LoadSettings();
 
-        Assert.Equal(6, loaded.Version);
+        Assert.Equal(AppSettings.CurrentVersion, loaded.Version);
         Assert.Equal(0.5, loaded.Volume);
         Assert.Equal(UiLanguages.Vietnamese, loaded.UiLanguage);
         Assert.Equal(BuiltInThemes.DefaultId, loaded.UiTheme);
