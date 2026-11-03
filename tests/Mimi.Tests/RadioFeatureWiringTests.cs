@@ -51,7 +51,11 @@ public sealed class RadioFeatureWiringTests
             audioService,
             StringComparison.Ordinal);
         Assert.Contains(
-            "loadedIsLiveStream ?",
+            "return loadedIsLiveStream",
+            audioService,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "? TimeSpan.Zero",
             audioService,
             StringComparison.Ordinal);
         Assert.Contains(
