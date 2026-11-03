@@ -1,0 +1,91 @@
+# Lyrics offline — thiết kế lát Phase 6 đầu tiên
+
+## Phạm vi
+
+Lát này đưa lời bài hát offline vào thẻ **Lời bài hát** trong panel
+Now Playing. Mimi chỉ dùng dữ liệu người dùng đã có trên máy; không tải
+lời từ Internet và không triển khai nhà cung cấp trực tuyến.
+
+Thứ tự nguồn:
+
+1. File `.lrc` cùng thư mục và cùng tên gốc với file nhạc
+   (ví dụ `song.flac` → `song.lrc`).
+2. Lời nhúng trong tag của file nhạc, đọc bằng TagLib khi không có file
+   `.lrc` usable đi kèm.
+
+File sidecar tối đa 2 MiB. Việc đọc dùng UTF-8 và tự nhận diện BOM, nên
+UTF-16 có BOM cũng được hỗ trợ qua `StreamReader`. Parser giữ tối đa
+10.000 dòng để một file bất thường không làm nặng giao diện.
+
+## Parser và đồng bộ
+
+`LyricsTextParser` ở `Mimi.Core` hỗ trợ:
+
+- metadata LRC dạng `[ti:]`, `[ar:]`, `[al:]`, `[by:]`, `[length:]`, v.v.
+  (được bỏ qua khi hiển thị);
+- một hoặc nhiều timestamp ở đầu cùng một dòng;
+- timestamp `mm:ss`, `mm:ss.xx`, `mm:ss.xxx` và dạng có giờ
+  `hh:mm:ss.xxx`;
+- sắp xếp ổn định các dòng có timestamp;
+- bỏ timestamp từng từ dạng `<mm:ss.xx>` của Enhanced LRC, nên lát này
+  đồng bộ ở mức dòng, chưa tô sáng từng từ;
+- văn bản thường không có timestamp cho lyrics nhúng chưa đồng bộ.
+
+Dòng hiện tại được tìm bằng binary search mỗi khi vị trí phát thay đổi.
+Timer vị trí của cửa sổ chính chạy mỗi 100 ms; dòng hiện tại được tô
+accent, các dòng đã qua được làm mờ và danh sách tự cuộn để đặt dòng
+hiện tại gần giữa thẻ.
+
+## Quy ước offset
+
+Có hai lớp offset cần phân biệt:
+
+- Thẻ `[offset:]` trong file LRC được giữ thành `DocumentOffset`.
+  Mimi áp dụng cách đọc phổ biến: giá trị dương làm lời xuất hiện sớm
+  hơn, giá trị âm làm lời xuất hiện muộn hơn.
+- Offset người dùng chỉnh trong giao diện dùng quy ước trực quan riêng:
+  giá trị dương là **delay**, tức hiển thị lời muộn hơn. Các nút
+  `−0.1s`/`+0.1s` chỉnh theo bước 100 ms, nút `0` đặt lại.
+
+Thời điểm hiệu lực của một dòng là:
+
+```text
+timestamp gốc − [offset:] của file + delay người dùng
+```
+
+Offset người dùng được lưu theo đường dẫn file nhạc trong
+`AppSettings.LyricsOffsetsByPath` (settings schema v6), giới hạn
+±30 giây. Giá trị 0 không được lưu.
+
+## Trạng thái giao diện
+
+Thẻ Lyrics có các trạng thái: chưa chọn bài, đang tải, không tìm thấy,
+không đọc được, không khả dụng, lời chưa đồng bộ và lời sẵn sàng.
+Header cho biết nguồn là file `.lrc` hay lời nhúng. Nút tải lại giúp
+người dùng thêm file `.lrc` trong lúc bài đang phát mà không cần
+chuyển bài.
+
+Việc nạp lyrics chạy bất đồng bộ theo `CurrentTrack`, có huỷ lượt nạp
+của bài trước và không chặn đường phát nhạc nếu file lời hoặc tag bị lỗi.
+
+## Chưa thuộc lát này
+
+- Chế độ lời lớn trên Stage.
+- Tô sáng từng từ/theo âm tiết của Enhanced LRC.
+- Tải lyrics trực tuyến hoặc bất kỳ nguồn nhạc trực tuyến nào.
+- Chỉnh sửa/tạo file `.lrc` trong app.
+- Tự nhận diện encoding ANSI không có BOM ngoài UTF-8 mặc định.
+
+## Kiểm chứng tự động
+
+- `LyricsTextParserTests`: sắp xếp/mở rộng nhiều timestamp, Enhanced
+  LRC, offset của file + delay người dùng và lyrics thường.
+- `FileLyricsServiceTests`: ưu tiên sidecar, fallback embedded, sidecar
+  rỗng và trường hợp không có lyrics.
+- `UserDataServiceTests`: settings v6, clamp/loại bỏ offset 0 và
+  migration từ schema cũ.
+- `LocalizationServiceTests`: parity 344 khóa VI/EN và nhãn Lyrics.
+
+Nghiệm thu runtime vẫn cần chủ dự án kiểm tra trên Windows thật với ít
+nhất một cặp file nhạc + `.lrc`, gồm phát/tạm dừng/seek, chỉnh offset,
+đóng/mở lại app và một bài chỉ có lyrics nhúng không đồng bộ.

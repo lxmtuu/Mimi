@@ -1773,6 +1773,134 @@
                         </Border>
                         <Border Background="{StaticResource RaisedBackgroundBrush}" CornerRadius="10" Padding="10" Margin="0,18,0,0">
                             <StackPanel>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0" Margin="0,0,6,0">
+                                        <TextBlock Text="{Binding Loc[Lyrics_Title]}" Foreground="{StaticResource AccentBrush}"
+                                                   FontSize="10" FontWeight="Bold"/>
+                                        <TextBlock Text="{Binding LyricsSourceLabel}" Foreground="{StaticResource TextMutedBrush}"
+                                                   FontSize="9" TextTrimming="CharacterEllipsis" Margin="0,3,0,0"/>
+                                    </StackPanel>
+                                    <Button Grid.Column="1" Content="↻" Command="{Binding ReloadLyricsCommand}"
+                                            Padding="7,4" Margin="0,0,6,0" FontSize="12"
+                                            ToolTip="{Binding Loc[Lyrics_Reload]}"
+                                            AutomationProperties.Name="{Binding Loc[Lyrics_Reload]}"/>
+                                    <TextBlock Grid.Column="2" Text="{Binding LyricsOffsetLabel}"
+                                               Foreground="{StaticResource TextMutedBrush}" FontSize="10"
+                                               MinWidth="42" TextAlignment="Right" VerticalAlignment="Center"/>
+                                </Grid>
+                                <TextBlock Text="{Binding LyricsStatusLabel}" Foreground="{StaticResource TextMutedBrush}"
+                                           FontSize="9" Margin="0,5,0,0">
+                                    <TextBlock.Style>
+                                        <Style TargetType="{x:Type TextBlock}">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                            <Style.Triggers>
+                                                <MultiDataTrigger>
+                                                    <MultiDataTrigger.Conditions>
+                                                        <Condition Binding="{Binding HasLyrics}" Value="True"/>
+                                                        <Condition Binding="{Binding IsLyricsSynchronized}" Value="False"/>
+                                                    </MultiDataTrigger.Conditions>
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                </MultiDataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                                <Grid Height="230" Margin="0,8,0,0">
+                                    <ListBox ItemsSource="{Binding LyricLines}"
+                                             SelectedItem="{Binding CurrentLyricLine, Mode=OneWay}"
+                                             Background="{StaticResource SunkenBackgroundBrush}"
+                                             BorderBrush="{StaticResource BorderBrush}" BorderThickness="1"
+                                             Foreground="{StaticResource TextStrongBrush}"
+                                             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                             VirtualizingPanel.IsVirtualizing="True"
+                                             VirtualizingPanel.VirtualizationMode="Recycling"
+                                             Focusable="False"
+                                             AutomationProperties.Name="{Binding Loc[Lyrics_ListAutomation]}"
+                                             behaviors:ScrollSelectedItemIntoViewBehavior.IsEnabled="True">
+                                        <ListBox.Resources>
+                                            <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="{DynamicResource SelectedBackgroundColor}"/>
+                                            <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" Color="{DynamicResource TextStrongColor}"/>
+                                            <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey}" Color="{DynamicResource SelectedBackgroundColor}"/>
+                                            <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightTextBrushKey}" Color="{DynamicResource TextStrongColor}"/>
+                                        </ListBox.Resources>
+                                        <ListBox.ItemContainerStyle>
+                                            <Style TargetType="{x:Type ListBoxItem}">
+                                                <Setter Property="Padding" Value="8,5"/>
+                                                <Setter Property="Background" Value="Transparent"/>
+                                                <Setter Property="Foreground" Value="{StaticResource TextStrongBrush}"/>
+                                                <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                                <Setter Property="Focusable" Value="False"/>
+                                                <Setter Property="IsHitTestVisible" Value="False"/>
+                                                <Setter Property="FocusVisualStyle" Value="{StaticResource MimiFocusVisualStyle}"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsCurrent}" Value="True">
+                                                        <Setter Property="Background" Value="{StaticResource SelectedBackgroundBrush}"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </ListBox.ItemContainerStyle>
+                                        <ListBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding Text}" TextWrapping="Wrap">
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="{x:Type TextBlock}">
+                                                            <Setter Property="FontSize" Value="12"/>
+                                                            <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding IsPast}" Value="True">
+                                                                    <Setter Property="Foreground" Value="{StaticResource TextDisabledBrush}"/>
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding IsCurrent}" Value="True">
+                                                                    <Setter Property="Foreground" Value="{StaticResource AccentBrush}"/>
+                                                                    <Setter Property="FontSize" Value="14"/>
+                                                                    <Setter Property="FontWeight" Value="SemiBold"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                </TextBlock>
+                                            </DataTemplate>
+                                        </ListBox.ItemTemplate>
+                                    </ListBox>
+                                    <TextBlock Text="{Binding LyricsStatusLabel}" Foreground="{StaticResource TextFaintBrush}"
+                                               FontSize="11" TextAlignment="Center" TextWrapping="Wrap"
+                                               MaxWidth="220" Margin="16" HorizontalAlignment="Center"
+                                               VerticalAlignment="Center" IsHitTestVisible="False">
+                                        <TextBlock.Style>
+                                            <Style TargetType="{x:Type TextBlock}">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding HasLyrics}" Value="False">
+                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </Grid>
+                                <UniformGrid Columns="3" Margin="0,8,0,0">
+                                    <Button Content="−0.1s" Command="{Binding DecreaseLyricsOffsetCommand}"
+                                            Padding="4,6" Margin="1" FontSize="10"
+                                            ToolTip="{Binding Loc[Lyrics_OffsetEarlier]}"
+                                            AutomationProperties.Name="{Binding Loc[Lyrics_OffsetEarlier]}"/>
+                                    <Button Content="0" Command="{Binding ResetLyricsOffsetCommand}"
+                                            Padding="4,6" Margin="1" FontSize="10"
+                                            ToolTip="{Binding Loc[Lyrics_OffsetReset]}"
+                                            AutomationProperties.Name="{Binding Loc[Lyrics_OffsetReset]}"/>
+                                    <Button Content="+0.1s" Command="{Binding IncreaseLyricsOffsetCommand}"
+                                            Padding="4,6" Margin="1" FontSize="10"
+                                            ToolTip="{Binding Loc[Lyrics_OffsetLater]}"
+                                            AutomationProperties.Name="{Binding Loc[Lyrics_OffsetLater]}"/>
+                                </UniformGrid>
+                            </StackPanel>
+                        </Border>
+                        <Border Background="{StaticResource RaisedBackgroundBrush}" CornerRadius="10" Padding="10" Margin="0,18,0,0">
+                            <StackPanel>
                                 <DockPanel LastChildFill="False">
                                     <TextBlock Text="{Binding Loc[Settings_StageEngineSection]}" Foreground="{StaticResource AccentSecondaryBrush}" FontSize="10" FontWeight="Bold" DockPanel.Dock="Left"/>
                                     <TextBlock Text="{Binding VisualizerMetricsLabel}" Foreground="{StaticResource TextMutedBrush}" FontSize="10" DockPanel.Dock="Right"/>

@@ -208,6 +208,7 @@ public sealed partial class MainWindowViewModel
         OnPropertyChanged(nameof(QueueCountLabel));
         OnPropertyChanged(nameof(QueueStatusLabel));
         OnPropertyChanged(nameof(OpenWithMimiStatusLabel));
+        RefreshLyricsLocalizedLabels();
         NotifySortLabelsChanged();
         RefreshPlaybackStateFilterOptions();
         RefreshFilterOptions();

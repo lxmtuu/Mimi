@@ -11,12 +11,17 @@ namespace Mimi.Models;
 /// placement, watched library folders, and the paused session. Version 3
 /// adds mute/shuffle/repeat preferences and the paused playback queue.
 /// Version 4 adds the interface-language preference. Version 5 adds the
-/// interface-theme preference. Unknown string values are tolerated here and
-/// interpreted defensively by the app layer.
+/// interface-theme preference. Version 6 adds per-track lyrics display
+/// offsets. Unknown string values are tolerated here and interpreted
+/// defensively by the app layer.
 /// </summary>
 public sealed class AppSettings
 {
-    public const int CurrentVersion = 5;
+    public const int CurrentVersion = 6;
+
+    public const int MinimumLyricsOffsetMilliseconds = -30000;
+
+    public const int MaximumLyricsOffsetMilliseconds = 30000;
 
     public int Version { get; set; } = CurrentVersion;
 
@@ -45,6 +50,14 @@ public sealed class AppSettings
     public bool WatchLibraryFolders { get; set; } = true;
 
     public List<string> WatchedFolders { get; set; } = [];
+
+    /// <summary>
+    /// Per-track manual lyrics delay in milliseconds, keyed by audio file
+    /// path. Positive values display synchronized lines later; zero entries
+    /// are removed during normalization.
+    /// </summary>
+    public Dictionary<string, int> LyricsOffsetsByPath { get; set; } =
+        new(StringComparer.OrdinalIgnoreCase);
 
     public LibraryViewSettings LibraryView { get; set; } = new();
 
@@ -83,6 +96,26 @@ public sealed class AppSettings
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .Take(128)
             .ToList();
+
+        var normalizedLyricsOffsets =
+            new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        if (LyricsOffsetsByPath is not null)
+        {
+            foreach (var pair in LyricsOffsetsByPath)
+            {
+                if (normalizedLyricsOffsets.Count >= 10000) break;
+
+                var path = CleanNullablePath(pair.Key);
+                var offset = Math.Clamp(
+                    pair.Value,
+                    MinimumLyricsOffsetMilliseconds,
+                    MaximumLyricsOffsetMilliseconds);
+                if (path is not null && offset != 0)
+                    normalizedLyricsOffsets[path] = offset;
+            }
+        }
+
+        LyricsOffsetsByPath = normalizedLyricsOffsets;
 
         LibraryView ??= new LibraryViewSettings();
         LibraryView.Normalize();
