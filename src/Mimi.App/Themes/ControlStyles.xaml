@@ -469,7 +469,6 @@
                                                   VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                                                   Columns="{TemplateBinding GridView.ColumnCollection}"
                                                   Content="{TemplateBinding Content}"
-                                                  ContentTemplate="{TemplateBinding ContentTemplate}"
                                                   SnapsToDevicePixels="True"/>
                         </Grid>
                     </Border>
