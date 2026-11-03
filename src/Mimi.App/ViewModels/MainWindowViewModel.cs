@@ -62,7 +62,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     private readonly PlaybackEndCoordinator playbackEndCoordinator = new();
     private readonly DispatcherTimer positionTimer = new()
     {
-        Interval = TimeSpan.FromMilliseconds(150)
+        Interval = TimeSpan.FromMilliseconds(100)
     };
     private readonly CancellationTokenSource lifetimeCancellation = new();
 
@@ -234,7 +234,8 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         ILibraryFolderWatcher? libraryFolderWatcher = null,
         IFileAssociationService? fileAssociationService = null,
         LocalizationService? localizationService = null,
-        ThemeService? themeService = null)
+        ThemeService? themeService = null,
+        ILyricsService? lyricsService = null)
     {
         this.audioPlayer = audioPlayer;
         this.libraryService = libraryService;
@@ -245,6 +246,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         this.libraryFolderWatcher = libraryFolderWatcher;
         this.fileAssociationService = fileAssociationService;
         this.themeService = themeService;
+        this.lyricsService = lyricsService;
         Loc = localizationService ?? new LocalizationService();
 
         TracksView = CollectionViewSource.GetDefaultView(Tracks);
@@ -2789,6 +2791,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
 
         CurrentTimeLabel = FormatTime(position);
         DurationLabel = FormatTime(duration);
+        UpdateCurrentLyricLine(position);
         RefreshPlaybackState();
     }
 
@@ -2928,6 +2931,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         lifetimeCancellation.Cancel();
         scanCancellation?.Cancel();
         searchCancellation?.Cancel();
+        CancelLyricsLoad();
         CancelPendingExternalOpen();
         SelectedTracks.CollectionChanged -= SelectedTracks_CollectionChanged;
         WatchedFolders.CollectionChanged -= WatchedFolders_CollectionChanged;

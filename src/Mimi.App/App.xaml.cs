@@ -131,6 +131,7 @@ public partial class App : Application
                 provider.GetRequiredService<IUserDataService>()));
         services.AddSingleton<ILibraryService, LibraryService>();
         services.AddSingleton<ILibraryCatalog, SqliteLibraryCatalog>();
+        services.AddSingleton<ILyricsService, FileLyricsService>();
         services.AddSingleton<ICoverArtOptimizer, CoverArtOptimizer>();
         services.AddSingleton<ILibraryFolderWatcher, FileSystemLibraryFolderWatcher>();
         services.AddSingleton<IFileAssociationService, WindowsFileAssociationService>();

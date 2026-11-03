@@ -49,6 +49,19 @@ public partial class StageWindow : Window
         StageSubtitle.Text = subtitle;
     }
 
+    public void SetLyrics(string? previous, string? current, string? next)
+    {
+        StageLyricPrevious.Text = previous ?? string.Empty;
+        StageLyricCurrent.Text = current ?? string.Empty;
+        StageLyricNext.Text = next ?? string.Empty;
+        StageLyricsPanel.Visibility =
+            string.IsNullOrWhiteSpace(previous) &&
+            string.IsNullOrWhiteSpace(current) &&
+            string.IsNullOrWhiteSpace(next)
+                ? Visibility.Collapsed
+                : Visibility.Visible;
+    }
+
     public void SetMode(VisualizerDisplayMode mode) => StageVisualizer.Mode = mode;
 
     protected override void OnKeyDown(KeyEventArgs e)

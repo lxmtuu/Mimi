@@ -115,7 +115,7 @@ public sealed class UserDataServiceTests : IDisposable
     }
 
     [Fact]
-    public void Version5SettingsRoundTrip()
+    public void Version6SettingsRoundTrip()
     {
         var expected = new AppSettings
         {
@@ -132,6 +132,12 @@ public sealed class UserDataServiceTests : IDisposable
             AutoUpgradeLegacyCoverArt = false,
             WatchLibraryFolders = false,
             WatchedFolders = [@"C:\Music", @"D:\Songs"],
+            LyricsOffsetsByPath = new Dictionary<string, int>
+            {
+                [@"C:\Music\Selected.flac"] = 250,
+                [@"C:\Music\Zero.flac"] = 0,
+                [@"C:\Music\Late.flac"] = 999999
+            },
             LibraryView = new LibraryViewSettings
             {
                 ActiveView = "Playlist",
@@ -186,6 +192,14 @@ public sealed class UserDataServiceTests : IDisposable
         Assert.False(loaded.AutoUpgradeLegacyCoverArt);
         Assert.False(loaded.WatchLibraryFolders);
         Assert.Equal([@"C:\Music", @"D:\Songs"], loaded.WatchedFolders);
+        Assert.Equal(
+            250,
+            loaded.LyricsOffsetsByPath[@"C:\Music\Selected.flac"]);
+        Assert.Equal(
+            AppSettings.MaximumLyricsOffsetMilliseconds,
+            loaded.LyricsOffsetsByPath[@"C:\Music\Late.flac"]);
+        Assert.False(
+            loaded.LyricsOffsetsByPath.ContainsKey(@"C:\Music\Zero.flac"));
         Assert.Equal("Playlist", loaded.LibraryView.ActiveView);
         Assert.Equal(42, loaded.LibraryView.SelectedPlaylistId);
         Assert.Equal(
@@ -229,13 +243,14 @@ public sealed class UserDataServiceTests : IDisposable
         Assert.True(loaded.AutoUpgradeLegacyCoverArt);
         Assert.True(loaded.WatchLibraryFolders);
         Assert.Empty(loaded.WatchedFolders);
+        Assert.Empty(loaded.LyricsOffsetsByPath);
         Assert.Equal("Library", loaded.LibraryView.ActiveView);
         Assert.False(loaded.WindowPlacement.HasBounds);
         Assert.Null(loaded.PlaybackSession);
     }
 
     [Fact]
-    public void Version3SettingsMigrateToVersion5WithLanguageAndThemeDefaults()
+    public void Version3SettingsMigrateToVersion6WithLanguageAndThemeDefaults()
     {
         File.WriteAllText(
             Path.Combine(dataDirectory, "settings.json"),
@@ -243,14 +258,14 @@ public sealed class UserDataServiceTests : IDisposable
 
         var loaded = service.LoadSettings();
 
-        Assert.Equal(5, loaded.Version);
+        Assert.Equal(6, loaded.Version);
         Assert.Equal(0.5, loaded.Volume);
         Assert.Equal(UiLanguages.System, loaded.UiLanguage);
         Assert.Equal(BuiltInThemes.DefaultId, loaded.UiTheme);
     }
 
     [Fact]
-    public void Version4SettingsMigrateToVersion5WithThemeDefault()
+    public void Version4SettingsMigrateToVersion6WithThemeDefault()
     {
         File.WriteAllText(
             Path.Combine(dataDirectory, "settings.json"),
@@ -258,7 +273,7 @@ public sealed class UserDataServiceTests : IDisposable
 
         var loaded = service.LoadSettings();
 
-        Assert.Equal(5, loaded.Version);
+        Assert.Equal(6, loaded.Version);
         Assert.Equal(0.5, loaded.Volume);
         Assert.Equal(UiLanguages.Vietnamese, loaded.UiLanguage);
         Assert.Equal(BuiltInThemes.DefaultId, loaded.UiTheme);

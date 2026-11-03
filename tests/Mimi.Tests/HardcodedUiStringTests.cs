@@ -37,6 +37,8 @@ public sealed class HardcodedUiStringTests
             // Unit-only labels/diagnostics (s = SI second symbol).
             "\u221210s",
             "+10s",
+            "\u22120.1s",
+            "+0.1s",
             "0 FPS \u00B7 0.00 ms"
         };
 

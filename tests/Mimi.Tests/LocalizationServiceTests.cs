@@ -76,6 +76,18 @@ public sealed class LocalizationServiceTests
         Assert.Equal(
             "Không có đầu ra âm thanh. Hãy kết nối hoặc bật thiết bị đầu ra, rồi nhấn Phát.",
             service.GetString("Audio_MessageNoOutputPressPlay", "vi-VN"));
+        Assert.Equal(
+            "LYRICS",
+            service.GetString("Lyrics_Title", "en-US"));
+        Assert.Equal(
+            "LỜI BÀI HÁT",
+            service.GetString("Lyrics_Title", "vi-VN"));
+        Assert.Equal(
+            "No lyrics found. Add a same-name .lrc file beside the song.",
+            service.GetString("Lyrics_NotFound", "en-US"));
+        Assert.Equal(
+            "Không tìm thấy lời. Hãy đặt file .lrc cùng tên cạnh bài hát.",
+            service.GetString("Lyrics_NotFound", "vi-VN"));
     }
 
     [Fact]

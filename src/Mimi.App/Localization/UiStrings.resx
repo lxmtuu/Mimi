@@ -118,6 +118,20 @@
   <data name="Library_ToggleFavoritesSelected" xml:space="preserve"><value>Toggle favorites for selected songs</value></data>
   <data name="Library_TrackList" xml:space="preserve"><value>Track list</value></data>
   <data name="Library_UpButton" xml:space="preserve"><value>↑ Up</value></data>
+  <data name="Lyrics_ListAutomation" xml:space="preserve"><value>Lyrics for the current song</value></data>
+  <data name="Lyrics_LoadFailed" xml:space="preserve"><value>Mimi could not read lyrics for this song.</value></data>
+  <data name="Lyrics_Loading" xml:space="preserve"><value>Loading lyrics…</value></data>
+  <data name="Lyrics_NoTrack" xml:space="preserve"><value>Choose a song to see its lyrics.</value></data>
+  <data name="Lyrics_NotFound" xml:space="preserve"><value>No lyrics found. Add a same-name .lrc file beside the song.</value></data>
+  <data name="Lyrics_OffsetEarlier" xml:space="preserve"><value>Show lyrics 0.1 seconds earlier</value></data>
+  <data name="Lyrics_OffsetLater" xml:space="preserve"><value>Show lyrics 0.1 seconds later</value></data>
+  <data name="Lyrics_OffsetReset" xml:space="preserve"><value>Reset lyrics timing offset</value></data>
+  <data name="Lyrics_Reload" xml:space="preserve"><value>Reload lyrics</value></data>
+  <data name="Lyrics_SourceEmbedded" xml:space="preserve"><value>Embedded lyrics</value></data>
+  <data name="Lyrics_SourceSidecar" xml:space="preserve"><value>.lrc file</value></data>
+  <data name="Lyrics_Title" xml:space="preserve"><value>LYRICS</value></data>
+  <data name="Lyrics_Unavailable" xml:space="preserve"><value>Lyrics are unavailable in this build.</value></data>
+  <data name="Lyrics_Unsynchronized" xml:space="preserve"><value>Unsynchronized lyrics</value></data>
   <data name="Mascot_Automation" xml:space="preserve"><value>Mimi, the app mascot</value></data>
   <data name="Metadata_LocalMusicSuffix" xml:space="preserve"><value>{0}  •  Local music</value></data>
   <data name="Metadata_UnknownAlbum" xml:space="preserve"><value>Unknown album</value></data>

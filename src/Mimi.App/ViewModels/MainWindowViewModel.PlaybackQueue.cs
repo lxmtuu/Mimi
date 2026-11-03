@@ -164,6 +164,8 @@ public sealed partial class MainWindowViewModel
             isPlaying: IsPlaying);
         trackWithPlaybackIndicator = value;
 
+        StartLyricsLoad(value);
+
         if (value is null)
             AudioOutputNotice = string.Empty;
     }

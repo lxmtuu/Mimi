@@ -118,6 +118,20 @@
   <data name="Library_ToggleFavoritesSelected" xml:space="preserve"><value>Bật/tắt yêu thích cho các bài đã chọn</value></data>
   <data name="Library_TrackList" xml:space="preserve"><value>Danh sách bài hát</value></data>
   <data name="Library_UpButton" xml:space="preserve"><value>↑ Lên</value></data>
+  <data name="Lyrics_ListAutomation" xml:space="preserve"><value>Danh sách lời của bài đang phát</value></data>
+  <data name="Lyrics_LoadFailed" xml:space="preserve"><value>Mimi không đọc được lời cho bài này.</value></data>
+  <data name="Lyrics_Loading" xml:space="preserve"><value>Đang tải lời…</value></data>
+  <data name="Lyrics_NoTrack" xml:space="preserve"><value>Hãy chọn một bài hát để xem lời.</value></data>
+  <data name="Lyrics_NotFound" xml:space="preserve"><value>Không tìm thấy lời. Hãy đặt file .lrc cùng tên cạnh bài hát.</value></data>
+  <data name="Lyrics_OffsetEarlier" xml:space="preserve"><value>Hiện lời sớm hơn 0,1 giây</value></data>
+  <data name="Lyrics_OffsetLater" xml:space="preserve"><value>Hiện lời muộn hơn 0,1 giây</value></data>
+  <data name="Lyrics_OffsetReset" xml:space="preserve"><value>Đặt lại độ lệch thời gian của lời</value></data>
+  <data name="Lyrics_Reload" xml:space="preserve"><value>Tải lại lời</value></data>
+  <data name="Lyrics_SourceEmbedded" xml:space="preserve"><value>Lời nhúng trong file</value></data>
+  <data name="Lyrics_SourceSidecar" xml:space="preserve"><value>File .lrc</value></data>
+  <data name="Lyrics_Title" xml:space="preserve"><value>LỜI BÀI HÁT</value></data>
+  <data name="Lyrics_Unavailable" xml:space="preserve"><value>Tính năng lời không khả dụng trong bản này.</value></data>
+  <data name="Lyrics_Unsynchronized" xml:space="preserve"><value>Lời chưa đồng bộ</value></data>
   <data name="Mascot_Automation" xml:space="preserve"><value>Mimi, mascot của ứng dụng</value></data>
   <data name="Metadata_LocalMusicSuffix" xml:space="preserve"><value>{0}  •  Nhạc cục bộ</value></data>
   <data name="Metadata_UnknownAlbum" xml:space="preserve"><value>Album không rõ</value></data>
