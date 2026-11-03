@@ -29,12 +29,22 @@ sở hữu trí tuệ của bên thứ ba.
   cỡ 16, 20, 24, 32, 40, 48, 64, 128, 256 px, được nối bằng
   `<ApplicationIcon>Assets\mimi.ico</ApplicationIcon>` trong
   `Mimi.App.csproj` nên xuất hiện ở file EXE, thanh tiêu đề,
-  taskbar và Alt-Tab. Icon này thay thế icon tạm trước đó (ô xanh
-  ngọc chữ M đen).
+  taskbar và Alt-Tab. File này còn được đóng gói dạng WPF
+  `Resource` và đặt làm thuộc tính `Icon` của cửa sổ chính, để
+  nút taskbar của cửa sổ đang chạy lấy icon trực tiếp từ cửa sổ
+  thay vì phụ thuộc cách Windows Shell phân giải icon qua
+  AppUserModelID/shortcut. Icon này thay thế icon tạm trước đó
+  (ô xanh ngọc chữ M đen).
 
-`tests/Mimi.Tests/AppIconTests.cs` gác ba điểm: file ICO còn parse
-được và giữ các cỡ chuẩn, hai file PNG giữ dạng vuông, và project
-file còn trỏ đúng `ApplicationIcon`.
+Lưu ý về nút đã ghim trên taskbar: khi app không chạy, Windows
+hiển thị icon của shortcut đã ghim và có thể giữ hình cũ trong
+cache sau khi thay icon. Cách xử lý một lần là bỏ ghim, chạy
+bản build mới rồi ghim lại.
+
+`tests/Mimi.Tests/AppIconTests.cs` gác định dạng ICO/các cỡ
+chuẩn, tính vuông của hai PNG và toàn bộ wiring
+(`ApplicationIcon`, hai mục `Resource`, logo ở header và
+`Window.Icon`).
 
 ## Cách xử lý từ ảnh concept
 

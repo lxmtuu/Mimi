@@ -73,6 +73,10 @@ public sealed class AppIconTests
             "<Resource Include=\"Assets\\mimi-256.png\" />",
             project,
             StringComparison.Ordinal);
+        Assert.Contains(
+            "<Resource Include=\"Assets\\mimi.ico\" />",
+            project,
+            StringComparison.Ordinal);
     }
 
     [Fact]
@@ -83,6 +87,12 @@ public sealed class AppIconTests
         var mainWindow = File.ReadAllText(mainWindowPath);
         Assert.Contains(
             "pack://application:,,,/Assets/mimi-256.png",
+            mainWindow,
+            StringComparison.Ordinal);
+        // The running window must carry its own icon so the taskbar
+        // button does not depend on the shell's shortcut icon cache.
+        Assert.Contains(
+            "Icon=\"pack://application:,,,/Assets/mimi.ico\"",
             mainWindow,
             StringComparison.Ordinal);
     }
