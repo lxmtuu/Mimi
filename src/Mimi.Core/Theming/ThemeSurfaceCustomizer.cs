@@ -3,14 +3,21 @@ using System.Globalization;
 namespace Mimi.Theming;
 
 /// <summary>
-/// Recolours a theme's background layers from one colour the user picked.
+/// Recolours a theme's background family from one colour the user picked.
 ///
 /// The rule that makes this safe: a custom background changes the <em>hue</em>
-/// of the surfaces, not their <em>depth</em>. Each layer keeps exactly the
+/// of the backgrounds, not their <em>depth</em>. Each surface keeps exactly the
 /// relative luminance it has in the theme, so the stack order, the step between
 /// layers and the contrast against every text token stay identical to the
-/// palette the theme was designed and tested with. Only the tint moves, which is
+/// palette the theme was designed and tested with. Only the hue moves, which is
 /// what "I want this app pink / green / navy" actually means.
+///
+/// The family is wider than the nine layers: the hero aurora, the video stage
+/// and the cover fallback are backgrounds too. Leaving them on the theme's own
+/// blue while the shell turns pink is exactly the patchwork look a background
+/// colour is supposed to remove, so they move with it - by the same hue angle,
+/// which keeps the relationships their author designed instead of flattening
+/// them into one colour.
 /// </summary>
 public static class ThemeSurfaceCustomizer
 {
@@ -31,9 +38,9 @@ public static class ThemeSurfaceCustomizer
     ];
 
     /// <summary>
-    /// The background layers, in the order the layout stacks them.
-    /// Accents, text and gradients are deliberately excluded: the user asked for
-    /// a background colour, not a new theme.
+    /// The background layers, in the order the layout stacks them. Accents and
+    /// text are deliberately excluded: the user asked for a background colour,
+    /// not a new theme.
     /// </summary>
     public static IReadOnlyList<string> SurfaceTokens { get; } =
     [
@@ -49,9 +56,42 @@ public static class ThemeSurfaceCustomizer
     ];
 
     /// <summary>
-    /// Returns <paramref name="theme"/> with its nine background layers tinted
-    /// by <paramref name="background"/>. The result keeps the theme's id and
-    /// name so the picker still shows which theme this is.
+    /// The hued backgrounds that are not layers: the hero aurora, the video
+    /// stage and the cover fallback. They belong to the same family as the
+    /// panels - a hero that keeps its old blue while the shell turns pink is
+    /// the "colours do not line up" look this exists to avoid.
+    /// </summary>
+    public static IReadOnlyList<string> GradientTokens { get; } =
+    [
+        ThemeTokens.HeroGradientStart,
+        ThemeTokens.HeroGradientMiddle,
+        ThemeTokens.HeroGradientEnd,
+        ThemeTokens.StageGradientStart,
+        ThemeTokens.StageGradientMiddle,
+        ThemeTokens.StageGradientEnd,
+        ThemeTokens.CoverGradientStart,
+        ThemeTokens.CoverGradientEnd
+    ];
+
+    /// <summary>
+    /// Everything the tint repaints: the layer stack plus the gradients. Text,
+    /// accents and the warning/danger plates are deliberately not here.
+    /// </summary>
+    public static IReadOnlyList<string> BackgroundTokens { get; } =
+        [.. SurfaceTokens, .. GradientTokens];
+
+    /// <summary>
+    /// Below this saturation a theme has no hue worth keeping - a grey
+    /// community theme - so the chosen colour is painted straight on instead of
+    /// being rotated.
+    /// </summary>
+    private const double AchromaticBelow = 0.08;
+
+    /// <summary>
+    /// Returns <paramref name="theme"/> with its background family - the nine
+    /// layers and the eight gradient stops - recoloured from
+    /// <paramref name="background"/>. The result keeps the theme's id and name
+    /// so the picker still shows which theme this is.
     /// </summary>
     public static ThemeDefinition Apply(
         ThemeDefinition theme,
@@ -59,47 +99,94 @@ public static class ThemeSurfaceCustomizer
     {
         ArgumentNullException.ThrowIfNull(theme);
 
-        var anchor = theme.TryGetColor(ThemeTokens.AppBackground, out var original)
-            ? original.RelativeLuminance
-            : BuiltInThemes.Default.GetColor(ThemeTokens.AppBackground).RelativeLuminance;
+        var baseColor = theme.TryGetColor(ThemeTokens.AppBackground, out var appBackground)
+            ? appBackground
+            : BuiltInThemes.Default.GetColor(ThemeTokens.AppBackground);
 
-        ToHsl(background, out var hue, out var saturation, out _);
+        ToHsl(baseColor, out var baseHue, out var baseSaturation, out _);
+        ToHsl(background, out var chosenHue, out var chosenSaturation, out _);
 
-        // Muted on purpose. The surface ladder lives at 0.002-0.05 relative
-        // luminance, where full saturation turns into a neon-black that fights
-        // the accents. A cap keeps the tint visible without taking the theme
-        // over, and it is applied before relighting so every layer agrees.
-        saturation = Math.Min(saturation, MaximumSaturation);
+        var cappedSaturation = Math.Min(chosenSaturation, MaximumSaturation);
+        var hasOwnHue = baseSaturation >= AchromaticBelow;
 
-        // Each layer starts at the depth it has in the theme (its luminance
-        // ratio to the window background) and is then nudged until the ladder
-        // survives 8-bit rounding. Rounding alone is enough to turn a 1.05:1
-        // step into 1.04:1, which is the difference between a panel you can see
-        // and a wall of one colour.
-        var targets = new Dictionary<string, double>(StringComparer.Ordinal);
-        foreach (var token in SurfaceTokens)
+        // Rotate rather than repaint. The aurora goes from a cooler start to a
+        // warmer end on purpose, and that relationship is what makes it read as
+        // light falling on one place. Moving every stop by the same angle keeps
+        // that relationship while putting the whole family in the chosen hue.
+        var rotation = chosenHue - baseHue;
+
+        // The chosen colour also sets how colourful the shell is. Without this,
+        // picking grey would leave one fully saturated blue gradient glowing in
+        // the middle of a monochrome app.
+        var saturationScale = hasOwnHue
+            ? cappedSaturation / baseSaturation
+            : 1;
+
+        // A hue-only rotation is the whole point for a theme that has its own
+        // colour; a theme without one simply takes the chosen colour.
+        (double Hue, double Saturation) TintOf(ThemeColor color)
         {
-            if (!theme.TryGetColor(token, out var color)) continue;
-            targets[token] = anchor * (color.RelativeLuminance / anchor);
+            if (!hasOwnHue) return (chosenHue, cappedSaturation);
+
+            ToHsl(color, out var hue, out var saturation, out _);
+            return (hue + rotation, Math.Min(saturation * saturationScale, MaximumSaturation));
         }
 
         var colors = new Dictionary<string, string>(
             theme.Colors,
             StringComparer.OrdinalIgnoreCase);
 
+        // The layer stack: relit to the depth it has in the theme, then nudged
+        // until the ladder survives 8-bit rounding. Rounding alone is enough to
+        // turn a 1.05:1 step into 1.04:1, which is the difference between a
+        // panel you can see and a wall of one colour.
+        var layers = new Dictionary<string, (double Hue, double Saturation, double Luminance)>(
+            StringComparer.Ordinal);
+        foreach (var token in SurfaceTokens)
+        {
+            if (!theme.TryGetColor(token, out var color)) continue;
+
+            var (hue, saturation) = TintOf(color);
+            layers[token] = (hue, saturation, color.RelativeLuminance);
+        }
+
         for (var pass = 0; pass < 64; pass++)
         {
-            foreach (var (token, luminance) in targets)
-                colors[token] = Relight(hue, saturation, luminance).ToHexString();
+            foreach (var (token, layer) in layers)
+            {
+                colors[token] = Relight(layer.Hue, layer.Saturation, layer.Luminance)
+                    .ToHexString();
+            }
 
-            var worst = FindWeakStep(colors);
-            if (worst is null) break;
+            var weak = FindWeakStep(colors);
+            if (weak is null) break;
 
             // Raise the layer that is too close to the one below it; the loop
-            // then re-checks everything, so pushing one layer up cannot leave
-            // the next step broken.
-            if (!targets.TryGetValue(worst, out var target)) break;
-            targets[worst] = target * 1.01;
+            // re-checks everything, so pushing one layer up cannot leave the
+            // next step broken.
+            if (!layers.TryGetValue(weak, out var broken)) break;
+            layers[weak] = (broken.Hue, broken.Saturation, broken.Luminance * 1.01);
+        }
+
+        // Gradients keep their own stops; they are light, not layers, so no
+        // ladder applies to them.
+        foreach (var token in GradientTokens)
+        {
+            if (!theme.TryGetColor(token, out var color)) continue;
+
+            var (hue, saturation) = TintOf(color);
+            colors[token] = Relight(hue, saturation, color.RelativeLuminance)
+                .ToHexString();
+        }
+
+        // The stage scrim is the window colour with an alpha on top of the
+        // video; it has to move with the window it is drawn over.
+        if (theme.TryGetColor(ThemeTokens.StageOverlay, out var overlay) &&
+            colors.TryGetValue(ThemeTokens.AppBackground, out var tintedApp) &&
+            ThemeColor.TryParse(tintedApp, out var tintedAppColor))
+        {
+            colors[ThemeTokens.StageOverlay] =
+                (tintedAppColor with { A = overlay.A }).ToHexString(includeAlpha: true);
         }
 
         return new ThemeDefinition(theme.Id, theme.Name, colors);

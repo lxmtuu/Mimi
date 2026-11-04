@@ -28,7 +28,7 @@ public sealed class ThemeSurfaceCustomizerTests
                 Assert.True(ThemeSurfaceCustomizer.TryParse(tint, out var color));
                 var tinted = ThemeSurfaceCustomizer.Apply(theme, color);
 
-                foreach (var token in ThemeSurfaceCustomizer.SurfaceTokens)
+                foreach (var token in ThemeSurfaceCustomizer.BackgroundTokens)
                 {
                     var before = theme.GetColor(token).RelativeLuminance;
                     var after = tinted.GetColor(token).RelativeLuminance;
@@ -141,6 +141,148 @@ public sealed class ThemeSurfaceCustomizerTests
     }
 
     [Fact]
+    public void TheHeroTheStageAndTheCoverFollowTheSameColour()
+    {
+        // The complaint this answers: nine panels turned pink while the hero,
+        // the video stage and the cover stayed blue, which reads as two apps
+        // glued together rather than one colour scheme.
+        foreach (var theme in BuiltInThemes.All)
+        {
+            ThemeSurfaceCustomizer.TryParse("#FF8FCB", out var pink);
+            var tinted = ThemeSurfaceCustomizer.Apply(theme, pink);
+
+            foreach (var token in ThemeSurfaceCustomizer.BackgroundTokens)
+            {
+                var color = tinted.GetColor(token);
+
+                Assert.True(
+                    color.R > color.B && color.R > color.G,
+                    $"{theme.Id}: {token} is still {color.ToHexString()} after a pink tint.");
+            }
+        }
+    }
+
+    [Fact]
+    public void TheAuroraKeepsTheRelationshipsItsDesignerChose()
+    {
+        foreach (var theme in BuiltInThemes.All)
+        {
+            ThemeSurfaceCustomizer.TryParse("#B07CFF", out var violet);
+            var tinted = ThemeSurfaceCustomizer.Apply(theme, violet);
+
+            // Rotating every stop by the same angle keeps the span between the
+            // coolest and the warmest stop; painting them one flat colour would
+            // lose the light that makes the hero look lit rather than filled.
+            var before = HueSpread(
+                theme.GetColor(ThemeTokens.HeroGradientStart),
+                theme.GetColor(ThemeTokens.HeroGradientEnd));
+            var after = HueSpread(
+                tinted.GetColor(ThemeTokens.HeroGradientStart),
+                tinted.GetColor(ThemeTokens.HeroGradientEnd));
+
+            Assert.True(
+                Math.Abs(after - before) <= 4,
+                $"{theme.Id}: aurora span went from {before:0.0}° to {after:0.0}°.");
+        }
+    }
+
+    [Fact]
+    public void AGreyChoiceLeavesNoHueBehind()
+    {
+        ThemeSurfaceCustomizer.TryParse("#808080", out var grey);
+
+        foreach (var theme in BuiltInThemes.All)
+        {
+            var tinted = ThemeSurfaceCustomizer.Apply(theme, grey);
+
+            foreach (var token in ThemeSurfaceCustomizer.BackgroundTokens)
+            {
+                var color = tinted.GetColor(token);
+                var spread = Math.Max(color.R, Math.Max(color.G, color.B)) -
+                             Math.Min(color.R, Math.Min(color.G, color.B));
+
+                Assert.True(
+                    spread <= 4,
+                    $"{theme.Id}: {token} is {color.ToHexString()}, not grey, " +
+                    "so one saturated gradient survived a monochrome choice.");
+            }
+        }
+    }
+
+    [Fact]
+    public void TheStageScrimMovesWithTheWindowItSitsOn()
+    {
+        var theme = BuiltInThemes.Default;
+        ThemeSurfaceCustomizer.TryParse("#4FD1A5", out var mint);
+        var tinted = ThemeSurfaceCustomizer.Apply(theme, mint);
+
+        var overlay = tinted.GetColor(ThemeTokens.StageOverlay);
+        var window = tinted.GetColor(ThemeTokens.AppBackground);
+
+        // Same colour as the window, same transparency as before: the scrim is
+        // the window dimming the video, not a plate of its own.
+        Assert.Equal(theme.GetColor(ThemeTokens.StageOverlay).A, overlay.A);
+        Assert.Equal(window.R, overlay.R);
+        Assert.Equal(window.G, overlay.G);
+        Assert.Equal(window.B, overlay.B);
+    }
+
+    [Fact]
+    public void WhatTheThemeUsesToSpeakDoesNotMove()
+    {
+        var pinned = new[]
+        {
+            ThemeTokens.Accent,
+            ThemeTokens.AccentSecondary,
+            ThemeTokens.AccentHot,
+            ThemeTokens.OnAccent,
+            ThemeTokens.TextPrimary,
+            ThemeTokens.TextStrong,
+            ThemeTokens.Warning,
+            ThemeTokens.WarningBackground,
+            ThemeTokens.DangerBackground
+        };
+
+        foreach (var theme in BuiltInThemes.All)
+        {
+            ThemeSurfaceCustomizer.TryParse("#FFB020", out var amber);
+            var tinted = ThemeSurfaceCustomizer.Apply(theme, amber);
+
+            foreach (var token in pinned)
+            {
+                Assert.Equal(
+                    theme.GetColor(token).ToHexString(),
+                    tinted.GetColor(token).ToHexString());
+            }
+        }
+    }
+
+    private static double HueSpread(Mimi.Theming.ThemeColor from, Mimi.Theming.ThemeColor to)
+    {
+        static double Hue(Mimi.Theming.ThemeColor color)
+        {
+            var r = color.R / 255d;
+            var g = color.G / 255d;
+            var b = color.B / 255d;
+            var max = Math.Max(r, Math.Max(g, b));
+            var min = Math.Min(r, Math.Min(g, b));
+            var delta = max - min;
+            if (delta <= 0) return 0;
+
+            var hue = max == r
+                ? 60 * (((g - b) / delta) % 6)
+                : max == g
+                    ? 60 * (((b - r) / delta) + 2)
+                    : 60 * (((r - g) / delta) + 4);
+
+            return hue < 0 ? hue + 360 : hue;
+        }
+
+        var spread = Math.Abs(Hue(from) - Hue(to));
+        return spread > 180 ? 360 - spread : spread;
+    }
+
+    [Fact]
     public void AStrongTintIsMutedEnoughToLeaveRoomForTheAccents()
     {
         // Full saturation at these luminances produces a neon-black that fights
@@ -155,6 +297,25 @@ public sealed class ThemeSurfaceCustomizerTests
         Assert.True(
             max - min < 0x40,
             $"The tint is louder than the cap allows: {panel.ToHexString()}.");
+
+        // The cap is on the saturation the palette is built from; rounding a
+        // very dark colour to 8 bits can measure a percent or two higher.
+        foreach (var token in ThemeSurfaceCustomizer.BackgroundTokens)
+        {
+            var color = tinted.GetColor(token);
+            var lightness = (Math.Max(color.R, Math.Max(color.G, color.B)) +
+                             Math.Min(color.R, Math.Min(color.G, color.B))) / 2d / 255d;
+            var denominator = 1 - Math.Abs((2 * lightness) - 1);
+            if (denominator <= 0.02) continue;
+
+            var saturation =
+                (Math.Max(color.R, Math.Max(color.G, color.B)) -
+                 Math.Min(color.R, Math.Min(color.G, color.B))) / 255d / denominator;
+
+            Assert.True(
+                saturation <= ThemeSurfaceCustomizer.MaximumSaturation + 0.06,
+                $"{token} keeps {saturation:0.00} saturation, more than the cap.");
+        }
     }
 
     [Theory]

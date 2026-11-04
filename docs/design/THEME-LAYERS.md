@@ -111,28 +111,41 @@ một dải 34 px trong Settings. Chúng nhỏ, tự có hình, và thêm viền
 ## 7. Màu nền tuỳ chỉnh (Settings → Appearance)
 
 Người dùng chọn **một màu nền** (6 ô màu sẵn hoặc gõ `#RRGGBB`), Mimi pha màu đó
-vào **9 lớp bề mặt** của **bất kỳ theme nào đang chọn** — nên chọn theme khác thì
-màu nền vẫn theo người dùng.
+vào **toàn bộ phần nền** của **bất kỳ theme nào đang chọn** — nên chọn theme khác
+thì màu nền vẫn theo người dùng.
 
-**Quy tắc để không phá thứ đã kiểm:** màu tuỳ chỉnh chỉ đổi **sắc (hue)**, không
-đổi **độ sâu (luminance)**. Mỗi lớp được "chiếu sáng lại" về đúng độ sáng tương
-đối mà nó có trong theme gốc, nên:
+"Phần nền" ở đây rộng hơn 9 lớp:
 
-- thứ tự lớp và bước nhảy giữa các lớp giữ nguyên;
-- tương phản chữ (`TextPrimary/Strong/Secondary/Muted`) giữ nguyên;
-- màu nhấn (accent) và gradient **không** đổi — đây là đổi nền, không phải theme mới.
+| Nhóm | Token | Vì sao phải theo |
+|---|---|---|
+| Lớp nền (9) | App, Sunken, Panel, Header, Raised, Control, Selected, Border, Divider | thân app, khung, thẻ |
+| Dải màu nền (8) | Hero ×3, Stage ×3, Cover ×2 | hero, sân khấu video, ảnh bìa — để nguyên thì thành một khối xanh giữa app hồng |
+| Phủ sân khấu | StageOverlay | chính là màu cửa sổ + alpha, phải đi cùng cửa sổ |
+| **Không đổi** | Accent, AccentSecondary, AccentHot, OnAccent, toàn bộ Text, Warning/Danger, WarningBackground, WarningBorder, DangerBackground | đây là màu để *nói* (nhấn, chữ, cảnh báo), không phải màu nền |
 
-Hai chi tiết kỹ thuật, đều đã có test:
+**Hai quy tắc giữ cho nó "đều":**
 
-1. **Độ bão hoà bị chặn ở 0,5.** Ở mức luminance 0,002–0,05, màu bão hoà 100 % cho
-   ra "đen neon" đối chọi với accent; chặn lại thì màu vẫn thấy rõ mà không lấn át.
-2. **Sửa thang sau khi làm tròn 8-bit.** Làm tròn có thể biến bước 1,05:1 thành
-   1,04:1. Customizer tự nâng lớp thiếu sáng theo từng bước 1 % cho tới khi
-   `ThemeLayerAudit` sạch, nên kết quả luôn đạt đúng các mức ở mục 2.
+1. **Xoay cùng một góc, không sơn cùng một màu.** Mỗi token giữ *quan hệ sắc* với
+   màu nền gốc của theme: góc xoay = sắc người dùng chọn − sắc nền theme. Neon
+   (hero 211°, nền 221°) thành hồng (hero 318°, nền 328°) — vẫn lệch nhau 10° như
+   tác giả theme đã đặt, nên hero vẫn là "ánh sáng" chứ không phải một mảng bệt.
+2. **Độ sâu giữ nguyên.** Mỗi lớp được chiếu sáng lại về đúng luminance tương đối
+   của nó, nên thứ tự lớp, bước nhảy và tương phản chữ không đổi.
+
+**Hai chi tiết kỹ thuật, đều đã có test:**
+
+- **Trần bão hoà 0,5.** Ở mức luminance 0,002–0,05, màu bão hoà 100 % cho ra "đen
+  neon" đối chọi với accent. Chọn màu xám thì toàn bộ nền mất sắc theo (kể cả
+  hero), thay vì để một dải xanh bão hoà nằm giữa app đơn sắc.
+- **Sửa thang sau khi làm tròn 8-bit.** Làm tròn có thể biến bước 1,05:1 thành
+  1,04:1, nên customizer tự nâng lớp thiếu sáng cho tới khi `ThemeLayerAudit`
+  sạch.
 
 Kết quả đo (4 theme × 10 màu, gồm cả `#FFFFFF`, `#000000`, `#808080`): lệch độ sâu
-tối đa **0,0012**, không có trường hợp nào vi phạm bước lớp hay AA.
+tối đa **0,0012**; mọi token nền đều đổi sắc; khoảng sắc của hero lệch **< 4°**;
+không trường hợp nào vi phạm bước lớp hay AA 4,5:1.
 
 Lưu vào `settings.json` ở schema **v11**: `CustomBackgroundEnabled` +
 `CustomBackground` (chuẩn hoá về `#RRGGBB`; giá trị không đọc được thì tự tắt tính
-năng chứ không để lại bảng màu nửa vời).
+năng chứ không để lại bảng màu nửa vời). Nhân bản theme vẫn chép **bảng màu gốc**:
+tint là cài đặt màn hình, không phải theme.
