@@ -127,6 +127,18 @@ Select-String -Path "$env:LOCALAPPDATA\Mimi\logs\mimi-*.log" -Pattern "Recovered
 Nó cho biết **phần tử nào** — và đó là chỗ để nhìn trong `.xaml`. Không còn phải
 đoán.
 
+### Kết quả lượt chạy đầu tiên (04/11/2026)
+
+Trên Windows thật: phát nhạc → F11 mở Stage → đóng Stage.
+
+- **Không còn hộp thoại.**
+- **Không có** dòng `Recovered from an empty focus ring` trong log.
+
+Kết luận đọc được từ đó: triệu chứng đã hết, nhưng **không** phải nhờ lớp thu hồi
+— lớp phòng ngừa ở XAML đã đủ để giá trị không bao giờ rỗng. `FocusVisualRepair`
+vì thế nằm lại như lưới đỡ cho trường hợp khác, chứ chưa chứng minh được gì về
+nguyên nhân gốc. Ghi đúng như vậy để sau này không ai đọc thành "đã tìm ra gốc".
+
 ### Vì sao không chỉ "bắt lỗi rồi bỏ qua"
 
 Nuốt exception mà không đặt giá trị thì lần focus sau lại ném tiếp, mỗi lần một
