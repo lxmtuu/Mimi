@@ -80,16 +80,18 @@
                            TextAlignment="Center"
                            TextWrapping="Wrap"
                            Opacity="0.75"/>
-                <TextBlock x:Name="StageLyricCurrent"
-                           Margin="0,10,0,0"
-                           FontSize="40"
-                           FontWeight="SemiBold"
-                           TextAlignment="Center"
-                           TextWrapping="Wrap">
-                    <TextBlock.Effect>
+                <controls:KaraokeTextBlock x:Name="StageLyricCurrent"
+                                           Margin="0,10,0,0"
+                                           FontSize="40"
+                                           FontWeight="SemiBold"
+                                           TextAlignment="Center"
+                                           TextWrapping="Wrap"
+                                           SungBrush="{DynamicResource AccentBrush}"
+                                           PendingBrush="{DynamicResource TextSecondaryBrush}">
+                    <controls:KaraokeTextBlock.Effect>
                         <DropShadowEffect Color="{DynamicResource AccentColor}" BlurRadius="18" ShadowDepth="0" Opacity="0.35"/>
-                    </TextBlock.Effect>
-                </TextBlock>
+                    </controls:KaraokeTextBlock.Effect>
+                </controls:KaraokeTextBlock>
                 <TextBlock x:Name="StageLyricNext"
                            Margin="0,10,0,0"
                            Foreground="{DynamicResource TextSecondaryBrush}"

@@ -2762,9 +2762,18 @@
                                         </ListBox.ItemContainerStyle>
                                         <ListBox.ItemTemplate>
                                             <DataTemplate>
-                                                <TextBlock Text="{Binding Text}" TextWrapping="Wrap">
-                                                    <TextBlock.Style>
-                                                        <Style TargetType="{x:Type TextBlock}">
+                                                <!-- Karaoke only on the line under the cursor:
+                                                     highlighting the others would just be noise.
+                                                     Lines without word timings fall back to plain
+                                                     text, so an ordinary .lrc renders as before. -->
+                                                <controls:KaraokeTextBlock PlainText="{Binding Text}"
+                                                                           Words="{Binding KaraokeWords}"
+                                                                           SungWordCount="{Binding SungWordCount}"
+                                                                           SungBrush="{DynamicResource AccentBrush}"
+                                                                           PendingBrush="{DynamicResource TextMutedBrush}"
+                                                                           TextWrapping="Wrap">
+                                                    <controls:KaraokeTextBlock.Style>
+                                                        <Style TargetType="{x:Type controls:KaraokeTextBlock}">
                                                             <Setter Property="FontSize" Value="12"/>
                                                             <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
                                                             <Style.Triggers>
@@ -2778,8 +2787,8 @@
                                                                 </DataTrigger>
                                                             </Style.Triggers>
                                                         </Style>
-                                                    </TextBlock.Style>
-                                                </TextBlock>
+                                                    </controls:KaraokeTextBlock.Style>
+                                                </controls:KaraokeTextBlock>
                                             </DataTemplate>
                                         </ListBox.ItemTemplate>
                                     </ListBox>

@@ -25,6 +25,7 @@ public sealed partial class MainWindowViewModel
         LyricsPresentationState.NoTrack;
     private int lyricsLoadVersion;
     private int currentLyricLineIndex = -1;
+    private int currentLyricWordIndex = -1;
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(ReloadLyricsCommand))]
@@ -60,6 +61,14 @@ public sealed partial class MainWindowViewModel
 
     [ObservableProperty]
     private LyricLineViewModel? nextLyricLine;
+
+    /// <summary>
+    /// How many words of the current line have been sung, or -1. Karaoke needs
+    /// a tick-level signal, not just "the line changed", because the whole point
+    /// is what happens inside one line.
+    /// </summary>
+    [ObservableProperty]
+    private int currentLyricSungWordCount = -1;
 
     public ObservableCollection<LyricLineViewModel> LyricLines { get; } = [];
 
@@ -123,6 +132,8 @@ public sealed partial class MainWindowViewModel
 
         currentLyricsDocument = null;
         currentLyricLineIndex = -1;
+        currentLyricWordIndex = -1;
+        CurrentLyricSungWordCount = -1;
         CurrentLyricLine = null;
         PreviousLyricLine = null;
         NextLyricLine = null;
@@ -234,28 +245,60 @@ public sealed partial class MainWindowViewModel
             currentLyricsDocument is { IsSynchronized: true } document
                 ? document
                 : null;
-        var index = synchronizedDocument?.FindCurrentLineIndex(
-            position,
-            TimeSpan.FromMilliseconds(LyricsOffsetMilliseconds)) ?? -1;
-        if (!force && index == currentLyricLineIndex) return;
+        var delay = TimeSpan.FromMilliseconds(LyricsOffsetMilliseconds);
+        var index = synchronizedDocument?.FindCurrentLineIndex(position, delay) ?? -1;
+        var wordIndex = index >= 0 && index < LyricLines.Count &&
+                        synchronizedDocument is not null
+            ? synchronizedDocument.FindCurrentWordIndex(
+                LyricLines[index].Line,
+                position,
+                delay)
+            : -1;
 
-        currentLyricLineIndex = index;
-        for (var i = 0; i < LyricLines.Count; i++)
+        // Both, not just the line: a word boundary inside the same line is a
+        // real change on screen.
+        if (!force && index == currentLyricLineIndex &&
+            wordIndex == currentLyricWordIndex)
         {
-            LyricLines[i].IsCurrent = i == index;
-            LyricLines[i].IsPast = index >= 0 && i < index;
+            return;
         }
 
-        CurrentLyricLine = index >= 0 && index < LyricLines.Count
-            ? LyricLines[index]
-            : null;
-        PreviousLyricLine = synchronizedDocument is not null && index > 0
-            ? LyricLines[index - 1]
-            : null;
-        NextLyricLine = synchronizedDocument is not null &&
-                        index + 1 < LyricLines.Count
-            ? LyricLines[index + 1]
-            : null;
+        var lineChanged = force || index != currentLyricLineIndex;
+        currentLyricLineIndex = index;
+        currentLyricWordIndex = wordIndex;
+
+        if (lineChanged)
+        {
+            for (var i = 0; i < LyricLines.Count; i++)
+            {
+                var line = LyricLines[i];
+                line.IsCurrent = i == index;
+                line.IsPast = index >= 0 && i < index;
+
+                // Lines behind the cursor are sung through, the current line
+                // reports how far it is, and everything ahead has not started.
+                line.SungWordCount = i < index
+                    ? line.Words.Count
+                    : i == index ? wordIndex : -1;
+            }
+
+            CurrentLyricLine = index >= 0 && index < LyricLines.Count
+                ? LyricLines[index]
+                : null;
+            PreviousLyricLine = synchronizedDocument is not null && index > 0
+                ? LyricLines[index - 1]
+                : null;
+            NextLyricLine = synchronizedDocument is not null &&
+                            index + 1 < LyricLines.Count
+                ? LyricLines[index + 1]
+                : null;
+        }
+        else if (index >= 0 && index < LyricLines.Count)
+        {
+            LyricLines[index].SungWordCount = wordIndex;
+        }
+
+        CurrentLyricSungWordCount = wordIndex;
     }
 
     private void AdjustLyricsOffset(int deltaMilliseconds) =>
