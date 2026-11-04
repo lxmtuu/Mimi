@@ -31,7 +31,9 @@ Workflow `Release` sẽ: restore → build → test → publish self-contained `
 → chép `LICENSE`, `THIRD-PARTY-NOTICES.md`, `CHANGELOG.md`, `SECURITY.md` vào thư
 mục phát hành
 → zip bản portable → **compile bộ cài bằng `ISCC`** trên **cùng thư mục đó**
-→ ghi `SHA256SUMS.txt` → tạo/cập nhật GitHub Release và đính kèm **ba** tệp.
+→ ghi `SHA256SUMS.txt` → dựng nội dung release từ
+[`docs/release/RELEASE-BODY.md`](../release/RELEASE-BODY.md) → tạo/cập nhật
+GitHub Release và đính kèm **ba** tệp.
 
 Kết quả, mỗi bản phát hành có ba thứ:
 

@@ -162,6 +162,8 @@ You do not need .NET, Visual Studio, or Git to use Mimi. Take either file from
 
 Both are self-contained: the .NET runtime is inside. `SHA256SUMS.txt` on the
 release page lets you check the download (`sha256sum -c SHA256SUMS.txt`).
+The full notes for the current version, pictures included, live in
+[`docs/release/0.7.0.md`](docs/release/0.7.0.md).
 
 Two things to expect on the first run:
 

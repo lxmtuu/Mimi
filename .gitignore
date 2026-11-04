@@ -11,11 +11,15 @@ artifacts/
 # Visual Studio / .NET build output
 [Bb]in/
 [Oo]bj/
-[Dd]ebug/
-[Rr]elease/
+/[Dd]ebug/
+/[Rr]elease/
 x64/
 x86/
 bld/
+
+# The two rules above are anchored to the repository root on purpose: anchored
+# only as "[Rr]elease/" they also swallowed docs/release/ and docs/assets/release/,
+# so the release notes and their pictures were silently never committed.
 
 # User-specific Visual Studio files
 *.rsuser
