@@ -1867,13 +1867,20 @@
                                 <TextBlock Text="{Binding Loc[Settings_ThemeDescription]}"
                                            Foreground="{StaticResource TextMutedBrush}" FontSize="11" TextWrapping="Wrap" Margin="0,8,0,0"/>
                                 <WrapPanel Margin="0,10,0,0">
-                                    <Button Content="{Binding Loc[Settings_OpenThemesFolder]}" Command="{Binding OpenThemesFolderCommand}"
+                                    <Button Content="{Binding Loc[Settings_DuplicateTheme]}" Command="{Binding DuplicateThemeForEditingCommand}"
                                             Padding="10,7" FontSize="11"
+                                            ToolTip="{Binding Loc[Settings_DuplicateThemeAutomation]}"
+                                            AutomationProperties.Name="{Binding Loc[Settings_DuplicateThemeAutomation]}"/>
+                                    <Button Content="{Binding Loc[Settings_OpenThemesFolder]}" Command="{Binding OpenThemesFolderCommand}"
+                                            Padding="10,7" FontSize="11" Margin="8,0,0,0"
                                             AutomationProperties.Name="{Binding Loc[Settings_OpenThemesFolder]}"/>
                                     <Button Content="{Binding Loc[Settings_ReloadThemes]}" Command="{Binding ReloadThemesCommand}"
                                             Padding="10,7" FontSize="11" Margin="8,0,0,0"
                                             AutomationProperties.Name="{Binding Loc[Settings_ReloadThemes]}"/>
                                 </WrapPanel>
+                                <TextBlock Text="{Binding Loc[Settings_DuplicateThemeHint]}"
+                                           Foreground="{StaticResource TextMutedBrush}" FontSize="11"
+                                           TextWrapping="Wrap" Margin="0,8,0,0"/>
                                 <TextBlock Text="{Binding Loc[Settings_CommunityThemesHint]}"
                                            Foreground="{StaticResource TextMutedBrush}" FontSize="11" TextWrapping="Wrap" Margin="0,8,0,0"/>
                             </StackPanel>

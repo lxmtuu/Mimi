@@ -151,6 +151,63 @@ public sealed class ThemeServiceTests
     }
 
     [Fact]
+    public void EveryScopeThatAsksForAColourGetsTheThemeJustApplied()
+    {
+        RunOnSta(() =>
+        {
+            var resources = new ResourceDictionary();
+            var brushes = CreateBrushDictionary();
+            resources.MergedDictionaries.Add(brushes);
+
+            // A leftover copy in the application root is exactly how a window
+            // ended up drawing one theme's panels around another theme's
+            // accents: both scopes answered, with different palettes.
+            var sakura = BuiltInThemes.GetOrDefault(BuiltInThemes.SakuraDreamId);
+            resources["PanelBackgroundColor"] =
+                ToColor(sakura.GetColor(ThemeTokens.PanelBackground));
+
+            var neon = BuiltInThemes.Default;
+            ThemeService.Apply(neon, resources);
+
+            // Whichever scope asks - the root or the brush dictionary - the
+            // answer is the theme that was just applied.
+            var expected = ToColor(neon.GetColor(ThemeTokens.PanelBackground));
+            Assert.Equal(expected, Assert.IsType<Color>(resources["PanelBackgroundColor"]));
+            Assert.Equal(expected, Assert.IsType<Color>(brushes["PanelBackgroundColor"]));
+            Assert.Equal(neon.Id, Assert.IsType<string>(resources["MimiThemeId"]));
+            Assert.Equal(neon.Id, Assert.IsType<string>(brushes["MimiThemeId"]));
+        });
+    }
+
+    [Fact]
+    public void SwitchingTwiceLeavesOnlyTheNewestPalette()
+    {
+        RunOnSta(() =>
+        {
+            var resources = new ResourceDictionary();
+            var brushes = CreateBrushDictionary();
+            resources.MergedDictionaries.Add(brushes);
+
+            var sakura = BuiltInThemes.GetOrDefault(BuiltInThemes.SakuraDreamId);
+            ThemeService.Apply(sakura, resources);
+            ThemeService.Apply(BuiltInThemes.Default, resources);
+
+            var expected = ToColor(
+                BuiltInThemes.Default.GetColor(ThemeTokens.PanelBackground));
+            Assert.Equal(expected, Assert.IsType<Color>(resources["PanelBackgroundColor"]));
+            Assert.Equal(expected, Assert.IsType<Color>(brushes["PanelBackgroundColor"]));
+            Assert.Equal(
+                BuiltInThemes.DefaultId,
+                Assert.IsType<string>(resources["MimiThemeId"]));
+
+            // No sakura value survives anywhere the app can resolve.
+            Assert.NotEqual(
+                ToColor(sakura.GetColor(ThemeTokens.PanelBackground)),
+                Assert.IsType<Color>(resources["PanelBackgroundColor"]));
+        });
+    }
+
+    [Fact]
     public void InvalidThemeFallsBackToDefaultPalette()
     {
         RunOnSta(() =>

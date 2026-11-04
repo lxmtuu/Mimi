@@ -344,7 +344,7 @@
   <data name="Settings_YouTubeSection" xml:space="preserve"><value>YOUTUBE</value></data>
   <data name="Settings_KeyboardShortcutsSection" xml:space="preserve"><value>KEYBOARD SHORTCUTS</value></data>
   <data name="Settings_Language" xml:space="preserve"><value>Interface language</value></data>
-  <data name="Settings_LanguageDescription" xml:space="preserve"><value>Changes apply immediately. Mimi will keep expanding translated areas as Phase 5 continues.</value></data>
+  <data name="Settings_LanguageDescription" xml:space="preserve"><value>Changes apply immediately.</value></data>
   <data name="Settings_LanguageSection" xml:space="preserve"><value>LANGUAGE</value></data>
   <data name="Settings_LogFolder" xml:space="preserve"><value>Log folder</value></data>
   <data name="Settings_ModeHaloAutomation" xml:space="preserve"><value>Settings Halo Circle visualizer mode</value></data>
@@ -381,6 +381,12 @@
   <data name="Settings_StageEngineSection" xml:space="preserve"><value>STAGE ENGINE</value></data>
   <data name="Settings_StartupLibrarySection" xml:space="preserve"><value>STARTUP &amp; LIBRARY</value></data>
   <data name="Settings_StillLoading" xml:space="preserve"><value>Mimi is still loading your library. Try again in a moment.</value></data>
+  <data name="Settings_DuplicateTheme" xml:space="preserve"><value>Duplicate for editing</value></data>
+  <data name="Settings_DuplicateThemeAutomation" xml:space="preserve"><value>Copy the current theme into the themes folder so you can edit it</value></data>
+  <data name="Settings_DuplicateThemeHint" xml:space="preserve"><value>Duplicating writes a real file with all 33 colours filled in and switches to that copy. Edit the file, then press Reload themes: the change shows up without a restart.</value></data>
+  <data name="Settings_ThemeCopySuffix" xml:space="preserve"><value>custom</value></data>
+  <data name="Settings_DuplicateThemeDone" xml:space="preserve"><value>A copy of this theme was written to:&#10;&#10;{0}&#10;&#10;Edit that file, then press "Reload themes".</value></data>
+  <data name="Settings_DuplicateThemeFailed" xml:space="preserve"><value>Could not write the theme file:&#10;&#10;{0}</value></data>
   <data name="Settings_Theme" xml:space="preserve"><value>Interface theme</value></data>
   <data name="Settings_ThemeDescription" xml:space="preserve"><value>Changes apply immediately and are restored the next time Mimi opens.</value></data>
   <data name="Settings_Title" xml:space="preserve"><value>Settings</value></data>
