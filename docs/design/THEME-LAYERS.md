@@ -178,7 +178,7 @@ Thêm hai lưới an toàn:
   và ghi warning kèm tên brush nếu còn lệch.
 - Mỗi lần áp theme ghi **một dòng log** gồm build + theme + 4 màu bề mặt thực tế,
   để ảnh chụp và log đối chiếu được: nếu ảnh sai mà log đúng thì lỗi ở tầng vẽ,
-  không phải tầng dữ liệu. Footer app cũng hiện số commit (`Mimi 0.6.0 · 9f1331c`)
+  không phải tầng dữ liệu. Footer app cũng hiện số commit (`Mimi 0.7.0 · <commit>`)
   để biết đang chạy bản nào.
 
 Lưu vào `settings.json` ở schema **v11**: `CustomBackgroundEnabled` +

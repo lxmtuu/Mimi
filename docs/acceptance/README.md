@@ -19,6 +19,7 @@ Phase 5 hoặc nghĩ tới phát hành cộng đồng.
 | [`PHASE-4-CLOSEOUT.md`](PHASE-4-CLOSEOUT.md) | Bảng đối chiếu trạng thái/bằng chứng Phase 4 tại `b0cd13a` và quyết định đóng Phase 4 theo waiver ngày 01/11/2026 |
 | [`PHASE-5-CLOSEOUT.md`](PHASE-5-CLOSEOUT.md) | Tổng kết đóng Phase 5 (song ngữ + Theme Engine + mascot) tại `7ef2a09` |
 | [`PHASE-6-CLOSEOUT.md`](PHASE-6-CLOSEOUT.md) | Tổng kết Phase 6 (Lyrics + cổng Online) tại `main` `6afc8ca`: các lát đã vào `main`, phần nào còn `NOT RUN`, nợ hồ sơ và quyết định cần chốt |
+| [`ONLINE-ACCEPTANCE.md`](ONLINE-ACCEPTANCE.md) | Bản ghi nghiệm thu **theo từng mục** cho Audius (12 mục) và YouTube (16 mục), kèm ranh giới thiết kế phải thấy rõ trên màn hình |
 | [`../../tools/Analyze-LoopbackCsv.ps1`](../../tools/Analyze-LoopbackCsv.ps1) | Phân tích CSV loopback: phân bố khoảng callback, tín hiệu, chuỗi im lặng và các khoảng lớn nhất |
 | [`../../tools/Inspect-SmtcSession.ps1`](../../tools/Inspect-SmtcSession.ps1) | Chẩn đoán GSMTC chỉ-đọc cho A7/A8/A9: lấy mẫu metadata, trạng thái, cờ điều khiển và timeline Windows nhận được mà không gửi lệnh phát/seek |
 | [`../../tools/Invoke-SmtcSessionCommand.ps1`](../../tools/Invoke-SmtcSessionCommand.ps1) | Harness gửi lệnh GSMTC tới đúng session `Mimi.App` và kiểm tra trạng thái sau lệnh, gồm Seek/FastForward/Rewind/Shuffle/Repeat; chỉ là bằng chứng đường lệnh, không thay thế thẻ Quick Settings trực quan |

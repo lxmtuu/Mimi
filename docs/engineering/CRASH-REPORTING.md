@@ -148,5 +148,5 @@ lần log, và vòng focus vĩnh viễn không vẽ được. Vá bằng giá tr
 ### Hộp thoại giờ mang số hiệu bản dựng
 
 Hai ảnh chụp của cùng một lỗi trông y hệt nhau, mà một trong hai có thể đã chứa
-bản sửa. Nên dòng chi tiết kết thúc bằng `[0.6.0 · 2a0c87d]`
+bản sửa. Nên dòng chi tiết kết thúc bằng `[0.7.0 · <commit>]`
 (`BuildInfo.Display`). Ảnh chụp tự nói nó chụp bản nào.

@@ -97,7 +97,8 @@ A Windows desktop music-player foundation built with C# / WPF / .NET 8 and NAudi
   and fading out while paused or stopped
 - Modular MVVM architecture with dependency injection and automated tests;
   Windows Release builds and unit tests are verified by GitHub Actions.
-  Phase 5 (`v0.6.0`) is now in development after Phase 4 (`v0.5.0`) was
+  Current version is **`0.7.0`** (Phase 6 — lyrics and the online gate;
+  Phase 5 `v0.6.0` was the localisation/theme phase). Phase 4 (`v0.5.0`) was
   closed by owner waiver with accepted limitations. Phase 4 delivered the queue /
   playback-mode, Windows media-control/keyboard, WASAPI output-device,
   and diagnostic backend-override slices are implemented. Automated
@@ -441,10 +442,38 @@ For executing the remaining manual Windows gates, use the
 result template for each test session.
 Phase closeout records:
 [Phase 4](docs/acceptance/PHASE-4-CLOSEOUT.md) ·
-[Phase 5](docs/acceptance/PHASE-5-CLOSEOUT.md).
+[Phase 5](docs/acceptance/PHASE-5-CLOSEOUT.md) ·
+[Phase 6](docs/acceptance/PHASE-6-CLOSEOUT.md).
+Online acceptance (Audius, YouTube) is tracked item by item in
+[ONLINE-ACCEPTANCE.md](docs/acceptance/ONLINE-ACCEPTANCE.md).
+
+Change history: **[CHANGELOG.md](CHANGELOG.md)**.
+Packaging and release: **[docs/engineering/PACKAGING.md](docs/engineering/PACKAGING.md)**.
 
 ## Rename note
 This app was previously named **MikuVerse Music** and is now **Mimi** (application project `src/Mimi.App/Mimi.App.csproj`, namespace `Mimi`, output `Mimi.exe`). On first launch, an existing library/favorites saved under `%LocalAppData%\MikuVerseMusic` are copied automatically to `%LocalAppData%\Mimi`; when the SQLite catalog is empty, those JSON records are then imported into `library.db` and the imported JSON files are archived as `.bak`. The old `MikuVerseMusic` folder is left untouched.
+
+## License
+Mimi is released under the **MIT License** — see **[LICENSE](LICENSE)**.
+Third-party libraries and assets keep their own licences, credited in
+**[THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md)**; note that TagLibSharp is
+LGPL-2.1, which is why published builds keep it as a separate assembly instead
+of a single-file executable.
+
+## Privacy
+Mimi runs entirely on your machine and has **no telemetry**: no account, no
+analytics, no "phone home". Library, settings and logs live in
+`%LocalAppData%\Mimi`; delete that folder to remove everything. A YouTube API
+key is read from the environment or a data-folder file and is never written to
+settings or logs. Details, including the threat model and what Mimi deliberately
+does not do: **[SECURITY.md](SECURITY.md)**.
+
+## Contributing
+Bug reports, PRs and theme files are welcome. Read
+**[CONTRIBUTING.md](CONTRIBUTING.md)** first — it covers the build commands, the
+commit convention, the test gates (no hard-coded UI strings, no hard-coded
+colours, no `StaticResource` for theme brushes or focus rings) and the
+project boundaries that will not be accepted.
 
 ## Branding and assets
 The current UI uses original abstract shapes and colors. The Mimi mascot

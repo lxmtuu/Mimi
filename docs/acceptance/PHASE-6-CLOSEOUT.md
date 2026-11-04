@@ -15,7 +15,7 @@ kết luận mới nào không có căn cứ.
 |---|---|
 | Nhánh | `main` |
 | Commit | `6afc8ca` — merge PR #7 |
-| Phiên bản app | `0.6.0` (`src/Mimi.App/Mimi.App.csproj`) — Phase 6 là **`v0.7.0`** nhưng **chưa bump** |
+| Phiên bản app | `0.7.0` (`src/Mimi.App/Mimi.App.csproj`) — bump ngày 04/11/2026 |
 | Settings schema | **11** (`AppSettings.CurrentVersion`) |
 | Bộ khóa song ngữ | **455 / 455** (`UiStrings.resx` ↔ `UiStrings.vi.resx`) |
 | Test | **293 khai báo** (270 `[Fact]`, 23 `[Theory]`) trên 50 file |
@@ -33,8 +33,8 @@ Chuỗi tích hợp: PR #1 `6434d84` → #2 `991ee04` → #3 `bb7616c` → #4 `0
 | Lời lớn trên Stage | Ba dòng quanh vị trí phát, chỉ cho lyrics có timestamp, có trạng thái intro | `faec801`, `01eb673` | Ảnh runtime | **PASS** — ảnh runtime trên Windows thật |
 | Radio Browser (prototype) | API HTTPS + khám phá mirror/failover, lọc đài khoẻ/không HLS, tìm kiếm/top-vote ≤60, click-counter một lần cho mỗi lần bắt đầu đài mới, phát `url_resolved` bằng Media Foundation, tách khỏi Track/queue/history/session | `0eeff99`, `a1a5be5`, `0cc3309` | Test service/wiring/ViewModel | **PASS** cho prototype (03/11/2026) — **chưa phải provider production** |
 | Kill switch Internet Radio | Schema v7, mục Settings song ngữ, tắt thì huỷ catalog/search, ẩn nav/content, chặn mở/phát, gỡ đài khỏi Now Playing mà không đụng local playback | `0eae18d` | Test round-trip/mặc định, wiring, hành vi khi đang phát | **PASS** — báo cáo Windows 03/11/2026 |
-| Audius (online catalog) | Tìm và phát ngay trong engine Mimi, `LoadRemoteAudio` cho nguồn hữu hạn, lọc `is_streamable`/`is_stream_gated`/`is_available`/`allowed_api_keys`, không tải/cache, schema v8 | `479937d`, `daeb5f8`, `40c7bb0` | Test lọc dữ liệu, wiring, fake player | **NOT RUN** — chưa có bản ghi nghiệm thu runtime riêng trong `ROADMAP.md` |
-| YouTube (tìm kiếm + player nhúng) | YouTube Data API v3 bằng key của người dùng (chỉ đặt từ terminal), IFrame player chính thức hiển thị trong khung Mimi, transport của Mimi điều khiển video, Stage video, danh sách đã lưu (schema v10) | `b1c5fdd`, `2d78c9b`, `7243dd8`, `14c91ba`, `4ee982c` | Test wiring/transport/no-storage guard | **NOT RUN** so với checklist — đã dùng thực tế nhưng chưa có bản ghi nghiệm thu từng mục |
+| Audius (online catalog) | Tìm và phát ngay trong engine Mimi, `LoadRemoteAudio` cho nguồn hữu hạn, lọc `is_streamable`/`is_stream_gated`/`is_available`/`allowed_api_keys`, không tải/cache, schema v8 | `479937d`, `daeb5f8`, `40c7bb0` | Test lọc dữ liệu, wiring, fake player | **PARTIAL** — đã chạy thật 03/11/2026 và sinh ra hai bản sửa (luồng kết thúc bài, giành lại thư viện local) chưa kiểm lại. Chủ dự án xác nhận 04/11/2026 là đã dùng ổn. Bản ghi từng mục: [`ONLINE-ACCEPTANCE.md`](ONLINE-ACCEPTANCE.md) |
+| YouTube (tìm kiếm + player nhúng) | YouTube Data API v3 bằng key của người dùng (chỉ đặt từ terminal), IFrame player chính thức hiển thị trong khung Mimi, transport của Mimi điều khiển video, Stage video, danh sách đã lưu (schema v10) | `b1c5fdd`, `2d78c9b`, `7243dd8`, `14c91ba`, `4ee982c` | Test wiring/transport/no-storage guard | **PARTIAL** — đã dùng thật (kể cả xử lý Error 153 và bản sửa transport, danh sách đã lưu) nhưng chưa ghi lại từng mục. Bản ghi từng mục: [`ONLINE-ACCEPTANCE.md`](ONLINE-ACCEPTANCE.md) |
 | Hồ sơ pháp lý provider | `docs/legal/` cho 8 nguồn + `docs/design/STREAMING-PROVIDERS.md` khoá hợp đồng `IStreamingProvider`, rights/attribution, cache theo phiên, DPAPI, log redaction, kill switch | `fb007fd` | Văn bản trong repo | **PASS** — đây là tiêu chí Exit của Phase 6 |
 
 ### Tiêu chí Exit của Phase 6
@@ -64,7 +64,7 @@ Chúng không nằm trong bằng chứng nghiệm thu của Phase 6 ở trên.
 
 | Lát | Nội dung | Trạng thái |
 |---|---|---|
-| Tô sáng **từng từ** (karaoke) | Enhanced LRC `<mm:ss.xx>` được đọc vào `LyricLine.WordTimings`; `KaraokeTextBlock` tô từng từ ở Now Playing và Stage; `FindCurrentWordIndex` dùng đúng phép offset của dòng | **Code + CI: PASS** (CI `41789451207`) · **Runtime: NOT RUN** — cần một lượt nhìn trên Windows thật |
+| Tô sáng **từng từ** (karaoke) | Enhanced LRC `<mm:ss.xx>` được đọc vào `LyricLine.WordTimings`; `KaraokeTextBlock` tô từng từ ở Now Playing và Stage; `FindCurrentWordIndex` dùng đúng phép offset của dòng | **Code + CI: PASS** (CI `41789451207`) · **Runtime: PASS (04/11/2026)** — chủ dự án xác nhận trên Windows thật |
 | Hộp thoại lỗi tự khai báo | `CrashReport.Signature/Summary`; một lỗi chỉ mở một hộp thoại mỗi phiên; visualizer/scroll/đồng hồ phát nhạc không đẩy exception ra dispatcher | **Code + CI: PASS** (CI `41791349777`) · **Runtime: PASS (04/11/2026)** — hộp thoại đã tự khai báo đúng lỗi thật (`InvalidOperationException … FocusVisualStyle`) trên đúng thao tác gây lỗi, và sau bản sửa thì không còn hộp thoại nào ở thao tác đó |
 | Vòng focus (`FocusVisualStyle`) | Phòng ngừa ở XAML (`Themes/FocusVisual.xaml` merge đầu tiên; 9 chỗ dùng đổi sang `DynamicResource`; `FocusVisualStyleTests`) **+** thu hồi lúc chạy (`FocusVisualRepair`: nhận dạng, ghi log phần tử đang focus, đặt giá trị cục bộ thật, không hiện hộp thoại; `FocusVisualRepairTests`) | **Code + test: PASS** · **Runtime: PASS (04/11/2026)** — chủ dự án chạy bản có bản sửa trên Windows thật: phát nhạc, F11 mở Stage, đóng Stage, **không còn hộp thoại**, và log **không có** dòng `Recovered from an empty focus ring`. Nghĩa là lớp phòng ngừa XAML đã đủ; lớp thu hồi lúc chạy là lưới đỡ, chưa phải kích hoạt. **Gốc rễ vẫn chưa xác định** — giả thuyết thứ tự `StaticResource` đã bị bác bỏ, và không có phần tử nào tự khai ra, nên đây là `PASS` về triệu chứng, **không** phải về nguyên nhân |
 
@@ -76,9 +76,10 @@ Chúng không nằm trong bằng chứng nghiệm thu của Phase 6 ở trên.
 
 ## Không thuộc Phase 6 / còn nợ sau khi đóng
 
-- **Bump `v0.7.0`**: Phase 6 mang số `0.7.0` trong lộ trình, nhưng
-  `Mimi.App.csproj` vẫn là `0.6.0`. Bump là quyết định phát hành, chưa được
-  thực hiện — xem mục *Quyết định cần chốt*.
+- **Bump `v0.7.0`**: **đã làm** ngày 04/11/2026 (`Mimi.App.csproj` và
+  `app.manifest`), được `ReleaseMetadataTests` gác để hai tệp không lệch nhau.
+  Tag và release vẫn là quyết định của chủ dự án — xem mục *Quyết định cần
+  chốt*.
 - **Nợ miễn trừ Phase 4** giữ nguyên: P4-A `PARTIAL` (progress/seek trên thẻ
   Quick Settings), P4-E `BLOCKED` (máy Windows không còn render endpoint nào),
   P4-G `PARTIAL` + D-03 chưa chốt (đo độ trễ vật lý), provenance fixture là
@@ -87,10 +88,13 @@ Chúng không nằm trong bằng chứng nghiệm thu của Phase 6 ở trên.
   như ghi chú từng phase.
 - **Radio Browser production**: kill switch từ xa, privacy copy đầy đủ, timeout/
   reconnect sâu hơn và DNS rebinding vẫn là việc production/phát hành riêng.
-- **Karaoke và hộp thoại lỗi**: cần lượt runtime như bảng ở trên.
-- **YouTube/Audius**: chưa có bản ghi nghiệm thu runtime theo từng mục trong
-  `ROADMAP.md`, dù code đã vào `main` và đã được dùng thực tế. Đây là **nợ hồ
-  sơ**, không phải nợ code — nhưng không được tính là PASS.
+- **Karaoke**: đã `PASS` runtime ngày 04/11/2026 theo xác nhận của chủ dự án.
+- **YouTube/Audius**: nợ hồ sơ đã được chuyển thành một bản ghi từng mục —
+  [`ONLINE-ACCEPTANCE.md`](ONLINE-ACCEPTANCE.md) — nhưng **các mục phần lớn vẫn
+  `NOT RUN`**, vì viết ra danh sách kiểm tra không phải là đã kiểm tra. Hai mục
+  Audius đã `PARTIAL` do có bản sửa sau lượt chạy 03/11.
+- **Bộ cài và ký số**: thuộc Phase 7, xem
+  [`docs/engineering/PACKAGING.md`](../engineering/PACKAGING.md).
 
 ## Phát hiện trong lượt rà soát này
 
@@ -104,7 +108,7 @@ Chúng không nằm trong bằng chứng nghiệm thu của Phase 6 ở trên.
 
 | Mã | Việc | Vì sao chưa tự làm |
 |---|---|---|
-| — | Bump `0.7.0` + tag + Release cho Phase 6 | Bump/tag/Release là quyền của chủ dự án, không nằm trong uỷ quyền hiện tại |
+| — | Tag `v0.7.0` + Release cho Phase 6 | **Bump đã làm** (04/11/2026); tag và release vẫn là quyết định của chủ dự án. Quy trình: [`docs/engineering/PACKAGING.md`](../engineering/PACKAGING.md) |
 | D-03 | Chốt WaveOut → WasapiOut | Cần phép đo độ trễ **vật lý**; loopback p99 ~64 ms không thay thế được |
 | D-01 | LICENSE | Chưa có `LICENSE` trong repo; cần chủ dự án chọn (đề xuất MIT) |
 | — | Mở Phase 7 | Phase 7 (`v1.0.0`) là installer, ký số, CHANGELOG/CONTRIBUTING, kiểm thử phát hành — cần chủ dự án mở |

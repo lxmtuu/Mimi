@@ -1,0 +1,30 @@
+# Keep NuGet packages and workflow actions current. A stale audio/tag library is
+# how a player ends up breaking on a file format it used to read.
+version: 2
+updates:
+  - package-ecosystem: "nuget"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    groups:
+      # Serilog and its sinks move together; so do the test packages.
+      serilog:
+        patterns:
+          - "Serilog*"
+      test:
+        patterns:
+          - "xunit*"
+          - "Microsoft.NET.Test.Sdk"
+    commit-message:
+      prefix: "build"
+      include: "scope"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    commit-message:
+      prefix: "build"
+      include: "scope"
