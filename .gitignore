@@ -27,3 +27,7 @@ bld/
 *.nupkg
 project.lock.json
 project.fragment.lock.json
+
+# Release packaging output (installer + zip + checksums)
+dist/
+publish/
