@@ -145,6 +145,26 @@ Kết quả đo (4 theme × 10 màu, gồm cả `#FFFFFF`, `#000000`, `#808080`)
 tối đa **0,0012**; mọi token nền đều đổi sắc; khoảng sắc của hero lệch **< 4°**;
 không trường hợp nào vi phạm bước lớp hay AA 4,5:1.
 
+### 7.1 Vì sao phải "sơn" thẳng vào brush
+
+Đã gặp đúng lỗi này: đổi theme thì **khoá màu cập nhật đúng** (title bar Windows
+đọc `AppBackgroundColor` ra màu mới), nhưng **brush thì không** — panel, hero, ảnh
+bìa vẫn vẽ bảng màu cũ, còn thẻ và nút đã sang màu mới. Kết quả: nửa app Neon
+nằm trong nửa app Sakura.
+
+Vì vậy `ThemeService` không chỉ ghi màu vào `ResourceDictionary`, mà còn đẩy
+**trực tiếp** vào từng brush và từng `GradientStop` qua `ThemeBrushSync` — đúng
+những object mà cây giao diện đang cầm. Không còn phụ thuộc vào việc biểu thức
+`DynamicResource` có được làm mới hay không.
+
+- Bảng `ThemeBrushSync.Map` (brush → danh sách khoá màu, theo thứ tự stop) được
+  test khoá chặt với `ThemeBrushes.xaml`: thêm brush mà quên khai báo là CI đỏ.
+- Brush bị `Freeze()` sẽ không sơn được, nên có test riêng: không brush nào được
+  phép frozen.
+- `VerifyPublishedTheme` sau mỗi lần áp theme sẽ **đối chiếu brush với khoá màu**
+  và ghi warning kèm tên brush nếu còn lệch — log nói thẳng thay vì để người dùng
+  tự nhìn ra.
+
 Lưu vào `settings.json` ở schema **v11**: `CustomBackgroundEnabled` +
 `CustomBackground` (chuẩn hoá về `#RRGGBB`; giá trị không đọc được thì tự tắt tính
 năng chứ không để lại bảng màu nửa vời). Nhân bản theme vẫn chép **bảng màu gốc**:

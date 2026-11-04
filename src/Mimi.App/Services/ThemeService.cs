@@ -274,6 +274,18 @@ public sealed class ThemeService
             target,
             publishedColors.Keys.Append("MimiThemeId").Append("MimiThemeName"));
 
+        // The keys above are what a DynamicResource lookup sees, and that is
+        // not always enough: a brush that already reached the visual tree (or
+        // was copied into a sealed template) can keep painting the palette it
+        // was born with, which shows up as pink cards inside navy panels.
+        // Painting the brushes themselves - solid and gradient alike - makes
+        // the change whole no matter what any individual element captured.
+        var painted = ThemeBrushSync.Push(target, publishedColors);
+        Log.Debug(
+            "Repainted {BrushCount} shared brushes for theme {ThemeId}",
+            painted,
+            effectiveTheme.Id);
+
         VerifyPublishedTheme(resources, target, effectiveTheme);
     }
 
@@ -301,12 +313,36 @@ public sealed class ThemeService
                 duplicates);
         }
 
-        if (target[BrushResourceKey(ThemeTokens.PanelBackground)] is SolidColorBrush brush)
+        // Every shared brush must now carry the colour its key holds. This is
+        // the check that names the exact brush when a window looks half
+        // themed: "the key says one thing, this brush still paints another".
+        var disagreements = new List<string>();
+        foreach (var (brushKey, colorKeys) in ThemeBrushSync.Map)
         {
-            Log.Debug(
-                "Theme {ThemeId} panel brush resolves to {BrushColor}",
+            if (!target.Contains(brushKey)) continue;
+            if (target[brushKey] is not Brush brush) continue;
+            if (!target.Contains(colorKeys[0])) continue;
+            if (target[colorKeys[0]] is not Color expectedColor) continue;
+
+            var actual = brush switch
+            {
+                SolidColorBrush solid => solid.Color,
+                GradientBrush gradient when gradient.GradientStops.Count > 0 =>
+                    gradient.GradientStops[0].Color,
+                _ => expectedColor
+            };
+
+            if (actual != expectedColor)
+                disagreements.Add($"{brushKey}={actual} (expected {expectedColor})");
+        }
+
+        if (disagreements.Count > 0)
+        {
+            Log.Warning(
+                "Theme {ThemeId} left {BrushCount} brush(es) on another palette: {Brushes}",
                 theme.Id,
-                brush.Color);
+                disagreements.Count,
+                string.Join("; ", disagreements));
         }
     }
 
