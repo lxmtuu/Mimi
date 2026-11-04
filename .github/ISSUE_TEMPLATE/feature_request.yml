@@ -5,7 +5,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Mimi đi theo từng phase trong `ROADMAP.md`. Đề xuất nằm ngoài roadmap vẫn
+        Mimi đi theo từng phase trong `docs/ROADMAP.md`. Đề xuất nằm ngoài roadmap vẫn
         được ghi nhận, nhưng có thể phải chờ tới phase phù hợp.
   - type: textarea
     id: problem

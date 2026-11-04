@@ -4,7 +4,7 @@ Checklist này dùng cho các phiên nghiệm thu thủ công trên Windows th�
 Đừng sửa trực tiếp file này để ghi kết quả của một lần chạy; hãy sao chép
 [`RESULT-TEMPLATE.md`](RESULT-TEMPLATE.md) ra ngoài repo hoặc dán nội dung vào
 báo cáo/PR. Kết quả tổng hợp sau cùng mới được đưa vào
-[`ROADMAP.md`](../../ROADMAP.md).
+[`ROADMAP.md`](../ROADMAP.md).
 
 Ký hiệu trong báo cáo: `PASS`, `PARTIAL`, `FAIL`, `BLOCKED`, `NOT RUN`,
 `N/A`. Một cổng chỉ là `PASS` khi mọi hạng mục bắt buộc của nó đều đạt.

@@ -1,7 +1,7 @@
 # Mimi Windows Acceptance Kit
 
 Bộ tài liệu và công cụ này biến các cổng nghiệm thu trong
-[`ROADMAP.md`](../../ROADMAP.md) thành những phiên kiểm tra lặp lại được trên
+[`ROADMAP.md`](../ROADMAP.md) thành những phiên kiểm tra lặp lại được trên
 Windows thật. Nó phục vụ trước hết cho Phase 4 (`v0.5.0`), đồng thời gom các
 khoản nợ nghiệm thu còn mở của Phase 0–3 để không bị quên trước khi sang
 Phase 5 hoặc nghĩ tới phát hành cộng đồng.
@@ -90,7 +90,7 @@ dài hạn hay latency âm học đầu-cuối.
 > Các bullet dưới đây là hồ sơ theo từng checkpoint; một số trạng thái
 > trong bullet cũ đã được các lượt kiểm tra sau thay thế. Trạng thái hiện
 > hành được đối chiếu tại [`PHASE-4-CLOSEOUT.md`](PHASE-4-CLOSEOUT.md) và
-> các cổng chính thức trong [`ROADMAP.md`](../../ROADMAP.md).
+> các cổng chính thức trong [`ROADMAP.md`](../ROADMAP.md).
 
 - S0 đã chạy lại trên Windows thật tại `a056377`: restore/Release build đạt
   0 warning/0 error; unit test 83 passed, 0 failed, 0 skipped. App mở được,

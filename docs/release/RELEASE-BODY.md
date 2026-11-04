@@ -22,8 +22,8 @@ chạy theo từng từ.
 
 | Tệp | Dùng khi nào |
 |---|---|
-| **[`Mimi-0.7.0-Setup.exe`](../../releases/download/v0.7.0/Mimi-0.7.0-Setup.exe)** | Muốn cài vào Start menu. **Không cần quyền quản trị**, không hỏi UAC. Có mục gỡ cài đặt trong *Settings → Apps*. |
-| **[`Mimi-v0.7.0-win-x64.zip`](../../releases/download/v0.7.0/Mimi-v0.7.0-win-x64.zip)** | Muốn chạy ngay: giải nén ra đâu cũng được, chạy `Mimi.exe`. |
+| **[`Mimi-0.7.0-Setup.exe`](https://github.com/lxmtuu/Mimi/releases/download/v0.7.0/Mimi-0.7.0-Setup.exe)** | Muốn cài vào Start menu. **Không cần quyền quản trị**, không hỏi UAC. Có mục gỡ cài đặt trong *Settings → Apps*. |
+| **[`Mimi-v0.7.0-win-x64.zip`](https://github.com/lxmtuu/Mimi/releases/download/v0.7.0/Mimi-v0.7.0-win-x64.zip)** | Muốn chạy ngay: giải nén ra đâu cũng được, chạy `Mimi.exe`. |
 
 Cả hai đều **self-contained**: không cần cài .NET. Cần Windows 10 1809 trở lên
 hoặc Windows 11, bản x64.
@@ -108,7 +108,7 @@ Mỗi nguồn có công tắc riêng trong Cài đặt; tắt thì Mimi không g
   `youtube-api-key.txt` trong thư mục dữ liệu. Không có ô nhập khoá trong giao
   diện, khoá **không** bị ghi vào settings hay log.
 - Log chỉ ghi host của luồng phát, không ghi URL đầy đủ của nguồn trực tuyến.
-- Chi tiết: [`SECURITY.md`](../../blob/main/SECURITY.md).
+- Chi tiết: [`SECURITY.md`](https://github.com/lxmtuu/Mimi/blob/main/SECURITY.md).
 
 ---
 
@@ -126,7 +126,7 @@ Bản `0.7.x` vẫn là bản **0.x**: đủ dùng hằng ngày, nhưng chưa ph
   (`P4-A` `PARTIAL`). Độ trễ vật lý của backend âm thanh chưa đo được, nên quyết
   định D-03 vẫn tạm.
 - Audius và YouTube **chưa có bản ghi nghiệm thu runtime theo từng mục** — xem
-  [`ONLINE-ACCEPTANCE.md`](../../blob/main/docs/acceptance/ONLINE-ACCEPTANCE.md).
+  [`ONLINE-ACCEPTANCE.md`](https://github.com/lxmtuu/Mimi/blob/main/docs/acceptance/ONLINE-ACCEPTANCE.md).
 
 ---
 
@@ -136,7 +136,7 @@ Mimi dùng các thư viện mã nguồn mở, mỗi thư viện giữ giấy ph�
 TagLibSharp (LGPL-2.1 — vì thế bản phát hành **không** đóng gói single-file, để
 bạn thay thế được thư viện), Serilog, SkiaSharp, CommunityToolkit.Mvvm,
 Microsoft.Data.Sqlite, WebView2. Danh sách đầy đủ kèm phiên bản và giấy phép:
-[`THIRD-PARTY-NOTICES.md`](../../blob/main/THIRD-PARTY-NOTICES.md).
+[`THIRD-PARTY-NOTICES.md`](https://github.com/lxmtuu/Mimi/blob/main/THIRD-PARTY-NOTICES.md).
 
 Giao diện dùng font **Be Vietnam Pro** (SIL OFL 1.1), đóng gói kèm theo.
 
@@ -147,8 +147,8 @@ nhân vật trong ứng dụng là tài sản của dự án này.
 ---
 
 **Giấy phép:** MIT · **Mã nguồn:** [github.com/lxmtuu/Mimi](https://github.com/lxmtuu/Mimi) ·
-**Nhật ký đầy đủ:** [`CHANGELOG.md`](../../blob/main/CHANGELOG.md) ·
+**Nhật ký đầy đủ:** [`CHANGELOG.md`](https://github.com/lxmtuu/Mimi/blob/main/CHANGELOG.md) ·
 **Báo lỗi:** [issues](https://github.com/lxmtuu/Mimi/issues) ·
-**Góp ý:** [`CONTRIBUTING.md`](../../blob/main/CONTRIBUTING.md)
+**Góp ý:** [`CONTRIBUTING.md`](https://github.com/lxmtuu/Mimi/blob/main/CONTRIBUTING.md)
 
 Nếu Mimi có ích cho bạn, một ngôi sao ⭐ giúp người khác tìm thấy nó.
