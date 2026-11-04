@@ -51,7 +51,9 @@ public sealed class FocusVisualRepairTests
     [Fact]
     public void OtherInvalidOperationExceptionsAreLeftAlone()
     {
-        foreach (var exception in new[]
+        // Typed explicitly: three different exception types give the compiler
+        // no common candidate to infer from.
+        foreach (var exception in new Exception[]
                  {
                      new InvalidOperationException("The list is empty."),
                      new NullReferenceException(WpfMessage),
