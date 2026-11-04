@@ -61,3 +61,52 @@ Select-String -Path "$env:LOCALAPPDATA\Mimi\logs\mimi-*.log" -Pattern "Unhandled
 
 Dòng `[<dấu>]` trong log khớp với `Details` trên hộp thoại, nên ảnh chụp và log
 đối chiếu được với nhau.
+
+## Vòng focus: nơi duy nhất một giá trị có thể "mất"
+
+Ngày 04/11/2026, hộp thoại mới bắt được lỗi đầu tiên nó tồn tại để bắt:
+
+```
+InvalidOperationException: '{DependencyProperty.UnsetValue}'
+is not a valid value for property 'FocusVisualStyle'.
+```
+
+Xảy ra khi chủ dự án **bấm F11 mở Stage rồi đóng lại**.
+
+### Vì sao phải bấm F11 mới thấy
+
+WPF chỉ đọc `FocusVisualStyle` khi focus đổi **do bàn phím** —
+`KeyboardNavigation.ShowFocusVisual` được gọi từ `OnGotKeyboardFocus`. Bấm chuột
+không hỏi tới vòng focus. Đóng một cửa sổ làm cửa sổ còn lại được kích hoạt
+(`HwndKeyboardInputProvider.OnSetFocus`), và đường đó **cũng tính là bàn phím**.
+
+Nên một giá trị hỏng nằm im suốt nhiều tuần dùng chuột, rồi nổ đúng lúc người
+dùng vừa thoát Stage — thời điểm tệ nhất để hiện một hộp thoại.
+
+### Giá trị "mất" là gì
+
+`DependencyProperty.UnsetValue` không phải `null`: nó là giá trị nội bộ của WPF
+nghĩa là "thuộc tính này không có giá trị". Một `Setter` giữ nó sẽ ném lỗi ngay
+khi ai đó **đọc** thuộc tính. Trước bản sửa, cả 9 chỗ đặt `FocusVisualStyle`
+trong Mimi đều dùng `{StaticResource MimiFocusVisualStyle}` — một tham chiếu
+được giải quyết **một lần** lúc style được materialise; nếu lúc đó key chưa thấy
+được, giá trị là `UnsetValue` và nó nằm đó chờ.
+
+Đây đúng là bài học repo đã ghi cho brush: *"A brush that an element picked up
+with `StaticResource` is fixed at that moment"* — và đã có test cấm `StaticResource`
+cho brush. `FocusVisualStyle` không phải brush nên lọt lưới test đó.
+
+### Đã sửa
+
+| Trước | Sau |
+|---|---|
+| `MimiFocusVisualStyle` khai báo trong `App.xaml`, **sau** `<MergedDictionaries>` | Chuyển sang [`Themes/FocusVisual.xaml`](../../src/Mimi.App/Themes/FocusVisual.xaml), merge **đầu tiên** |
+| 9 chỗ dùng `{StaticResource ...}` | Toàn bộ `{DynamicResource ...}` |
+
+`DynamicResource` không thể ra `UnsetValue`: trường hợp xấu nhất là **không có
+vòng focus**, không phải một exception. Vòng focus vẫn vẽ, vì key có mặt trước
+khi bất cứ style nào dùng nó.
+
+Test `FocusVisualStyleTests` giữ cả ba điều: không `StaticResource` cho
+`FocusVisualStyle`, key khai báo đúng một lần, và dictionary của nó được merge
+trước mọi dictionary dùng nó.

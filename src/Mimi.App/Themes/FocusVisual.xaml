@@ -1,0 +1,31 @@
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- The focus ring, in its own dictionary because of *when* it has to
+         exist, not what it draws.
+
+         WPF only reads FocusVisualStyle when focus moves by keyboard - a mouse
+         click never asks for the ring. So a broken ring stays invisible until
+         someone presses a key (or a window is reactivated, which counts), and
+         then it throws at the worst possible moment: while the app is closing
+         a window and handing focus back.
+
+         This dictionary is merged before every dictionary that uses the key,
+         and every use is a DynamicResource, so the value can only ever be the
+         style or nothing. A StaticResource that resolves to
+         DependencyProperty.UnsetValue throws instead:
+         "'{DependencyProperty.UnsetValue}' is not a valid value for property
+         'FocusVisualStyle'". -->
+    <Style x:Key="MimiFocusVisualStyle">
+        <Setter Property="Control.Template">
+            <Setter.Value>
+                <ControlTemplate>
+                    <Border BorderBrush="{DynamicResource AccentBrush}"
+                            BorderThickness="2" CornerRadius="12" Margin="-3"
+                            SnapsToDevicePixels="True"/>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+</ResourceDictionary>

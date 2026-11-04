@@ -65,7 +65,8 @@ Chúng không nằm trong bằng chứng nghiệm thu của Phase 6 ở trên.
 | Lát | Nội dung | Trạng thái |
 |---|---|---|
 | Tô sáng **từng từ** (karaoke) | Enhanced LRC `<mm:ss.xx>` được đọc vào `LyricLine.WordTimings`; `KaraokeTextBlock` tô từng từ ở Now Playing và Stage; `FindCurrentWordIndex` dùng đúng phép offset của dòng | **Code + CI: PASS** (CI `41789451207`) · **Runtime: NOT RUN** — cần một lượt nhìn trên Windows thật |
-| Hộp thoại lỗi tự khai báo | `CrashReport.Signature/Summary`; một lỗi chỉ mở một hộp thoại mỗi phiên; visualizer/scroll/đồng hồ phát nhạc không đẩy exception ra dispatcher | **Code + CI: PASS** (CI `41791349777`) · **Runtime: NOT RUN** |
+| Hộp thoại lỗi tự khai báo | `CrashReport.Signature/Summary`; một lỗi chỉ mở một hộp thoại mỗi phiên; visualizer/scroll/đồng hồ phát nhạc không đẩy exception ra dispatcher | **Code + CI: PASS** (CI `41791349777`) · **Runtime: PARTIAL** — hộp thoại đã tự khai báo đúng lỗi thật trên Windows ngày 04/11/2026 (`InvalidOperationException … FocusVisualStyle`), tức cơ chế chẩn đoán chạy; còn chờ một lượt xác nhận rằng sau bản sửa vòng focus thì không còn hộp thoại này |
+| Vòng focus (`FocusVisualStyle`) | Chuyển `MimiFocusVisualStyle` sang `Themes/FocusVisual.xaml` merge đầu tiên; 9 chỗ dùng đổi `StaticResource` → `DynamicResource`; `FocusVisualStyleTests` gác ba điều kiện | **Code + test: PASS** · **Runtime: NOT RUN** — cần bấm F11 mở/đóng Stage để xác nhận |
 
 Để chạy lượt kiểm tra karaoke: file mẫu có timestamp từng từ ở
 [`docs/examples/karaoke-sample.lrc`](../examples/karaoke-sample.lrc), cách dùng
