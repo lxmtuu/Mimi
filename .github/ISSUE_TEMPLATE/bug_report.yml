@@ -1,0 +1,66 @@
+name: Báo lỗi
+description: Có gì đó chạy không đúng
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Cảm ơn bạn đã báo. Vài thông tin dưới đây giúp tái hiện nhanh hơn nhiều.
+        **Lỗ hổng bảo mật thì đừng mở issue** — xem `SECURITY.md`.
+  - type: input
+    id: version
+    attributes:
+      label: Phiên bản
+      description: Số hiệu ở góc dưới cửa sổ, dạng `Mimi 0.7.0 · abc1234`
+      placeholder: "Mimi 0.7.0 · abc1234"
+    validations:
+      required: true
+  - type: input
+    id: windows
+    attributes:
+      label: Windows
+      description: Chạy `winver` để lấy số hiệu
+      placeholder: "Windows 11 26H2 (OS Build 26300.9711)"
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Các bước tái hiện
+      placeholder: |
+        1. Phát một bài có file .lrc
+        2. Bấm F11 mở Stage
+        3. Đóng Stage
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Kỳ vọng và thực tế
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Log
+      description: |
+        Dán 20 dòng quanh lỗi. Nếu có hộp thoại lỗi, dán nguyên dòng `Details:`.
+        Lệnh lấy log:
+        `Select-String -Path "$env:LOCALAPPDATA\Mimi\logs\mimi-*.log" -Pattern "Error" -Context 0,5 | Select-Object -Last 30`
+      render: text
+  - type: dropdown
+    id: area
+    attributes:
+      label: Khu vực
+      options:
+        - Phát nhạc local
+        - Thư viện / playlist
+        - Lời bài hát
+        - Visualizer / Stage
+        - Giao diện / theme
+        - Settings
+        - Internet Radio
+        - Online (Audius)
+        - YouTube
+        - Cài đặt / phát hành
+        - Khác

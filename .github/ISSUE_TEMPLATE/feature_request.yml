@@ -1,0 +1,30 @@
+name: Đề xuất
+description: Một tính năng hoặc một thay đổi hành vi
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Mimi đi theo từng phase trong `ROADMAP.md`. Đề xuất nằm ngoài roadmap vẫn
+        được ghi nhận, nhưng có thể phải chờ tới phase phù hợp.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Vấn đề đang gặp
+      description: Mô tả tình huống, đừng bắt đầu bằng giải pháp.
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: Cách bạn hình dung
+  - type: checkboxes
+    id: boundaries
+    attributes:
+      label: Ranh giới của dự án
+      description: Các mục dưới đây nằm ngoài phạm vi và sẽ không được nhận.
+      options:
+        - label: Đề xuất của tôi không yêu cầu trích xuất/tải âm thanh hay video từ dịch vụ trực tuyến
+          required: true
+        - label: Không yêu cầu chặn quảng cáo, phá DRM, hay dùng API không chính thức
+          required: true

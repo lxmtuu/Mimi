@@ -190,5 +190,7 @@ Bốn điều cần thấy khi chạy, theo thứ tự dễ nhầm:
 4. Nút `−0.1s`/`+0.1s` làm **cả dòng và từ** trượt cùng một lượng — nếu chỉ
    dòng trượt thì offset ở mức từ đang sai.
 
-Ba điều 1–3 là `NOT RUN` cho tới khi có lượt nhìn trực tiếp; không có test
-nào thay được chúng.
+**Kết quả 04/11/2026:** chủ dự án đã chạy và xác nhận đạt — tô theo từng từ,
+dòng không có word timing vẫn tô cả dòng, và tiếng Nhật không sinh dấu cách.
+Tiêu chí karaoke của Phase 6 vì thế `PASS` về mặt runtime; phần offset ở mức từ
+(điều 4) đã có test gác và cũng được xác nhận trong cùng lượt.
