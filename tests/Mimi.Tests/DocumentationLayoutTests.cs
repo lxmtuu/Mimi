@@ -57,8 +57,8 @@ public sealed class DocumentationLayoutTests
         var root = RepositoryRoot();
         var strays = Directory
             .EnumerateFiles(root, "*.md", SearchOption.TopDirectoryOnly)
-            .Select(Path.GetFileName)
-            .Where(name => !RootAllowList.Contains(name!))
+            .Select(path => Path.GetFileName(path) ?? string.Empty)
+            .Where(name => !RootAllowList.Contains(name))
             .ToArray();
 
         Assert.True(
@@ -124,12 +124,14 @@ public sealed class DocumentationLayoutTests
             .Select(match => match.Groups[1].Value)
             .Concat(Regex.Matches(text, "<img[^>]+src=\"([^\"]+)\"").Select(match => match.Groups[1].Value));
 
-        foreach (var target in targets)
+        foreach (var candidate in targets)
         {
-            if (target.StartsWith("#", StringComparison.Ordinal)) continue;
-            if (target.Contains("://", StringComparison.Ordinal)) continue;
-            if (target.StartsWith("mailto:", StringComparison.OrdinalIgnoreCase)) continue;
+            if (candidate.StartsWith("#", StringComparison.Ordinal)) continue;
+            if (candidate.Contains("://", StringComparison.Ordinal)) continue;
+            if (candidate.StartsWith("mailto:", StringComparison.OrdinalIgnoreCase)) continue;
 
+            // A link may carry an anchor; the file is what has to exist.
+            var target = candidate;
             var hash = target.IndexOf('#');
             if (hash >= 0) target = target[..hash];
             if (target.Length == 0) continue;
