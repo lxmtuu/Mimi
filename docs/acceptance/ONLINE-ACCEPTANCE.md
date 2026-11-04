@@ -78,6 +78,25 @@ YouTube (đã được chủ dự án cho phép). Không có tải, trích xuấ
 chạy lại: mở Radio → tìm một đài → phát → pause/resume → chuyển sang nhạc local
 → tắt công tắc Radio trong khi đang phát.
 
+## Xác nhận của chủ dự án — 04/11/2026
+
+Chủ dự án báo đã dùng cả hai bề mặt trên Windows thật và **thấy ổn**, sau khi
+bản 0.7.0 vào `main`.
+
+Ghi lại đúng như nó là, và đúng mức của nó:
+
+- Đây là **xác nhận của người dùng**, không phải kết quả kiểm tra từng mục.
+  Không có bước nào ở trên được ghi lại, nên **không mục nào chuyển thành
+  `PASS`** chỉ vì câu này.
+- Nó có giá trị ở chỗ khác: nếu một mục trong danh sách đang **hỏng nặng**, chủ
+  dự án hẳn đã gặp. Nên nó là bằng chứng **âm tính** cho các lỗi lớn, không phải
+  bằng chứng dương tính cho từng hành vi.
+- Hai mục `PARTIAL` (AU-6 seek/transport, AU-7 kết thúc bài) là hai lỗi có thật
+  đã sửa; câu "thấy ổn" thu hẹp khoảng nghi ngờ nhưng **không** thay được một
+  lượt kiểm có ghi lại. Giữ `PARTIAL`.
+- Muốn đóng hẳn: chạy theo bảng ở trên và gửi kết quả theo mẫu ngay dưới đây.
+  Mỗi mục chỉ mất vài chục giây.
+
 ## Cách ghi kết quả
 
 Sao chép [`RESULT-TEMPLATE.md`](RESULT-TEMPLATE.md), hoặc gửi gọn theo mẫu:
