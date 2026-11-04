@@ -8,6 +8,7 @@ using CommunityToolkit.Mvvm.Input;
 using Mimi.Controls;
 using Mimi.Localization;
 using Mimi.Models;
+using Mimi.Services;
 using Mimi.Theming;
 using Serilog;
 using Mimi.YouTube;
@@ -152,8 +153,7 @@ public sealed partial class MainWindowViewModel
         "#4FE3FF"
     ];
 
-    public string AppVersionLabel =>
-        $"Mimi {GetType().Assembly.GetName().Version?.ToString(3) ?? "0.6.0"}";
+    public string AppVersionLabel => $"Mimi {BuildInfo.Display}";
 
     private void ApplyLoadedSettings()
     {

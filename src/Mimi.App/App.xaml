@@ -18,7 +18,7 @@
             <Setter Property="Control.Template">
                 <Setter.Value>
                     <ControlTemplate>
-                        <Border BorderBrush="{StaticResource AccentBrush}"
+                        <Border BorderBrush="{DynamicResource AccentBrush}"
                                 BorderThickness="2" CornerRadius="12" Margin="-3"
                                 SnapsToDevicePixels="True"/>
                     </ControlTemplate>
@@ -26,8 +26,8 @@
             </Setter>
         </Style>
         <Style TargetType="Button">
-            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
-            <Setter Property="Background" Value="{StaticResource ControlBackgroundBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
+            <Setter Property="Background" Value="{DynamicResource ControlBackgroundBrush}"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Padding" Value="14,9"/>
             <Setter Property="Margin" Value="3"/>
@@ -46,10 +46,10 @@
                                  content, so an accent button keeps its own colour
                                  and the label stays crisp. -->
                             <Border x:Name="HoverWash" CornerRadius="10"
-                                    Background="{StaticResource HoverSurfaceStrongBrush}"
+                                    Background="{DynamicResource HoverSurfaceStrongBrush}"
                                     Opacity="0"/>
                             <Border x:Name="PressWash" CornerRadius="10"
-                                    Background="{StaticResource ScrimBrush}"
+                                    Background="{DynamicResource ScrimBrush}"
                                     Opacity="0"/>
                             <ContentPresenter Margin="{TemplateBinding Padding}"
                                               HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
@@ -74,7 +74,7 @@
             <Style.Triggers>
                 <Trigger Property="IsEnabled" Value="False">
                     <Setter Property="Opacity" Value="0.45"/>
-                    <Setter Property="Foreground" Value="{StaticResource TextDisabledBrush}"/>
+                    <Setter Property="Foreground" Value="{DynamicResource TextDisabledBrush}"/>
                     <Setter Property="Cursor" Value="Arrow"/>
                 </Trigger>
             </Style.Triggers>

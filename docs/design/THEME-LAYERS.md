@@ -145,25 +145,41 @@ Kết quả đo (4 theme × 10 màu, gồm cả `#FFFFFF`, `#000000`, `#808080`)
 tối đa **0,0012**; mọi token nền đều đổi sắc; khoảng sắc của hero lệch **< 4°**;
 không trường hợp nào vi phạm bước lớp hay AA 4,5:1.
 
-### 7.1 Vì sao phải "sơn" thẳng vào brush
+### 7.1 Vì sao theme có thể "áp một nửa" — và cách chặn
 
-Đã gặp đúng lỗi này: đổi theme thì **khoá màu cập nhật đúng** (title bar Windows
-đọc `AppBackgroundColor` ra màu mới), nhưng **brush thì không** — panel, hero, ảnh
-bìa vẫn vẽ bảng màu cũ, còn thẻ và nút đã sang màu mới. Kết quả: nửa app Neon
-nằm trong nửa app Sakura.
+Đã gặp đúng lỗi này hai lần trên máy thật: đổi theme thì **khoá màu cập nhật
+đúng** (title bar Windows đọc `AppBackgroundColor` ra màu mới) nhưng **brush vẫn
+vẽ bảng màu cũ** ở một nhóm bề mặt khác. Lần 1: vỏ app Neon + card Sakura. Lần 2:
+ngược lại. Mỗi lần một nhóm khác bị kẹt.
 
-Vì vậy `ThemeService` không chỉ ghi màu vào `ResourceDictionary`, mà còn đẩy
-**trực tiếp** vào từng brush và từng `GradientStop` qua `ThemeBrushSync` — đúng
-những object mà cây giao diện đang cầm. Không còn phụ thuộc vào việc biểu thức
-`DynamicResource` có được làm mới hay không.
+Cơ chế: một phần tử nhận brush qua **`StaticResource`** là nhận *đúng instance*
+tại thời điểm nó được tạo. Nếu instance đó bị sao chép (WPF copy brush khi seal
+template) hoặc bị `Freeze()`, thì mọi lần ghi vào `ResourceDictionary` sau đó đều
+không tới được nó — phần tử đó sống mãi ở theme lúc nó ra đời. Vì mỗi vùng UI được
+tạo ở thời điểm khác nhau, "nhóm bị kẹt" đổi theo lần đổi theme → nhìn như màu
+"không đồng đều".
 
-- Bảng `ThemeBrushSync.Map` (brush → danh sách khoá màu, theo thứ tự stop) được
-  test khoá chặt với `ThemeBrushes.xaml`: thêm brush mà quên khai báo là CI đỏ.
-- Brush bị `Freeze()` sẽ không sơn được, nên có test riêng: không brush nào được
-  phép frozen.
-- `VerifyPublishedTheme` sau mỗi lần áp theme sẽ **đối chiếu brush với khoá màu**
-  và ghi warning kèm tên brush nếu còn lệch — log nói thẳng thay vì để người dùng
-  tự nhìn ra.
+Chặn bằng ba lớp, cả ba đều có test:
+
+1. **Sơn tại chỗ.** `ThemeBrushSync.Sync` ghi màu vào chính brush đang có (solid và
+   từng `GradientStop`), nên ai còn giữ instance cũ vẫn thấy màu mới.
+2. **Thay instance.** Đồng thời thay entry trong dictionary bằng **brush mới**
+   (dựng lại đúng hình dạng: loại gradient, start/end, tâm, bán kính, opacity —
+   không `Clone()` vì clone của brush frozen có thể vẫn frozen). `DynamicResource`
+   chỉ đọc lại khi *giá trị trong dictionary* đổi, nên bước này là bắt buộc.
+3. **Tham chiếu động.** Toàn bộ 378 chỗ trong XAML đổi `{StaticResource …Brush}`
+   → `{DynamicResource …Brush}`. Test `EveryThemeBrushReferenceIsDynamic` đỏ nếu
+   ai quay lại `StaticResource` (trừ 4 icon taskbar trong `DrawingImage`, nơi
+   `Freezable` được phép đóng băng).
+
+Thêm hai lưới an toàn:
+
+- `VerifyPublishedTheme` sau mỗi lần áp theme **đối chiếu từng brush với khoá màu**
+  và ghi warning kèm tên brush nếu còn lệch.
+- Mỗi lần áp theme ghi **một dòng log** gồm build + theme + 4 màu bề mặt thực tế,
+  để ảnh chụp và log đối chiếu được: nếu ảnh sai mà log đúng thì lỗi ở tầng vẽ,
+  không phải tầng dữ liệu. Footer app cũng hiện số commit (`Mimi 0.6.0 · 9f1331c`)
+  để biết đang chạy bản nào.
 
 Lưu vào `settings.json` ở schema **v11**: `CustomBackgroundEnabled` +
 `CustomBackground` (chuẩn hoá về `#RRGGBB`; giá trị không đọc được thì tự tắt tính

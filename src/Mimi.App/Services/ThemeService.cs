@@ -263,10 +263,6 @@ public sealed class ThemeService
         target["MimiThemeId"] = effectiveTheme.Id;
         target["MimiThemeName"] = effectiveTheme.Name;
 
-        // One line per apply: when a window looks half-themed, the log says
-        // which theme was actually published and how often.
-        Log.Information("Published theme {ThemeId}", effectiveTheme.Id);
-
         // Anything left over in another dictionary is a previous theme that a
         // scope could still resolve; drop it so the theme cannot half-apply.
         RemoveFromOtherDictionaries(
@@ -274,17 +270,27 @@ public sealed class ThemeService
             target,
             publishedColors.Keys.Append("MimiThemeId").Append("MimiThemeName"));
 
-        // The keys above are what a DynamicResource lookup sees, and that is
-        // not always enough: a brush that already reached the visual tree (or
-        // was copied into a sealed template) can keep painting the palette it
-        // was born with, which shows up as pink cards inside navy panels.
-        // Painting the brushes themselves - solid and gradient alike - makes
-        // the change whole no matter what any individual element captured.
-        var painted = ThemeBrushSync.Push(target, publishedColors);
-        Log.Debug(
-            "Repainted {BrushCount} shared brushes for theme {ThemeId}",
-            painted,
-            effectiveTheme.Id);
+        // The keys above are what a lookup sees; the brushes are what a window
+        // paints with, and a brush handed to an element is fixed at that moment.
+        // So the brushes are repainted in place *and* replaced with fresh
+        // instances, which is what a DynamicResource reference follows. Without
+        // both, one window can show two themes at once: the palette that was
+        // active when each piece of the UI happened to be created.
+        var painted = ThemeBrushSync.Sync(target, publishedColors);
+
+        // One line that can be matched against a screenshot: the build, the
+        // theme, and the four surface colours a window is actually painted
+        // with. When a window looks half themed, this says which half the
+        // dictionary believed in.
+        Log.Information(
+            "Theme {ThemeId} published from build {Build}: app {App}, panel {Panel}, raised {Raised}, accent {Accent} ({BrushCount} brushes repainted)",
+            effectiveTheme.Id,
+            BuildInfo.Display,
+            effectiveTheme.GetColor(ThemeTokens.AppBackground).ToHexString(),
+            effectiveTheme.GetColor(ThemeTokens.PanelBackground).ToHexString(),
+            effectiveTheme.GetColor(ThemeTokens.RaisedBackground).ToHexString(),
+            effectiveTheme.GetColor(ThemeTokens.Accent).ToHexString(),
+            painted);
 
         VerifyPublishedTheme(resources, target, effectiveTheme);
     }

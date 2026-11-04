@@ -37,23 +37,24 @@ public sealed class ThemeBrushSyncTests
     [Fact]
     public void TheTableMatchesTheStopsTheFileDeclares()
     {
-        var root = FindRepositoryRoot();
-        var path = Path.Combine(root, "src", "Mimi.App", "Themes", "ThemeBrushes.xaml");
-        var dictionary = (ResourceDictionary)XamlReader.Parse(File.ReadAllText(path));
-
-        foreach (var (brushKey, colorKeys) in ThemeBrushSync.Map)
+        RunOnSta(() =>
         {
-            var brush = Assert.IsAssignableFrom<Brush>(dictionary[brushKey]);
+            var dictionary = LoadBrushes();
 
-            if (brush is SolidColorBrush)
+            foreach (var (brushKey, colorKeys) in ThemeBrushSync.Map)
             {
-                Assert.Single(colorKeys);
-                continue;
-            }
+                var brush = Assert.IsAssignableFrom<Brush>(dictionary[brushKey]);
 
-            var gradient = Assert.IsAssignableFrom<GradientBrush>(brush);
-            Assert.Equal(gradient.GradientStops.Count, colorKeys.Length);
-        }
+                if (brush is SolidColorBrush)
+                {
+                    Assert.Single(colorKeys);
+                    continue;
+                }
+
+                var gradient = Assert.IsAssignableFrom<GradientBrush>(brush);
+                Assert.Equal(gradient.GradientStops.Count, colorKeys.Length);
+            }
+        });
     }
 
     [Fact]
@@ -119,21 +120,106 @@ public sealed class ThemeBrushSyncTests
     }
 
     [Fact]
-    public void BrushesAreNeverFrozenSoTheyCanBeRepainted()
+    public void RepublishingReplacesTheBrushesSoDynamicReferencesRefollow()
     {
         RunOnSta(() =>
         {
             var dictionary = LoadBrushes();
             ThemeService.Apply(BuiltInThemes.Default, dictionary);
 
-            foreach (var brushKey in ThemeBrushSync.Map.Keys)
+            var before = ThemeBrushSync.Map.Keys.ToDictionary(
+                key => key,
+                key => dictionary[key]);
+
+            ThemeService.Apply(
+                BuiltInThemes.GetOrDefault(BuiltInThemes.SakuraDreamId),
+                dictionary);
+
+            foreach (var (brushKey, was) in before)
+            {
+                // A DynamicResource reference only re-resolves when the
+                // dictionary value itself changes. Same instance = the window
+                // keeps painting the palette it started with.
+                Assert.NotSame(was, dictionary[brushKey]);
+            }
+        });
+    }
+
+    [Fact]
+    public void AFrozenBrushStillReachesTheNewTheme()
+    {
+        RunOnSta(() =>
+        {
+            // A frozen brush is what a sealed dictionary can leave behind:
+            // nothing can be written to it, so writing the colour keys cannot
+            // reach it. It has to be replaced, or that surface keeps the
+            // palette it was frozen with.
+            var dictionary = LoadBrushes();
+            var frozenKeys = new[]
+            {
+                "PanelBackgroundBrush",
+                "RaisedBackgroundBrush",
+                "AccentBrush"
+            };
+
+            foreach (var brushKey in frozenKeys)
+            {
+                var frozen = new SolidColorBrush(Colors.Magenta);
+                frozen.Freeze();
+                dictionary[brushKey] = frozen;
+            }
+
+            ThemeService.Apply(
+                BuiltInThemes.GetOrDefault(BuiltInThemes.SakuraDreamId),
+                dictionary);
+
+            foreach (var brushKey in frozenKeys)
             {
                 var brush = Assert.IsAssignableFrom<Brush>(dictionary[brushKey]);
                 Assert.False(
                     brush.IsFrozen,
-                    $"{brushKey} is frozen, so a live theme change cannot reach it.");
+                    $"{brushKey} is still the frozen brush, so it kept a stale palette.");
+
+                var colorKeys = ThemeBrushSync.Map[brushKey];
+                Assert.Equal(
+                    Assert.IsType<Color>(dictionary[colorKeys[0]]),
+                    Assert.IsType<SolidColorBrush>(brush).Color);
             }
         });
+    }
+
+    [Fact]
+    public void EveryThemeBrushReferenceIsDynamic()
+    {
+        var root = FindRepositoryRoot();
+        var appRoot = Path.Combine(root, "src", "Mimi.App");
+        var keys = string.Join(
+            "|",
+            ThemeBrushSync.Map.Keys.OrderByDescending(key => key.Length));
+        var staticReference = new Regex(
+            @"\{StaticResource (" + keys + @")\}",
+            RegexOptions.CultureInvariant);
+
+        // A Freezable that WPF may freeze on purpose (the taskbar icons) is
+        // allowed to hold a static reference; everything else must follow the
+        // theme, or it stays on whichever palette was active when it was built.
+        var drawingImage = new Regex(
+            @"<DrawingImage\b.*?</DrawingImage>",
+            RegexOptions.CultureInvariant | RegexOptions.Singleline);
+
+        var offenders = new List<string>();
+        foreach (var file in Directory.EnumerateFiles(appRoot, "*.xaml", SearchOption.AllDirectories))
+        {
+            var text = File.ReadAllText(file);
+            var withoutIcons = drawingImage.Replace(text, string.Empty);
+            foreach (Match match in staticReference.Matches(withoutIcons))
+            {
+                offenders.Add(
+                    $"{Path.GetRelativePath(root, file)}: {match.Value}");
+            }
+        }
+
+        Assert.Empty(offenders);
     }
 
     [Fact]
