@@ -19,9 +19,11 @@ namespace Mimi.Tests;
 /// and closing the Stage: closing a window reactivates the other one, which
 /// counts as a keyboard focus change.
 ///
-/// The cure is not "catch it": it is to make the value unable to be unset -
-/// define the key before anything that uses it, and reference it with a
-/// DynamicResource so the worst case is a missing ring, never a crash.
+/// The rule below is prevention, not proof of the cause: the element that
+/// actually failed is named at runtime by `FocusVisualRepair`,
+/// because reading the XAML was not enough to identify it. What the rule does
+/// give is that no reference to the ring can end up unset, so the worst case is
+/// a missing ring rather than a crash.
 /// </summary>
 public sealed class FocusVisualStyleTests
 {

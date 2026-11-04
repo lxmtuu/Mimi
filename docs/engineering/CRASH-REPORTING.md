@@ -62,7 +62,7 @@ Select-String -Path "$env:LOCALAPPDATA\Mimi\logs\mimi-*.log" -Pattern "Unhandled
 Dòng `[<dấu>]` trong log khớp với `Details` trên hộp thoại, nên ảnh chụp và log
 đối chiếu được với nhau.
 
-## Vòng focus: nơi duy nhất một giá trị có thể "mất"
+## Vòng focus: lỗi duy nhất mà một hộp thoại không giúp được gì
 
 Ngày 04/11/2026, hộp thoại mới bắt được lỗi đầu tiên nó tồn tại để bắt:
 
@@ -71,42 +71,70 @@ InvalidOperationException: '{DependencyProperty.UnsetValue}'
 is not a valid value for property 'FocusVisualStyle'.
 ```
 
-Xảy ra khi chủ dự án **bấm F11 mở Stage rồi đóng lại**.
+Xảy ra khi mở Stage bằng F11 rồi đóng — cả lúc đang phát nhạc.
 
-### Vì sao phải bấm F11 mới thấy
+### Điều đã chắc chắn
 
-WPF chỉ đọc `FocusVisualStyle` khi focus đổi **do bàn phím** —
-`KeyboardNavigation.ShowFocusVisual` được gọi từ `OnGotKeyboardFocus`. Bấm chuột
-không hỏi tới vòng focus. Đóng một cửa sổ làm cửa sổ còn lại được kích hoạt
-(`HwndKeyboardInputProvider.OnSetFocus`), và đường đó **cũng tính là bàn phím**.
+1. **Ai đọc cũng biết chỗ đọc.** WPF gọi
+   `KeyboardNavigation.ShowFocusVisual` từ `OnGotKeyboardFocus`. Nghĩa là
+   `FocusVisualStyle` chỉ bị **đọc** khi focus đổi **do bàn phím** (bấm chuột
+   không hỏi tới nó), hoặc khi một cửa sổ được kích hoạt lại —
+   `HwndKeyboardInputProvider.OnSetFocus`. Đóng Stage làm cửa sổ chính được kích
+   hoạt lại, nên đường này tính là bàn phím. Đây là lý do lỗi nằm im rất lâu rồi
+   mới hiện đúng lúc thoát màn hình lớn.
+2. **`UnsetValue` không phải `null`.** Nó là giá trị nội bộ của WPF nghĩa là
+   *"thuộc tính này không có giá trị"*; ai **đọc** thuộc tính đang giữ nó sẽ ăn
+   exception. Vì vậy lỗi không bao giờ hiện lúc set, chỉ hiện lúc đọc.
+3. **Hộp thoại không có ích ở đây.** Người dùng không làm gì sai, và hộp thoại
+   không có hành động nào để đề nghị. Nó chỉ chặn app.
 
-Nên một giá trị hỏng nằm im suốt nhiều tuần dùng chuột, rồi nổ đúng lúc người
-dùng vừa thoát Stage — thời điểm tệ nhất để hiện một hộp thoại.
+### Điều **chưa** chắc — và vì sao
 
-### Giá trị "mất" là gì
+Ban đầu tôi cho rằng thủ phạm là thứ tự `StaticResource`: 9 chỗ đặt vòng focus
+đều dùng `{StaticResource MimiFocusVisualStyle}`, và key này khai báo trong
+`App.xaml` **sau** `<MergedDictionaries>`, trong khi 8 chỗ dùng nằm ở
+`ControlStyles.xaml` (một dictionary được merge).
 
-`DependencyProperty.UnsetValue` không phải `null`: nó là giá trị nội bộ của WPF
-nghĩa là "thuộc tính này không có giá trị". Một `Setter` giữ nó sẽ ném lỗi ngay
-khi ai đó **đọc** thuộc tính. Trước bản sửa, cả 9 chỗ đặt `FocusVisualStyle`
-trong Mimi đều dùng `{StaticResource MimiFocusVisualStyle}` — một tham chiếu
-được giải quyết **một lần** lúc style được materialise; nếu lúc đó key chưa thấy
-được, giá trị là `UnsetValue` và nó nằm đó chờ.
+Kiểm chứng lại thì **giả thuyết đó không đứng vững**: cùng một dictionary đó
+cũng dùng `{StaticResource MimiUiFontFamily}` với đúng kiểu tham chiếu ấy, mà
+font hiển thị bình thường — nếu key thật sự vô hình thì `FontFamily` đã ném lỗi
+tương tự ngay từ đầu. Vậy tham chiếu chéo kiểu này vẫn giải quyết được, và
+nguyên nhân nằm ở chỗ khác: **một phần tử cụ thể** nào đó nhận keyboard focus
+mang giá trị rỗng.
 
-Đây đúng là bài học repo đã ghi cho brush: *"A brush that an element picked up
-with `StaticResource` is fixed at that moment"* — và đã có test cấm `StaticResource`
-cho brush. `FocusVisualStyle` không phải brush nên lọt lưới test đó.
+Vì thế hai thay đổi XAML (tách `Themes/FocusVisual.xaml` merge đầu tiên, đổi
+sang `DynamicResource`) được giữ lại như **biện pháp phòng ngừa**, không phải
+bằng chứng đã tìm ra gốc: `DynamicResource` không thể ra `UnsetValue`, nên
+trường hợp xấu nhất là thiếu vòng focus thay vì một exception.
 
-### Đã sửa
+### Cách tìm ra phần tử thật sự
 
-| Trước | Sau |
+Không đọc code mà suy ra được nữa, nên app tự khai: `FocusVisualRepair`.
+
+| Bước | Việc |
 |---|---|
-| `MimiFocusVisualStyle` khai báo trong `App.xaml`, **sau** `<MergedDictionaries>` | Chuyển sang [`Themes/FocusVisual.xaml`](../../src/Mimi.App/Themes/FocusVisual.xaml), merge **đầu tiên** |
-| 9 chỗ dùng `{StaticResource ...}` | Toàn bộ `{DynamicResource ...}` |
+| Nhận dạng | `InvalidOperationException` có `FocusVisualStyle` trong thông báo (không dựa vào câu chữ đầy đủ, vì Windows có thể dịch), hoặc có frame `KeyboardNavigation.ShowFocusVisual` |
+| Định danh | Ghi log **kiểu + tên + kiểu style** của phần tử đang focus: `Button 'PlayButton' (style for Button)` |
+| Vá | Đặt một giá trị cục bộ thật cho `FocusVisualStyle` của **chính phần tử đó** — giá trị cục bộ thắng setter của style, nên lần đọc sau không thể ném. Resource không tìm thấy thì đặt `null`: mất vòng focus là mất thẩm mỹ, mất cửa sổ thì không |
+| Im lặng | Không hiện hộp thoại cho lỗi này |
 
-`DynamicResource` không thể ra `UnsetValue`: trường hợp xấu nhất là **không có
-vòng focus**, không phải một exception. Vòng focus vẫn vẽ, vì key có mặt trước
-khi bất cứ style nào dùng nó.
+Dòng log cần tìm khi báo lỗi (một dòng):
 
-Test `FocusVisualStyleTests` giữ cả ba điều: không `StaticResource` cho
-`FocusVisualStyle`, key khai báo đúng một lần, và dictionary của nó được merge
-trước mọi dictionary dùng nó.
+```powershell
+Select-String -Path "$env:LOCALAPPDATA\Mimi\logs\mimi-*.log" -Pattern "Recovered from an empty focus ring" | Select-Object -Last 5
+```
+
+Nó cho biết **phần tử nào** — và đó là chỗ để nhìn trong `.xaml`. Không còn phải
+đoán.
+
+### Vì sao không chỉ "bắt lỗi rồi bỏ qua"
+
+Nuốt exception mà không đặt giá trị thì lần focus sau lại ném tiếp, mỗi lần một
+lần log, và vòng focus vĩnh viễn không vẽ được. Vá bằng giá trị cục bộ giải quyết
+được cả hai: lần đọc sau **thành công**, và vòng focus **hiện ra**.
+
+### Hộp thoại giờ mang số hiệu bản dựng
+
+Hai ảnh chụp của cùng một lỗi trông y hệt nhau, mà một trong hai có thể đã chứa
+bản sửa. Nên dòng chi tiết kết thúc bằng `[0.6.0 · 2a0c87d]`
+(`BuildInfo.Display`). Ảnh chụp tự nói nó chụp bản nào.
