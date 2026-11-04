@@ -343,6 +343,18 @@
          deeper selection plate, and an accent bar on the selected row.
          ============================================================ -->
 
+    <!-- A raised card differs from the panel behind it by about 1.09:1. That
+         is below what the eye resolves without an edge, so a card used to read
+         as a slightly lighter rectangle with no shape at all. One hairline in
+         the theme's own field colour is what turns it into a card, and it costs
+         nothing: no shadow, no blur, no extra layer. -->
+    <Style x:Key="MimiCardStyle" TargetType="{x:Type Border}">
+        <Setter Property="Background" Value="{StaticResource RaisedBackgroundBrush}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource FieldBorderBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="CornerRadius" Value="12"/>
+    </Style>
+
     <Style x:Key="MimiRowItemStyle" TargetType="{x:Type ListBoxItem}">
         <Setter Property="FontFamily" Value="{StaticResource MimiUiFontFamily}"/>
         <Setter Property="Foreground" Value="{StaticResource TextStrongBrush}"/>

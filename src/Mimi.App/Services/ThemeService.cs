@@ -141,6 +141,20 @@ public sealed class ThemeService
             effectiveTheme = BuiltInThemes.Default;
         }
 
+        // A community theme is not rejected for a flat layer - the author's
+        // taste is theirs - but the log should say why a card vanished into
+        // its panel, because that is impossible to see in a colour picker.
+        if (!ThemeCatalog.IsBuiltIn(effectiveTheme))
+        {
+            foreach (var problem in ThemeLayerAudit.FindFlattenedLayers(effectiveTheme))
+            {
+                Log.Warning(
+                    "Theme {ThemeId} has a flat background layer: {Problem}",
+                    effectiveTheme.Id,
+                    problem);
+            }
+        }
+
         var publishedColors =
             new Dictionary<string, Color>(StringComparer.Ordinal);
         foreach (var token in ThemeTokens.RequiredColorTokens)
