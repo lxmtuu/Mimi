@@ -35,7 +35,10 @@ jobs:
         shell: powershell
         run: |
           $failed = $false
-          Get-ChildItem -Path tools -Filter *.ps1 | ForEach-Object {
+          # Recursive on purpose: tools/release-art holds the script that renders
+          # the release notes, and a syntax error there would only surface when
+          # someone pushes a tag - the worst possible moment to find out.
+          Get-ChildItem -Path tools -Filter *.ps1 -Recurse | ForEach-Object {
             $tokens = $null
             $parseErrors = $null
             [void][System.Management.Automation.Language.Parser]::ParseFile(

@@ -107,11 +107,14 @@ Nêu thẳng, vì chưa đóng:
 - Progress/thời gian trên thẻ Quick Settings của Windows chưa hiển thị (`P4-A`
   `PARTIAL`); độ trễ vật lý của backend âm thanh chưa đo được nên D-03 chưa
   chốt.
-- Provinence của bộ fixture Phase 4 vẫn là `Observation` (SHA-256 không khớp bộ
+- Provenance của bộ fixture Phase 4 vẫn là `Observation` (SHA-256 không khớp bộ
   đã xuất).
 - Audius và YouTube chưa có bản ghi nghiệm thu runtime **theo từng mục**;
   xem [`docs/acceptance/ONLINE-ACCEPTANCE.md`](docs/acceptance/ONLINE-ACCEPTANCE.md).
-- Chưa có bộ cài (`v0.7.x` phát hành dạng zip self-contained) và chưa ký số.
+- Bộ cài đã có (`installer/Mimi.iss`, PR #10) nhưng **chưa qua lượt cài thật**
+  trên Windows 10/11 sạch — danh sách kiểm tra ở
+  [`docs/engineering/PACKAGING.md`](docs/engineering/PACKAGING.md).
+- **Chưa ký số** (D-07), nên lần chạy đầu sẽ có cảnh báo SmartScreen.
 
 ## [0.6.0] — 2026-11-02
 

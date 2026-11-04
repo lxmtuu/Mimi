@@ -163,6 +163,18 @@ jobs:
           if-no-files-found: error
           retention-days: 30
 
+      # The release body is written by a human, not generated: it is the one place
+      # where the download table, the SmartScreen warning and the list of what is
+      # still unfinished are said in full. The script only rewrites the image and
+      # repository links so they resolve on a release page.
+      - name: Render the release notes
+        shell: pwsh
+        run: |
+          ./tools/release-art/render_release_notes.ps1 `
+            -Tag '${{ steps.version.outputs.tag }}' `
+            -Version '${{ steps.version.outputs.version }}'
+          if ($LASTEXITCODE -ne 0) { throw 'Could not render the release notes.' }
+
       - name: Create or update the release
         shell: pwsh
         env:
@@ -170,11 +182,17 @@ jobs:
         run: |
           $tag = '${{ steps.version.outputs.tag }}'
           $asset = '${{ steps.package.outputs.asset }}'
+          $notes = 'dist/release-notes.md'
 
           gh release view $tag *> $null
           if ($LASTEXITCODE -ne 0) {
-            gh release create $tag --title "Mimi $tag" --generate-notes
+            gh release create $tag --title "Mimi $tag" --notes-file $notes
             if ($LASTEXITCODE -ne 0) { throw "Could not create release $tag." }
+          }
+          else {
+            # Re-running the workflow must not silently keep an older body.
+            gh release edit $tag --notes-file $notes
+            if ($LASTEXITCODE -ne 0) { throw "Could not update release $tag." }
           }
 
           $setup = (Get-Content -LiteralPath dist/setup-path.txt -Raw).Trim()
