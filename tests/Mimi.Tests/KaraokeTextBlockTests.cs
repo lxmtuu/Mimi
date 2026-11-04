@@ -22,8 +22,11 @@ public sealed class KaraokeTextBlockTests
         {
             var block = new KaraokeTextBlock { PlainText = "Just a line" };
 
+            // TextBlock keeps a single run for its Text; the point is that a
+            // plain line is not split into words.
             Assert.Equal("Just a line", block.Text);
-            Assert.Empty(block.Inlines);
+            var run = Assert.Single(block.Inlines.OfType<Run>());
+            Assert.Equal("Just a line", run.Text);
         });
     }
 
@@ -92,8 +95,9 @@ public sealed class KaraokeTextBlockTests
             // being sung becomes an ordinary line again.
             block.Words = null;
 
-            Assert.Empty(block.Inlines);
             Assert.Equal("Plain again", block.Text);
+            var run = Assert.Single(block.Inlines.OfType<Run>());
+            Assert.Equal("Plain again", run.Text);
         });
     }
 
