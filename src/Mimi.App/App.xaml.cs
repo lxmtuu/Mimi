@@ -204,21 +204,39 @@ public partial class App : Application
 
         Log.Error(
             e.Exception,
-            "Unhandled UI exception [{Signature}]; first occurrence={FirstOccurrence}",
+            "Unhandled UI exception [{Signature}]; first occurrence={FirstOccurrence}; build {Build}",
             signature,
-            isFirstOccurrence);
+            isFirstOccurrence,
+            BuildInfo.Display);
 
         e.Handled = true;
+
+        // The focus ring is the one fault with nothing to tell the user: WPF
+        // reads FocusVisualStyle itself, whenever keyboard focus moves, and a
+        // dialog cannot answer anything it asks. Repair the element, log which
+        // one it was, and stay quiet.
+        if (FocusVisualRepair.TryRepair(e.Exception, out var repairedElement))
+        {
+            Log.Warning(
+                "Recovered from an empty focus ring on {Element} (build {Build}); no dialog shown",
+                repairedElement,
+                BuildInfo.Display);
+            return;
+        }
+
         if (!isFirstOccurrence) return;
 
         var loc = new LocalizationService();
+
+        // The build belongs in the dialog: two screenshots of the same bug look
+        // identical, and one of them may already contain the fix.
         MessageBox.Show(
             loc["App_UnexpectedProblem"] +
             Environment.NewLine +
             Environment.NewLine +
             loc.Format(
                 "App_UnexpectedProblemDetails",
-                CrashReport.Summary(e.Exception)),
+                $"{CrashReport.Summary(e.Exception)} [{BuildInfo.Display}]"),
             "Mimi",
             MessageBoxButton.OK,
             MessageBoxImage.Warning);

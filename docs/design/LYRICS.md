@@ -162,3 +162,33 @@ trên Windows thật rằng bài chỉ có lyrics nhúng không đồng bộ hi�
 thị đạt. Cùng lượt nghiệm thu đó, tiêu chí dòng `.lrc` khớp nhịp
 trong khoảng ±100 ms sau offset cũng được xác nhận đạt; hai gate
 runtime còn lại của Lyrics coi như đã đóng trên nhánh làm việc.
+
+## Kiểm tra nhịp tô từng từ trên máy thật
+
+Tô sáng từng từ chỉ chứng minh được bằng mắt: parser và offset có test,
+nhưng "từ sáng đúng lúc" thì phải nhìn. Để không phải tự dựng file
+Enhanced LRC, dự án có sẵn một file mẫu:
+
+- [`docs/examples/karaoke-sample.lrc`](../examples/karaoke-sample.lrc) — lời
+  tự viết (không trích bài hát nào), 12 dòng có timestamp nằm trong
+  0:06–0:52, trong đó **11 dòng có word timing**, **1 dòng cố ý không có**,
+  và **1 dòng tiếng Nhật** mỗi ký tự một mốc.
+- Hướng dẫn chép/đổi tên và danh sách điều cần thấy:
+  [`docs/examples/README.md`](../examples/README.md).
+
+File mẫu không thể lệch khỏi parser mà CI vẫn xanh:
+`KaraokeSampleFileTests` đọc chính file đó và kiểm tra bất biến "ghép các từ
+ra đúng chữ của dòng", mốc từ không lùi, không có dòng chú thích (parser không
+có cú pháp comment — dòng lạ sẽ thành một dòng lời).
+
+Bốn điều cần thấy khi chạy, theo thứ tự dễ nhầm:
+
+1. **Từng từ** sáng dần trong dòng đang hát, không phải cả dòng đổi một lần.
+2. Dòng ở `0:20` tô **cả dòng** — dòng không có word timing phải giữ nguyên
+   hành vi cũ, không bị tách từ.
+3. Dòng tiếng Nhật ở `0:24` sáng theo **ký tự** và **không sinh dấu cách**.
+4. Nút `−0.1s`/`+0.1s` làm **cả dòng và từ** trượt cùng một lượng — nếu chỉ
+   dòng trượt thì offset ở mức từ đang sai.
+
+Ba điều 1–3 là `NOT RUN` cho tới khi có lượt nhìn trực tiếp; không có test
+nào thay được chúng.
