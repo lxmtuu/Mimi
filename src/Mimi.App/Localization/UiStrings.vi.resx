@@ -8,6 +8,7 @@
   <data name="App_MusicUniverse" xml:space="preserve"><value>VŨ TRỤ ÂM NHẠC</value></data>
   <data name="App_StartupFailed" xml:space="preserve"><value>Mimi không thể khởi động. Chi tiết đã được ghi vào nhật ký trong %LocalAppData%\Mimi\logs.</value></data>
   <data name="App_Tagline" xml:space="preserve"><value>TRÌNH PHÁT CỤC BỘ  |  ÂM NHẠC CỦA BẠN, THẾ GIỚI CỦA BẠN</value></data>
+  <data name="App_UnexpectedProblemDetails" xml:space="preserve"><value>Chi tiết: {0}</value></data>
   <data name="App_UnexpectedProblem" xml:space="preserve"><value>Mimi gặp sự cố không mong muốn nhưng sẽ cố tiếp tục chạy. Chi tiết đã được ghi vào nhật ký trong %LocalAppData%\Mimi\logs.</value></data>
   <data name="Audio_CannotPlaySongNoOutput" xml:space="preserve"><value>Mimi không thể phát bài này vì không có đầu ra âm thanh khả dụng.&#10;&#10;{0}</value></data>
   <data name="Audio_CannotStartPlayback" xml:space="preserve"><value>Mimi không thể bắt đầu phát vì không có đầu ra âm thanh khả dụng.&#10;&#10;{0}</value></data>

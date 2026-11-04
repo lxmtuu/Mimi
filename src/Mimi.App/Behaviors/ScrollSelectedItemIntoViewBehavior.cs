@@ -61,12 +61,29 @@ public static class ScrollSelectedItemIntoViewBehavior
         var selectedItem = listBox.SelectedItem;
         if (selectedItem is null) return;
 
-        listBox.ScrollIntoView(selectedItem);
-        listBox.UpdateLayout();
+        // Both of these can throw while the list is being rebuilt around a
+        // track change (the container can be gone mid-layout). A scroll that
+        // cannot happen this frame must not reach the dispatcher as an
+        // unhandled exception, so the whole attempt is guarded rather than
+        // just the transform below.
+        ScrollViewer scrollViewer;
+        FrameworkElement container;
+        try
+        {
+            listBox.ScrollIntoView(selectedItem);
+            listBox.UpdateLayout();
 
-        if (listBox.ItemContainerGenerator.ContainerFromItem(selectedItem) is not
-                FrameworkElement container ||
-            FindDescendant<ScrollViewer>(listBox) is not { } scrollViewer)
+            if (listBox.ItemContainerGenerator.ContainerFromItem(selectedItem) is not
+                    FrameworkElement foundContainer ||
+                FindDescendant<ScrollViewer>(listBox) is not { } foundScrollViewer)
+            {
+                return;
+            }
+
+            container = foundContainer;
+            scrollViewer = foundScrollViewer;
+        }
+        catch (InvalidOperationException)
         {
             return;
         }

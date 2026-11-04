@@ -178,6 +178,10 @@ public partial class App : Application
         }
     }
 
+    /// <summary>Faults already shown to the user this session.</summary>
+    private readonly HashSet<string> reportedCrashSignatures =
+        new(StringComparer.Ordinal);
+
     private void RegisterGlobalExceptionHandlers()
     {
         DispatcherUnhandledException += App_DispatcherUnhandledException;
@@ -191,11 +195,30 @@ public partial class App : Application
         object sender,
         DispatcherUnhandledExceptionEventArgs e)
     {
-        Log.Error(e.Exception, "Unhandled UI exception");
+        var signature = CrashReport.Signature(e.Exception);
+
+        // Add() is false when the same fault was already reported. A throw from
+        // a per-frame or per-tick loop would otherwise stack modal dialogs on
+        // top of each other and make the app look dead while it is still fine.
+        var isFirstOccurrence = reportedCrashSignatures.Add(signature);
+
+        Log.Error(
+            e.Exception,
+            "Unhandled UI exception [{Signature}]; first occurrence={FirstOccurrence}",
+            signature,
+            isFirstOccurrence);
+
         e.Handled = true;
+        if (!isFirstOccurrence) return;
+
         var loc = new LocalizationService();
         MessageBox.Show(
-            loc["App_UnexpectedProblem"],
+            loc["App_UnexpectedProblem"] +
+            Environment.NewLine +
+            Environment.NewLine +
+            loc.Format(
+                "App_UnexpectedProblemDetails",
+                CrashReport.Summary(e.Exception)),
             "Mimi",
             MessageBoxButton.OK,
             MessageBoxImage.Warning);

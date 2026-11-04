@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Windows;
 using System.Windows.Media;
 using Mimi.Services;
+using Serilog;
 
 namespace Mimi.Controls;
 
@@ -197,6 +198,10 @@ public sealed class VisualizerView : FrameworkElement
         hasLastDrawnAt = false;
     }
 
+    /// <summary>Draw faults already logged, so a stuck loop logs once.</summary>
+    private readonly HashSet<string> reportedDrawFailures =
+        new(StringComparer.Ordinal);
+
     private void OnRendering(object? sender, EventArgs e)
     {
         if (!IsVisible || ActualWidth < 2 || ActualHeight < 2) return;
@@ -216,7 +221,25 @@ public sealed class VisualizerView : FrameworkElement
         var smoothingElapsed = Math.Clamp(sinceLastDraw.TotalSeconds, 0.001, 0.1);
         var frame = FrameProvider?.Invoke() ?? VisualizerFrame.Silence;
         var drawStarted = Stopwatch.GetTimestamp();
-        Draw(frame, smoothingElapsed);
+        try
+        {
+            Draw(frame, smoothingElapsed);
+        }
+        catch (Exception ex)
+        {
+            // The visualiser is decoration: one bad frame must cost one frame,
+            // not the window. Without this, a fault in here reaches the
+            // dispatcher and opens a modal dialog from inside the render loop -
+            // sixty times a second, which buries the app instead of reporting
+            // anything useful.
+            if (reportedDrawFailures.Add(CrashReport.Signature(ex)))
+            {
+                Log.Error(
+                    ex,
+                    "The visualiser could not draw a frame; drawing continues");
+            }
+        }
+
         var drawElapsed = Stopwatch.GetElapsedTime(drawStarted);
 
         lastDrawnAt = args.RenderingTime;
