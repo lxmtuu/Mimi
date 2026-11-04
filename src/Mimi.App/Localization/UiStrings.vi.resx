@@ -344,7 +344,7 @@
   <data name="Settings_YouTubeSection" xml:space="preserve"><value>YOUTUBE</value></data>
   <data name="Settings_KeyboardShortcutsSection" xml:space="preserve"><value>PHÍM TẮT</value></data>
   <data name="Settings_Language" xml:space="preserve"><value>Ngôn ngữ giao diện</value></data>
-  <data name="Settings_LanguageDescription" xml:space="preserve"><value>Thay đổi áp dụng ngay. Mimi sẽ tiếp tục mở rộng phần đã dịch trong Phase 5.</value></data>
+  <data name="Settings_LanguageDescription" xml:space="preserve"><value>Thay đổi áp dụng ngay.</value></data>
   <data name="Settings_LanguageSection" xml:space="preserve"><value>NGÔN NGỮ</value></data>
   <data name="Settings_LogFolder" xml:space="preserve"><value>Thư mục nhật ký</value></data>
   <data name="Settings_ModeHaloAutomation" xml:space="preserve"><value>Chế độ visualizer Vòng hào quang trong Cài đặt</value></data>
@@ -381,6 +381,12 @@
   <data name="Settings_StageEngineSection" xml:space="preserve"><value>STAGE ENGINE</value></data>
   <data name="Settings_StartupLibrarySection" xml:space="preserve"><value>KHỞI ĐỘNG &amp; THƯ VIỆN</value></data>
   <data name="Settings_StillLoading" xml:space="preserve"><value>Mimi vẫn đang tải thư viện của bạn. Hãy thử lại sau ít giây.</value></data>
+  <data name="Settings_DuplicateTheme" xml:space="preserve"><value>Tạo bản sao để sửa</value></data>
+  <data name="Settings_DuplicateThemeAutomation" xml:space="preserve"><value>Chép theme đang dùng vào thư mục theme để sửa</value></data>
+  <data name="Settings_DuplicateThemeHint" xml:space="preserve"><value>Tạo bản sao sẽ ghi một tệp thật với đủ 33 màu và chuyển sang bản đó. Sửa tệp rồi bấm "Tải lại theme": thay đổi hiện ngay, không cần khởi động lại.</value></data>
+  <data name="Settings_ThemeCopySuffix" xml:space="preserve"><value>bản sửa</value></data>
+  <data name="Settings_DuplicateThemeDone" xml:space="preserve"><value>Đã ghi bản sao của theme vào:&#10;&#10;{0}&#10;&#10;Hãy sửa tệp đó rồi bấm "Tải lại theme".</value></data>
+  <data name="Settings_DuplicateThemeFailed" xml:space="preserve"><value>Không ghi được tệp theme:&#10;&#10;{0}</value></data>
   <data name="Settings_Theme" xml:space="preserve"><value>Chủ đề giao diện</value></data>
   <data name="Settings_ThemeDescription" xml:space="preserve"><value>Thay đổi áp dụng ngay và sẽ được khôi phục vào lần mở Mimi tiếp theo.</value></data>
   <data name="Settings_Title" xml:space="preserve"><value>Cài đặt</value></data>

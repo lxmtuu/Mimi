@@ -429,6 +429,50 @@ public sealed partial class MainWindowViewModel
     [RelayCommand]
     private void OpenThemesFolder() => OpenFolder(ThemesDirectory);
 
+    /// <summary>
+    /// Writes the theme in use into the themes folder under a fresh id, then
+    /// switches to that copy. Editing a real file with every token already
+    /// filled in beats hand-writing 33 colours from the documentation, and the
+    /// copy stays a copy: the built-in theme it came from is untouched.
+    /// </summary>
+    [RelayCommand]
+    private void DuplicateThemeForEditing()
+    {
+        if (themeService is null) return;
+
+        var source = themeService.CurrentTheme;
+        var id = ThemeFileWriter.UniqueId(source, themeService.Catalog);
+        var name = $"{source.Name} · {Loc["Settings_ThemeCopySuffix"]}";
+
+        try
+        {
+            Directory.CreateDirectory(ThemesDirectory);
+            var path = Path.Combine(ThemesDirectory, $"{id}.json");
+            File.WriteAllText(
+                path,
+                ThemeFileWriter.ToJson(source, id, name),
+                new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+
+            themeService.ReloadCommunityThemes();
+            RefreshThemeOptions();
+
+            // Selecting the copy proves the file the user is about to edit is
+            // the one on screen.
+            UiTheme = id;
+
+            dialogService.ShowInformation(
+                Loc.Format("Settings_DuplicateThemeDone", path),
+                Loc["Settings_Title"]);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            Log.Warning(ex, "Could not duplicate theme {ThemeId}", source.Id);
+            dialogService.ShowWarning(
+                Loc.Format("Settings_DuplicateThemeFailed", ex.Message),
+                Loc["Settings_Title"]);
+        }
+    }
+
     [RelayCommand]
     private void ReloadThemes()
     {
