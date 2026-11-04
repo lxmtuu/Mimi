@@ -169,6 +169,36 @@ public sealed class CrashReportTests
         Assert.True(tryIndex >= 0, "ScrollIntoView must sit inside a try.");
         Assert.DoesNotContain("}", scroll[tryIndex..call], StringComparison.Ordinal);
         Assert.Contains("listBox.UpdateLayout();", scroll[call..], StringComparison.Ordinal);
+
+        // The playback clock ticks ten times a second even when the user is
+        // idle, so the same rule applies to it.
+        var viewModel = File.ReadAllText(Path.Combine(
+            root,
+            "src",
+            "Mimi.App",
+            "ViewModels",
+            "MainWindowViewModel.cs"));
+        var tick = viewModel.IndexOf(
+            "private void PositionTimer_Tick(object? sender, EventArgs e)",
+            StringComparison.Ordinal);
+        Assert.True(tick > 0, "PositionTimer_Tick must still exist.");
+
+        var refresh = viewModel.IndexOf("RefreshPlaybackPosition();", tick, StringComparison.Ordinal);
+        Assert.True(refresh > tick, "The tick must still refresh the position.");
+
+        var tickTry = viewModel.LastIndexOf("try", refresh, StringComparison.Ordinal);
+        Assert.True(tickTry > tick, "RefreshPlaybackPosition must sit inside a try.");
+        Assert.DoesNotContain("}", viewModel[tickTry..refresh], StringComparison.Ordinal);
+
+        // A guard that swallows silently would trade one problem for another.
+        Assert.Contains(
+            "positionTimerFailures.Add(signature)",
+            viewModel,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "Playback timer tick failed [{Signature}]",
+            viewModel,
+            StringComparison.Ordinal);
     }
 
     private static void ThrowInvalidOperation(string message) =>

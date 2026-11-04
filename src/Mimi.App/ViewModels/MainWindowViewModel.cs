@@ -50,6 +50,9 @@ public enum TrackSortField
 public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
 {
     private readonly IAudioPlayer audioPlayer;
+
+    // Signatures of timer faults already logged at Error level this session.
+    private readonly HashSet<string> positionTimerFailures = [];
     private readonly ILibraryService libraryService;
     private readonly ILibraryCatalog libraryCatalog;
     private readonly IUserDataService userDataService;
@@ -2947,9 +2950,24 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
 
     private void PositionTimer_Tick(object? sender, EventArgs e)
     {
-        RefreshPlaybackPosition();
-        CapturePlaybackSessionPeriodically();
-        WriteVisualizerDiagnostics();
+        // Ten times a second, without anyone asking. A throw here used to reach
+        // the dispatcher and open a dialog over a running app; a fault in a
+        // clock should cost a tick, not the window. The first failure of each
+        // kind is logged in full so it is still diagnosable.
+        try
+        {
+            RefreshPlaybackPosition();
+            CapturePlaybackSessionPeriodically();
+            WriteVisualizerDiagnostics();
+        }
+        catch (Exception ex)
+        {
+            var signature = CrashReport.Signature(ex);
+            if (positionTimerFailures.Add(signature))
+                Log.Error(ex, "Playback timer tick failed [{Signature}]", signature);
+            else
+                Log.Debug(ex, "Playback timer tick failed again [{Signature}]", signature);
+        }
     }
 
     private void RefreshPlaybackPosition()
