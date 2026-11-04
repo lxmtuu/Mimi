@@ -1,8 +1,111 @@
-# Mimi — Development Build
+<div align="center">
 
-A Windows desktop music-player foundation built with C# / WPF / .NET 8 and NAudio.
+<img src="docs/assets/release/banner-vi.png" alt="Mimi 0.7.0 — trình nghe nhạc cho Windows" width="900">
 
-## Current starter features
+<br>
+
+<a href="https://github.com/lxmtuu/Mimi/releases/latest">
+  <img src="docs/assets/readme/btn-download-windows.png" alt="Download for Windows" height="54">
+</a>
+&nbsp;
+<a href="https://github.com/lxmtuu/Mimi/releases/latest">
+  <img src="docs/assets/readme/btn-download-portable.png" alt="Portable .zip" height="54">
+</a>
+
+<br><br>
+
+<img src="docs/assets/readme/pill-version.png" alt="Bản 0.7.0" height="34">
+&nbsp;
+<img src="docs/assets/readme/pill-platform.png" alt="Windows 10 / 11, x64" height="34">
+&nbsp;
+<img src="docs/assets/readme/pill-licence.png" alt="Giấy phép MIT" height="34">
+
+<br><br>
+
+<b>Nhạc của bạn, trên máy của bạn.</b><br>
+Không tài khoản · không telemetry · không tải nhạc từ đâu về.<br>
+<sub>Lời hát chạy theo từng từ · Stage có hồn · ba nguồn trực tuyến, tắt được từng cái</sub>
+<br><br>
+<sub><b>A Windows music player built with C# / WPF / .NET 8 and NAudio — preview of the 0.7 line.</b></sub>
+
+</div>
+
+---
+
+## Mục lục
+
+- [Xem trước](#xem-trước) · [Mimi có gì](#mimi-có-gì) · [Cài đặt](#cài-đặt-không-cần-build)
+- [Chi tiết tính năng](#what-is-inside--chi-tiết-từng-tính-năng) · [Yêu cầu](#yêu-cầu) · [Build & chạy](#build-test-and-run)
+- [Cấu trúc mã nguồn](#source-layout) · [Lộ trình & thiết kế](#design--roadmap) · [Giấy phép](#license) · [Quyền riêng tư](#privacy) · [Đóng góp](#contributing)
+
+## Xem trước
+
+<p align="center">
+  <img src="docs/assets/readme/preview-library.png" alt="Thư viện, lời bài hát và hàng đợi" width="880">
+  <br>
+  <sub><b>Thư viện</b> — danh sách, tìm kiếm, lời hát theo từng từ, Up Next và transport</sub>
+</p>
+
+<p align="center">
+  <img src="docs/assets/readme/preview-stage.png" alt="Stage toàn màn hình" width="880">
+  <br>
+  <sub><b>Stage</b> — lời lớn ba dòng, visualizer theo nhịp, ba chế độ (Spectrum · Twin Wave · Halo)</sub>
+</p>
+
+<p align="center">
+  <img src="docs/assets/readme/preview-settings.png" alt="Cài đặt: theme, ngôn ngữ, nền, thư mục dữ liệu" width="880">
+  <br>
+  <sub><b>Cài đặt</b> — bốn theme dựng sẵn, màu nền tự pha, VI/EN, thư mục dữ liệu và công tắc từng nguồn</sub>
+</p>
+
+> [!NOTE]
+> Ba ảnh trên là **bản dựng lại từ chính mã nguồn**, không phải ảnh chụp màn hình:
+> màu lấy từ `BuiltInThemes.cs` (theme *Neon Stage*), nhãn từ `UiStrings*.resx`,
+> bố cục từ `MainWindow.xaml`. Chúng cho thấy thiết kế mà mã nguồn khai báo, và sẽ
+> được thay bằng ảnh chụp thật ngay khi có người chạy Mimi trên Windows và chụp lại.
+
+## Mimi có gì
+
+| | |
+|---|---|
+| **Thư viện** | Quét thư mục nền có tiến trình và huỷ giữa chừng; đọc tag và bìa bằng TagLib; SQLite FTS5 cho tìm kiếm tiếng Việt không dấu; sắp xếp, lọc, chọn nhiều để gắn yêu thích hoặc thêm vào danh sách phát |
+| **Phát nhạc** | WASAPI shared theo thiết bị mặc định của Windows, WaveOut làm dự phòng; queue *Up Next* kéo thả được; Shuffle không lặp, Repeat Off/All/One; phím media và taskbar của Windows |
+| **Lời bài hát** | `.lrc` cạnh file nhạc và lời nhúng trong tag; Enhanced LRC tô sáng **từng từ**; ba dòng lời lớn trên Stage |
+| **Stage** | Toàn màn hình bằng `F11`, Aurora tĩnh, visualizer theo nhịp, ba chế độ, phím `1` `2` `3` |
+| **Giao diện** | Bốn theme dựng sẵn + theme cộng đồng (thả JSON vào thư mục `themes`), màu nền tự pha, song ngữ Việt/English 455 khoá |
+| **Trực tuyến** | Internet Radio (Radio Browser), Audius, YouTube qua Data API v3 với khoá của bạn — phát trong player chính thức, không tải, không cache |
+
+Danh sách đầy đủ, chi tiết tới từng hành vi, ở phần [Chi tiết tính năng](#what-is-inside--chi-tiết-từng-tính-năng) bên dưới.
+
+## Cài đặt (không cần build)
+
+Không cần .NET, Visual Studio hay Git. Lấy một trong hai tệp ở
+[bản phát hành mới nhất](https://github.com/lxmtuu/Mimi/releases/latest):
+
+| Tệp | Dùng khi nào |
+|---|---|
+| **`Mimi-<phiên bản>-Setup.exe`** | Cài vào Start menu, **chỉ cho tài khoản của bạn**, vào `%LOCALAPPDATA%\Programs\Mimi`. Không hỏi mật khẩu quản trị, không có hộp thoại UAC. Có mục gỡ cài đặt trong *Settings → Apps*. |
+| **`Mimi-<tag>-win-x64.zip`** | Bản portable: giải nén ra đâu cũng được, chạy `Mimi.exe`, không cài gì cả. |
+
+Cả hai đều **self-contained** — runtime .NET nằm sẵn bên trong.
+`SHA256SUMS.txt` trên trang phát hành để bạn kiểm tệp tải về
+(`sha256sum -c SHA256SUMS.txt`). Ghi chú đầy đủ của bản đang phát hành, kèm ảnh:
+[`docs/release/0.7.0.md`](docs/release/0.7.0.md).
+
+Hai điều nên biết trước khi chạy lần đầu:
+
+- **Windows sẽ cảnh báo SmartScreen "Windows protected your PC".** Bản dựng này
+  **chưa được ký số**, nên Windows không biết nhà phát hành là ai. Bấm
+  *More info → Run anyway*. Thiếu chứng chỉ, không phải thiếu mã nguồn.
+- **Nhạc của bạn vẫn là của bạn.** Gỡ cài đặt **không** đụng tới thư viện, cài
+  đặt hay log trong `%LOCALAPPDATA%\Mimi`; bộ gỡ cài chỉ hỏi một câu và mặc định
+  là giữ lại. Cài đè bản mới cũng giữ nguyên thư viện và cài đặt.
+  *(Uninstalling does not touch your library, settings or logs.)*
+
+Muốn tự build từ mã nguồn thay vì tải: xem [Build & chạy](#build-test-and-run).
+
+## What is inside — chi tiết từng tính năng
+
 - Dark anime-inspired cyan/pink desktop UI with the Mimi app icon
 - Four built-in color themes plus community themes: drop a JSON file into
   the per-user `themes` folder (Settings → **Open themes folder**), press
@@ -150,31 +253,8 @@ A Windows desktop music-player foundation built with C# / WPF / .NET 8 and NAudi
   read-only GSMTC timeline probe, and current reconciliation matrix
   live in the [Windows Acceptance Kit](docs/acceptance/README.md)
 
-## Install (no build required)
 
-You do not need .NET, Visual Studio, or Git to use Mimi. Take either file from
-[the latest release](https://github.com/lxmtuu/Mimi/releases/latest):
-
-| File | What it does |
-|---|---|
-| `Mimi-<version>-Setup.exe` | Installs Mimi **for your user only** into `%LOCALAPPDATA%\Programs\Mimi`. No administrator password, no UAC prompt. Adds a Start-menu entry (and a desktop shortcut if you tick the box), plus an entry under *Settings → Apps* you can uninstall from later. |
-| `Mimi-<tag>-win-x64.zip` | The same build as a portable folder. Unzip it anywhere and run `Mimi.exe`. |
-
-Both are self-contained: the .NET runtime is inside. `SHA256SUMS.txt` on the
-release page lets you check the download (`sha256sum -c SHA256SUMS.txt`).
-The full notes for the current version, pictures included, live in
-[`docs/release/0.7.0.md`](docs/release/0.7.0.md).
-
-Two things to expect on the first run:
-
-- **Windows SmartScreen will warn that the publisher is unknown.** The build is
-  not code-signed yet, which costs money and a review process we have not
-  finished. The source and the workflow that produced the file are public.
-- **Your music stays yours.** Uninstalling Mimi does not touch your library,
-  settings or logs in `%LOCALAPPDATA%\Mimi`; the uninstaller asks before
-  deleting anything, and the safe answer is the default.
-
-## Requirements
+## Yêu cầu
 - Windows 10 version 1809 or later / Windows 11, with Windows Terminal or
   PowerShell
 - Git

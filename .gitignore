@@ -35,3 +35,7 @@ project.fragment.lock.json
 # Release packaging output (installer + zip + checksums)
 dist/
 publish/
+
+# Python cache from the release-art scripts
+__pycache__/
+*.pyc

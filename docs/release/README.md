@@ -55,6 +55,37 @@ trên nền sáng, thành quầng lạ trên nền tối. Script *flood* viền 
 suốt vào, nên nét trắng **bên trong** nhân vật (điểm sáng mắt, tất, highlight)
 không bị chạm vì nhân vật bao kín chúng. Tệp gốc trong `Assets/` không bị sửa.
 
+### Ảnh đầu trang và ảnh giao diện cho README
+
+| Ảnh | Sinh bởi |
+|---|---|
+| `docs/assets/readme/btn-download-*.png`, `pill-*.png` | `tools/release-art/readme_badges.py` |
+| `docs/assets/readme/preview-*.png` | `tools/release-art/ui_previews.py` (dùng `ui_kit.py`, `ui_icons.py`) |
+
+```powershell
+pip install pillow numpy
+python tools/release-art/readme_badges.py
+python tools/release-art/ui_previews.py
+```
+
+**Nút tải và huy hiệu được vẽ ở đây, không lấy từ shields.io**, vì ba lý do: trang
+không cần mạng để hiển thị đúng, màu khớp chính xác với theme của app, và **số
+phiên bản được đọc từ `Mimi.App.csproj`** chứ không gõ tay — nên nó không thể lệch.
+
+**Ba ảnh `preview-*.png` là bản dựng lại, không phải ảnh chụp màn hình.** Màu lấy
+từ `BuiltInThemes.cs` (theme *Neon Stage*), nhãn từ `UiStrings*.resx`, bố cục từ
+`MainWindow.xaml` (cửa sổ 1320×820, rail 210 px, cột Now Playing 270 px). README
+nói rõ điều này ngay dưới ba ảnh, và `ReadmeArtworkTests` gác câu đó.
+
+Tên bài và tên nghệ sĩ trong ảnh là **tên bịa** — dùng tên thật sẽ ngụ ý một
+quyền mà dự án không có.
+
+Ba ảnh preview lưu ở **palette 256 màu** (81 / 87 / 67 KB thay vì 262 / 200 / 225 KB
+khi lưu RGBA). Vì vậy chúng **không bo góc**: PNG indexed chỉ mang được một chỉ số
+trong suốt duy nhất, và PIL lặng lẽ làm phẳng alpha khi ghi, nên bo góc sẽ biến
+thành bốn góc vuông đen — tệ hơn là không bo. Nền ảnh trùng màu nền app
+(`#070B14`), nên trên GitHub viền vuông gần như không thấy.
+
 ### Ảnh chụp giao diện thật
 
 Chưa có, và **không** dùng ảnh dựng thay thế: ảnh chụp màn hình giả là cách nhanh
