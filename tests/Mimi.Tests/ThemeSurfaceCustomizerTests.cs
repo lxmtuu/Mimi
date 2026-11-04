@@ -161,7 +161,8 @@ public sealed class ThemeSurfaceCustomizerTests
     [InlineData("#FF8FCB", "#FF8FCB")]
     [InlineData("ff8fcb", "#FF8FCB")]
     [InlineData("  #ff8fCB ", "#FF8FCB")]
-    [InlineData("#FF8FCB80", "#FF8FCB")]
+    // Eight digits are #AARRGGBB - the alpha is dropped, the colour stays.
+    [InlineData("#80FF8FCB", "#FF8FCB")]
     public void ParsingAcceptsWhatAPersonWouldType(string input, string expected)
     {
         Assert.True(ThemeSurfaceCustomizer.TryParse(input, out var color));
