@@ -168,15 +168,17 @@ public sealed class ThemeLayerTests
         var root = FindRepositoryRoot();
         var shell = Read(root, "src", "Mimi.App", "MainWindow.xaml");
 
-        // The window paints the darkest layer...
+        // The window paints the darkest layer. The reference is dynamic on
+        // purpose: a theme change has to reach the elements that are already
+        // on screen, not only the ones created after it.
         Assert.Contains(
-            "Background=\"{StaticResource AppBackgroundBrush}\"",
+            "Background=\"{DynamicResource AppBackgroundBrush}\"",
             shell,
             StringComparison.Ordinal);
 
         // ...the navigation rail and every screen panel paint the panel layer...
         Assert.Contains(
-            "<Border x:Name=\"NavRail\" Grid.Column=\"0\" Background=\"{StaticResource PanelBackgroundBrush}\"",
+            "<Border x:Name=\"NavRail\" Grid.Column=\"0\" Background=\"{DynamicResource PanelBackgroundBrush}\"",
             shell,
             StringComparison.Ordinal);
 
@@ -229,7 +231,7 @@ public sealed class ThemeLayerTests
 
         // And no section card may go back to a bare fill.
         var bareSectionCard = new Regex(
-            "Background=\"\\{StaticResource RaisedBackgroundBrush\\}\"\\s+CornerRadius=\"12\"\\s+Padding=\"14\"",
+            "Background=\"\\{(?:Static|Dynamic)Resource RaisedBackgroundBrush\\}\"\\s+CornerRadius=\"12\"\\s+Padding=\"14\"",
             RegexOptions.CultureInvariant);
         Assert.DoesNotMatch(bareSectionCard, shell);
     }

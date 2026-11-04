@@ -17,11 +17,16 @@ namespace Mimi.Services;
 ///    writing to the dictionary cannot reach it. That is how one window ends up
 ///    showing two themes - pink cards inside navy panels.
 ///
-/// So this does both halves of the fix: the brush objects are mutated in place
-/// (anyone still holding the old instance sees the new colour) *and* replaced in
-/// the dictionary with a fresh instance, which is what a <c>DynamicResource</c>
-/// reference re-resolves. Every XAML reference to a theme brush is dynamic for
-/// exactly this reason; a test keeps it that way.
+/// So this does both halves of the fix:
+///
+/// * the brush the window loaded with is repainted in place, forever - anyone
+///   still holding that instance sees the new colour;
+/// * the dictionary entry is replaced with a fresh instance on every publish,
+///   which is what makes a <c>DynamicResource</c> reference re-resolve, and
+///   what rescues anything that ended up with a copy of the brush.
+///
+/// Every XAML reference to a theme brush is dynamic for that second reason; a
+/// test keeps it that way.
 /// </summary>
 public static class ThemeBrushSync
 {
@@ -160,6 +165,16 @@ public static class ThemeBrushSync
         };
 
     /// <summary>
+    /// The brush each key originally had, per dictionary. That first instance
+    /// is the one the visual tree picked up when the window was loaded, so it
+    /// has to keep being repainted for as long as the app runs - even though
+    /// the dictionary entry is replaced on every theme change.
+    /// </summary>
+    private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<
+        ResourceDictionary,
+        Dictionary<string, Brush>> Originals = new();
+
+    /// <summary>
     /// Writes <paramref name="colors"/> into every brush the table knows about
     /// and leaves a fresh instance behind in the dictionary. Returns how many
     /// brushes were painted.
@@ -171,21 +186,33 @@ public static class ThemeBrushSync
         ArgumentNullException.ThrowIfNull(owner);
         ArgumentNullException.ThrowIfNull(colors);
 
+        var originals = Originals.GetValue(
+            owner,
+            _ => new Dictionary<string, Brush>(StringComparer.Ordinal));
+
         var updated = 0;
         foreach (var (brushKey, colorKeys) in Map)
         {
             if (!owner.Contains(brushKey)) continue;
-            if (owner[brushKey] is not Brush brush) continue;
+            if (owner[brushKey] is not Brush current) continue;
 
-            // Mutate the instance that is already out there. This is what
-            // catches an element that took the brush before the dictionary was
-            // replaced (a DrawingImage in the window resources, for example).
-            Paint(brush, brushKey, colorKeys, colors);
+            // The instance a window is already painting with. Repainting it is
+            // what makes a theme change reach elements that took the brush at
+            // load time; that is the case a dictionary write alone cannot fix.
+            if (!originals.TryGetValue(brushKey, out var original))
+            {
+                original = current;
+                originals[brushKey] = original;
+            }
 
-            // Replace the entry too: a DynamicResource reference only re-resolves
-            // when the dictionary value itself changes, and only a fresh
-            // instance is guaranteed to be repaintable next time.
-            var fresh = CreateLike(brush, brushKey);
+            Paint(original, brushKey, colorKeys, colors);
+            if (!ReferenceEquals(original, current))
+                Paint(current, brushKey, colorKeys, colors);
+
+            // Hand out a fresh instance as well. A DynamicResource reference
+            // only re-resolves when the dictionary value itself changes, which
+            // is what rescues anything that ended up with a copy.
+            var fresh = CreateLike(original, brushKey);
             if (fresh is null) continue;
 
             Paint(fresh, brushKey, colorKeys, colors);
