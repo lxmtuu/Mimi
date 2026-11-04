@@ -150,6 +150,28 @@ A Windows desktop music-player foundation built with C# / WPF / .NET 8 and NAudi
   read-only GSMTC timeline probe, and current reconciliation matrix
   live in the [Windows Acceptance Kit](docs/acceptance/README.md)
 
+## Install (no build required)
+
+You do not need .NET, Visual Studio, or Git to use Mimi. Take either file from
+[the latest release](https://github.com/lxmtuu/Mimi/releases/latest):
+
+| File | What it does |
+|---|---|
+| `Mimi-<version>-Setup.exe` | Installs Mimi **for your user only** into `%LOCALAPPDATA%\Programs\Mimi`. No administrator password, no UAC prompt. Adds a Start-menu entry (and a desktop shortcut if you tick the box), plus an entry under *Settings → Apps* you can uninstall from later. |
+| `Mimi-<tag>-win-x64.zip` | The same build as a portable folder. Unzip it anywhere and run `Mimi.exe`. |
+
+Both are self-contained: the .NET runtime is inside. `SHA256SUMS.txt` on the
+release page lets you check the download (`sha256sum -c SHA256SUMS.txt`).
+
+Two things to expect on the first run:
+
+- **Windows SmartScreen will warn that the publisher is unknown.** The build is
+  not code-signed yet, which costs money and a review process we have not
+  finished. The source and the workflow that produced the file are public.
+- **Your music stays yours.** Uninstalling Mimi does not touch your library,
+  settings or logs in `%LOCALAPPDATA%\Mimi`; the uninstaller asks before
+  deleting anything, and the safe answer is the default.
+
 ## Requirements
 - Windows 10 version 1809 or later / Windows 11, with Windows Terminal or
   PowerShell

@@ -1,0 +1,58 @@
+﻿Mimi - what you are installing
+==============================
+
+Mimi is a music player for Windows. It plays the audio files that are
+already on your computer, and it can also look things up online (Internet
+Radio, Audius, YouTube) through those services' official APIs. Nothing is
+downloaded from them.
+
+Licence
+-------
+Mimi is released under the MIT License. The full text is in the LICENSE
+page of this wizard and in the folder you are installing to.
+
+Third-party components
+----------------------
+Mimi is built on libraries that keep their own licences. The full list,
+with versions and licences, is in THIRD-PARTY-NOTICES.md in the install
+folder. Two worth knowing before you install:
+
+  * TagLibSharp (reads audio tags) is LGPL-2.1. It is installed as a
+    separate .dll on purpose, so it can be replaced - that is what the
+    licence requires, and it is why Mimi does not ship as a single file.
+  * Be Vietnam Pro (the interface font) is SIL Open Font License 1.1.
+
+Your data
+---------
+Your library, settings and logs live in:
+
+  %LOCALAPPDATA%\Mimi
+
+This folder is NOT inside the install folder, and uninstalling does not
+delete it. Removing Mimi leaves your library where it is, so installing
+again later finds it. The uninstaller asks before deleting anything.
+
+Privacy
+-------
+No account. No telemetry. Nothing is reported back to the project. A
+YouTube API key, if you use YouTube, is read from the environment or a
+file you create, and is never written to settings or logs. Details:
+SECURITY.md in the install folder or the repository.
+
+Unpackaged Win32 application
+----------------------------
+Mimi installs per-user into %LOCALAPPDATA%\Programs\Mimi and needs no
+administrator rights. It is not a Microsoft Store (MSIX) application:
+Windows SmartScreen may warn that the publisher is unknown, because the
+build is not code-signed yet. That is a missing certificate, not a
+missing source code - the repository builds this installer from source
+in public CI.
+
+Not affiliated with anyone
+--------------------------
+"Hatsune Miku", "Vocaloid" and related marks belong to their owners.
+Mimi is not affiliated with, endorsed by, or approved by them. The
+interface takes cues from anime and Vocaloid culture but uses this
+project's own characters and artwork.
+
+Project: https://github.com/lxmtuu/Mimi

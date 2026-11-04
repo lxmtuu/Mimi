@@ -85,7 +85,10 @@ jobs:
 
           # The notices and the licence travel with the binaries: MIT requires
           # the notice, and LGPL requires the credit and the licence text.
-          Copy-Item LICENSE, THIRD-PARTY-NOTICES.md, CHANGELOG.md -Destination publish/win-x64
+          # SECURITY.md travels too: the installer's before-install page points
+          # the reader at it, so it has to actually be there.
+          Copy-Item LICENSE, THIRD-PARTY-NOTICES.md, CHANGELOG.md, SECURITY.md `
+            -Destination publish/win-x64
 
           Rename-Item -LiteralPath publish/win-x64 -NewName $folder
           New-Item -ItemType Directory -Path dist -Force | Out-Null
@@ -94,11 +97,69 @@ jobs:
           "asset=dist/$folder.zip" >> $env:GITHUB_OUTPUT
         id: package
 
+      # The installer packages the same folder the zip contains, so the two
+      # downloads cannot contain different builds.
+      - name: Build the installer
+        shell: pwsh
+        run: |
+          $iscc = Join-Path ${env:ProgramFiles(x86)} 'Inno Setup 6\ISCC.exe'
+          if (-not (Test-Path -LiteralPath $iscc)) {
+            $iscc = Join-Path $env:ProgramFiles 'Inno Setup 6\ISCC.exe'
+          }
+          if (-not (Test-Path -LiteralPath $iscc)) {
+            Write-Host 'Inno Setup was not on the image; installing it.'
+            choco install innosetup --no-progress -y
+            $iscc = Join-Path ${env:ProgramFiles(x86)} 'Inno Setup 6\ISCC.exe'
+          }
+          if (-not (Test-Path -LiteralPath $iscc)) {
+            throw 'ISCC.exe was not found even after installing Inno Setup.'
+          }
+
+          # The previous step renamed the publish folder to the release name,
+          # so the installer packages exactly the folder the zip contains.
+          $folder = "Mimi-${{ steps.version.outputs.tag }}-win-x64"
+          $source = (Resolve-Path "publish/$folder").Path
+
+          & $iscc `
+            "/DAppVersion=${{ steps.version.outputs.version }}" `
+            "/DSourceDir=$source" `
+            installer/Mimi.iss
+          if ($LASTEXITCODE -ne 0) { throw 'The installer script did not compile.' }
+
+          $setup = Get-ChildItem dist -Filter '*Setup.exe' | Select-Object -First 1
+          if ($null -eq $setup) { throw 'No setup file was produced.' }
+          "$($setup.FullName)" | Out-File -FilePath dist/setup-path.txt -Encoding ascii
+
+      - name: Write checksums
+        shell: pwsh
+        run: |
+          # A download nobody can verify is a download you have to trust. The
+          # format is what sha256sum -c expects, so it works on every platform.
+          $files = Get-ChildItem dist -File |
+            Where-Object { $_.Extension -in '.zip', '.exe' }
+          $lines = foreach ($file in $files) {
+            $hash = (Get-FileHash -LiteralPath $file.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+            "$hash  $($file.Name)"
+          }
+
+          # Written by hand rather than with Set-Content: that appends CRLF, and
+          # "sha256sum -c" then looks for a file name ending in a carriage return.
+          # LF endings, no BOM, exactly what the tool expects.
+          $sums = Join-Path (Get-Location) 'dist/SHA256SUMS.txt'
+          [System.IO.File]::WriteAllText(
+            $sums,
+            (($lines -join "`n") + "`n"),
+            [System.Text.UTF8Encoding]::new($false))
+          Get-Content -LiteralPath $sums | Write-Host
+
       - name: Upload build artifact
         uses: actions/upload-artifact@v7.0.2
         with:
           name: Mimi-${{ steps.version.outputs.tag }}-win-x64
-          path: ${{ steps.package.outputs.asset }}
+          path: |
+            dist/*.zip
+            dist/*Setup.exe
+            dist/SHA256SUMS.txt
           if-no-files-found: error
           retention-days: 30
 
@@ -116,5 +177,6 @@ jobs:
             if ($LASTEXITCODE -ne 0) { throw "Could not create release $tag." }
           }
 
-          gh release upload $tag $asset --clobber
-          if ($LASTEXITCODE -ne 0) { throw "Could not upload $asset." }
+          $setup = (Get-Content -LiteralPath dist/setup-path.txt -Raw).Trim()
+          gh release upload $tag $asset $setup dist/SHA256SUMS.txt --clobber
+          if ($LASTEXITCODE -ne 0) { throw "Could not upload the release files." }

@@ -53,6 +53,14 @@ vào `main` trong cùng khoảng thời gian. Tổng kết đầy đủ và các
   thông báo và nơi ném lỗi, kèm `[phiên bản · commit]`. Một lỗi chỉ mở **một**
   hộp thoại mỗi phiên; các lần sau chỉ ghi log.
 - **Kill switch cho Internet Radio** ở settings schema v7, Online v8, YouTube v9.
+- **Bộ cài Windows (`Mimi-0.7.0-Setup.exe`).** Inno Setup 6, cài **theo từng
+  người dùng** vào `%LOCALAPPDATA%\Programs\Mimi` nên không cần quyền quản trị,
+  tạo **một** mục Start menu (tuỳ chọn thêm lối tắt Desktop) mang đúng
+  AppUserModelID của app, và gỡ cài đặt sạch sẽ. Bản portable `.zip` vẫn được
+  phát hành song song, kèm `SHA256SUMS.txt` để kiểm tra tệp tải về. Bộ cài
+  **giữ nguyên** thư viện, cài đặt và log trong `%LOCALAPPDATA%\Mimi`; chỉ xoá
+  khi người dùng trả lời rõ ràng là không giữ. Chưa ký số, nên Windows sẽ hiện
+  cảnh báo SmartScreen ở lần chạy đầu — hộp thoại cài đặt nói trước điều này.
 
 ### Changed
 

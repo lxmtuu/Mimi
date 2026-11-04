@@ -106,6 +106,43 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
+      # An installer script that is only compiled at release time is a landmine:
+      # the first time anyone finds out it is broken is on the release. This
+      # compiles it on every push, against a framework-dependent publish (the
+      # script does not care which runtime flavour it packages, and this keeps
+      # the job fast).
+      - name: Compile the installer (dry run)
+        shell: pwsh
+        run: |
+          dotnet publish src/Mimi.App/Mimi.App.csproj `
+            --configuration Release `
+            --self-contained false `
+            -p:PublishSingleFile=false `
+            -o publish/dry-run
+
+          $iscc = Join-Path ${env:ProgramFiles(x86)} 'Inno Setup 6\ISCC.exe'
+          if (-not (Test-Path -LiteralPath $iscc)) {
+            $iscc = Join-Path $env:ProgramFiles 'Inno Setup 6\ISCC.exe'
+          }
+          if (-not (Test-Path -LiteralPath $iscc)) {
+            Write-Host 'Inno Setup was not on the image; installing it.'
+            choco install innosetup --no-progress -y
+            $iscc = Join-Path ${env:ProgramFiles(x86)} 'Inno Setup 6\ISCC.exe'
+          }
+          if (-not (Test-Path -LiteralPath $iscc)) {
+            throw 'ISCC.exe was not found even after installing Inno Setup.'
+          }
+
+          [xml]$project = Get-Content -LiteralPath 'src/Mimi.App/Mimi.App.csproj'
+          $version = ($project.Project.PropertyGroup.Version | Where-Object { $_ }) -join ''
+
+          & $iscc "/DAppVersion=$version" "/DSourceDir=$((Resolve-Path 'publish/dry-run').Path)" installer/Mimi.iss
+          if ($LASTEXITCODE -ne 0) { throw 'The installer script did not compile.' }
+
+          $setup = Get-ChildItem dist -Filter '*Setup.exe' | Select-Object -First 1
+          if ($null -eq $setup) { throw 'The installer compiled but produced no setup file.' }
+          Write-Host "Installer: $($setup.Name) ($($setup.Length) bytes)"
+
       - name: Upload build output
         uses: actions/upload-artifact@v7.0.2
         with:
