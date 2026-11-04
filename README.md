@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="docs/assets/release/banner-vi.png" alt="Mimi 0.7.0 — trình nghe nhạc cho Windows" width="900">
+<img src="docs/assets/release/banner-en.png" alt="Mimi 0.7.0 — a music player for Windows" width="900">
 
 <br>
 
@@ -14,97 +14,99 @@
 
 <br><br>
 
-<img src="docs/assets/readme/pill-version.png" alt="Bản 0.7.0" height="34">
+<img src="docs/assets/readme/pill-version.png" alt="Version 0.7.0" height="34">
 &nbsp;
 <img src="docs/assets/readme/pill-platform.png" alt="Windows 10 / 11, x64" height="34">
 &nbsp;
-<img src="docs/assets/readme/pill-licence.png" alt="Giấy phép MIT" height="34">
+<img src="docs/assets/readme/pill-licence.png" alt="MIT licence" height="34">
 
 <br><br>
 
-<b>Nhạc của bạn, trên máy của bạn.</b><br>
-Không tài khoản · không telemetry · không tải nhạc từ đâu về.<br>
-<sub>Lời hát chạy theo từng từ · Stage có hồn · ba nguồn trực tuyến, tắt được từng cái</sub>
+<b>Your music, on your machine.</b><br>
+No account · no telemetry · no background downloads.<br>
+<sub>Word-by-word lyrics · a Stage that moves · three online sources, each one switchable</sub>
 <br><br>
-<sub><b>A Windows music player built with C# / WPF / .NET 8 and NAudio — preview of the 0.7 line.</b></sub>
+<sub><b>C# / WPF / .NET 8 · NAudio · Windows 10 and 11 · MIT</b></sub>
 
 </div>
 
 ---
 
-## Mục lục
+## Contents
 
-- [Xem trước](#xem-trước) · [Mimi có gì](#mimi-có-gì) · [Cài đặt](#cài-đặt-không-cần-build)
-- [Chi tiết tính năng](#what-is-inside--chi-tiết-từng-tính-năng) · [Yêu cầu](#yêu-cầu) · [Build & chạy](#build-test-and-run)
-- [Cấu trúc mã nguồn](#source-layout) · [Lộ trình & thiết kế](#design--roadmap) · [Giấy phép](#license) · [Quyền riêng tư](#privacy) · [Đóng góp](#contributing)
+- [Previews](#previews) · [What Mimi does](#what-mimi-does) · [Install](#install-no-build-needed)
+- [What is inside](#what-is-inside) · [Requirements](#requirements) · [Build & run](#build-test-and-run)
+- [Source layout](#source-layout) · [Design & roadmap](#design--roadmap) · [Licence](#license) · [Privacy](#privacy) · [Contributing](#contributing)
 
-## Xem trước
+## Previews
 
 <p align="center">
-  <img src="docs/assets/readme/preview-library.png" alt="Thư viện, lời bài hát và hàng đợi" width="880">
+  <img src="docs/assets/readme/preview-library.png" alt="Library with lyrics and the Up Next queue" width="880">
   <br>
-  <sub><b>Thư viện</b> — danh sách, tìm kiếm, lời hát theo từng từ, Up Next và transport</sub>
+  <sub><b>Library</b> — track list, search, word-by-word lyrics, Up Next and the transport bar</sub>
 </p>
 
 <p align="center">
-  <img src="docs/assets/readme/preview-stage.png" alt="Stage toàn màn hình" width="880">
+  <img src="docs/assets/readme/preview-stage.png" alt="Fullscreen Stage" width="880">
   <br>
-  <sub><b>Stage</b> — lời lớn ba dòng, visualizer theo nhịp, ba chế độ (Spectrum · Twin Wave · Halo)</sub>
+  <sub><b>Stage</b> — three large lyric lines, a beat-driven visualizer, three modes (Spectrum · Twin Wave · Halo)</sub>
 </p>
 
 <p align="center">
-  <img src="docs/assets/readme/preview-settings.png" alt="Cài đặt: theme, ngôn ngữ, nền, thư mục dữ liệu" width="880">
+  <img src="docs/assets/readme/preview-settings.png" alt="Settings: themes, language, background, data folders" width="880">
   <br>
-  <sub><b>Cài đặt</b> — bốn theme dựng sẵn, màu nền tự pha, VI/EN, thư mục dữ liệu và công tắc từng nguồn</sub>
+  <sub><b>Settings</b> — four built-in themes, a custom background tint, Vietnamese/English, data folders and Windows integration</sub>
 </p>
 
 > [!NOTE]
-> Ba ảnh trên là **bản dựng lại từ chính mã nguồn**, không phải ảnh chụp màn hình:
-> màu lấy từ `BuiltInThemes.cs` (theme *Neon Stage*), nhãn từ `UiStrings*.resx`,
-> bố cục từ `MainWindow.xaml`. Chúng cho thấy thiết kế mà mã nguồn khai báo, và sẽ
-> được thay bằng ảnh chụp thật ngay khi có người chạy Mimi trên Windows và chụp lại.
+> These three pictures are **drawn from the repository's own sources, not screenshots**:
+> colour comes from `BuiltInThemes.cs` (the *Neon Stage* theme), labels from
+> `UiStrings*.resx`, geometry from `MainWindow.xaml`. They show the design the code
+> declares, and they will be swapped for real captures as soon as someone runs Mimi
+> on Windows and takes them.
 
-## Mimi có gì
+## What Mimi does
 
 | | |
 |---|---|
-| **Thư viện** | Quét thư mục nền có tiến trình và huỷ giữa chừng; đọc tag và bìa bằng TagLib; SQLite FTS5 cho tìm kiếm tiếng Việt không dấu; sắp xếp, lọc, chọn nhiều để gắn yêu thích hoặc thêm vào danh sách phát |
-| **Phát nhạc** | WASAPI shared theo thiết bị mặc định của Windows, WaveOut làm dự phòng; queue *Up Next* kéo thả được; Shuffle không lặp, Repeat Off/All/One; phím media và taskbar của Windows |
-| **Lời bài hát** | `.lrc` cạnh file nhạc và lời nhúng trong tag; Enhanced LRC tô sáng **từng từ**; ba dòng lời lớn trên Stage |
-| **Stage** | Toàn màn hình bằng `F11`, Aurora tĩnh, visualizer theo nhịp, ba chế độ, phím `1` `2` `3` |
-| **Giao diện** | Bốn theme dựng sẵn + theme cộng đồng (thả JSON vào thư mục `themes`), màu nền tự pha, song ngữ Việt/English 455 khoá |
-| **Trực tuyến** | Internet Radio (Radio Browser), Audius, YouTube qua Data API v3 với khoá của bạn — phát trong player chính thức, không tải, không cache |
+| **Library** | Background folder scan with progress and cancellation; tags and cover art read with TagLib; SQLite FTS5 search that ignores Vietnamese diacritics; sorting, filters, multi-select for favourites and playlists |
+| **Playback** | WASAPI shared on the Windows default device, WaveOut as a fallback; drag-to-reorder *Up Next* queue; Shuffle without repeats; Repeat Off / All / One; media keys and the taskbar |
+| **Lyrics** | `.lrc` beside the file or embedded in the tag; Enhanced LRC highlights **word by word**; three large lines on the Stage |
+| **Stage** | Fullscreen on `F11`, a static Aurora, a beat-driven visualizer with three modes, keys `1` `2` `3` |
+| **Interface** | Four built-in themes plus community themes (drop a JSON file into the `themes` folder), a background tint on top of the theme, Vietnamese and English across 455 keys |
+| **Online** | Internet Radio (Radio Browser), Audius, and YouTube through Data API v3 with your own key — plays in the official player, no downloading, no caching |
 
-Danh sách đầy đủ, chi tiết tới từng hành vi, ở phần [Chi tiết tính năng](#what-is-inside--chi-tiết-từng-tính-năng) bên dưới.
+Everything, down to individual behaviours, is listed under [What is inside](#what-is-inside) below.
 
-## Cài đặt (không cần build)
+## Install (no build needed)
 
-Không cần .NET, Visual Studio hay Git. Lấy một trong hai tệp ở
-[bản phát hành mới nhất](https://github.com/lxmtuu/Mimi/releases/latest):
+No .NET, no Visual Studio, no Git. Take either file from the
+[latest release](https://github.com/lxmtuu/Mimi/releases/latest):
 
-| Tệp | Dùng khi nào |
+| File | When to use it |
 |---|---|
-| **`Mimi-<phiên bản>-Setup.exe`** | Cài vào Start menu, **chỉ cho tài khoản của bạn**, vào `%LOCALAPPDATA%\Programs\Mimi`. Không hỏi mật khẩu quản trị, không có hộp thoại UAC. Có mục gỡ cài đặt trong *Settings → Apps*. |
-| **`Mimi-<tag>-win-x64.zip`** | Bản portable: giải nén ra đâu cũng được, chạy `Mimi.exe`, không cài gì cả. |
+| **`Mimi-<version>-Setup.exe`** | Installs into the Start menu, **for your account only**, under `%LOCALAPPDATA%\Programs\Mimi`. No administrator password, no UAC prompt. Uninstall it from *Settings → Apps*. |
+| **`Mimi-<tag>-win-x64.zip`** | Portable: unzip it anywhere, run `Mimi.exe`, install nothing at all. |
 
-Cả hai đều **self-contained** — runtime .NET nằm sẵn bên trong.
-`SHA256SUMS.txt` trên trang phát hành để bạn kiểm tệp tải về
-(`sha256sum -c SHA256SUMS.txt`). Ghi chú đầy đủ của bản đang phát hành, kèm ảnh:
-[`docs/release/0.7.0.md`](docs/release/0.7.0.md).
+Both are **self-contained** — the .NET runtime travels inside.
+`SHA256SUMS.txt` on the release page lets you check what you downloaded
+(`sha256sum -c SHA256SUMS.txt`). The full notes for the current release, with
+pictures, are in [`docs/release/0.7.0.md`](docs/release/0.7.0.md).
 
-Hai điều nên biết trước khi chạy lần đầu:
+Two things worth knowing before the first launch:
 
-- **Windows sẽ cảnh báo SmartScreen "Windows protected your PC".** Bản dựng này
-  **chưa được ký số**, nên Windows không biết nhà phát hành là ai. Bấm
-  *More info → Run anyway*. Thiếu chứng chỉ, không phải thiếu mã nguồn.
-- **Nhạc của bạn vẫn là của bạn.** Gỡ cài đặt **không** đụng tới thư viện, cài
-  đặt hay log trong `%LOCALAPPDATA%\Mimi`; bộ gỡ cài chỉ hỏi một câu và mặc định
-  là giữ lại. Cài đè bản mới cũng giữ nguyên thư viện và cài đặt.
-  *(Uninstalling does not touch your library, settings or logs.)*
+- **Windows will show the SmartScreen warning, "Windows protected your PC".**
+  This build is **not code-signed**, so Windows cannot tell who the publisher
+  is. Choose *More info → Run anyway*. That is a missing certificate, not a
+  missing source.
+- **Your music stays yours.** Uninstalling **does not touch your library**,
+  settings or logs in `%LOCALAPPDATA%\Mimi`; the uninstaller asks one question
+  and defaults to keeping them. Installing a newer build over an older one
+  keeps the library and settings too.
 
-Muốn tự build từ mã nguồn thay vì tải: xem [Build & chạy](#build-test-and-run).
+To build it yourself instead: see [Build & run](#build-test-and-run).
 
-## What is inside — chi tiết từng tính năng
+## What is inside
 
 - Dark anime-inspired cyan/pink desktop UI with the Mimi app icon
 - Four built-in color themes plus community themes: drop a JSON file into
@@ -254,7 +256,7 @@ Muốn tự build từ mã nguồn thay vì tải: xem [Build & chạy](#build-t
   live in the [Windows Acceptance Kit](docs/acceptance/README.md)
 
 
-## Yêu cầu
+## Requirements
 - Windows 10 version 1809 or later / Windows 11, with Windows Terminal or
   PowerShell
 - Git
@@ -273,60 +275,58 @@ dotnet test tests\Mimi.Tests\Mimi.Tests.csproj --configuration Release
 dotnet run --project src\Mimi.App\Mimi.App.csproj
 ```
 
-### Detailed Windows Terminal setup — Hướng dẫn setup chi tiết
+### Detailed Windows Terminal setup
 
-Mimi là ứng dụng WPF, vì vậy hãy chạy các lệnh dưới đây trong **Windows
-Terminal** hoặc **PowerShell** trên Windows 10/11. Visual Studio không bắt
-buộc nếu bạn chỉ muốn build và chạy từ Terminal.
+Mimi is a WPF application, so run the commands below in **Windows Terminal** or
+**PowerShell** on Windows 10/11. Visual Studio is not required if you only want
+to build and run from the terminal.
 
-#### 1. Kiểm tra hoặc cài Git và .NET 8 SDK
+#### 1. Check for, or install, Git and the .NET 8 SDK
 
-Kiểm tra các công cụ đã có:
+Check what you already have:
 
 ```powershell
 git --version
 dotnet --list-sdks
 ```
 
-Bạn cần thấy phiên bản Git và ít nhất một .NET SDK bắt đầu bằng `8.`. Nếu
-chưa có, cài bằng `winget`:
+You need to see a Git version and at least one .NET SDK starting with `8.`. If
+either is missing, install them with `winget`:
 
 ```powershell
 winget install -e --id Git.Git --source winget
 winget install -e --id Microsoft.DotNet.SDK.8 --source winget
 ```
 
-Sau khi cài, đóng Terminal và mở lại để Windows nhận biến môi trường mới,
-rồi chạy lại hai lệnh kiểm tra ở trên. Lưu ý phải cài **.NET 8 SDK**; chỉ có
-.NET Runtime thì chạy được ứng dụng đã build nhưng không build được source.
+Afterwards, close Terminal and open it again so Windows picks up the new
+environment variables, then repeat the two checks above. Make sure it is the
+**.NET 8 SDK**: the runtime alone can run an already-built app but cannot build
+the source.
 
-#### 2. Clone repo và chọn đúng working branch hiện tại
+#### 2. Clone the repository and pick the right branch
 
-Nếu bạn chưa clone Mimi:
+If you have not cloned Mimi yet:
 
 ```powershell
 New-Item -ItemType Directory -Force "$HOME\source" | Out-Null
 Set-Location "$HOME\source"
 
-git clone --branch arena/cdda374d-mimi https://github.com/lxmtuu/Mimi.git
+git clone https://github.com/lxmtuu/Mimi.git
 Set-Location .\Mimi
 ```
 
-`arena/cdda374d-mimi` hiện là working branch chứa Phase 4
-(`v0.5.0` đang phát triển). Khi branch này đã được merge, bạn có thể bỏ tùy
-chọn `--branch ...` để dùng branch mặc định.
-
-Nếu bạn đã clone repo từ trước:
+`main` is the branch to build from; release tags hang off it. If you were sent
+here from an older note that named a working branch, switch back to `main`:
 
 ```powershell
-Set-Location "C:\duong-dan\toi\thu-muc\Mimi"
+Set-Location "C:\path\to\Mimi"
 
 git fetch --all --prune
-git switch arena/cdda374d-mimi
+git switch main
 git pull --ff-only
 ```
 
-Kiểm tra branch và trạng thái thư mục làm việc:
+Check the branch and the state of your working tree:
 
 ```powershell
 git branch --show-current
@@ -334,14 +334,13 @@ git status
 git log -1 --oneline
 ```
 
-Lệnh đầu tiên phải in ra `arena/cdda374d-mimi`. Nếu `git status` cho thấy bạn
-có thay đổi local chưa commit, hãy kiểm tra kỹ trước khi chuyển branch; đừng
-dùng `git reset --hard` nếu chưa chắc chắn vì lệnh đó có thể làm mất thay
-đổi chưa lưu.
+The first command must print `main`. If `git status` shows uncommitted local
+changes, look at them before switching branches; avoid `git reset --hard`
+unless you are certain, because it can throw away work you have not saved.
 
-#### 3. Restore package, build và chạy unit test
+#### 3. Restore packages, build, and run the unit tests
 
-Đứng tại thư mục gốc của repo (nơi có file `Mimi.sln`), chạy lần lượt:
+From the repository root (the folder containing `Mimi.sln`), run them in order:
 
 ```powershell
 dotnet restore .\Mimi.sln
@@ -349,81 +348,84 @@ dotnet build .\Mimi.sln --configuration Release --no-restore
 dotnet test .\tests\Mimi.Tests\Mimi.Tests.csproj --configuration Release --no-build
 ```
 
-Lần restore đầu tiên cần Internet để tải NAudio, CommunityToolkit.Mvvm,
-Microsoft.Extensions.DependencyInjection, Microsoft.Data.Sqlite,
-TagLibSharp, Serilog, xUnit và các package phụ thuộc. Build/test đạt khi
-Terminal báo tương tự:
+The first restore needs internet access to fetch NAudio, CommunityToolkit.Mvvm,
+Microsoft.Extensions.DependencyInjection, Microsoft.Data.Sqlite, TagLibSharp,
+Serilog, xUnit, and their dependencies. Build and tests are good when Terminal
+reports something like:
 
 ```text
 Build succeeded.
 Passed!  - Failed:     0
 ```
 
-#### 4. Chạy ứng dụng
+#### 4. Run the application
 
-Chạy trực tiếp từ source:
+Straight from source:
 
 ```powershell
 dotnet run --project .\src\Mimi.App\Mimi.App.csproj
 ```
 
-Lệnh trên build cấu hình Debug nếu cần rồi mở Mimi. Nếu bạn muốn chạy bản
-Release vừa build ở bước 3, dùng:
+That builds the Debug configuration if needed and opens Mimi. To run the Release
+build from step 3 instead, use:
 
 ```powershell
 .\src\Mimi.App\bin\Release\net8.0-windows10.0.19041.0\Mimi.exe
 ```
 
-Khi cửa sổ Mimi mở, bạn có thể chọn **Add music files**, **Scan a folder**,
-hoặc kéo-thả file/thư mục nhạc từ Explorer vào cửa sổ. Trong lúc quét, thanh
-tiến độ và nút **Cancel** xuất hiện ở khu vực tiêu đề thư viện. Sau đó hãy
-bấm chuột vào một bài để phát ngay, thử tìm bài tiếng Việt bằng từ khóa không dấu,
-bấm tiêu đề cột để sắp xếp, dùng hàng **Filters** để lọc theo
-nghệ sĩ/album/thể loại/định dạng/trạng thái phát, giữ `Ctrl`/`Shift` để chọn
-nhiều bài cho các thao tác favorites/xóa/thêm vào playlist, mở **Recently
-played** để xem lịch sử nghe, dùng nút **+** ở mục **PLAYLISTS** để tạo
-playlist, chuột phải vào (các) bài đang chọn và dùng **Add to playlist**, rồi
-kéo-thả bài trong playlist (hoặc dùng nút **↑ Up/↓ Down**) để đổi thứ tự.
-Mở **Settings** để đổi chế độ Stage và các tuỳ chọn khôi phục; thêm một thư
-mục vào **Watched folders**, thử chép thêm bài từ Explorer để Mimi tự quét,
-sau đó đóng rồi mở lại Mimi để kiểm tra bài/vị trí cũ được nạp ở trạng thái
-tạm dừng. Trong **Windows integration**, bật **Show Mimi in Windows' Open
-with menu**, chuột phải vào một file nhạc trong Explorer và chọn
-**Open with → Mimi**; nếu Mimi đang mở, bài phải được chuyển sang chính
-cửa sổ đó thay vì tạo thêm một cửa sổ Mimi thứ hai.
-Hãy phát một bài để panel **Up Next** nhận hàng đợi từ danh sách đang lọc,
-rồi thử kéo sắp xếp một bài, dùng **Play next/Add to queue** với (các) bài
-đang chọn, bật **Shuffle**, bấm nút Repeat đủ ba trạng thái
-**Off → All → One**, dùng **−10s/+10s**, bật **Mute** và kiểm tra slider vẫn
-giữ phần trăm âm lượng đã đặt khi bỏ mute. Bấm **Previous** sau khi bài đã
-phát hơn 3 giây để kiểm tra bài quay về đầu; bấm lại gần đầu bài để quay về
-bài vừa nghe thật sự trước đó. Đóng và mở lại Mimi để kiểm tra bài, vị trí,
-Up Next cùng trạng thái mute/shuffle/repeat.
-Trong lúc phát, mở flyout âm lượng của Windows để kiểm tra tên bài, ảnh
-bìa và các nút Previous/Play/Pause/Next; thử kéo timeline (nếu phiên bản
-Windows của bạn hỗ trợ), chuyển Shuffle/Repeat từ flyout, thu nhỏ Mimi rồi
-dùng phím media trên bàn phím, tai nghe hoặc màn hình khoá. Di chuột lên
-biểu tượng Mimi trên taskbar để thử các nút thumbnail Previous/Play/Pause/
-Next và thanh tiến trình trên taskbar. Mở mục **Keyboard Shortcuts** trong
-Settings, thử `Ctrl+F`, `Ctrl+←/→`, rồi bấm vào vùng trống không tương tác
-để thử Space, `←/→` tua 5 giây và `↑/↓` đổi âm lượng; các phím này chủ động
-không giành quyền khi bạn đang gõ trong ô tìm kiếm hoặc dùng list/slider.
-Kiểm tra nhãn nhỏ dưới **VOLUME** và mục **Audio output** trong Settings:
-thông thường phải hiện `WASAPI shared · [tên thiết bị]`. Khi đang phát, hãy
-đổi thiết bị xuất mặc định trong Windows Settings/Quick Settings; Mimi
-phải tự tạm dừng, giữ nguyên bài và vị trí, hiện banner output rồi chỉ phát
-tiếp trên thiết bị mới khi bạn bấm Play. Thử rút tai nghe USB, ngắt
-Bluetooth hoặc tắt thiết bị đang dùng: Mimi không được crash, không được
-đánh dấu bài là lỗi; khi cắm lại hoặc chọn thiết bị khác, nhãn output phải
-cập nhật. Nếu có sẵn, thử thêm file mono và file 44.1/48/96 kHz hoặc đa
-kênh để kiểm tra chuyển đổi định dạng của WASAPI shared.
+Once the window is open you can choose **Add music files**, **Scan a folder**,
+or drag files or folders in from Explorer. While a scan runs, a progress bar and
+a **Cancel** button appear in the library header. Then click a track to play it
+immediately, search for a Vietnamese song using undiacritized keywords, click
+column headers to sort, use the **Filters** row to narrow by
+artist/album/genre/format/playback state, hold `Ctrl`/`Shift` to select several
+tracks for favourite/delete/playlist actions, open **Recently played** to see
+your listening history, use the **+** button under **PLAYLISTS** to create a
+playlist, right-click the selected tracks and pick **Add to playlist**, then
+drag tracks inside the playlist (or use the **↑ Up / ↓ Down** buttons) to
+reorder them.
+Open **Settings** to change the Stage mode and the restore options; add a folder
+to **Watched folders**, copy another track in from Explorer so Mimi picks it up
+by itself, then close and reopen Mimi and check that the track and position come
+back paused. Under **Windows integration**, enable **Show Mimi in Windows' Open
+with menu**, right-click an audio file in Explorer, and choose
+**Open with → Mimi**; if Mimi is already running, the track must be handed to
+that window instead of starting a second Mimi.
+Play a track so the **Up Next** panel takes the queue from the filtered list,
+then drag one track to reorder it, use **Play next / Add to queue** on the
+selected tracks, switch on **Shuffle**, cycle the Repeat button through all three
+states **Off → All → One**, try **−10s / +10s**, turn on **Mute** and check the
+slider still holds the volume percentage you set once you unmute. Press
+**Previous** after a track has played for more than three seconds to check it
+restarts, then press it again near the start to go back to the track you
+actually heard before. Close and reopen Mimi to check the track, the position,
+Up Next, and the mute/shuffle/repeat state.
+While playing, open the Windows volume flyout to check the title, cover art, and
+the Previous/Play/Pause/Next buttons; try dragging the timeline (if your Windows
+build supports it), change Shuffle/Repeat from the flyout, minimize Mimi, then
+use the media keys on the keyboard, the headset, or the lock screen. Hover the
+Mimi icon on the taskbar to try the thumbnail Previous/Play/Pause/Next buttons
+and the taskbar progress bar. Open **Keyboard Shortcuts** in Settings, try
+`Ctrl+F` and `Ctrl+←/→`, then click an empty non-interactive area to try Space,
+5-second seek with `←/→`, and volume with `↑/↓`; these keys deliberately do not
+grab focus while you are typing in the search box or using a list or slider.
+Check the small label under **VOLUME** and the **Audio output** entry in
+Settings: normally it must read `WASAPI shared · [device name]`. While a track is
+playing, change the default output device in Windows Settings or Quick Settings;
+Mimi must pause by itself, keep the track and position, show the output banner,
+and only continue on the new device once you press Play. Try unplugging a USB
+headset, dropping a Bluetooth connection, or switching off the device in use:
+Mimi must not crash and must not mark the track as broken; plug it back in or
+pick another device and the output label must update. If you have them, add a
+mono file and 44.1/48/96 kHz or multichannel files to check WASAPI shared
+format conversion.
 
-**Đo A/B WASAPI ↔ WaveOut (chỉ dành cho chẩn đoán):** đóng Mimi hoàn toàn
-trước mỗi lần đổi backend, vì tiến trình Mimi đã chạy sẽ giữ backend cũ và
-single-instance sẽ chuyển yêu cầu mở mới sang chính tiến trình đó. Từ
-PowerShell tại thư mục gốc repo, chạy lần lượt từng cặp lệnh dưới đây; biến
-môi trường chỉ có hiệu lực trong cửa sổ PowerShell hiện tại và không tạo
-một công tắc backend trong Settings:
+**Measuring WASAPI ↔ WaveOut A/B (diagnostics only):** close Mimi completely
+before each backend change, because a running Mimi process keeps the old backend
+and single-instance hands a new open request to that same process. From
+PowerShell at the repository root, run each pair below in turn; the environment
+variable only affects the current PowerShell window and does not create a
+backend switch in Settings:
 
 ```powershell
 $env:MIMI_AUDIO_OUTPUT = 'wasapi'
@@ -438,52 +440,50 @@ Start-Process -FilePath '.\src\Mimi.App\bin\Release\net8.0-windows10.0.19041.0\M
 Remove-Item Env:MIMI_AUDIO_OUTPUT -ErrorAction SilentlyContinue
 ```
 
-Giữ nguyên cùng endpoint, file nhạc, mức volume của Windows/app, sample
-rate và các tuỳ chọn enhancements cho cả hai lượt. Nhãn phải hiện tương ứng
-`WASAPI shared · [endpoint]` hoặc `WaveOut diagnostic · [endpoint]`; log
-cũng ghi backend đang bị ép. Hãy so độ trễ Play/Pause/seek và độ ổn định
-(glitch/dropout, chuyển bài, đổi/rút thiết bị), đồng thời ghi rõ phương
-pháp đo và điều kiện máy. Các số 100ms/200ms trong code chỉ là latency
-được yêu cầu/cấu hình, **không phải latency đầu-cuối đã đo**. `auto` khôi
-phục hành vi mặc định WASAPI → WaveOut fallback; giá trị không hợp lệ sẽ
-được log cảnh báo và tự quay về `auto`.
+Keep the same endpoint, music file, Windows/app volume, sample rate, and
+enhancement settings for both runs. The label must read `WASAPI shared ·
+[endpoint]` or `WaveOut diagnostic · [endpoint]` respectively; the log records
+the forced backend as well. Compare Play/Pause/seek latency and stability
+(glitches or dropouts, track changes, device switch or unplug), and write down
+both the measurement method and the machine. The 100 ms/200 ms figures in the
+code are *requested/configured* latency, **not measured end-to-end latency**.
+`auto` restores the default WASAPI → WaveOut fallback; an invalid value is
+logged as a warning and falls back to `auto`.
 
-Một lượt smoke test ngày 29/10/2026 tại commit `04ab178` trên endpoint
-Speakers (Realtek(R) Audio) đã cho cả ba chế độ phát nhạc và có tín hiệu
-loopback; phân tích lại tại `a056377` cho thấy mỗi CSV dài khoảng 22 giây.
-Kết quả này không thay thế bài kiểm tra ổn định dài hơn hay các thao tác
-rút/kết nối lại thiết bị vật lý; xem bảng số liệu và trạng thái từng cổng trong
-`ROADMAP.md`, còn quy trình kiểm tra lặp lại được và mẫu ghi kết quả nằm
-trong [Windows Acceptance Kit](docs/acceptance/README.md).
+A smoke run on 29/10/2026 at commit `04ab178` on the Speakers (Realtek(R) Audio)
+endpoint produced sound in all three modes and had loopback signal; a re-analysis
+at `a056377` showed each CSV run about 22 seconds long. That result does not
+replace a longer stability test or physically unplugging and reconnecting the
+device; see the per-gate table and status in `ROADMAP.md`, and the repeatable
+procedure with its result template in the
+[Windows Acceptance Kit](docs/acceptance/README.md).
 
-Cuối cùng, bấm `F11` để mở Stage toàn màn hình (`Esc` để thoát Stage).
+Finally, press `F11` for the fullscreen Stage (`Esc` leaves the Stage).
 
-#### 5. Mở thư mục dữ liệu và log
+#### 5. Open the data and log folders
 
-Mimi lưu catalog thư viện, favorites, lịch sử nghe, settings và cache ảnh
-bìa trong `%LocalAppData%\Mimi`. Mở các thư mục này từ PowerShell bằng:
+Mimi keeps the library catalog, favourites, listening history, settings, and the
+cover-art cache in `%LocalAppData%\Mimi`. Open those folders from PowerShell:
 
 ```powershell
 explorer "$env:LOCALAPPDATA\Mimi"
 explorer "$env:LOCALAPPDATA\Mimi\logs"
 ```
 
-Các file chính gồm `library.db` (SQLite catalog; có thể kèm
-`library.db-wal`/`library.db-shm` khi ứng dụng đang ghi dữ liệu),
-`settings.json` (tuỳ chọn schema v3 gồm mute/shuffle/repeat, danh sách thư
-mục theo dõi, vị trí cửa sổ/chế độ xem và phiên nghe cùng hàng đợi đang
-tạm dừng), ảnh bìa đã trích xuất trong
-`cache\covers\` (thường là
-cặp `{hash}-512.jpg` và `{hash}-96.jpg`; cache byte gốc của bản cũ được app
-tự nâng cấp ở nền khi mở thư viện), và log xoay theo ngày theo mẫu
-`logs\mimi-YYYYMMDD.log`. `library.json` và
-`favorites.json` chỉ còn là nguồn migration/fallback của các bản cũ; sau khi
-nhập thành công vào SQLite, chúng được đổi tên thành file `.bak` để làm bản
-sao lưu.
+The main files are `library.db` (the SQLite catalog; expect `library.db-wal` /
+`library.db-shm` beside it while the app is writing), `settings.json` (the
+current schema version, holding mute/shuffle/repeat, the watched-folder list,
+window and view state, and the paused session with its queue), extracted cover
+art in `cache\covers\` (usually a `{hash}-512.jpg` and `{hash}-96.jpg` pair; the
+older raw-byte cache is upgraded by the app in the background when the library
+opens), and daily rolling logs written as `logs\mimi-YYYYMMDD.log`.
+`library.json` and `favorites.json` are now only a migration/fallback source for
+older builds; once imported into SQLite they are renamed to `.bak` files kept as
+a backup.
 
-#### 6. Cập nhật source ở những lần sau
+#### 6. Updating the source later
 
-Khi branch có commit mới:
+When the branch has new commits:
 
 ```powershell
 git status
@@ -494,20 +494,21 @@ dotnet test .\tests\Mimi.Tests\Mimi.Tests.csproj --configuration Release --no-bu
 dotnet run --project .\src\Mimi.App\Mimi.App.csproj
 ```
 
-#### Xử lý lỗi thường gặp
+#### Troubleshooting
 
-- **`dotnet` is not recognized:** đóng/mở lại Terminal sau khi cài SDK, rồi
-  chạy `where.exe dotnet` và `dotnet --list-sdks`. Nếu danh sách SDK trống,
-  cài lại package `Microsoft.DotNet.SDK.8` ở bước 1.
-- **Không tìm thấy branch:** chạy `git fetch --all --prune`, kiểm tra bằng
-  `git branch -r`, rồi thử lại `git switch arena/cdda374d-mimi`.
-- **Restore lỗi `NU1301`:** kiểm tra Internet/proxy/firewall và khả năng truy
-  cập NuGet, sau đó chạy lại `dotnet restore .\Mimi.sln`.
-- **Build báo file đang bị khóa:** đóng cửa sổ `Mimi.exe` đang chạy rồi build
-  lại. Tiến trình ứng dụng đang mở có thể khóa file trong thư mục `bin`.
-- **Build hoặc test thất bại:** lưu toàn bộ output để dễ chẩn đoán, ví dụ
+- **`dotnet` is not recognized:** close and reopen Terminal after installing the
+  SDK, then run `where.exe dotnet` and `dotnet --list-sdks`. If the SDK list is
+  empty, reinstall the `Microsoft.DotNet.SDK.8` package from step 1.
+- **Branch not found:** run `git fetch --all --prune`, check with
+  `git branch -r`, then try `git switch main` again.
+- **Restore fails with `NU1301`:** check the internet connection, proxy, or
+  firewall, and whether NuGet is reachable, then run
+  `dotnet restore .\Mimi.sln` again.
+- **Build says a file is locked:** close the running `Mimi.exe` window and build
+  again. A running app can hold files in the `bin` folder locked.
+- **Build or tests fail:** keep the whole output, for example
   `dotnet build .\Mimi.sln --configuration Release 2>&1 | Tee-Object .\build.log`,
-  rồi dùng nội dung `build.log` khi báo lỗi.
+  and attach `build.log` when reporting the problem.
 
 ## Source layout
 - `src/Mimi.App` — WPF views, view models, dependency-injection composition,

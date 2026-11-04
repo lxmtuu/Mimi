@@ -75,10 +75,10 @@ public sealed class ReadmeArtworkTests
         Assert.Contains("<Version>", generator, StringComparison.Ordinal);
         Assert.DoesNotContain("version = \"0.", generator, StringComparison.Ordinal);
 
-        // The download table therefore talks about "<phiên bản>" and "<tag>",
+        // The download table therefore talks about "<version>" and "<tag>",
         // which stay true whatever the next release is called.
         var readme = Read(Readme);
-        Assert.Contains("Mimi-<phiên bản>-Setup.exe", readme, StringComparison.Ordinal);
+        Assert.Contains("Mimi-<version>-Setup.exe", readme, StringComparison.Ordinal);
         Assert.Contains("Mimi-<tag>-win-x64.zip", readme, StringComparison.Ordinal);
 
         // Historical version numbers in the acceptance notes are fine; a current
@@ -95,7 +95,7 @@ public sealed class ReadmeArtworkTests
 
         // Claiming a drawing is a screenshot is the kind of small lie that costs
         // a project its credibility. The note has to stay.
-        Assert.Contains("không phải ảnh chụp màn hình", readme, StringComparison.Ordinal);
+        Assert.Contains("not screenshots", readme, StringComparison.Ordinal);
         Assert.Contains("BuiltInThemes.cs", readme, StringComparison.Ordinal);
         Assert.Contains("MainWindow.xaml", readme, StringComparison.Ordinal);
     }
