@@ -39,8 +39,23 @@ public sealed class ThemeService
     public string CurrentThemeId { get; private set; } =
         BuiltInThemes.DefaultId;
 
-    public ThemeDefinition CurrentTheme =>
-        Catalog.GetOrDefault(CurrentThemeId);
+    /// <summary>
+    /// The user's chosen background tint, or null to use the theme's own
+    /// palette. It is applied to whichever theme is selected, so one choice
+    /// follows the user across themes instead of being lost on a switch.
+    /// </summary>
+    public ThemeColor? CustomBackground { get; set; }
+
+    public ThemeDefinition CurrentTheme => Effective(Catalog.GetOrDefault(CurrentThemeId));
+
+    /// <summary>
+    /// The theme as it is actually drawn: the catalog entry, tinted when the
+    /// user picked a custom background.
+    /// </summary>
+    private ThemeDefinition Effective(ThemeDefinition theme) =>
+        CustomBackground is { } background
+            ? ThemeSurfaceCustomizer.Apply(theme, background)
+            : theme;
 
     public string Apply(string? themeId)
     {
@@ -48,7 +63,7 @@ public sealed class ThemeService
         CurrentThemeId = theme.Id;
 
         if (Application.Current?.Resources is { } resources)
-            Apply(theme, resources);
+            Apply(Effective(theme), resources);
 
         ThemeChanged?.Invoke(this, EventArgs.Empty);
         return theme.Id;

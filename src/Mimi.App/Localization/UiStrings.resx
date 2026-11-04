@@ -387,6 +387,12 @@
   <data name="Settings_ThemeCopySuffix" xml:space="preserve"><value>custom</value></data>
   <data name="Settings_DuplicateThemeDone" xml:space="preserve"><value>A copy of this theme was written to:&#10;&#10;{0}&#10;&#10;Edit that file, then press "Reload themes".</value></data>
   <data name="Settings_DuplicateThemeFailed" xml:space="preserve"><value>Could not write the theme file:&#10;&#10;{0}</value></data>
+  <data name="Settings_CustomBackground" xml:space="preserve"><value>Custom background colour</value></data>
+  <data name="Settings_CustomBackgroundAutomation" xml:space="preserve"><value>Tint the background layers of the current theme</value></data>
+  <data name="Settings_CustomBackgroundHex" xml:space="preserve"><value>Background colour, for example #FF8FCB</value></data>
+  <data name="Settings_ClearCustomBackground" xml:space="preserve"><value>Use the theme colour</value></data>
+  <data name="Settings_CustomBackgroundHint" xml:space="preserve"><value>Pick a colour to tint the background layers of whichever theme is selected. Mimi keeps the theme's own depth, so text and contrast stay exactly as reviewed.</value></data>
+  <data name="Settings_CustomBackgroundInvalid" xml:space="preserve"><value>That is not a colour yet. Use #RRGGBB, for example #FF8FCB.</value></data>
   <data name="Settings_Theme" xml:space="preserve"><value>Interface theme</value></data>
   <data name="Settings_ThemeDescription" xml:space="preserve"><value>Changes apply immediately and are restored the next time Mimi opens.</value></data>
   <data name="Settings_Title" xml:space="preserve"><value>Settings</value></data>

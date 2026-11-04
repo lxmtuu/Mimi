@@ -107,3 +107,32 @@ một dải 34 px trong Settings. Chúng nhỏ, tự có hình, và thêm viền
 5. bản đồ lớp khớp với màn hình thật (nền = Window, panel = NavRail…);
 6. không token bề mặt nào bị bỏ rơi;
 7. mọi thẻ `Raised` có cạnh, và không thẻ mục nào quay lại kiểu "tô nền trơn".
+
+## 7. Màu nền tuỳ chỉnh (Settings → Appearance)
+
+Người dùng chọn **một màu nền** (6 ô màu sẵn hoặc gõ `#RRGGBB`), Mimi pha màu đó
+vào **9 lớp bề mặt** của **bất kỳ theme nào đang chọn** — nên chọn theme khác thì
+màu nền vẫn theo người dùng.
+
+**Quy tắc để không phá thứ đã kiểm:** màu tuỳ chỉnh chỉ đổi **sắc (hue)**, không
+đổi **độ sâu (luminance)**. Mỗi lớp được "chiếu sáng lại" về đúng độ sáng tương
+đối mà nó có trong theme gốc, nên:
+
+- thứ tự lớp và bước nhảy giữa các lớp giữ nguyên;
+- tương phản chữ (`TextPrimary/Strong/Secondary/Muted`) giữ nguyên;
+- màu nhấn (accent) và gradient **không** đổi — đây là đổi nền, không phải theme mới.
+
+Hai chi tiết kỹ thuật, đều đã có test:
+
+1. **Độ bão hoà bị chặn ở 0,5.** Ở mức luminance 0,002–0,05, màu bão hoà 100 % cho
+   ra "đen neon" đối chọi với accent; chặn lại thì màu vẫn thấy rõ mà không lấn át.
+2. **Sửa thang sau khi làm tròn 8-bit.** Làm tròn có thể biến bước 1,05:1 thành
+   1,04:1. Customizer tự nâng lớp thiếu sáng theo từng bước 1 % cho tới khi
+   `ThemeLayerAudit` sạch, nên kết quả luôn đạt đúng các mức ở mục 2.
+
+Kết quả đo (4 theme × 10 màu, gồm cả `#FFFFFF`, `#000000`, `#808080`): lệch độ sâu
+tối đa **0,0012**, không có trường hợp nào vi phạm bước lớp hay AA.
+
+Lưu vào `settings.json` ở schema **v11**: `CustomBackgroundEnabled` +
+`CustomBackground` (chuẩn hoá về `#RRGGBB`; giá trị không đọc được thì tự tắt tính
+năng chứ không để lại bảng màu nửa vời).

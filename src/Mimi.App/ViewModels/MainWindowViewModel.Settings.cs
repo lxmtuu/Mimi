@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
+using System.Windows.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mimi.Controls;
@@ -89,6 +90,68 @@ public sealed partial class MainWindowViewModel
     /// </summary>
     public ObservableCollection<ThemeSwatch> ThemeSwatches { get; } = [];
 
+    /// <summary>
+    /// The tint applied on top of whichever theme is selected. Kept as text so
+    /// the user can type a colour, and as a parsed value so everything else
+    /// (preview, persistence, the theme service) uses the same answer.
+    /// </summary>
+    [ObservableProperty]
+    private bool isCustomBackgroundEnabled;
+
+    [ObservableProperty]
+    private string customBackgroundHex = CustomBackgroundPresets[0];
+
+    /// <summary>
+    /// Short, fixed list of tints that suit the dark shell. A colour picker
+    /// dialog would allow colours the app cannot render well; these are the
+    /// hues the layer ladder was checked against.
+    /// </summary>
+    public IReadOnlyList<BackgroundTintOption> CustomBackgroundOptions { get; } =
+        CustomBackgroundPresets
+            .Select(hex => ThemeSurfaceCustomizer.TryParse(hex, out var color)
+                ? new BackgroundTintOption(hex, Color.FromRgb(color.R, color.G, color.B))
+                : null)
+            .OfType<BackgroundTintOption>()
+            .ToArray();
+
+    public bool HasCustomBackgroundProblem =>
+        IsCustomBackgroundEnabled && CustomBackgroundColor is null;
+
+    public Brush CustomBackgroundPreview =>
+        CustomBackgroundColor is { } color
+            ? Freeze(Color.FromRgb(color.R, color.G, color.B))
+            : Brushes.Transparent;
+
+    /// <summary>
+    /// The parsed tint, or null when the text is not a colour. Null is not an
+    /// error by itself - it means the palette stays the theme's own.
+    /// </summary>
+    private ThemeColor? CustomBackgroundColor =>
+        ThemeSurfaceCustomizer.TryParse(CustomBackgroundHex, out var color)
+            ? color
+            : null;
+
+    private static Brush Freeze(Color color)
+    {
+        var brush = new SolidColorBrush(color);
+        brush.Freeze();
+        return brush;
+    }
+
+    /// <summary>
+    /// Tints offered in Settings. Hues only: the customiser decides the depth,
+    /// so every one of these renders correctly in every theme.
+    /// </summary>
+    private static readonly string[] CustomBackgroundPresets =
+    [
+        "#3E8BFF",
+        "#FF8FCB",
+        "#B07CFF",
+        "#4FD1A5",
+        "#FFB020",
+        "#4FE3FF"
+    ];
+
     public string AppVersionLabel =>
         $"Mimi {GetType().Assembly.GetName().Version?.ToString(3) ?? "0.6.0"}";
 
@@ -99,6 +162,21 @@ public sealed partial class MainWindowViewModel
         UiLanguage = settings.UiLanguage;
         Loc.SetLanguage(UiLanguage);
         RefreshLocalizedChrome();
+        // Restore the tint before the theme is applied: the first paint should
+        // already be the palette the user left behind.
+        isRestoringSettings = true;
+        try
+        {
+            CustomBackgroundHex = string.IsNullOrWhiteSpace(settings.CustomBackground)
+                ? CustomBackgroundPresets[0]
+                : settings.CustomBackground;
+            IsCustomBackgroundEnabled = settings.CustomBackgroundEnabled;
+        }
+        finally
+        {
+            isRestoringSettings = false;
+        }
+
         UiTheme = settings.UiTheme;
         ApplyUiTheme(UiTheme);
 
@@ -166,8 +244,88 @@ public sealed partial class MainWindowViewModel
             SaveSettings(force: true);
     }
 
+    partial void OnIsCustomBackgroundEnabledChanged(bool value)
+    {
+        if (!value)
+        {
+            PushCustomBackground(null);
+        }
+        else if (CustomBackgroundColor is { } color)
+        {
+            PushCustomBackground(color);
+        }
+        else
+        {
+            // Enabled with unreadable text: fall back to the first preset
+            // rather than silently doing nothing.
+            CustomBackgroundHex = CustomBackgroundPresets[0];
+            PushCustomBackground(CustomBackgroundColor);
+        }
+
+        OnPropertyChanged(nameof(HasCustomBackgroundProblem));
+        OnPropertyChanged(nameof(CustomBackgroundPreview));
+
+        if (settingsLoaded && !isRestoringSettings)
+            SaveSettings(force: true);
+    }
+
+    partial void OnCustomBackgroundHexChanged(string value)
+    {
+        OnPropertyChanged(nameof(HasCustomBackgroundProblem));
+        OnPropertyChanged(nameof(CustomBackgroundPreview));
+
+        // Typing reaches the app only once the text is a colour; until then the
+        // last good palette stays on screen instead of flashing black.
+        if (IsCustomBackgroundEnabled && CustomBackgroundColor is { } color)
+            PushCustomBackground(color);
+
+        // Typing fires per keystroke; the throttled save keeps the disk quiet
+        // while the palette still updates immediately.
+        if (settingsLoaded && !isRestoringSettings)
+            SaveSettings();
+    }
+
+    /// <summary>
+    /// Hands the tint to the theme service and re-applies the current theme, so
+    /// the change reaches every open surface at once.
+    /// </summary>
+    private void PushCustomBackground(ThemeColor? color)
+    {
+        if (themeService is null) return;
+
+        themeService.CustomBackground = color;
+        ApplyUiTheme(UiTheme);
+    }
+
+    /// <summary>
+    /// Picks one of the preset tints from the swatch row.
+    /// </summary>
+    [RelayCommand]
+    private void SelectCustomBackground(string? hex)
+    {
+        if (string.IsNullOrWhiteSpace(hex)) return;
+
+        CustomBackgroundHex = hex;
+        IsCustomBackgroundEnabled = true;
+    }
+
+    /// <summary>
+    /// Drops the tint and returns to the theme's own palette.
+    /// </summary>
+    [RelayCommand]
+    private void ClearCustomBackground()
+    {
+        IsCustomBackgroundEnabled = false;
+        CustomBackgroundHex = CustomBackgroundPresets[0];
+    }
+
     private string ApplyUiTheme(string? value)
     {
+        if (themeService is not null)
+            themeService.CustomBackground = IsCustomBackgroundEnabled
+                ? CustomBackgroundColor
+                : null;
+
         var applied = themeService?.Apply(value) ?? BuiltInThemes.NormalizeId(value);
         RefreshThemeSwatches();
         return applied;
@@ -440,7 +598,10 @@ public sealed partial class MainWindowViewModel
     {
         if (themeService is null) return;
 
-        var source = themeService.CurrentTheme;
+        // Deliberately the untinted palette: a background tint is a screen
+        // setting, not part of the theme file. A copy that baked the tint in
+        // would keep looking pink even after the tint is turned off.
+        var source = themeService.Catalog.GetOrDefault(themeService.CurrentThemeId);
         var id = ThemeFileWriter.UniqueId(source, themeService.Catalog);
         var name = $"{source.Name} · {Loc["Settings_ThemeCopySuffix"]}";
 
@@ -538,6 +699,11 @@ public sealed partial class MainWindowViewModel
         settings.RepeatMode = RepeatMode.ToString();
         settings.VisualizerMode = VisualizerMode.ToString();
         settings.UiLanguage = UiLanguages.Normalize(UiLanguage);
+        settings.CustomBackgroundEnabled =
+            IsCustomBackgroundEnabled && CustomBackgroundColor is not null;
+        settings.CustomBackground = CustomBackgroundColor is { } tint
+            ? ThemeSurfaceCustomizer.ToDisplayString(tint)
+            : string.Empty;
         settings.UiTheme =
             themeService?.NormalizeId(UiTheme) ??
             BuiltInThemes.NormalizeId(UiTheme);

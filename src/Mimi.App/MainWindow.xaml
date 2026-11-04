@@ -1864,6 +1864,57 @@
                                         </DataTemplate>
                                     </ItemsControl.ItemTemplate>
                                 </ItemsControl>
+                                <!-- Background tint: one hue for the nine surface
+                                     layers, applied on top of whichever theme is
+                                     selected. Depth stays the theme's own, so this
+                                     cannot break contrast. -->
+                                <DockPanel Margin="0,14,0,4" LastChildFill="False">
+                                    <CheckBox DockPanel.Dock="Left"
+                                              IsChecked="{Binding IsCustomBackgroundEnabled, Mode=TwoWay}"
+                                              Content="{Binding Loc[Settings_CustomBackground]}"
+                                              AutomationProperties.Name="{Binding Loc[Settings_CustomBackgroundAutomation]}"/>
+                                    <Button DockPanel.Dock="Right" Content="{Binding Loc[Common_Clear]}"
+                                            Command="{Binding ClearCustomBackgroundCommand}"
+                                            Padding="8,4" FontSize="10"
+                                            Visibility="{Binding IsCustomBackgroundEnabled, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                            AutomationProperties.Name="{Binding Loc[Settings_ClearCustomBackground]}"/>
+                                </DockPanel>
+                                <DockPanel Margin="0,0,0,0"
+                                           Visibility="{Binding IsCustomBackgroundEnabled, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                    <Border DockPanel.Dock="Left" Width="26" Height="26" CornerRadius="7"
+                                            Background="{Binding CustomBackgroundPreview}"
+                                            BorderBrush="{StaticResource BorderBrush}" BorderThickness="1"
+                                            Margin="0,0,8,0"/>
+                                    <TextBox Text="{Binding CustomBackgroundHex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                             Width="110" Height="28" DockPanel.Dock="Left"
+                                             VerticalContentAlignment="Center"
+                                             AutomationProperties.Name="{Binding Loc[Settings_CustomBackgroundHex]}"/>
+                                    <ItemsControl ItemsSource="{Binding CustomBackgroundOptions}" VerticalAlignment="Center" Margin="10,0,0,0">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <StackPanel Orientation="Horizontal"/>
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Button Width="22" Height="22" Padding="0" Margin="0,0,5,0"
+                                                        ToolTip="{Binding Hex}"
+                                                        Background="{Binding Swatch}"
+                                                        Command="{Binding DataContext.SelectCustomBackgroundCommand, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}"
+                                                        CommandParameter="{Binding Hex}"
+                                                        AutomationProperties.Name="{Binding Hex}"/>
+
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </DockPanel>
+                                <TextBlock Text="{Binding Loc[Settings_CustomBackgroundHint]}"
+                                           Foreground="{StaticResource TextMutedBrush}" FontSize="11"
+                                           TextWrapping="Wrap" Margin="0,8,0,0"/>
+                                <TextBlock Text="{Binding Loc[Settings_CustomBackgroundInvalid]}"
+                                           Foreground="{StaticResource TextFaintBrush}" FontSize="11"
+                                           TextWrapping="Wrap" Margin="0,4,0,0"
+                                           Visibility="{Binding HasCustomBackgroundProblem, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                                 <TextBlock Text="{Binding Loc[Settings_ThemeDescription]}"
                                            Foreground="{StaticResource TextMutedBrush}" FontSize="11" TextWrapping="Wrap" Margin="0,8,0,0"/>
                                 <WrapPanel Margin="0,10,0,0">
