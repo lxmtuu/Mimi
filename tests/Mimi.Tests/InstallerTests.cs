@@ -66,7 +66,7 @@ public sealed class InstallerTests
         // the prompt sets - never by anything the installer decides on its own.
         Assert.Contains("Keep your Mimi library, settings and logs?", script, StringComparison.Ordinal);
         Assert.Contains("MB_YESNO or MB_DEFBUTTON1", script, StringComparison.Ordinal);
-        Assert.Contains("RemoveUserData := Answer = IDNO;", script, StringComparison.Ordinal);
+        Assert.Contains("RemoveUserData := (Answer = IDNO);", script, StringComparison.Ordinal);
         Assert.Contains("if RemoveUserData then", script, StringComparison.Ordinal);
 
         // A silent uninstall must not delete anything either.
@@ -196,7 +196,7 @@ public sealed class InstallerTests
 
         // Left behind, these advertise an executable that no longer exists.
         Assert.Contains(@"Software\Mimi'", code, StringComparison.Ordinal);
-        Assert.Contains(@"Software\Classes\Mimi.AudioFile'", code, StringComparison.Ordinal);
+        Assert.Contains(@"Software\Classes\{#AppProgId}'", code, StringComparison.Ordinal);
         Assert.Contains("RegDeleteKeyIncludingSubkeys", code, StringComparison.Ordinal);
 
         // And nothing is written outside HKEY_CURRENT_USER: this is a per-user
