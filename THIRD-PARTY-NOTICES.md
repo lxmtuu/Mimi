@@ -53,7 +53,7 @@ pháp lý, không phải kỹ thuật, nên ghi lại ở đây thay vì tự đ
 | Tài nguyên | Nguồn | Ghi chú |
 |---|---|---|
 | Font **Be Vietnam Pro** (5 weight upright 400–800) | Dự án Be Vietnam Pro | SIL Open Font License 1.1 — điều khoản đầy đủ ở [`src/Mimi.App/Assets/Fonts/OFL.txt`](src/Mimi.App/Assets/Fonts/OFL.txt). Đóng gói kèm ứng dụng là được phép; **không** bán font riêng lẻ |
-| Logo, icon, mascot Mimi | Vẽ cho dự án này (AI-assisted, chủ dự án chọn phương án) | Không dựa trên nhân vật bên thứ ba. Bản quyền thuộc chủ dự án Mimi — xem [mục 2 của ROADMAP](ROADMAP.md) về nguyên tắc "Miku-inspired, không phải Miku chính thức" |
+| Logo, icon, mascot Mimi | Vẽ cho dự án này (AI-assisted, chủ dự án chọn phương án) | Không dựa trên nhân vật bên thứ ba. Bản quyền thuộc chủ dự án Mimi — xem [mục 2 của ROADMAP](docs/ROADMAP.md) về nguyên tắc "Miku-inspired, không phải Miku chính thức" |
 | Phông nền, gradient, shader Aurora | Viết cho dự án này | Trong repo, cùng giấy phép MIT của mã nguồn |
 
 ## Dịch vụ trực tuyến (không phải thư viện, nhưng có điều khoản)

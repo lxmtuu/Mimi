@@ -1,14 +1,14 @@
 # Góp ý cho Mimi / Contributing
 
 Cảm ơn bạn đã ghé. Mimi là trình phát nhạc desktop cho Windows viết bằng
-C#/WPF/.NET 8, phát triển theo từng phase trong [`ROADMAP.md`](ROADMAP.md).
+C#/WPF/.NET 8, phát triển theo từng phase trong [`ROADMAP.md`](docs/ROADMAP.md).
 Tài liệu này nói **cách** đóng góp; roadmap nói **cái gì** đang được làm.
 
 ## Trước khi viết code
 
 1. Mở một issue mô tả vấn đề hoặc đề xuất, trước khi làm PR lớn. Một PR 800 dòng
    không có issue thường phải quay lại làm rõ phạm vi.
-2. Đọc [`ROADMAP.md`](ROADMAP.md) mục 2 (nguyên tắc IP: *Miku-inspired, không
+2. Đọc [`ROADMAP.md`](docs/ROADMAP.md) mục 2 (nguyên tắc IP: *Miku-inspired, không
    phải Miku chính thức*) và mục 8.5 (cổng pháp lý cho nguồn trực tuyến).
 3. Việc đã nằm trong danh sách **không làm** thì không nhận PR, dù code đẹp:
    trích xuất âm thanh từ YouTube, chặn quảng cáo, phá DRM, dùng API không

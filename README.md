@@ -247,7 +247,7 @@ To build it yourself instead: see [Build & run](#build-test-and-run).
   no FastForward/Rewind or Shuffle/Repeat controls for A9–A11
   (`BLOCKED/N/A`). The project owner has since directly accepted the
   taskbar, media-key/keyboard, device-disconnect, and reconnect gates
-  recorded in `ROADMAP.md` (`b0cd13a`), while app-level no-output
+  recorded in `docs/ROADMAP.md` (`b0cd13a`), while app-level no-output
   remains blocked, D-03 remains provisional after longer loopback
   A/B runs. The project owner closed Phase 4 by waiver on 2026-11-01
   without upgrading those unresolved gates to PASS. Their
@@ -454,7 +454,7 @@ A smoke run on 29/10/2026 at commit `04ab178` on the Speakers (Realtek(R) Audio)
 endpoint produced sound in all three modes and had loopback signal; a re-analysis
 at `a056377` showed each CSV run about 22 seconds long. That result does not
 replace a longer stability test or physically unplugging and reconnecting the
-device; see the per-gate table and status in `ROADMAP.md`, and the repeatable
+device; see the per-gate table and status in `docs/ROADMAP.md`, and the repeatable
 procedure with its result template in the
 [Windows Acceptance Kit](docs/acceptance/README.md).
 
@@ -528,7 +528,7 @@ dotnet run --project .\src\Mimi.App\Mimi.App.csproj
   and shuffle-bag behavior, audio-output status/backend selection,
   Vietnamese search normalization, and spectrum analysis
 - `docs/acceptance` — repeatable real-Windows acceptance checklist and
-  result template; `ROADMAP.md` remains the decision/status record
+  result template; `docs/ROADMAP.md` remains the decision/status record
 - `tools` — diagnostic utilities that are not part of the shipped app:
   the PowerShell loopback-CSV analyzer for Phase 4 A/B measurements and a
   read-only GSMTC session inspector for SMTC timeline/control diagnosis
@@ -537,7 +537,7 @@ dotnet run --project .\src\Mimi.App\Mimi.App.csproj
 This is a first working foundation, not a finished commercial product. Online streaming is intentionally not implemented yet. Each streaming provider requires an official API/SDK, authorization, and compliance with that provider's playback and licensing rules. Do not scrape protected services or attempt to bypass DRM.
 
 ## Design & roadmap
-See **[ROADMAP.md](ROADMAP.md)** for the full product design and phased development
+See **[ROADMAP.md](docs/ROADMAP.md)** for the full product design and phased development
 roadmap (in Vietnamese): vision and IP principles for the anime × Vocaloid-inspired
 "Mimi Neon Stage" design system, screen specs, target architecture, per-subsystem
 designs (audio, SQLite library, 60fps visualizer, lyrics, bilingual vi/en UI),

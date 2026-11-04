@@ -2,7 +2,7 @@
 
 Tài liệu này tổng kết việc **đóng Phase 5 (Song ngữ & Theme cộng đồng,
 `v0.6.0`)** ngày 02/11/2026, đối chiếu với bằng chứng đã ghi trong
-[`ROADMAP.md`](../../ROADMAP.md) và các xác nhận trực tiếp của chủ dự án
+[`ROADMAP.md`](../ROADMAP.md) và các xác nhận trực tiếp của chủ dự án
 trên Windows thật. `ROADMAP.md` vẫn là hồ sơ quyết định/trạng thái chính
 thức; tài liệu này là ảnh chụp tổng kết tại thời điểm đóng.
 

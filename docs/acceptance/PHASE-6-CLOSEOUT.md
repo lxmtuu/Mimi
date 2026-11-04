@@ -2,7 +2,7 @@
 
 Tài liệu này tổng kết **Phase 6 (Lyrics & cổng Online, `v0.7.0`)** ở thời điểm
 toàn bộ các lát của nó đã nằm trên `main`. Nó đối chiếu với bằng chứng đã ghi
-trong [`ROADMAP.md`](../../ROADMAP.md) và với git history của repo, không thêm
+trong [`ROADMAP.md`](../ROADMAP.md) và với git history của repo, không thêm
 kết luận mới nào không có căn cứ.
 
 > `ROADMAP.md` vẫn là hồ sơ quyết định/trạng thái chính thức. Tài liệu này là

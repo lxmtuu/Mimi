@@ -1,7 +1,7 @@
 # Phase 4 closeout — đối chiếu hồ sơ tại `b0cd13a`
 
 Tài liệu này là **ảnh chụp đối chiếu** các bằng chứng Phase 4 đã được ghi
-trong [`ROADMAP.md`](../../ROADMAP.md), [Windows Acceptance
+trong [`ROADMAP.md`](../ROADMAP.md), [Windows Acceptance
 Kit](README.md) và các báo cáo Windows được tổng hợp tới ngày 31/10/2026.
 Nó không thay thế `ROADMAP.md`: roadmap vẫn là nơi ghi quyết định và trạng
 thái chính thức. Lượt đối chiếu này không tự nâng bất kỳ hạng mục nào lên

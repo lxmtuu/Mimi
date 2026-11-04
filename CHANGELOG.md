@@ -5,7 +5,7 @@ Mọi thay đổi đáng chú ý của Mimi được ghi ở đây. Định dạ
 [Semantic Versioning 2.0.0](https://semver.org/spec/v2.0.0.html).
 
 Trong giai đoạn 0.x, số phụ (`0.**7**.0`) là số phase trong
-[`ROADMAP.md`](ROADMAP.md), và một thay đổi phá vỡ tương thích dữ liệu người
+[`ROADMAP.md`](docs/ROADMAP.md), và một thay đổi phá vỡ tương thích dữ liệu người
 dùng có thể xảy ra ở bất kỳ bản nào — khi đó ghi rõ ở mục **Changed** kèm đường
 migration.
 
@@ -133,7 +133,7 @@ Tổng kết: [`docs/acceptance/PHASE-5-CLOSEOUT.md`](docs/acceptance/PHASE-5-CL
 
 > Các bản trước 0.6.0 (`0.1.x`–`0.5.0`, Phase 0–4) chưa được ghi lại thành
 > mục changelog riêng. Bản ghi kỹ thuật của chúng nằm trong git history và
-> [`ROADMAP.md`](ROADMAP.md); không dựng lại ở đây để tránh chép sai ngày tháng.
+> [`ROADMAP.md`](docs/ROADMAP.md); không dựng lại ở đây để tránh chép sai ngày tháng.
 
 [Unreleased]: https://github.com/lxmtuu/Mimi/compare/v0.7.0...HEAD
 [0.7.0]: https://github.com/lxmtuu/Mimi/compare/v0.6.0...v0.7.0
