@@ -79,15 +79,16 @@ public static class LyricsTextParser
 
             if (timestamps.Count > 0)
             {
-                var source = remainder.Trim();
-                var lyricText = StripInlineTimestamps(source);
+                // Not "source": that name is the LyricsSourceKind parameter.
+                var lineSource = remainder.Trim();
+                var lyricText = StripInlineTimestamps(lineSource);
                 foreach (var timestamp in timestamps)
                 {
                     if (timedLines.Count >= MaximumLines) break;
                     timedLines.Add(new LyricLine(
                         timestamp,
                         lyricText,
-                        ExtractWords(source)));
+                        ExtractWords(lineSource)));
                 }
 
                 continue;
