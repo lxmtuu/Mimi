@@ -8,6 +8,7 @@
   <data name="App_MusicUniverse" xml:space="preserve"><value>MUSIC UNIVERSE</value></data>
   <data name="App_StartupFailed" xml:space="preserve"><value>Mimi couldn't start. Details were written to the log in %LocalAppData%\Mimi\logs.</value></data>
   <data name="App_Tagline" xml:space="preserve"><value>LOCAL PLAYER  |  YOUR MUSIC, YOUR WORLD</value></data>
+  <data name="App_UnexpectedProblemDetails" xml:space="preserve"><value>Details: {0}</value></data>
   <data name="App_UnexpectedProblem" xml:space="preserve"><value>Mimi hit an unexpected problem, but it will try to keep running. Details were written to the log in %LocalAppData%\Mimi\logs.</value></data>
   <data name="Audio_CannotPlaySongNoOutput" xml:space="preserve"><value>Mimi can't play this song because no usable audio output is available.&#10;&#10;{0}</value></data>
   <data name="Audio_CannotStartPlayback" xml:space="preserve"><value>Mimi can't start playback because no usable audio output is available.&#10;&#10;{0}</value></data>

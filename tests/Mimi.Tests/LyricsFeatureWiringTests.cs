@@ -155,6 +155,61 @@ public sealed class LyricsFeatureWiringTests
             stageCode,
             StringComparison.Ordinal);
 
+        // Karaoke: word timings parsed in Core, progress driven by the position
+        // tick, and the same control on both surfaces.
+        Assert.Contains(
+            "controls:KaraokeTextBlock",
+            mainWindow,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "Words=\"{Binding KaraokeWords}\"",
+            mainWindow,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "controls:KaraokeTextBlock",
+            stageWindow,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "SungBrush=\"{DynamicResource AccentBrush}\"",
+            stageWindow,
+            StringComparison.Ordinal);
+
+        Assert.Contains(
+            "CurrentLyricSungWordCount",
+            lyricsViewModel,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "FindCurrentWordIndex",
+            lyricsViewModel,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "wordIndex == currentLyricWordIndex",
+            lyricsViewModel,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "nameof(MainWindowViewModel.CurrentLyricSungWordCount)",
+            mainWindowCode,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "viewModel.CurrentLyricSungWordCount",
+            mainWindowCode,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "current.WordTimings",
+            stageCode,
+            StringComparison.Ordinal);
+
+        var lyricLineViewModel = Read(
+            root,
+            "src",
+            "Mimi.App",
+            "ViewModels",
+            "LyricLineViewModel.cs");
+        Assert.Contains(
+            "public IReadOnlyList<LyricWord>? KaraokeWords",
+            lyricLineViewModel,
+            StringComparison.Ordinal);
+
         var settingsModel = Read(
             root,
             "src",

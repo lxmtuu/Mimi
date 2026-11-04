@@ -2,6 +2,7 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Threading;
 using Mimi.Controls;
+using Mimi.Lyrics;
 using Mimi.Localization;
 using Mimi.Services;
 
@@ -49,15 +50,27 @@ public partial class StageWindow : Window
         StageSubtitle.Text = subtitle;
     }
 
-    public void SetLyrics(string? previous, string? current, string? next)
+    public void SetLyrics(
+        LyricLine? previous,
+        LyricLine? current,
+        LyricLine? next,
+        int sungWordCount = -1)
     {
-        StageLyricPrevious.Text = previous ?? string.Empty;
-        StageLyricCurrent.Text = current ?? string.Empty;
-        StageLyricNext.Text = next ?? string.Empty;
+        StageLyricPrevious.Text = previous?.Text ?? string.Empty;
+        StageLyricNext.Text = next?.Text ?? string.Empty;
+
+        // The current line is the only one that reports progress: on a big
+        // screen the karaoke fill is what tells you where the track is.
+        StageLyricCurrent.PlainText = current?.Text ?? string.Empty;
+        StageLyricCurrent.Words = current is { HasWordTimings: true }
+            ? current.WordTimings
+            : null;
+        StageLyricCurrent.SungWordCount = sungWordCount;
+
         StageLyricsPanel.Visibility =
-            string.IsNullOrWhiteSpace(previous) &&
-            string.IsNullOrWhiteSpace(current) &&
-            string.IsNullOrWhiteSpace(next)
+            string.IsNullOrWhiteSpace(StageLyricPrevious.Text) &&
+            string.IsNullOrWhiteSpace(StageLyricCurrent.PlainText) &&
+            string.IsNullOrWhiteSpace(StageLyricNext.Text)
                 ? Visibility.Collapsed
                 : Visibility.Visible;
     }

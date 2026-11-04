@@ -4,8 +4,13 @@ namespace Mimi.Lyrics;
 
 /// <summary>
 /// Small, dependency-free parser for standard line-timed LRC text and for
-/// plain unsynchronized lyrics embedded in audio tags. Enhanced LRC word
-/// timestamps are stripped for this line-level display slice.
+/// plain unsynchronized lyrics embedded in audio tags.
+///
+/// Enhanced LRC word timestamps (<c>&lt;mm:ss.xx&gt;</c> inside a line) are read
+/// into <see cref="LyricLine.WordTimings"/> instead of being thrown away, and are
+/// still removed from the visible text, so a file with word timings renders
+/// exactly like the same file without them - it just also knows when each word
+/// starts.
 /// </summary>
 public static class LyricsTextParser
 {
@@ -74,11 +79,16 @@ public static class LyricsTextParser
 
             if (timestamps.Count > 0)
             {
-                var lyricText = StripInlineTimestamps(remainder.Trim());
+                // Not "source": that name is the LyricsSourceKind parameter.
+                var lineSource = remainder.Trim();
+                var lyricText = StripInlineTimestamps(lineSource);
                 foreach (var timestamp in timestamps)
                 {
                     if (timedLines.Count >= MaximumLines) break;
-                    timedLines.Add(new LyricLine(timestamp, lyricText));
+                    timedLines.Add(new LyricLine(
+                        timestamp,
+                        lyricText,
+                        ExtractWords(lineSource)));
                 }
 
                 continue;
@@ -243,6 +253,67 @@ public static class LyricsTextParser
             CultureInfo.InvariantCulture,
             out parsed) &&
         parsed >= 0;
+
+    /// <summary>
+    /// Splits a line into words using its inline <c>&lt;mm:ss.xx&gt;</c> tags.
+    /// Text before the first tag belongs to the first word, so concatenating the
+    /// result always reproduces the line exactly. Returns an empty list when the
+    /// line has no word timings at all.
+    /// </summary>
+    private static IReadOnlyList<LyricWord> ExtractWords(string text)
+    {
+        if (!text.Contains('<')) return [];
+
+        var words = new List<LyricWord>();
+        var buffer = new System.Text.StringBuilder(text.Length);
+        TimeSpan? startedAt = null;
+        string? prefix = null;
+
+        for (var i = 0; i < text.Length;)
+        {
+            if (text[i] == '<')
+            {
+                var closeIndex = text.IndexOf('>', i + 1);
+                if (closeIndex > i + 1 &&
+                    TryParseTimestamp(text[(i + 1)..closeIndex].Trim(), out var timestamp))
+                {
+                    if (startedAt is { } started)
+                    {
+                        words.Add(new LyricWord(started, buffer.ToString()));
+                        buffer.Clear();
+                    }
+                    else if (buffer.Length > 0)
+                    {
+                        prefix = buffer.ToString();
+                        buffer.Clear();
+                    }
+
+                    startedAt = timestamp;
+                    i = closeIndex + 1;
+                    continue;
+                }
+            }
+
+            buffer.Append(text[i]);
+            i++;
+        }
+
+        if (startedAt is { } last)
+            words.Add(new LyricWord(last, buffer.ToString()));
+
+        if (words.Count == 0) return [];
+
+        if (prefix is not null)
+            words[0] = words[0] with { Text = prefix + words[0].Text };
+
+        // Keep the visible text identical to the line: trim only the outer
+        // edges, and drop words that ended up empty (a tag with no text).
+        words[0] = words[0] with { Text = words[0].Text.TrimStart() };
+        words[^1] = words[^1] with { Text = words[^1].Text.TrimEnd() };
+        words.RemoveAll(word => word.Text.Length == 0);
+
+        return words;
+    }
 
     private static string StripInlineTimestamps(string text)
     {
