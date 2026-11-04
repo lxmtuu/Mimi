@@ -301,7 +301,8 @@ public partial class MainWindow : Window
         else if (e.PropertyName is
                  nameof(MainWindowViewModel.CurrentLyricLine) or
                  nameof(MainWindowViewModel.PreviousLyricLine) or
-                 nameof(MainWindowViewModel.NextLyricLine))
+                 nameof(MainWindowViewModel.NextLyricLine) or
+                 nameof(MainWindowViewModel.CurrentLyricSungWordCount))
         {
             PushStageLyrics();
         }
@@ -769,9 +770,10 @@ public partial class MainWindow : Window
 
     private void PushStageLyrics() =>
         stageWindow?.SetLyrics(
-            viewModel.PreviousLyricLine?.Text,
-            viewModel.CurrentLyricLine?.Text,
-            viewModel.NextLyricLine?.Text);
+            viewModel.PreviousLyricLine?.Line,
+            viewModel.CurrentLyricLine?.Line,
+            viewModel.NextLyricLine?.Line,
+            viewModel.CurrentLyricSungWordCount);
 
     private void StageWindow_ModeChanged(VisualizerDisplayMode mode) =>
         viewModel.VisualizerMode = mode;

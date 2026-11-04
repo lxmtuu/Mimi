@@ -27,9 +27,44 @@ UTF-16 có BOM cũng được hỗ trợ qua `StreamReader`. Parser giữ tối 
 - timestamp `mm:ss`, `mm:ss.xx`, `mm:ss.xxx` và dạng có giờ
   `hh:mm:ss.xxx`;
 - sắp xếp ổn định các dòng có timestamp;
-- bỏ timestamp từng từ dạng `<mm:ss.xx>` của Enhanced LRC, nên lát này
-  đồng bộ ở mức dòng, chưa tô sáng từng từ;
+- đọc timestamp từng từ dạng `<mm:ss.xx>` của Enhanced LRC vào
+  `LyricLine.WordTimings` (bỏ khỏi chữ hiển thị), nên tô sáng được từng từ;
 - văn bản thường không có timestamp cho lyrics nhúng chưa đồng bộ.
+
+## Tô sáng từng từ (karaoke)
+
+Enhanced LRC có timestamp cho từng từ/âm tiết nằm ngay trong dòng:
+
+```
+[00:12.34]<00:12.34>あ<00:12.80>の<00:13.10>空
+[00:20.00]<00:20.00>Hello <00:20.45>from <00:20.90>the <00:21.30>stage
+```
+
+`LyricsTextParser` tách các mốc này ra khỏi chữ và lưu thành `LyricWord`.
+**Bất biến quan trọng:** ghép toàn bộ `Words` phải ra đúng `Line.Text` — nếu
+không, cùng một file sẽ hiển thị khác nhau tuỳ app có hiểu tag hay không. Vì
+vậy văn bản trước tag đầu tiên được gộp vào từ đầu tiên, và chỉ cắt khoảng
+trắng ở hai đầu dòng (không chèn space), để tiếng Nhật/Trung không bị thêm dấu
+cách.
+
+Mỗi lần timer vị trí (100 ms) chạy:
+
+1. `FindCurrentLineIndex` chọn dòng như cũ;
+2. `FindCurrentWordIndex` trả về từ đang hát trong dòng đó, dùng **cùng phép
+   tính offset** với dòng (`position + DocumentOffset - userDelay`), nên
+   `[offset:]` của file và delay ±0,1 giây vẫn đúng ở mức từ;
+3. `MainWindowViewModel` chỉ phát tín hiệu khi **dòng hoặc từ** đổi, và chỉ
+   cập nhật từ đang hát — không dựng lại danh sách.
+
+Hiển thị: `KaraokeTextBlock` (kế thừa `TextBlock`) vẽ mỗi từ một `Run`, từ đã
+hát dùng `SungBrush`, từ còn lại dùng `PendingBrush`. Chỉ **dòng đang hát** được
+tô từng từ; dòng trước/sau giữ nguyên kiểu chữ cũ. Dòng không có word timing
+hiển thị như text thường, nên file `.lrc` thường không đổi gì.
+
+| Bề mặt | Từ đã hát | Từ còn lại |
+|---|---|---|
+| Now Playing | `AccentBrush` | `TextMutedBrush` |
+| Stage (chữ lớn) | `AccentBrush` + glow accent | `TextSecondaryBrush` |
 
 Dòng hiện tại được tìm bằng binary search mỗi khi vị trí phát thay đổi.
 Timer vị trí của cửa sổ chính chạy mỗi 100 ms; dòng hiện tại được tô
@@ -79,7 +114,6 @@ trước dòng đầu tiên hiển thị trước dòng sắp hát ở vị trí
 
 ## Chưa thuộc lát này
 
-- Tô sáng từng từ/theo âm tiết của Enhanced LRC.
 - Tải lyrics trực tuyến hoặc bất kỳ nguồn nhạc trực tuyến nào.
 - Chỉnh sửa/tạo file `.lrc` trong app.
 - Tự nhận diện encoding ANSI không có BOM ngoài UTF-8 mặc định.
@@ -88,6 +122,12 @@ trước dòng đầu tiên hiển thị trước dòng sắp hát ở vị trí
 
 - `LyricsTextParserTests`: sắp xếp/mở rộng nhiều timestamp, Enhanced
   LRC, offset của file + delay người dùng và lyrics thường.
+- `LyricsKaraokeTests`: tách từ có/không có dấu cách (Latin và Nhật), bất
+  biến "ghép từ = nguyên dòng", văn bản trước tag đầu tiên, con trỏ từ
+  theo vị trí phát, cả hai quy ước offset ở mức từ, và dòng không có
+  word timing.
+- `KaraokeTextBlockTests`: dòng thường vẫn là text, mỗi từ là một `Run`,
+  màu đổi theo tiến độ, và bỏ word timing thì quay về text thường.
 - `FileLyricsServiceTests`: ưu tiên sidecar, fallback embedded, sidecar
   rỗng và trường hợp không có lyrics. Hai test tích hợp dùng
   `FileLyricsService` mặc định với một file FLAC tối thiểu được chính
