@@ -16,8 +16,9 @@ namespace Mimi.Models;
 /// offsets. Version 7 adds the Internet Radio enable/disable preference.
 /// Version 8 adds the online catalog (in-app search and streaming)
 /// enable/disable preference. Version 9 adds the YouTube search
-/// enable/disable preference. Version 10 adds the optional custom background
-/// tint applied on top of whichever theme is selected.
+/// enable/disable preference. Version 10 adds the saved YouTube list.
+/// Version 11 adds the optional custom background tint applied on top of
+/// whichever theme is selected.
 /// Unknown string values are tolerated here and interpreted defensively by
 /// the app layer.
 /// </summary>
