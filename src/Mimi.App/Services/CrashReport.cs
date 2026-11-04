@@ -49,21 +49,19 @@ public static class CrashReport
 
         var innermost = Innermost(exception);
         var builder = new StringBuilder();
+
+        // "AggregateException: IOException: the file is busy" says both what
+        // reached the handler and what actually failed. Naming only the wrapper
+        // would hide the one word a developer searches for.
         builder.Append(exception.GetType().Name);
+        if (!ReferenceEquals(innermost, exception))
+        {
+            builder.Append(": ").Append(innermost.GetType().Name);
+        }
 
         var message = Collapse(innermost.Message);
         if (message.Length > 0)
-        {
             builder.Append(": ").Append(message);
-
-            // When a wrapper only forwards the real fault, name that too.
-            if (!ReferenceEquals(innermost, exception))
-            {
-                builder.Append(" (from ")
-                    .Append(exception.GetType().Name)
-                    .Append(')');
-            }
-        }
 
         if (exception.TargetSite is { } site)
         {

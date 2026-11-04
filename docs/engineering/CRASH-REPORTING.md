@@ -18,8 +18,9 @@ Details: InvalidOperationException: Cannot scroll — at ScrollViewer.ScrollToVe
 
 Nội dung dòng đó do `CrashReport.Summary` dựng: **kiểu exception + câu thông báo
 + nơi ném lỗi**, gộp về một dòng, cắt ở 320 ký tự. Nếu exception là wrapper
-(`AggregateException`, `TargetInvocationException`…), câu thông báo lấy từ lỗi
-bên trong — vì đó mới là câu có nghĩa — và tên wrapper được ghi kèm.
+(`AggregateException`, `TargetInvocationException`…), dòng đó ghi **cả hai** kiểu
+— `AggregateException: IOException: …` — và câu thông báo lấy từ lỗi bên trong,
+vì đó mới là câu có nghĩa.
 
 ## Một lỗi chỉ hiện một lần
 
