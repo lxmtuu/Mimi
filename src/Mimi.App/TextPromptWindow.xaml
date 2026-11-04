@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Mimi" Width="440" Height="215"
         ResizeMode="NoResize" WindowStartupLocation="CenterOwner"
-        Background="{StaticResource AppBackgroundBrush}" Foreground="{StaticResource TextPrimaryBrush}"
+        Background="{DynamicResource AppBackgroundBrush}" Foreground="{DynamicResource TextPrimaryBrush}"
         FontFamily="{StaticResource MimiUiFontFamily}">
     <Grid Margin="22">
         <Grid.RowDefinitions>
@@ -15,7 +15,7 @@
         <TextBlock x:Name="PromptLabel" TextWrapping="Wrap" FontSize="13"/>
         <TextBox x:Name="InputTextBox" Grid.Row="1" Margin="0,14,0,0"
                  Height="36" Padding="10,0" VerticalContentAlignment="Center"
-                 Background="{StaticResource RaisedBackgroundBrush}" Foreground="{StaticResource TextPrimaryBrush}" BorderThickness="0"
+                 Background="{DynamicResource RaisedBackgroundBrush}" Foreground="{DynamicResource TextPrimaryBrush}" BorderThickness="0"
                  AutomationProperties.Name="{Binding Loc[Prompt_TextValue]}"/>
 
         <StackPanel Grid.Row="2" Orientation="Horizontal"
@@ -23,7 +23,7 @@
             <Button Content="{Binding Loc[Common_Cancel]}" IsCancel="True" MinWidth="88"
                     AutomationProperties.Name="{Binding Loc[Common_Cancel]}"/>
             <Button Content="{Binding Loc[Common_Ok]}" IsDefault="True" MinWidth="88"
-                    Background="{StaticResource AccentBrush}" Foreground="{StaticResource OnAccentBrush}"
+                    Background="{DynamicResource AccentBrush}" Foreground="{DynamicResource OnAccentBrush}"
                     FontWeight="Bold" Click="OkButton_Click"
                     AutomationProperties.Name="{Binding Loc[Common_Ok]}"/>
         </StackPanel>

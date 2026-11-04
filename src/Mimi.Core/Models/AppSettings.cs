@@ -16,13 +16,14 @@ namespace Mimi.Models;
 /// offsets. Version 7 adds the Internet Radio enable/disable preference.
 /// Version 8 adds the online catalog (in-app search and streaming)
 /// enable/disable preference. Version 9 adds the YouTube search
-/// enable/disable preference.
+/// enable/disable preference. Version 10 adds the optional custom background
+/// tint applied on top of whichever theme is selected.
 /// Unknown string values are tolerated here and interpreted defensively by
 /// the app layer.
 /// </summary>
 public sealed class AppSettings
 {
-    public const int CurrentVersion = 10;
+    public const int CurrentVersion = 11;
 
     public const int MinimumLyricsOffsetMilliseconds = -30000;
 
@@ -43,6 +44,20 @@ public sealed class AppSettings
     public string UiLanguage { get; set; } = UiLanguages.Default;
 
     public string UiTheme { get; set; } = BuiltInThemes.DefaultId;
+
+    /// <summary>
+    /// When set, the nine background layers of the selected theme are tinted
+    /// from <see cref="CustomBackground"/>. Off by default: the shipped palette
+    /// is the one that was reviewed.
+    /// </summary>
+    public bool CustomBackgroundEnabled { get; set; }
+
+    /// <summary>
+    /// The user's chosen background colour as <c>#RRGGBB</c>. Only its hue and
+    /// chroma are used; the theme keeps its own layer luminance, so this can
+    /// never break the contrast the theme was checked for.
+    /// </summary>
+    public string CustomBackground { get; set; } = string.Empty;
 
     public bool RestorePlaybackSession { get; set; } = true;
 
@@ -125,6 +140,14 @@ public sealed class AppSettings
             UiTheme = BuiltInThemes.DefaultId;
         else
             UiTheme = themeId;
+        // An unreadable tint is simply off; the key is never trusted as colour.
+        var tint = Clean(CustomBackground, string.Empty, 9);
+        CustomBackground = ThemeSurfaceCustomizer.TryParse(tint, out var parsedTint)
+            ? ThemeSurfaceCustomizer.ToDisplayString(parsedTint)
+            : string.Empty;
+        if (CustomBackground.Length == 0)
+            CustomBackgroundEnabled = false;
+
         RepeatMode = Clean(RepeatMode, "Off", 32);
         WatchedFolders = (WatchedFolders ?? [])
             .Select(CleanNullablePath)

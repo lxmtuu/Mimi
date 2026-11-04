@@ -56,6 +56,16 @@ xanh dương `#3E8BFF`) — chỉ là ví dụ, bạn đổi sang màu của mì
 - Tên tệp tùy ý (khuyên dùng `<id>.json`). Mimi chỉ quét tệp `.json` nằm
   ngay trong thư mục theme (không quét thư mục con), tối đa 256 KiB/tệp.
 
+### Thứ tự các lớp nền
+
+Chín token bề mặt không phải chín màu tuỳ ý: chúng xếp thành lớp. Giữ thứ tự
+**`AppBackground` < `SunkenBackground` < `PanelBackground` < `RaisedBackground`**
+(tối → sáng), và đặt `ControlBackground` sáng hơn thẻ chứa nó. Nếu hai lớp quá
+gần nhau (dưới ~1,08:1), thẻ sẽ "biến mất" khỏi panel và giao diện phẳng ra.
+Bảng đo thật của 4 theme sẵn có, cùng mức tối thiểu cho từng bước, nằm ở
+[`docs/design/THEME-LAYERS.md`](design/THEME-LAYERS.md); Mimi cũng ghi cảnh báo
+vào log khi theme cộng đồng bị phẳng lớp (không chặn theme).
+
 Tệp lỗi (JSON hỏng, thiếu/sai token, màu sai định dạng...) sẽ bị **bỏ qua
 và ghi vào log** thay vì làm hỏng lúc khởi động: mở **Cài đặt → Mở thư mục
 log** và tìm dòng chứa `community theme`. Nếu bạn xóa tệp của theme đang
@@ -174,6 +184,17 @@ azure `#3E8BFF` accent) — they are an example, swap in your own colours.
 - The file name is free-form (`<id>.json` is recommended). Mimi scans only
   `.json` files directly inside the themes folder (no subfolders), up to
   256 KiB per file.
+
+### Layer order
+
+The nine surface tokens are layers, not nine free colours. Keep
+**`AppBackground` < `SunkenBackground` < `PanelBackground` < `RaisedBackground`**
+(dark to light) and make `ControlBackground` lighter than the card it sits on.
+If two layers are too close (under ~1.08:1) cards disappear into their panel and
+the whole UI flattens. The measured table for the four built-in themes, with the
+minimum for each step, is in
+[`docs/design/THEME-LAYERS.md`](design/THEME-LAYERS.md); Mimi also logs a
+warning when a community theme has a flat layer (it does not block the theme).
 
 Invalid files (broken JSON, missing/wrong tokens, malformed colors) are
 **skipped and logged**, never fatal: open **Settings → Open logs** and look

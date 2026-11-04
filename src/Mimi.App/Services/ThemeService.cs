@@ -39,8 +39,23 @@ public sealed class ThemeService
     public string CurrentThemeId { get; private set; } =
         BuiltInThemes.DefaultId;
 
-    public ThemeDefinition CurrentTheme =>
-        Catalog.GetOrDefault(CurrentThemeId);
+    /// <summary>
+    /// The user's chosen background tint, or null to use the theme's own
+    /// palette. It is applied to whichever theme is selected, so one choice
+    /// follows the user across themes instead of being lost on a switch.
+    /// </summary>
+    public ThemeColor? CustomBackground { get; set; }
+
+    public ThemeDefinition CurrentTheme => Effective(Catalog.GetOrDefault(CurrentThemeId));
+
+    /// <summary>
+    /// The theme as it is actually drawn: the catalog entry, tinted when the
+    /// user picked a custom background.
+    /// </summary>
+    private ThemeDefinition Effective(ThemeDefinition theme) =>
+        CustomBackground is { } background
+            ? ThemeSurfaceCustomizer.Apply(theme, background)
+            : theme;
 
     public string Apply(string? themeId)
     {
@@ -48,7 +63,7 @@ public sealed class ThemeService
         CurrentThemeId = theme.Id;
 
         if (Application.Current?.Resources is { } resources)
-            Apply(theme, resources);
+            Apply(Effective(theme), resources);
 
         ThemeChanged?.Invoke(this, EventArgs.Empty);
         return theme.Id;
@@ -139,6 +154,20 @@ public sealed class ThemeService
                 string.Join("; ", errors),
                 BuiltInThemes.DefaultId);
             effectiveTheme = BuiltInThemes.Default;
+        }
+
+        // A community theme is not rejected for a flat layer - the author's
+        // taste is theirs - but the log should say why a card vanished into
+        // its panel, because that is impossible to see in a colour picker.
+        if (!ThemeCatalog.IsBuiltIn(effectiveTheme))
+        {
+            foreach (var problem in ThemeLayerAudit.FindFlattenedLayers(effectiveTheme))
+            {
+                Log.Warning(
+                    "Theme {ThemeId} has a flat background layer: {Problem}",
+                    effectiveTheme.Id,
+                    problem);
+            }
         }
 
         var publishedColors =
@@ -234,16 +263,34 @@ public sealed class ThemeService
         target["MimiThemeId"] = effectiveTheme.Id;
         target["MimiThemeName"] = effectiveTheme.Name;
 
-        // One line per apply: when a window looks half-themed, the log says
-        // which theme was actually published and how often.
-        Log.Information("Published theme {ThemeId}", effectiveTheme.Id);
-
         // Anything left over in another dictionary is a previous theme that a
         // scope could still resolve; drop it so the theme cannot half-apply.
         RemoveFromOtherDictionaries(
             resources,
             target,
             publishedColors.Keys.Append("MimiThemeId").Append("MimiThemeName"));
+
+        // The keys above are what a lookup sees; the brushes are what a window
+        // paints with, and a brush handed to an element is fixed at that moment.
+        // So the brushes are repainted in place *and* replaced with fresh
+        // instances, which is what a DynamicResource reference follows. Without
+        // both, one window can show two themes at once: the palette that was
+        // active when each piece of the UI happened to be created.
+        var painted = ThemeBrushSync.Sync(target, publishedColors);
+
+        // One line that can be matched against a screenshot: the build, the
+        // theme, and the four surface colours a window is actually painted
+        // with. When a window looks half themed, this says which half the
+        // dictionary believed in.
+        Log.Information(
+            "Theme {ThemeId} published from build {Build}: app {App}, panel {Panel}, raised {Raised}, accent {Accent} ({BrushCount} brushes repainted)",
+            effectiveTheme.Id,
+            BuildInfo.Display,
+            effectiveTheme.GetColor(ThemeTokens.AppBackground).ToHexString(),
+            effectiveTheme.GetColor(ThemeTokens.PanelBackground).ToHexString(),
+            effectiveTheme.GetColor(ThemeTokens.RaisedBackground).ToHexString(),
+            effectiveTheme.GetColor(ThemeTokens.Accent).ToHexString(),
+            painted);
 
         VerifyPublishedTheme(resources, target, effectiveTheme);
     }
@@ -272,12 +319,36 @@ public sealed class ThemeService
                 duplicates);
         }
 
-        if (target[BrushResourceKey(ThemeTokens.PanelBackground)] is SolidColorBrush brush)
+        // Every shared brush must now carry the colour its key holds. This is
+        // the check that names the exact brush when a window looks half
+        // themed: "the key says one thing, this brush still paints another".
+        var disagreements = new List<string>();
+        foreach (var (brushKey, colorKeys) in ThemeBrushSync.Map)
         {
-            Log.Debug(
-                "Theme {ThemeId} panel brush resolves to {BrushColor}",
+            if (!target.Contains(brushKey)) continue;
+            if (target[brushKey] is not Brush brush) continue;
+            if (!target.Contains(colorKeys[0])) continue;
+            if (target[colorKeys[0]] is not Color expectedColor) continue;
+
+            var actual = brush switch
+            {
+                SolidColorBrush solid => solid.Color,
+                GradientBrush gradient when gradient.GradientStops.Count > 0 =>
+                    gradient.GradientStops[0].Color,
+                _ => expectedColor
+            };
+
+            if (actual != expectedColor)
+                disagreements.Add($"{brushKey}={actual} (expected {expectedColor})");
+        }
+
+        if (disagreements.Count > 0)
+        {
+            Log.Warning(
+                "Theme {ThemeId} left {BrushCount} brush(es) on another palette: {Brushes}",
                 theme.Id,
-                brush.Color);
+                disagreements.Count,
+                string.Join("; ", disagreements));
         }
     }
 
